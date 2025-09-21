@@ -2,6 +2,7 @@
 
 
 
+
 // In a real application, this data would come from the Habbo API.
 // We are simulating the API responses here.
 
@@ -118,7 +119,7 @@ export async function getHabboProfileData(username: string) {
 }
 
 export async function getActiveRooms() {
-    const username = 'official_rooms';
+    const username = 'estacionkusfm';
     try {
         const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${username}`, { next: { revalidate: 600 } });
         if (!userResponse.ok) {
