@@ -146,15 +146,9 @@ export default function FloatingPlayer() {
                 ) : (
                     <div className="flex items-center gap-4 w-full sm:w-auto flex-1 min-w-0">
                         <Image src={songArt} alt={songTitle} width={64} height={64} className="rounded-md h-12 w-12 sm:h-16 sm:w-16 object-cover" />
-                        <div className="flex items-center gap-3">
-                           <Avatar className="h-8 w-8 hidden sm:flex">
-                              <AvatarImage src={djAvatarUrl} alt={currentDjName} />
-                              <AvatarFallback>{currentDjName.substring(0,2)}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-grow min-w-0">
-                              <h3 className="text-sm sm:text-md font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
-                              <p className="text-xs sm:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
-                          </div>
+                        <div className="flex-grow min-w-0">
+                            <h3 className="text-sm sm:text-md font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
                         </div>
                     </div>
                 )}
