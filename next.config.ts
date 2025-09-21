@@ -11,6 +11,18 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'radio.kusmedios.lat',
+        port: '',
+        pathname: '/**',
+      },
+       {
+        protocol: 'http',
+        hostname: 'radio.kusmedios.lat',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'placehold.co',
         pathname: '/**',
       },
@@ -27,16 +39,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'radio.kusmedios.lat',
-        pathname: '/**',
-      },
-       {
-        protocol: 'http',
-        hostname: 'radio.kusmedios.lat',
         pathname: '/**',
       },
     ],
