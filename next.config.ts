@@ -32,7 +32,6 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https',
         hostname: 'radio.kusmedios.lat',
         port: '',
         pathname: '/**',
