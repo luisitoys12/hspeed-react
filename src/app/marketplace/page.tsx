@@ -12,9 +12,31 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import AchievementRanking from '@/components/habbospeed/achievement-ranking';
+import { Suspense } from 'react';
+
+function RankingSkeleton() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-headline">
+                <Trophy className="text-primary" />
+                Ránking de Logros
+              </CardTitle>
+              <CardDescription>Top jugadores por puntos de logro.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between"><div className="h-8 w-1/2 bg-muted rounded-md"></div><div className="h-8 w-1/4 bg-muted rounded-md"></div></div>
+                    <div className="flex items-center justify-between"><div className="h-8 w-1/2 bg-muted rounded-md"></div><div className="h-8 w-1/4 bg-muted rounded-md"></div></div>
+                    <div className="flex items-center justify-between"><div className="h-8 w-1/2 bg-muted rounded-md"></div><div className="h-8 w-1/4 bg-muted rounded-md"></div></div>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
 
 export default async function MarketplacePage() {
-  const leaderboard = await getLeaderboardData();
   const { popularItems, priceTrends } = await getMarketplaceMockData();
 
   return (
@@ -32,44 +54,9 @@ export default async function MarketplacePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Columna Izquierda: Ránking y Tendencias */}
         <div className="lg:col-span-1 space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 font-headline">
-                <Trophy className="text-primary" />
-                Ránking de Logros
-              </CardTitle>
-              <CardDescription>Top jugadores por puntos de logro.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead className="text-right">Puntuación</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {leaderboard.map((user, index) => (
-                    <TableRow key={user.name}>
-                      <TableCell className="font-bold">{index + 1}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.name}&headonly=1&size=s`} />
-                            <AvatarFallback>{user.name.substring(0,1)}</AvatarFallback>
-                          </Avatar>
-                          <span>{user.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-mono">{(user.achievementScore || 0).toLocaleString('es-ES')}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <p className="text-xs text-muted-foreground mt-4 text-center">Ránking basado en los miembros del equipo de Ekus FM.</p>
-            </CardContent>
-          </Card>
+          <Suspense fallback={<RankingSkeleton />}>
+            <AchievementRanking />
+          </Suspense>
 
            <Card>
             <CardHeader>

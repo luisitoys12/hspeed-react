@@ -54,7 +54,6 @@ const authLinks = [
 
 const adminLinks = [
   { href: '/panel', label: 'Panel Admin', icon: Shield },
-  { href: '/panel/analytics', label: 'Analíticas', icon: BarChart2 },
   { href: '/docs', label: 'Documentación', icon: BookOpen },
 ]
 

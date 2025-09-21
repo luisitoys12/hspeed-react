@@ -5,10 +5,10 @@ import ActiveRooms from '@/components/habbospeed/active-rooms';
 import { Suspense } from 'react';
 import HeroSlideshow from '@/components/habbospeed/hero-slideshow';
 import OnAirDjs from '@/components/habbospeed/on-air-djs';
-import WeeklyAwards from '@/components/habbospeed/weekly-awards';
-import Image from 'next/image';
 import LatestCampaigns from '@/components/habbospeed/latest-campaigns';
 import ActiveEvents from '@/components/habbospeed/active-events';
+import Image from 'next/image';
+import AchievementRanking from '@/components/habbospeed/achievement-ranking';
 
 function LoadingSkeleton() {
   return (
@@ -44,7 +44,9 @@ export default function Home() {
            <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
            </Suspense>
-           <WeeklyAwards />
+           <Suspense fallback={<LoadingSkeleton />}>
+            <AchievementRanking />
+           </Suspense>
         </div>
       </main>
     </div>

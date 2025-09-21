@@ -5,18 +5,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { BarChart2, Users, MousePointerClick, Clock, UserCheck } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { ChartTooltip, ChartTooltipContent, ChartContainer } from "@/components/ui/chart";
+import { useEffect, useState } from 'react';
+import { Math } from 'Math';
 
 const chartData = [
-  { month: "Enero", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Febrero", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Marzo", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Abril", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Mayo", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Junio", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Enero", total: 0 },
+  { month: "Febrero", total: 0 },
+  { month: "Marzo", total: 0 },
+  { month: "Abril", total: 0 },
+  { month: "Mayo", total: 0 },
+  { month: "Junio", total: 0 },
 ]
 
 export default function AnalyticsPage() {
     const { user, loading } = useAuth();
+    const [data, setData] = useState(chartData);
+
+    useEffect(() => {
+        setData(chartData.map(d => ({...d, total: Math.floor(Math.random() * 5000) + 1000})))
+    }, [])
+
     if (loading) return <div>Cargando...</div>;
     if (!user?.isSuperAdmin) return <div>Acceso denegado.</div>;
 
@@ -87,7 +95,7 @@ export default function AnalyticsPage() {
                           color: "hsl(var(--chart-1))",
                         },
                       }} className="h-[250px] w-full">
-                        <BarChart accessibilityLayer data={chartData}>
+                        <BarChart accessibilityLayer data={data}>
                              <XAxis
                                 dataKey="month"
                                 tickLine={false}

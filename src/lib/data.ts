@@ -112,36 +112,6 @@ export async function getHabboProfileData(username: string) {
     }
 }
 
-export async function getActiveRooms() {
-    const username = 'official_rooms'; // A user with many public rooms
-    try {
-        const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${username}`, { next: { revalidate: 600 } });
-        if (!userResponse.ok) {
-            console.error("Failed to fetch official_rooms user from Habbo API");
-            return [];
-        }
-        const userData = await userResponse.json();
-
-        const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`, { next: { revalidate: 600 } });
-        if (!profileResponse.ok) {
-             console.error("Failed to fetch official_rooms profile from Habbo API");
-            return [];
-        }
-        const profileData = await profileResponse.json();
-
-        return profileData.rooms.slice(0, 3).map((room: any) => ({
-            id: room.id,
-            name: room.name,
-            owner: username,
-            imageUrl: `https://www.habbo.com/habbo-imaging/room/${room.id}/thumbnail.png`,
-        }));
-    } catch (error) {
-        console.error("Failed to fetch active rooms:", error);
-        return [];
-    }
-}
-
-
 export async function getNewsArticles(): Promise<NewsArticle[]> {
     try {
         const newsRef = ref(db, 'news');
