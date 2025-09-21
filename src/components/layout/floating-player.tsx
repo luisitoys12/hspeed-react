@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
@@ -206,7 +206,7 @@ export default function FloatingPlayer() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
       <Card className="overflow-hidden shadow-2xl border-primary/20 backdrop-blur-sm bg-card/80">
-        <audio ref={audioRef} src={radioConfig?.listenUrl} preload="none" />
+        <audio ref={audioRef} src={radioConfig?.listenUrl || undefined} preload="none" />
         <CardContent className="p-3 md:p-4 grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center gap-4">
           
           {/* Left Section: Song Info */}
