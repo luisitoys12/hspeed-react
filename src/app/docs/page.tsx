@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BookOpen, Database, GitBranch, Terminal, Wind, Settings, Cloud, Flame } from 'lucide-react';
+import { BookOpen, Database, GitBranch, Terminal, Wind, Settings, Cloud, Flame, DatabaseZap } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DocsPage() {
@@ -28,7 +28,7 @@ export default function DocsPage() {
                 <li><strong>Framework:</strong> Next.js (con App Router)</li>
                 <li><strong>UI:</strong> React, TypeScript, Tailwind CSS, ShadCN/UI</li>
                 <li><strong>Inteligencia Artificial:</strong> Genkit con Google AI (Gemini)</li>
-                <li><strong>Configuración y Datos:</strong> Firebase (Firestore)</li>
+                <li><strong>Configuración y Datos:</strong> Firebase (Firestore, Realtime Database)</li>
                 <li><strong>Audio Stream:</strong> Azuracast</li>
                 <li><strong>Alojamiento:</strong> Netlify</li>
               </ul>
@@ -83,6 +83,10 @@ export default function DocsPage() {
                     <p><strong>Copia el objeto de configuración de Firebase:</strong></p>
                     <p>Firebase te proporcionará un objeto `firebaseConfig`. Cópialo. Se verá así:</p>
                     <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
+// src/lib/firebase.ts
+import &#123; initializeApp, getApps, getApp &#125; from "firebase/app";
+import &#123; getAuth &#125; from "firebase/auth";
+
 const firebaseConfig = &#123;
   apiKey: "AIza...",
   authDomain: "...",
@@ -91,17 +95,16 @@ const firebaseConfig = &#123;
   messagingSenderId: "...",
   appId: "..."
 &#125;;
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+
+export &#123; app, auth &#125;;
                     </code></pre>
                 </li>
                 <li>
                     <p><strong>Crea el archivo de configuración en tu proyecto:</strong></p>
-                    <p>Crea un nuevo archivo en <code>src/lib/firebase-config.js</code> y pega el objeto `firebaseConfig` dentro, exportándolo.</p>
-                     <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
-// src/lib/firebase-config.js
-export const firebaseConfig = &#123;
-  // ... tu configuración aquí
-&#125;;
-                    </code></pre>
+                    <p>Copia el objeto `firebaseConfig` que te proporcionó Firebase en el archivo `src/lib/firebase.ts`.</p>
                 </li>
                  <li>
                     <p><strong>Activa Firestore:</strong></p>
@@ -109,9 +112,94 @@ export const firebaseConfig = &#123;
                 </li>
             </ol>
             <div className="mt-4 text-center p-4 bg-muted rounded-lg border-2 border-dashed">
-                <p className="text-sm text-muted-foreground">La aplicación intentará leer desde la colección 'config' en Firestore para las URLs de Azuracast. Necesitarás añadir estos documentos manually por ahora.</p>
+                <p className="text-sm text-muted-foreground">La aplicación intentará leer desde la colección 'config' en Firestore para las URLs de Azuracast. Necesitarás añadir estos documentos manualmente por ahora.</p>
            </div>
           </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><DatabaseZap /> Usando Firebase Realtime Database</CardTitle>
+                <CardDescription>
+                Una base de datos NoSQL alojada en la nube para almacenar y sincronizar datos en tiempo real.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <ol className="list-decimal list-inside space-y-4">
+                    <li>
+                        <p><strong>Activa Realtime Database:</strong></p>
+                        <p className="text-muted-foreground text-sm mt-1">
+                        En tu consola de Firebase, ve a la sección "Realtime Database", haz clic en "Crear base de datos", elige una ubicación y comienza en "modo de prueba".
+                        </p>
+                    </li>
+                    <li>
+                        <p><strong>Actualiza tu archivo de configuración de Firebase:</strong></p>
+                        <p className="text-muted-foreground text-sm mt-1">Añade la URL de tu base de datos al objeto `firebaseConfig` y exporta la instancia de la base de datos.</p>
+                        <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
+{`// src/lib/firebase.ts
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database"; // Importar
+
+const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  // Añade la URL de tu Realtime Database aquí
+  databaseURL: "https://<TU-PROYECTO>-default-rtdb.firebaseio.com",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "..."
+};
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+const db = getDatabase(app); // Exportar instancia de DB
+
+export { app, auth, db };`}
+                        </code></pre>
+                    </li>
+                    <li>
+                        <p><strong>Ejemplo: Leer y Escribir Datos en un Componente React:</strong></p>
+                        <p className="text-muted-foreground text-sm mt-1">
+                        Ahora puedes usar las funciones `ref`, `set`, y `onValue` para interactuar con tu base de datos en tiempo real.
+                        </p>
+                        <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
+{`'use client';
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase'; // Asegúrate que exportas 'db'
+import { ref, onValue, set } from 'firebase/database';
+
+function RealtimeComponent() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const dataRef = ref(db, 'test/data');
+    const unsubscribe = onValue(dataRef, (snapshot) => {
+      const value = snapshot.val();
+      setData(value);
+    });
+
+    // Limpiar el listener cuando el componente se desmonte
+    return () => unsubscribe();
+  }, []);
+
+  const writeData = () => {
+    const dataRef = ref(db, 'test/data');
+    set(dataRef, { message: \`Hola mundo en \${new Date().toLocaleTimeString()}\` });
+  };
+
+  return (
+    <div>
+      <p>Dato en tiempo real: {JSON.stringify(data)}</p>
+      <button onClick={writeData}>Escribir en DB</button>
+    </div>
+  );
+}`}
+                        </code></pre>
+                    </li>
+                </ol>
+            </CardContent>
         </Card>
 
         <Card>
