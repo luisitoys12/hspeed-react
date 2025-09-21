@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BookOpen, Database, GitBranch, Terminal, Wind, Settings, Cloud, Flame, DatabaseZap } from 'lucide-react';
 import Link from 'next/link';
@@ -125,7 +126,7 @@ export { app, auth, db };`}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <p>La aplicación está configurada para usar Realtime Database para la configuración, el equipo y los horarios. El siguiente es un ejemplo genérico de cómo interactuar con ella.</p>
+                <p>La aplicación está configurada para usar Realtime Database para la configuración, el equipo y los horarios. El siguiente es un ejemplo funcional de cómo interactuar con ella.</p>
                 <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
 {`'use client';
 import { useState, useEffect } from 'react';
