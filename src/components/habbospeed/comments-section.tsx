@@ -111,13 +111,15 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
           ) : comments.length > 0 ? (
             comments.map((comment) => (
               <div key={comment.id} className="flex items-start gap-4">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${comment.authorName}&headonly=1&size=m`} />
-                  <AvatarFallback>{comment.authorName.substring(0,1)}</AvatarFallback>
-                </Avatar>
+                <Link href={`/profile/${comment.authorName}`}>
+                    <Avatar className="h-10 w-10 cursor-pointer">
+                    <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${comment.authorName}&headonly=1&size=m`} />
+                    <AvatarFallback>{comment.authorName.substring(0,1)}</AvatarFallback>
+                    </Avatar>
+                </Link>
                 <div className="w-full">
                   <div className="flex items-baseline gap-2">
-                    <p className="font-bold text-primary">{comment.authorName}</p>
+                    <Link href={`/profile/${comment.authorName}`} className="font-bold text-primary hover:underline">{comment.authorName}</Link>
                     <p className="text-xs text-muted-foreground">
                       {new Date(comment.timestamp).toLocaleString('es-ES')}
                     </p>
