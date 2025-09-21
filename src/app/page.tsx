@@ -12,7 +12,7 @@ import ActiveEvents from '@/components/habbospeed/active-events';
 
 function LoadingSkeleton() {
   return (
-    <div className="flex justify-center items-center h-full min-h-[300px] bg-card rounded-lg">
+    <div className="flex justify-center items-center h-full min-h-[120px] bg-card rounded-lg mt-8">
       <Image 
         src="https://files.habboemotion.com/resources/images/seasons/habboween/handsuphabbo.gif" 
         alt="Cargando..."
@@ -31,6 +31,9 @@ export default function Home() {
       <Suspense fallback={<LoadingSkeleton />}>
         <OnAirDjs />
       </Suspense>
+      <Suspense fallback={<LoadingSkeleton />}>
+        <ActiveEvents />
+      </Suspense>
       <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <div className="lg:col-span-2 space-y-8">
           <LatestCampaigns />
@@ -44,9 +47,6 @@ export default function Home() {
            <WeeklyAwards />
         </div>
       </main>
-      <div className="mt-8">
-        <ActiveEvents />
-      </div>
     </div>
   );
 }
