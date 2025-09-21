@@ -83,18 +83,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-@layer components {
-  .marquee-container {
-    mask: linear-gradient(to right, hsl(0 0% 0% / 0), hsl(0 0% 0% / 1) 10%, hsl(0 0% 0% / 1) 90%, hsl(0 0% 0% / 0));
-  }
-  .marquee-content {
-    animation: marquee 30s linear infinite;
-    width: max-content;
-  }
-
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-}
