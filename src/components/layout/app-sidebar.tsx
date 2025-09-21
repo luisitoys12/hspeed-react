@@ -64,10 +64,10 @@ export default function AppSidebar() {
                   isActive={pathname === link.href}
                   tooltip={link.label}
                 >
-                  <>
+                  <span>
                     <link.icon />
                     <span>{link.label}</span>
-                  </>
+                  </span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
