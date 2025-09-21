@@ -18,7 +18,7 @@ export default async function HabboProfile() {
   const habboProfile = await getHabboProfileData(HABBO_USERNAME);
   
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
@@ -31,7 +31,7 @@ export default async function HabboProfile() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 flex-grow overflow-y-auto">
         <div className="text-sm text-muted-foreground space-y-2">
             <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
