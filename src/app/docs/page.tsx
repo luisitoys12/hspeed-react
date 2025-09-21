@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BookOpen, Database, GitBranch, Terminal, Wind, Settings, Cloud, Flame } from 'lucide-react';
+import Link from 'next/link';
 
 export default function DocsPage() {
   return (
@@ -115,6 +116,40 @@ export const firebaseConfig = &#123;
 
         <Card>
           <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Cloud /> Despliegue en Netlify</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p>Este proyecto está pre-configurado para un despliegue sencillo en Netlify. El archivo <code>netlify.toml</code> en la raíz del proyecto le dice a Netlify cómo construir y servir tu sitio.</p>
+            <ol className="list-decimal list-inside space-y-4">
+                <li>
+                    <p><strong>Sube tu proyecto a un repositorio de GitHub.</strong></p>
+                    <p className="text-muted-foreground text-sm mt-1">Asegúrate de que tu código esté en un repositorio de GitHub (puede ser público o privado).</p>
+                </li>
+                <li>
+                    <p><strong>Regístrate en <a href="https://www.netlify.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Netlify</a> usando tu cuenta de GitHub.</strong></p>
+                </li>
+                 <li>
+                    <p><strong>Crea un nuevo sitio desde Git:</strong></p>
+                    <p className="text-muted-foreground text-sm mt-1">En tu panel de Netlify, haz clic en "Add new site" {'>'} "Import an existing project". Conéctate a GitHub y selecciona el repositorio de tu proyecto.</p>
+                </li>
+                <li>
+                    <p><strong>Configura los ajustes de construcción:</strong></p>
+                    <p className="text-muted-foreground text-sm mt-1">Netlify detectará automáticamente que es un proyecto de Next.js y usará la configuración de <code>netlify.toml</code>. Los ajustes por defecto deberían funcionar.</p>
+                </li>
+                 <li>
+                    <p><strong>Añade tus variables de entorno:</strong></p>
+                    <p className="text-muted-foreground text-sm mt-1">Ve a "Site settings" {'>'} "Build & deploy" {'>'} "Environment" y añade la variable <code>GEMINI_API_KEY</code> con su valor correspondiente. Haz lo mismo para cualquier otra variable que necesites en producción.</p>
+                </li>
+                 <li>
+                    <p><strong>¡Despliega!</strong></p>
+                    <p className="text-muted-foreground text-sm mt-1">Haz clic en "Deploy site". Netlify construirá y desplegará tu aplicación. ¡Y listo!</p>
+                </li>
+            </ol>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle className="flex items-center gap-2"><Settings /> Otras Configuraciones</CardTitle>
           </Header>
           <CardContent className="space-y-6">
@@ -128,10 +163,6 @@ export const firebaseConfig = &#123;
             <div>
               <h3 className="font-bold flex items-center gap-2 mb-2"><Database /> Base de Datos (Datos de Ejemplo)</h3>
               <p className="text-muted-foreground">Actualmente, la aplicación usa datos de ejemplo (mock data) desde <code>src/lib/data.ts</code> para el horario, equipo y noticias. Para usar una base de datos real, puedes adaptar el patrón de Firebase o seguir las instrucciones para MongoDB en <code>MONGODB_SETUP.md</code>.</p>
-            </div>
-            <div>
-              <h3 className="font-bold flex items-center gap-2 mb-2"><Cloud /> Despliegue en Netlify</h3>
-              <p className="text-muted-foreground">El proyecto está configurado para desplegarse en Netlify. Simplemente conecta tu repositorio a un nuevo sitio en Netlify. La configuración se encuentra en <code>netlify.toml</code> y los ajustes de construcción usarán `npm run build` automáticamente.</p>
             </div>
           </CardContent>
         </Card>
