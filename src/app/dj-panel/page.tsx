@@ -3,10 +3,9 @@
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, BookmarkPlus, Music, Briefcase, FileSignature, AlertTriangle, LoaderCircle } from 'lucide-react';
+import { LayoutDashboard, BookmarkPlus, Music, FileSignature, AlertTriangle, LoaderCircle } from 'lucide-react';
 import BookingGrid from '@/components/habbospeed/booking-grid';
 import SongRequests from '@/components/dj-panel/song-requests';
-import Openings from '@/components/dj-panel/openings';
 import EventProposal from '@/components/dj-panel/event-proposal';
 
 export default function DjPanelPage() {
@@ -43,10 +42,9 @@ export default function DjPanelPage() {
       </div>
 
       <Tabs defaultValue="booking" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
           <TabsTrigger value="booking"><BookmarkPlus className="mr-2" />Reservar</TabsTrigger>
           <TabsTrigger value="requests"><Music className="mr-2" />Peticiones</TabsTrigger>
-          <TabsTrigger value="openings"><Briefcase className="mr-2" />Vacantes</TabsTrigger>
           <TabsTrigger value="propose"><FileSignature className="mr-2" />Proponer Evento</TabsTrigger>
         </TabsList>
         <TabsContent value="booking">
@@ -62,9 +60,6 @@ export default function DjPanelPage() {
         </TabsContent>
         <TabsContent value="requests">
           <SongRequests />
-        </TabsContent>
-        <TabsContent value="openings">
-          <Openings />
         </TabsContent>
         <TabsContent value="propose">
           <EventProposal />
