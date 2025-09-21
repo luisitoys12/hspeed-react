@@ -170,5 +170,3 @@ export const firebaseConfig = &#123;
     </div>
   );
 }
-
-    
