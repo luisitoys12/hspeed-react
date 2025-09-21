@@ -45,6 +45,11 @@ interface AzuracastData {
   };
 }
 
+interface OnAirOverride {
+    currentDj: string;
+    nextDj: string;
+}
+
 interface RadioConfig {
     apiUrl: string;
     listenUrl: string;
@@ -55,51 +60,61 @@ const defaultDj = {
     habboName: 'estacionkusfm',
 };
 
-const getCurrentAndNextDjs = (schedule: ScheduleItem[], azuracastStreamer?: string) => {
-    // If a DJ is live on Azuracast, prioritize that
+const getDjs = (schedule: ScheduleItem[], onAirOverride?: OnAirOverride, azuracastData?: AzuracastData | null) => {
+    const azuracastStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : '';
+
+    let currentDj = { name: defaultDj.name, habboName: defaultDj.habboName };
+    let nextDj = { name: 'Por anunciar', habboName: 'estacionkusfm' };
+
+    // 1. Check for manual override from Firebase
+    if (onAirOverride?.currentDj) {
+        currentDj = { name: onAirOverride.currentDj, habboName: onAirOverride.currentDj };
+        if (onAirOverride.nextDj) {
+            nextDj = { name: onAirOverride.nextDj, habboName: onAirOverride.nextDj };
+        }
+        return { current: currentDj, next: nextDj };
+    }
+
+    // 2. Check Azuracast for a live DJ
     if (azuracastStreamer && azuracastStreamer.toLowerCase() !== 'autodj' && azuracastStreamer.trim() !== '') {
-        const liveDj = schedule.find(item => item.dj.toLowerCase() === azuracastStreamer.toLowerCase());
-        const current = liveDj ? { name: liveDj.dj, habboName: liveDj.dj } : { name: azuracastStreamer, habboName: azuracastStreamer };
+        currentDj = { name: azuracastStreamer, habboName: azuracastStreamer };
+        const now = new Date();
+        const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][now.getUTCDay()];
+        const currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
+        const todaySchedule = schedule
+            .filter(item => item.day === dayOfWeek)
+            .sort((a, b) => a.startTime.localeCompare(b.startTime));
         
-        // Simplified next DJ logic for when someone is live
-        return {
-            current: current,
-            next: { name: 'Por anunciar', habboName: 'estacionkusfm' } 
-        };
+        const nextShow = todaySchedule.find(item => item.startTime > currentTime);
+        if (nextShow) {
+             nextDj = { name: nextShow.dj, habboName: nextShow.dj };
+        }
+        return { current: currentDj, next: nextDj };
     }
     
-    // If no one is live, determine from schedule
+    // 3. Fallback to schedule if no override and no one is live on Azuracast
+    if (!schedule || schedule.length === 0) {
+        return { current: currentDj, next: nextDj };
+    }
+    
     const now = new Date();
     const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][now.getUTCDay()];
     const currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
-    
+
     const todaySchedule = schedule
         .filter(item => item.day === dayOfWeek)
         .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-    let currentDj = { ...defaultDj };
-    let nextDj = { name: 'Por anunciar', habboName: 'estacionkusfm' };
-
-    for (let i = 0; i < todaySchedule.length; i++) {
-        const item = todaySchedule[i];
-        const nextItem = todaySchedule[i + 1];
-
-        // Check for currently active show
-        if (currentTime >= item.startTime && currentTime <= item.endTime) {
-            currentDj = { name: item.dj, habboName: item.dj };
-            if (nextItem) {
-                nextDj = { name: nextItem.dj, habboName: nextItem.dj };
-            }
-            return { current: currentDj, next: nextDj };
-        }
-        
-        // Find the next upcoming show
-        if (currentTime < item.startTime) {
-            nextDj = { name: item.dj, habboName: item.dj };
-            return { current: currentDj, next: nextDj };
-        }
+    const currentShow = todaySchedule.find(item => currentTime >= item.startTime && currentTime <= item.endTime);
+    if(currentShow) {
+        currentDj = { name: currentShow.dj, habboName: currentShow.dj };
     }
 
+    const nextShow = todaySchedule.find(item => item.startTime > currentTime);
+    if (nextShow) {
+        nextDj = { name: nextShow.dj, habboName: nextShow.dj };
+    }
+    
     return { current: currentDj, next: nextDj };
 };
 
@@ -112,11 +127,12 @@ export default function FloatingPlayer() {
   const [radioConfig, setRadioConfig] = useState<RadioConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
+  const [onAirOverride, setOnAirOverride] = useState<OnAirOverride | undefined>(undefined);
   const [djs, setDjs] = useState({ current: defaultDj, next: { name: 'Por anunciar', habboName: 'estacionkusfm' } });
 
   useEffect(() => {
     const configRef = ref(db, 'config');
-    const unsubscribe = onValue(configRef, (snapshot) => {
+    const unsubscribeConfig = onValue(configRef, (snapshot) => {
         const data = snapshot.val();
         if (data && data.apiUrl && data.listenUrl) {
           setRadioConfig({
@@ -124,7 +140,6 @@ export default function FloatingPlayer() {
               listenUrl: data.listenUrl,
           });
         } else {
-            // Fallback default config if Firebase is empty
             setRadioConfig({
                 apiUrl: 'https://radio.kusmedios.lat/api/nowplaying/ekus-fm',
                 listenUrl: 'http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3'
@@ -139,9 +154,15 @@ export default function FloatingPlayer() {
         setSchedule(scheduleArray);
     });
 
+    const onAirRef = ref(db, 'onAir');
+    const unsubscribeOnAir = onValue(onAirRef, (snapshot) => {
+        setOnAirOverride(snapshot.val());
+    });
+
     return () => {
-        unsubscribe();
+        unsubscribeConfig();
         unsubscribeSchedule();
+        unsubscribeOnAir();
     };
   }, []);
 
@@ -165,26 +186,17 @@ export default function FloatingPlayer() {
       }
     };
     
-    fetchData();
-    const interval = setInterval(fetchData, 15000); 
-    return () => clearInterval(interval);
+    if (radioConfig) {
+      fetchData();
+      const interval = setInterval(fetchData, 15000); 
+      return () => clearInterval(interval);
+    }
   }, [radioConfig]);
 
   useEffect(() => {
-    if (schedule.length > 0) {
-       const liveStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : undefined;
-       const calculatedDjs = getCurrentAndNextDjs(schedule, liveStreamer);
-       setDjs(calculatedDjs);
-    } else {
-      // If schedule is empty, just use streamer name if available
-      const liveStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : undefined;
-      if (liveStreamer && liveStreamer.toLowerCase() !== 'autodj' && liveStreamer.trim() !== '') {
-        setDjs(prev => ({...prev, current: { name: liveStreamer, habboName: liveStreamer }}));
-      } else {
-        setDjs(prev => ({...prev, current: defaultDj}));
-      }
-    }
-  }, [schedule, azuracastData]);
+    const calculatedDjs = getDjs(schedule, onAirOverride, azuracastData);
+    setDjs(calculatedDjs);
+  }, [schedule, onAirOverride, azuracastData]);
 
   useEffect(() => {
     if (audioRef.current) {

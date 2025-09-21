@@ -1,10 +1,36 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DoorOpen } from 'lucide-react';
 import Image from 'next/image';
-import { getActiveRooms } from '@/lib/data';
+import { db } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
+import { useEffect, useState } from 'react';
+import { Skeleton } from '../ui/skeleton';
 
-export default async function ActiveRooms() {
-  const rooms = await getActiveRooms();
+type Room = {
+  id: string;
+  name: string;
+  owner: string;
+  imageUrl: string;
+};
+
+export default function ActiveRooms() {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const roomsRef = ref(db, 'featuredRooms');
+    const unsubscribe = onValue(roomsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const roomsArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        setRooms(roomsArray);
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   return (
     <Card>
@@ -15,7 +41,11 @@ export default async function ActiveRooms() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {rooms && rooms.length > 0 ? (
+        {loading ? (
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="aspect-[4/3] w-full" />)}
+          </div>
+        ) : rooms && rooms.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {rooms.map(room => (
               <div key={room.id} className="relative rounded-lg overflow-hidden group">
@@ -35,9 +65,9 @@ export default async function ActiveRooms() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center">No se pudieron cargar las salas destacadas.</p>
+          <p className="text-sm text-muted-foreground text-center">No hay salas destacadas en este momento.</p>
         )}
-        <p className="text-xs text-muted-foreground mt-4 text-center">Salas obtenidas de la API de Habbo (usuario: official_rooms).</p>
+        <p className="text-xs text-muted-foreground mt-4 text-center">Salas gestionadas desde el panel de administración.</p>
       </CardContent>
     </Card>
   );

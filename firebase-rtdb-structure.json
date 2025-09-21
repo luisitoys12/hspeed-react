@@ -76,6 +76,23 @@
       "timestamp": 1672531200000
     }
   },
+  "featuredRooms": {
+    "room1": {
+      "name": "Recibidor",
+      "owner": "official_rooms",
+      "imageUrl": "https://www.habbo.com/habbo-imaging/room/1/thumbnail.png"
+    },
+    "room2": {
+      "name": "Club NX",
+      "owner": "official_rooms",
+      "imageUrl": "https://www.habbo.com/habbo-imaging/room/3/thumbnail.png"
+    },
+    "room3": {
+      "name": "Teatro",
+      "owner": "official_rooms",
+      "imageUrl": "https://www.habbo.com/habbo-imaging/room/2/thumbnail.png"
+    }
+  },
   "news": {
     "noticia1": {
       "category": "EVENTO",
@@ -95,6 +112,10 @@
       "summary": "Una guía completa para principiantes sobre cómo usar los bloques Wired para crear juegos y salas automáticas.",
       "title": "Guía de Wired: Automatiza tus Salas como un Profesional"
     }
+  },
+  "onAir": {
+    "currentDj": "DJ-Pixel",
+    "nextDj": "DJ-Frank"
   },
   "schedule": {
     "horario1": {

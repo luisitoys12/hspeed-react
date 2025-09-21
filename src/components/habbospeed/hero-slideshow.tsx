@@ -29,20 +29,7 @@ type Slide = {
   };
 };
 
-const defaultSlides = [
-  {
-    id: '1',
-    imageUrl: 'https://picsum.photos/seed/habboparty/1200/400',
-    imageHint: 'habbo party',
-    title: '¡Bienvenidos a Ekus FM!',
-    subtitle: 'La radio #1 para la comunidad de Habbo.es. Música, eventos y diversión 24/7.',
-    cta: {
-      text: 'Ver Horarios',
-      href: '/schedule',
-    }
-  },
-];
-
+const defaultSlides: Slide[] = [];
 
 export default function HeroSlideshow() {
   const [slides, setSlides] = useState<Slide[]>(defaultSlides);
@@ -55,6 +42,19 @@ export default function HeroSlideshow() {
       if (data) {
         const slidesArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
         setSlides(slidesArray);
+      } else {
+        // In case Firebase is empty, show a default placeholder slide
+        setSlides([{
+            id: '1',
+            imageUrl: 'https://picsum.photos/seed/habboparty/1200/400',
+            imageHint: 'habbo party',
+            title: '¡Bienvenidos a Ekus FM!',
+            subtitle: 'La radio #1 para la comunidad de Habbo.es. Música, eventos y diversión 24/7.',
+            cta: {
+              text: 'Ver Horarios',
+              href: '/schedule',
+            }
+          }]);
       }
       setLoading(false);
     });
@@ -75,7 +75,7 @@ export default function HeroSlideshow() {
         }),
       ]}
       opts={{
-        loop: true,
+        loop: slides.length > 1,
       }}
     >
       <CarouselContent className="rounded-lg overflow-hidden">
