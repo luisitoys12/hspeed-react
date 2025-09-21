@@ -8,6 +8,7 @@ import OnAirDjs from '@/components/habbospeed/on-air-djs';
 import WeeklyAwards from '@/components/habbospeed/weekly-awards';
 import Image from 'next/image';
 import LatestCampaigns from '@/components/habbospeed/latest-campaigns';
+import ActiveEvents from '@/components/habbospeed/active-events';
 
 function LoadingSkeleton() {
   return (
@@ -43,6 +44,9 @@ export default function Home() {
            <WeeklyAwards />
         </div>
       </main>
+      <div className="mt-8">
+        <ActiveEvents />
+      </div>
     </div>
   );
 }

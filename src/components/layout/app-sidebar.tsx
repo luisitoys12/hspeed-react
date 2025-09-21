@@ -27,6 +27,7 @@ import {
   Store,
   LogOut,
   BookmarkPlus,
+  HeartHandshake
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -42,6 +43,7 @@ const publicLinks = [
   { href: '/news', label: 'Noticias Habbo', icon: Newspaper },
   { href: '/team', label: 'Equipo', icon: Users },
   { href: '/marketplace', label: 'Mercado', icon: Store },
+  { href: '/community', label: 'Comunidad', icon: HeartHandshake },
   { href: '/contact', label: 'Contacto', icon: Mail },
 ];
 

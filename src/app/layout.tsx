@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/sidebar';
 import FloatingPlayer from '@/components/layout/floating-player';
 import { AuthProvider } from '@/hooks/use-auth';
+import Footer from '@/components/layout/footer';
 
 
 export const metadata: Metadata = {
@@ -35,8 +36,11 @@ export default function RootLayout({
                 <AppSidebar />
             </Sidebar>
             <SidebarInset>
-                <div className="pb-48 lg:pb-32">
-                {children}
+                <div className="flex flex-col min-h-screen">
+                    <main className="flex-grow pb-48 lg:pb-32">
+                        {children}
+                    </main>
+                    <Footer />
                 </div>
             </SidebarInset>
             </SidebarProvider>
