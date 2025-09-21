@@ -298,10 +298,10 @@ export default function FloatingPlayer() {
     <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
       <Card className="overflow-hidden shadow-2xl border-primary/20 backdrop-blur-sm bg-card/80">
         <audio ref={audioRef} src={radioConfig?.listenUrl || undefined} preload="none" />
-        <div className="p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] md:grid-cols-3 items-center gap-4">
+        <div className="p-2 md:p-3 grid grid-cols-[auto_1fr_auto] md:grid-cols-3 items-center gap-4">
           
           {/* Left Section: Song Info */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 col-span-1 md:col-span-1">
             {isLoading || !radioConfig ? (
               <>
                 <Skeleton className="h-12 w-12 rounded-md" />
@@ -322,7 +322,7 @@ export default function FloatingPlayer() {
           </div>
           
           {/* Center Section: Player Controls */}
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2 col-span-1 md:col-span-1">
             <Button variant="default" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading || !radioConfig}>
               {isPlaying ? <Pause className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" />}
             </Button>
@@ -330,29 +330,11 @@ export default function FloatingPlayer() {
               <Volume2 className="text-muted-foreground" />
               <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
             </div>
-             <Sheet>
-                <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="flex-shrink-0 h-10 w-10 md:hidden">
-                    <Music className="h-4 w-4" />
-                </Button>
-                </SheetTrigger>
-                <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>Pide una Canción</SheetTitle>
-                    <SheetDescription>
-                    ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
-                    </SheetDescription>
-                </SheetHeader>
-                <div className="py-4">
-                    <SongRequestForm />
-                </div>
-                </SheetContent>
-            </Sheet>
           </div>
 
           {/* Right Section: DJ, Listeners, Request */}
-          <div className="flex items-center justify-end gap-2 md:gap-4">
-             <div className="hidden md:flex items-center gap-4 bg-black/50 p-2 rounded-lg">
+          <div className="flex items-center justify-end gap-2 md:gap-4 col-span-1 md:col-span-1">
+             <div className="hidden lg:flex items-center gap-4 bg-black/50 p-2 rounded-lg">
                 <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
                         <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djs.current.habboName}&headonly=1&size=s`} alt={djs.current.name} />
@@ -363,33 +345,17 @@ export default function FloatingPlayer() {
                         <div className="text-xs text-muted-foreground">{djs.current.name}</div>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djs.next.habboName}&headonly=1&size=s`} alt={djs.next.name} />
-                        <AvatarFallback>{djs.next.name?.substring(0,2)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <div className="text-xs font-bold text-white/90">SIGUIENTE</div>
-                        <div className="text-xs text-muted-foreground">{djs.next.name}</div>
-                    </div>
-                </div>
             </div>
             <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
                 <Users className="text-primary h-5 w-5" />
                 <span className="font-bold text-white text-sm">{listeners}</span>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              className={cn("h-10 w-10 flex-shrink-0", notificationPermission === 'granted' && "text-green-500 border-green-500")}
-              onClick={handleNotificationClick}
-            >
-              <Bell className="h-4 w-4" />
-            </Button>
+            
             <Sheet>
                 <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="hidden md:inline-flex flex-shrink-0 h-10 w-10">
-                    <Music className="h-4 w-4" />
+                <Button variant="outline" size="sm" className="hidden md:flex">
+                    <Music className="h-4 w-4 mr-2" />
+                    Pide una canción
                 </Button>
                 </SheetTrigger>
                 <SheetContent>
@@ -410,5 +376,3 @@ export default function FloatingPlayer() {
     </div>
   );
 }
-
-    

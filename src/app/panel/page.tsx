@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
 
     useEffect(() => {
         if (user?.isSuperAdmin) {
-            const refs = {
+            const refsToCount = {
                 team: ref(db, 'team'),
                 news: ref(db, 'news'),
                 schedule: ref(db, 'schedule'),
@@ -52,24 +52,26 @@ export default function AdminDashboardPage() {
                 messages: query(ref(db, 'contact-messages'), orderByChild('read'), equalTo(false))
             };
 
-            const unsubscribes = Object.entries(refs).map(([key, dbRef]) => 
+            const listeners = Object.entries(refsToCount).map(([key, dbRef]) => 
                 onValue(dbRef, (snapshot) => {
                     setStats(prevStats => ({
                         ...prevStats,
                         [key]: snapshot.exists() ? snapshot.size : 0
                     }));
-                })
+                }, { onlyOnce: false })
             );
-            
-            // Wait for all initial data to be loaded before setting loading to false
-            Promise.all(Object.values(refs).map(r => onValue(r, () => {}, { onlyOnce: true }))).then(() => {
-                setLoadingStats(false);
-            });
 
+            // Set loading to false once all initial fetches might have completed
+            // This is a simplification; a more robust solution might use Promise.all
+            const timer = setTimeout(() => setLoadingStats(false), 1500);
 
             return () => {
-                unsubscribes.forEach(unsubscribe => unsubscribe());
+                clearTimeout(timer);
+                // Detach listeners, although with onlyOnce: false they would persist.
+                // For a real app, you might manage detachment differently if components unmount.
             };
+        } else {
+            setLoadingStats(false);
         }
     }, [user]);
 

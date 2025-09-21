@@ -56,7 +56,6 @@ const authLinks = [
 
 const adminLinks = [
   { href: '/panel', label: 'Panel Admin', icon: Shield },
-  { href: '/panel/events', label: 'Eventos', icon: PartyPopper },
   { href: '/docs', label: 'Documentación', icon: BookOpen },
 ]
 
