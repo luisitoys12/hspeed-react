@@ -1,6 +1,7 @@
 
 
 
+
 // In a real application, this data would come from the Habbo API.
 // We are simulating the API responses here.
 
@@ -115,6 +116,34 @@ export async function getHabboProfileData(username: string) {
         return { error: 'Ocurrió un error inesperado al buscar el perfil.' };
     }
 }
+
+export async function getActiveRooms() {
+    const username = 'official_rooms';
+    try {
+        const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${username}`, { next: { revalidate: 600 } });
+        if (!userResponse.ok) {
+            throw new Error('User not found');
+        }
+        const userData = await userResponse.json();
+
+        const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`, { next: { revalidate: 600 } });
+        if (!profileResponse.ok) {
+            throw new Error('Profile not found');
+        }
+        const profileData = await profileResponse.json();
+
+        return profileData.rooms.slice(0, 3).map((room: any) => ({
+            id: room.id,
+            name: room.name,
+            owner: username,
+            imageUrl: `https://www.habbo.com/habbo-imaging/room/${room.id}/thumbnail.png`,
+        }));
+    } catch (error) {
+        console.error("Failed to fetch active rooms:", error);
+        return [];
+    }
+}
+
 
 export async function getNewsArticles() {
     // In a real app, you would fetch this from Habbo's news API or RSS feed.
