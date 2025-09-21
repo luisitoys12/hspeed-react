@@ -56,7 +56,7 @@ const nextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'httpshttps',
+        protocol: 'https',
         hostname: 'habbo.es',
         pathname: '/**',
       }
