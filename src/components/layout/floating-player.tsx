@@ -154,51 +154,63 @@ export default function FloatingPlayer() {
                 )}
             </div>
             
-            <div className="flex items-center gap-4">
-                 <div className="hidden lg:flex items-center gap-3 bg-background/50 p-2 rounded-lg">
-                    <Avatar className="h-8 w-8">
+            <div className="hidden lg:flex items-center gap-4 justify-center">
+                 <div className="flex items-center gap-3 bg-background/50 p-2 rounded-lg text-center">
+                    <Avatar className="h-10 w-10">
                         <AvatarImage src={djAvatarUrl} alt={currentDjName} />
                         <AvatarFallback>{currentDjName.substring(0,2)}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <p className="text-xs text-muted-foreground">Al Aire:</p>
+                        <p className="text-xs text-muted-foreground">Al Aire</p>
                         <p className="font-bold text-sm text-primary">{currentDjName}</p>
                     </div>
                 </div>
+                 <div className="flex items-center gap-3 bg-background/50 p-2 rounded-lg text-center">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=Placeholder&direction=2&head_direction=3&size=s&gesture=sml`} alt={"Siguiente DJ"} />
+                        <AvatarFallback>??</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="text-xs text-muted-foreground">Siguiente</p>
+                        <p className="font-bold text-sm">Por anunciar</p>
+                    </div>
+                </div>
+            </div>
 
-                <div className="flex items-center justify-center gap-2 sm:gap-4">
-                    <Button variant="default" size="icon" className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading}>
-                        {isPlaying ? <Pause className="h-5 w-5 sm:h-6 sm:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-primary-foreground" />}
-                    </Button>
+            <div className="flex items-center gap-2 sm:gap-4">
+                <Button variant="default" size="icon" className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading}>
+                    {isPlaying ? <Pause className="h-5 w-5 sm:h-6 sm:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-primary-foreground" />}
+                </Button>
+
+                <div className="flex flex-col gap-2">
+                    <Sheet>
+                      <SheetTrigger asChild>
+                         <Button variant="outline" size="sm" className="hidden sm:flex">
+                            <Music className="mr-2 h-4 w-4" /> Petición
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent>
+                        <SheetHeader>
+                          <SheetTitle>Pide una Canción</SheetTitle>
+                          <SheetDescription>
+                            ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
+                          </SheetDescription>
+                        </SheetHeader>
+                        <div className="py-4">
+                            <SongRequestForm />
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+
+                    <div className="hidden sm:flex items-center gap-2 bg-black/50 p-2 rounded-lg">
+                        <Users className="text-primary h-5 w-5" />
+                        <span className="font-bold text-white">{listeners}</span>
+                    </div>
                 </div>
 
-                <Sheet>
-                  <SheetTrigger asChild>
-                     <Button variant="outline" className="hidden sm:flex">
-                        <Music className="mr-2 h-4 w-4" /> Pide una canción
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent>
-                    <SheetHeader>
-                      <SheetTitle>Pide una Canción</SheetTitle>
-                      <SheetDescription>
-                        ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
-                      </SheetDescription>
-                    </SheetHeader>
-                    <div className="py-4">
-                        <SongRequestForm />
-                    </div>
-                  </SheetContent>
-                </Sheet>
-
-                <div className="hidden md:flex items-center gap-2 w-full sm:w-32 lg:w-48">
+                <div className="hidden md:flex items-center gap-2 w-full sm:w-24 lg:w-32">
                     <Volume2 className="text-muted-foreground" />
                     <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
-                </div>
-
-                <div className="hidden sm:flex items-center gap-2 bg-black/50 p-2 rounded-lg">
-                    <Users className="text-primary h-5 w-5" />
-                    <span className="font-bold text-white">{listeners}</span>
                 </div>
             </div>
 
