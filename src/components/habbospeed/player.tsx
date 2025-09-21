@@ -49,8 +49,7 @@ export default function Player() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // La URL base es http, no https
-        const response = await fetch('http://radio.kusmedios.lat/api/nowplaying/ekus-fm');
+        const response = await fetch('https://radio.kusmedios.lat/api/nowplaying/ekus-fm');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
