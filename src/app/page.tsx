@@ -3,6 +3,18 @@ import HabboProfile from '@/components/habbospeed/habbo-profile';
 import HeroSlideshow from '@/components/habbospeed/hero-slideshow';
 import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
+import { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function HabboProfileSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-[120px] w-full" />
+      <Skeleton className="h-[80px] w-full" />
+      <Skeleton className="h-[200px] w-full" />
+    </div>
+  )
+}
 
 export default function Home() {
   return (
@@ -16,7 +28,9 @@ export default function Home() {
             <ActiveRooms />
           </div>
           <div className="lg:col-span-1 space-y-8">
-            <HabboProfile />
+             <Suspense fallback={<HabboProfileSkeleton />}>
+                <HabboProfile />
+             </Suspense>
           </div>
         </main>
       </div>

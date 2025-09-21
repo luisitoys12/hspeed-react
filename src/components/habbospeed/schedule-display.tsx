@@ -6,7 +6,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { schedule as mockSchedule } from '@/lib/data';
 
 type ScheduleItem = {
     day: string;
@@ -16,10 +15,10 @@ type ScheduleItem = {
 }
 
 type ScheduleDisplayProps = {
-    schedule?: ScheduleItem[];
+    schedule: ScheduleItem[];
 }
 
-export default function ScheduleDisplay({ schedule = mockSchedule }: ScheduleDisplayProps) {
+export default function ScheduleDisplay({ schedule }: ScheduleDisplayProps) {
   return (
     <div className="border rounded-lg">
         <Table>

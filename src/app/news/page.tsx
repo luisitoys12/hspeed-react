@@ -1,8 +1,10 @@
 import { Newspaper } from 'lucide-react';
-import { newsArticles } from '@/lib/data';
+import { getNewsArticles } from '@/lib/data';
 import NewsCard from '@/components/habbospeed/news-card';
 
-export default function NewsPage() {
+export default async function NewsPage() {
+  const newsArticles = await getNewsArticles();
+  
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="mb-8">
@@ -19,6 +21,7 @@ export default function NewsPage() {
           <NewsCard key={article.id} article={article} />
         ))}
       </div>
+       <p className="text-xs text-muted-foreground mt-4 text-center">Datos de noticias simulados. Se requiere API para datos en vivo.</p>
     </div>
   );
 }

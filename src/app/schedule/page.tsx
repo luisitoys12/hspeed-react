@@ -7,11 +7,10 @@ import {
 } from '@/components/ui/card';
 import { Calendar } from 'lucide-react';
 import ScheduleDisplay from '@/components/habbospeed/schedule-display';
+import { getSchedule } from '@/lib/data';
 
-export default function SchedulePage() {
-  // En una aplicación real, obtendrías los datos del horario aquí
-  // y los pasarías como prop a ScheduleDisplay.
-  // Para este ejemplo, usa datos de ejemplo por defecto.
+export default async function SchedulePage() {
+  const scheduleData = await getSchedule();
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -26,7 +25,7 @@ export default function SchedulePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ScheduleDisplay />
+          <ScheduleDisplay schedule={scheduleData} />
         </CardContent>
       </Card>
     </div>

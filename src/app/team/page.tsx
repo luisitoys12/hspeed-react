@@ -1,8 +1,9 @@
 import { Users } from 'lucide-react';
-import { teamMembers } from '@/lib/data';
+import { getTeamMembers } from '@/lib/data';
 import TeamMemberCard from '@/components/habbospeed/team-member-card';
 
-export default function TeamPage() {
+export default async function TeamPage() {
+  const teamMembers = await getTeamMembers();
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="mb-8">

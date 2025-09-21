@@ -7,9 +7,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { newsArticles } from '@/lib/data';
+import { getNewsArticles } from '@/lib/data';
 
-export default function HeroSlideshow() {
+export default async function HeroSlideshow() {
+  const newsArticles = await getNewsArticles();
+  
   return (
     <div className="w-full">
       <Carousel

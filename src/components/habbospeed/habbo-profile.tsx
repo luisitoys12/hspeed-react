@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { habboProfile } from '@/lib/data';
+import { getHabboProfileData } from '@/lib/data';
 import { Calendar, Award, Home } from 'lucide-react';
 import {
   Carousel,
@@ -12,7 +12,11 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 
-export default function HabboProfile() {
+const HABBO_USERNAME = 'hspeed'; // You can make this dynamic later
+
+export default async function HabboProfile() {
+  const habboProfile = await getHabboProfileData(HABBO_USERNAME);
+  
   return (
     <Card className="h-full">
       <CardHeader>
@@ -77,6 +81,7 @@ export default function HabboProfile() {
               <CarouselNext className="hidden sm:flex" />
             </Carousel>
         </div>
+        <p className="text-xs text-muted-foreground text-center">Datos de Habbo simulados. Se requiere API para datos en vivo.</p>
       </CardContent>
     </Card>
   );
