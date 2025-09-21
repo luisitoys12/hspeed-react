@@ -4,7 +4,7 @@
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Volume2, Users, Music } from 'lucide-react';
+import { Play, Pause, Volume2, Users, Music, Bell } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
@@ -21,6 +21,8 @@ import SongRequestForm from '../habbospeed/song-request-form';
 import { db } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
 import { ScheduleItem } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 
 // Estructura de datos de Azuracast
@@ -129,6 +131,56 @@ export default function FloatingPlayer() {
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
   const [onAirOverride, setOnAirOverride] = useState<OnAirOverride | undefined>(undefined);
   const [djs, setDjs] = useState({ current: defaultDj, next: { name: 'Por anunciar', habboName: 'estacionkusfm' } });
+  
+  const [notificationPermission, setNotificationPermission] = useState('default');
+  const { toast } = useToast();
+  const lastNotifiedDj = useRef<string | null>(null);
+
+  useEffect(() => {
+    if ("Notification" in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
+  const handleNotificationClick = () => {
+    if (!("Notification" in window)) {
+      toast({ variant: 'destructive', title: 'Navegador no compatible', description: 'Tu navegador no soporta notificaciones.' });
+      return;
+    }
+    if (notificationPermission === 'granted') {
+      toast({ title: 'Notificaciones ya activadas' });
+      return;
+    }
+    if (notificationPermission === 'denied') {
+      toast({ variant: 'destructive', title: 'Notificaciones bloqueadas', description: 'Debes permitir las notificaciones en la configuración de tu navegador.' });
+      return;
+    }
+    Notification.requestPermission().then(permission => {
+      setNotificationPermission(permission);
+      if (permission === 'granted') {
+        toast({ title: '¡Notificaciones activadas!', description: 'Te avisaremos cuando un DJ se conecte.' });
+        new Notification("Ekus FM", {
+            body: "¡Gracias por activar las notificaciones!",
+            icon: '/favicon.ico'
+        });
+      }
+    });
+  };
+
+  useEffect(() => {
+    const calculatedDjs = getDjs(schedule, onAirOverride, azuracastData);
+    if (djs.current.name !== calculatedDjs.current.name) {
+      setDjs(calculatedDjs);
+      if (notificationPermission === 'granted' && calculatedDjs.current.name !== 'AutoDJ' && calculatedDjs.current.name !== lastNotifiedDj.current) {
+        new Notification("¡DJ en Vivo!", {
+          body: `${calculatedDjs.current.name} está ahora en directo. ¡No te lo pierdas!`,
+          icon: `https://www.habbo.es/habbo-imaging/avatarimage?user=${calculatedDjs.current.habboName}&headonly=1&size=l`,
+          badge: `https://www.habbo.es/habbo-imaging/avatarimage?user=${calculatedDjs.current.habboName}&headonly=1&size=s`,
+        });
+        lastNotifiedDj.current = calculatedDjs.current.name;
+      }
+    }
+  }, [schedule, onAirOverride, azuracastData, notificationPermission, djs.current.name]);
 
   useEffect(() => {
     const configRef = ref(db, 'config');
@@ -192,11 +244,6 @@ export default function FloatingPlayer() {
       return () => clearInterval(interval);
     }
   }, [radioConfig]);
-
-  useEffect(() => {
-    const calculatedDjs = getDjs(schedule, onAirOverride, azuracastData);
-    setDjs(calculatedDjs);
-  }, [schedule, onAirOverride, azuracastData]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -331,6 +378,14 @@ export default function FloatingPlayer() {
                 <Users className="text-primary h-5 w-5" />
                 <span className="font-bold text-white text-sm">{listeners}</span>
             </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className={cn("h-10 w-10 flex-shrink-0", notificationPermission === 'granted' && "text-green-500 border-green-500")}
+              onClick={handleNotificationClick}
+            >
+              <Bell className="h-4 w-4" />
+            </Button>
             <Sheet>
                 <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="hidden md:inline-flex flex-shrink-0 h-10 w-10">
@@ -355,3 +410,5 @@ export default function FloatingPlayer() {
     </div>
   );
 }
+
+    

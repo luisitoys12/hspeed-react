@@ -38,6 +38,30 @@ const configSchema = z.object({
 
 type ConfigFormValues = z.infer<typeof configSchema>;
 
+const demoSlides = [
+    { 
+      title: '¡Bienvenidos a Ekus FM!', 
+      subtitle: 'La radio #1 para la comunidad de Habbo.es. Música, eventos y diversión 24/7.', 
+      imageUrl: 'https://picsum.photos/seed/habboparty/1200/400',
+      imageHint: 'habbo party',
+      cta: { text: 'Ver Horarios', href: '/schedule' }
+    },
+    { 
+      title: 'Gestiona el Contenido', 
+      subtitle: 'Este carrusel se gestiona desde el Panel de Administración en la sección de Ajustes.', 
+      imageUrl: 'https://picsum.photos/seed/adminpanel/1200/400',
+      imageHint: 'dashboard analytics',
+      cta: { text: 'Ir al Panel', href: '/panel' }
+    },
+    { 
+      title: 'Únete a Nuestro Equipo', 
+      subtitle: '¿Te apasiona la radio y Habbo? ¡Estamos buscando nuevos talentos para unirse al equipo!', 
+      imageUrl: 'https://picsum.photos/seed/jointeam/1200/400',
+      imageHint: 'job interview',
+      cta: { text: 'Postular Ahora', href: '/join-us' }
+    }
+];
+
 export default function ConfigPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -55,7 +79,7 @@ export default function ConfigPage() {
     defaultValues,
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
     name: "slideshow",
   });
@@ -66,17 +90,29 @@ export default function ConfigPage() {
       const unsubscribe = onValue(configRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          // Convert slideshow object back to array for the form
           const slideshowArray = data.slideshow 
             ? Array.isArray(data.slideshow)
-              ? data.slideshow.filter(Boolean) // Handle sparse arrays from Firebase
+              ? data.slideshow.filter(Boolean)
               : Object.keys(data.slideshow).map(key => data.slideshow[key])
             : [];
+          
           form.reset({
             apiUrl: data.apiUrl || "",
             listenUrl: data.listenUrl || "",
-            slideshow: slideshowArray
+            slideshow: slideshowArray.length > 0 ? slideshowArray : demoSlides
           });
+          
+          if(slideshowArray.length === 0){
+             replace(demoSlides);
+          }
+
+        } else {
+            // If no data in DB, set demo slides
+            form.reset({
+                ...defaultValues,
+                slideshow: demoSlides,
+            })
+            replace(demoSlides);
         }
         setDbLoading(false);
       }, (error) => {
@@ -85,7 +121,7 @@ export default function ConfigPage() {
       });
       return () => unsubscribe();
     }
-  }, [form, defaultValues]);
+  }, [form, defaultValues, replace]);
 
   async function onSubmit(values: ConfigFormValues) {
     if (!user) {
@@ -95,7 +131,6 @@ export default function ConfigPage() {
 
     setIsSubmitting(true);
     try {
-      // Keep slideshow as an array for Firebase
       const dataToSave = {
         ...values,
       };
@@ -262,3 +297,5 @@ const ConfigSkeleton = () => (
     </div>
   </div>
 );
+
+    
