@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
       },
       {
         hostname: 'radio.kusmedios.lat',
-      }
+      },
     ],
   },
 };
