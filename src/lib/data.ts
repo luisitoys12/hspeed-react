@@ -1,8 +1,3 @@
-
-
-
-
-
 // In a real application, this data would come from the Habbo API.
 // We are simulating the API responses here.
 
@@ -186,4 +181,53 @@ export async function getNewsArticles() {
             date: '2024-07-12',
         }
     ]);
+}
+
+export async function getLeaderboardData() {
+  const usersToFetch = teamConfig.map(member => member.name);
+  
+  const userPromises = usersToFetch.map(async (name) => {
+    try {
+      const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${name}`);
+      if (!userResponse.ok) return null;
+      const userData = await userResponse.json();
+      
+      const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`);
+      if (!profileResponse.ok) return null;
+      const profileData = await profileResponse.json();
+
+      return {
+        name: userData.name,
+        achievementScore: profileData.achievementScore,
+      };
+    } catch (error) {
+      console.error(`Failed to fetch leaderboard data for ${name}:`, error);
+      return null;
+    }
+  });
+
+  const users = (await Promise.all(userPromises)).filter(Boolean);
+  
+  // Sort users by achievement score in descending order
+  return users.sort((a, b) => b.achievementScore - a.achievementScore);
+}
+
+export async function getMarketplaceMockData() {
+  return Promise.resolve({
+    popularItems: [
+      { id: '1', name: 'Trono de Dragón', category: 'Raro', imageUrl: 'https://images.habbo.com/dcr/hof_furni/throne/throne.gif' },
+      { id: '2', name: 'Sofá HC', category: 'HC', imageUrl: 'https://files.habboemotion.com/resources/images/furni/club_sofa.gif' },
+      { id: '3', name: 'Ventilador Ocre', category: 'Raro', imageUrl: 'https://habbo.es/images/catalogue/icon_38.png' },
+      { id: '4', name: 'Heladera Roja', category: 'Raro', imageUrl: 'https://habbo.es/images/catalogue/icon_14.png' },
+      { id: '5', name: 'Almohadón', category: 'Común', imageUrl: 'https://images.habbo.com/c_images/catalogue/nets_petpillow_blu.gif'},
+      { id: '6', name: 'Pato de Goma', category: 'Común', imageUrl: 'https://images.habbo.com/c_images/catalogue/nets_duck.gif' },
+      { id: '7', name: 'Planta Monstruosa', category: 'Evento', imageUrl: 'https://images.habbo.com/c_images/catalogue/rare_monsterplant.gif' },
+      { id: '8', name: 'Lámpara de Ámbar', category: 'Raro', imageUrl: 'https://habbo.es/images/catalogue/icon_31.png' },
+    ],
+    priceTrends: [
+        { name: 'Créditos', price: '1.00 €', change: '+0.0%', imageUrl: 'https://images.habbo.com/c_images/catalogue/icon_7.png'},
+        { name: 'Lingote de Oro', price: '50c', change: '+1.2%', imageUrl: 'https://images.habbo.com/c_images/catalogue/icon_121.png'},
+        { name: 'Saco de Monedas', price: '20c', change: '-0.5%', imageUrl: 'https://images.habbo.com/c_images/catalogue/nets_purse.gif'},
+    ],
+  });
 }

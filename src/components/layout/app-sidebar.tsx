@@ -24,6 +24,7 @@ import {
   Settings,
   LogIn,
   UserPlus,
+  Store,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -35,6 +36,7 @@ const publicLinks = [
   { href: '/schedule', label: 'Horarios', icon: Calendar },
   { href: '/news', label: 'Noticias Habbo', icon: Newspaper },
   { href: '/team', label: 'Equipo', icon: Users },
+  { href: '/marketplace', label: 'Mercado', icon: Store },
   { href: '/contact', label: 'Contacto', icon: Mail },
 ];
 

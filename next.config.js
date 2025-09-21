@@ -54,6 +54,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'files.habboemotion.com',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'habbo.es',
+        pathname: '/**',
       }
     ],
   },
