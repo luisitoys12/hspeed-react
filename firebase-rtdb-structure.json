@@ -1,0 +1,109 @@
+
+{
+  "config": {
+    "apiUrl": "https://radio.kusmedios.lat/api/nowplaying/ekus-fm",
+    "listenUrl": "http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3",
+    "slideshow": {
+      "slide1": {
+        "cta": {
+          "href": "/schedule",
+          "text": "Ver Horarios"
+        },
+        "imageHint": "habbo party",
+        "imageUrl": "https://picsum.photos/seed/habboparty/1200/400",
+        "subtitle": "La radio #1 para la comunidad de Habbo.es. Música, eventos y diversión 24/7.",
+        "title": "¡Bienvenidos a Ekus FM!"
+      },
+      "slide2": {
+        "cta": {
+          "href": "/team",
+          "text": "Conoce al Equipo"
+        },
+        "imageHint": "dj console",
+        "imageUrl": "https://picsum.photos/seed/habbodjs/1200/400",
+        "subtitle": "Conoce a los locutores y al staff que hacen posible tu radio favorita.",
+        "title": "Un Equipo Apasionado"
+      },
+      "slide3": {
+        "cta": {
+          "href": "/news",
+          "text": "Leer Noticias"
+        },
+        "imageHint": "retro room",
+        "imageUrl": "https://picsum.photos/seed/habbonews/1200/400",
+        "subtitle": "No te pierdas las últimas novedades, guías y eventos de la comunidad.",
+        "title": "Campañas y Eventos"
+      }
+    }
+  },
+  "contact-messages": {
+    "initial": {
+      "email": "ejemplo@ekusfm.com",
+      "message": "Este es un mensaje de prueba.",
+      "name": "Usuario de Prueba",
+      "read": false,
+      "timestamp": 1672531200000
+    }
+  },
+  "news": {
+    "-Nqg_...": {
+      "category": "EVENTO",
+      "content": "¡El verano ha llegado a Habbo y con él una nueva oleada de furnis playeros! No te pierdas la nueva colección que incluye desde tablas de surf hasta castillos de arena. Además, cada día habrá juegos y eventos especiales en la playa del hotel. ¡Participa para ganar placas exclusivas!",
+      "date": "2024-07-15",
+      "imageHint": "habbo beach",
+      "imageUrl": "https://picsum.photos/seed/summerhabbo/600/400",
+      "summary": "Descubre los nuevos furnis de verano y participa en los eventos playeros para ganar premios.",
+      "title": "¡Sol, Arena y Pixeles! Llega el Evento de Verano"
+    },
+    "-Nqg_..._1": {
+      "category": "GUÍA",
+      "content": "El Wired es una herramienta poderosa pero a veces complicada. En esta guía te enseñaremos los conceptos básicos para empezar a automatizar tus salas. Aprenderás a usar los Activadores, Efectos y Condiciones más comunes para crear juegos y sistemas automáticos. ¡Convierte tus salas en una obra de arte interactiva!",
+      "date": "2024-07-14",
+      "imageHint": "habbo wired",
+      "imageUrl": "https://picsum.photos/seed/wiredguide/600/400",
+      "summary": "Una guía completa para principiantes sobre cómo usar los bloques Wired para crear juegos y salas automáticas.",
+      "title": "Guía de Wired: Automatiza tus Salas como un Profesional"
+    }
+  },
+  "schedule": {
+    "-Nqg_...": {
+      "day": "Lunes",
+      "dj": "DJ-Pixel",
+      "endTime": "16:00",
+      "show": "Tardes de Pop",
+      "startTime": "14:00"
+    },
+    "-Nqg_..._1": {
+      "day": "Miércoles",
+      "dj": "DJ-Frank",
+      "endTime": "22:00",
+      "show": "Noches de Rock",
+      "startTime": "20:00"
+    },
+    "-Nqg_..._2": {
+      "day": "Viernes",
+      "dj": "DJ-Pixel",
+      "endTime": "19:00",
+      "show": "Hits del Viernes",
+      "startTime": "17:00"
+    }
+  },
+  "team": {
+    "estacionkusfm": {
+      "roles": [
+        "Administrador"
+      ]
+    },
+    "DJ-Pixel": {
+      "roles": [
+        "DJ"
+      ]
+    },
+    "DJ-Frank": {
+      "roles": [
+        "Coordinador",
+        "DJ"
+      ]
+    }
+  }
+}
