@@ -8,7 +8,7 @@ export default async function NewsPage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="flex items-center gap-3 text-3xl md:text-4xl font-headline font-bold">
+        <h1 className="flex items-center gap-3 text-2xl md:text-4xl font-headline font-bold">
           <Newspaper className="h-8 w-8 text-primary" />
           Noticias y Guías de Habbo
         </h1>

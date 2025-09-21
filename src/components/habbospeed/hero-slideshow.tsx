@@ -25,7 +25,7 @@ export default async function HeroSlideshow() {
             <CarouselItem key={article.id}>
               <div className="p-1">
                 <Card className="overflow-hidden">
-                  <CardContent className="flex aspect-video items-center justify-center p-0 relative">
+                  <CardContent className="flex aspect-[2.5/1] items-center justify-center p-0 relative">
                     <Image 
                       src={article.imageUrl} 
                       alt={article.title} 
@@ -34,9 +34,9 @@ export default async function HeroSlideshow() {
                       data-ai-hint={article.imageHint}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-0 left-0 p-6 md:p-8">
-                      <h2 className="text-2xl md:text-4xl font-headline font-bold text-white shadow-lg">{article.title}</h2>
-                      <p className="text-sm md:text-lg text-white/90 mt-2 max-w-prose shadow-md">{article.summary}</p>
+                    <div className="absolute bottom-0 left-0 p-4 md:p-8">
+                      <h2 className="text-xl md:text-3xl font-headline font-bold text-white shadow-lg">{article.title}</h2>
+                      <p className="text-sm md:text-base text-white/90 mt-2 max-w-prose shadow-md hidden sm:block">{article.summary}</p>
                     </div>
                   </CardContent>
                 </Card>

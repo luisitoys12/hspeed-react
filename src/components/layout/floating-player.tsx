@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import Image from 'next/image';
@@ -135,13 +133,12 @@ export default function FloatingPlayer() {
         <audio ref={audioRef} src={listenUrl} preload="none" />
         <CardContent className="p-3 sm:p-4 flex items-center justify-between gap-4">
             
-            {/* Song Info (Left) */}
-            <div className="flex items-center gap-4 flex-1 min-w-0 w-1/3">
+            <div className="flex items-center gap-4 flex-1 min-w-0 md:w-1/3">
                 {isLoading ? (
                     <>
                         <Skeleton className="h-14 w-14 rounded-md" />
                         <div className="flex-grow space-y-2">
-                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-4 w-32" />
                             <Skeleton className="h-4 w-24" />
                         </div>
                     </>
@@ -156,60 +153,24 @@ export default function FloatingPlayer() {
                 )}
             </div>
             
-            {/* Player Controls (Center) */}
-            <div className="flex items-center gap-4 justify-center flex-shrink-0">
-                <Button variant="default" size="icon" className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading}>
-                    {isPlaying ? <Pause className="h-6 w-6 fill-primary-foreground" /> : <Play className="h-6 w-6 fill-primary-foreground" />}
+            <div className="flex items-center gap-2 sm:gap-4 justify-center">
+                <Button variant="default" size="icon" className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading}>
+                    {isPlaying ? <Pause className="h-5 w-5 sm:h-6 sm:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-primary-foreground" />}
                 </Button>
-                <div className="hidden lg:flex items-center gap-2 w-32">
+            </div>
+
+            <div className="flex items-center justify-end gap-2 md:gap-4 flex-1 md:w-1/3">
+                 <div className="hidden lg:flex items-center gap-2 w-24">
                     <Volume2 className="text-muted-foreground" />
                     <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
                 </div>
-            </div>
-
-            {/* DJ Info & Actions (Right) */}
-            <div className="hidden md:flex items-center justify-end gap-4 flex-1 w-1/3">
-                 <div className="flex items-center gap-3 bg-background/50 p-2 rounded-lg text-center">
-                    <Avatar className="h-10 w-10">
-                        <AvatarImage src={djAvatarUrl} alt={currentDjName} />
-                        <AvatarFallback>{currentDjName.substring(0,2)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <p className="text-xs text-muted-foreground">Al Aire</p>
-                        <p className="font-bold text-sm text-primary">{currentDjName}</p>
-                    </div>
+                <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
+                    <Users className="text-primary h-5 w-5" />
+                    <span className="font-bold text-white text-sm">{listeners}</span>
                 </div>
-                 <div className="flex flex-col gap-2 items-center">
-                     <Sheet>
-                      <SheetTrigger asChild>
-                         <Button variant="outline" size="sm" className="w-full">
-                            <Music className="mr-2 h-4 w-4" /> Petición
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent>
-                        <SheetHeader>
-                          <SheetTitle>Pide una Canción</SheetTitle>
-                          <SheetDescription>
-                            ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
-                          </SheetDescription>
-                        </SheetHeader>
-                        <div className="py-4">
-                            <SongRequestForm />
-                        </div>
-                      </SheetContent>
-                    </Sheet>
-                    <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg w-full justify-center">
-                        <Users className="text-primary h-5 w-5" />
-                        <span className="font-bold text-white">{listeners}</span>
-                    </div>
-                 </div>
-            </div>
-
-            {/* Mobile-only listener count and song request */}
-            <div className="flex md:hidden items-center gap-2">
                  <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant="outline" size="icon" className="flex-shrink-0">
+                        <Button variant="outline" size="icon" className="flex-shrink-0 h-10 w-10">
                             <Music className="h-4 w-4" />
                         </Button>
                     </SheetTrigger>
@@ -225,10 +186,6 @@ export default function FloatingPlayer() {
                     </div>
                     </SheetContent>
                 </Sheet>
-                <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
-                    <Users className="text-primary h-5 w-5" />
-                    <span className="font-bold text-white text-sm">{listeners}</span>
-                </div>
             </div>
 
         </CardContent>

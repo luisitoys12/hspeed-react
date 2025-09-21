@@ -60,7 +60,7 @@ export default function SongRequestForm() {
           name="songRequest"
           placeholder="Escribe el título de la canción y el artista"
           required
-          className="text-base flex-grow"
+          className="flex-grow"
         />
         <SubmitButton />
       </div>
