@@ -5,22 +5,22 @@ import Image from "next/image";
 const awards = [
   { 
     title: 'Mejor DJ', 
-    user: 'PixelMaster', 
-    avatar: 'https://www.habbo.es/habbo-imaging/avatarimage?user=PixelMaster&direction=2&head_direction=3&gesture=sml&size=m',
+    user: 'Sin entregar', 
+    avatar: 'https://files.habboemotion.com/resources/images/figures/natasha_bedingfiel.gif',
     icon: Mic,
     reason: 'Por su increíble set de Pop Pixelado el Lunes.'
   },
   { 
     title: 'Mejor Oyente', 
-    user: 'Fanatico123', 
-    avatar: 'https://www.habbo.es/habbo-imaging/avatarimage?user=Fanatico123&direction=2&head_direction=3&gesture=sml&size=m',
+    user: 'Sin entregar', 
+    avatar: 'https://files.habboemotion.com/resources/images/figures/natasha_bedingfiel.gif',
     icon: Headphones,
     reason: '¡Por participar y pedir las mejores canciones toda la semana!'
   },
   { 
     title: 'Mejor Guía', 
-    user: 'ConstructorPro', 
-    avatar: 'https://www.habbo.es/habbo-imaging/avatarimage?user=ConstructorPro&direction=2&head_direction=3&gesture=sml&size=m',
+    user: 'Sin entregar', 
+    avatar: 'https://files.habboemotion.com/resources/images/figures/natasha_bedingfiel.gif',
     icon: BookOpen,
     reason: 'Por su detallada guía sobre "Wobble Squabble".'
   },
@@ -40,7 +40,7 @@ export default function WeeklyAwards() {
         {awards.map((award) => (
           <div key={award.title} className="flex items-start gap-4 p-3 bg-muted/50 rounded-lg">
             <div className="flex-shrink-0">
-               <Image src={award.avatar} alt={award.user} width={40} height={40} className="rounded-full" />
+               <Image src={award.avatar} alt={award.user} width={40} height={60} className="rounded-full" unoptimized />
             </div>
             <div className="min-w-0">
                 <p className="text-sm font-bold truncate flex items-center gap-1.5">
