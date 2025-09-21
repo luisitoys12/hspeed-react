@@ -7,10 +7,10 @@ export default function AdminPage() {
       <div className="mb-8">
         <h1 className="flex items-center gap-3 text-3xl md:text-4xl font-headline font-bold">
           <Shield className="h-8 w-8 text-primary" />
-          Admin Panel
+          Panel de Administración
         </h1>
         <p className="text-muted-foreground mt-2">
-            Manage your Habbospeed station and profile settings.
+            Gestiona tu estación Ekus FM y la configuración de perfiles.
         </p>
       </div>
 
@@ -18,54 +18,54 @@ export default function AdminPage() {
         <Card className="hover:border-primary transition-colors">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline">
-              <Users /> User Management
+              <Users /> Gestión de Usuarios
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              View and manage registered users and their roles.
+              Ver y gestionar usuarios registrados y sus roles.
             </p>
           </CardContent>
         </Card>
         <Card className="hover:border-primary transition-colors">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline">
-              <BarChart /> Station Analytics
+              <BarChart /> Analíticas
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Track listener statistics and song request trends.
+              Rastrea estadísticas de oyentes y tendencias de canciones.
             </p>
           </CardContent>
         </Card>
          <Card className="hover:border-primary transition-colors">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline">
-              <Settings /> Content Management
+              <Settings /> Gestión de Contenido
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Update schedules, news articles, and other content.
+              Actualiza horarios, noticias y otro contenido.
             </p>
           </CardContent>
         </Card>
         <Card className="hover:border-primary transition-colors">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline">
-              <Settings /> General Settings
+              <Settings /> Ajustes Generales
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Configure station settings and social media links.
+              Configura los ajustes de la estación y redes sociales.
             </p>
           </CardContent>
         </Card>
       </div>
        <div className="mt-8 text-center p-8 bg-card rounded-lg border-2 border-dashed">
-            <p className="text-muted-foreground">This is a placeholder for the admin panel. Full functionality would require a backend and authentication.</p>
+            <p className="text-muted-foreground">Este es un marcador de posición para el panel de administración. La funcionalidad completa requeriría un backend y autenticación (Firebase).</p>
        </div>
     </div>
   );

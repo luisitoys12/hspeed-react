@@ -1,6 +1,6 @@
 import Player from '@/components/habbospeed/player';
-import HabboProfile from '@/components/habbospeed/habbo-profile';
 import LatestNews from '@/components/habbospeed/latest-news';
+import AboutUs from '@/components/habbospeed/about-us';
 
 export default function Home() {
   return (
@@ -11,7 +11,7 @@ export default function Home() {
           <LatestNews />
         </div>
         <div className="lg:col-span-1">
-          <HabboProfile />
+          <AboutUs />
         </div>
       </main>
     </div>

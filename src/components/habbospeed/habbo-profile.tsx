@@ -18,7 +18,7 @@ export default function HabboProfile() {
       <CardHeader>
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={`https://www.habbo.com/habbo-imaging/avatarimage?user=${habboProfile.name}&direction=2&head_direction=3&size=m`} alt={habboProfile.name} />
+            <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${habboProfile.name}&direction=2&head_direction=3&size=m`} alt={habboProfile.name} />
             <AvatarFallback>{habboProfile.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div>
@@ -31,16 +31,16 @@ export default function HabboProfile() {
         <div className="text-sm text-muted-foreground space-y-2">
             <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                <span>Member since: {new Date(habboProfile.registrationDate).toLocaleDateString()}</span>
+                <span>Miembro desde: {new Date(habboProfile.registrationDate).toLocaleDateString('es-ES')}</span>
             </div>
             <div className="flex items-center gap-2">
                 <Award className="h-4 w-4" />
-                <span>Rewards: {habboProfile.rewards}</span>
+                <span>Recompensas: {habboProfile.rewards}</span>
             </div>
         </div>
         
         <div>
-            <h3 className="font-headline mb-2">Badges</h3>
+            <h3 className="font-headline mb-2">Placas</h3>
             <div className="flex flex-wrap gap-2">
                 {habboProfile.badges.map(badge => (
                     <div key={badge.id} title={badge.name}>
@@ -51,7 +51,7 @@ export default function HabboProfile() {
         </div>
 
         <div>
-            <h3 className="font-headline mb-2 flex items-center gap-2"><Home className="h-4 w-4" /> Created Rooms</h3>
+            <h3 className="font-headline mb-2 flex items-center gap-2"><Home className="h-4 w-4" /> Salas Creadas</h3>
              <Carousel
               opts={{
                 align: "start",

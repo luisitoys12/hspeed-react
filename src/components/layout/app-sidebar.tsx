@@ -19,18 +19,20 @@ import {
   Twitter,
   Instagram,
   Facebook,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 const links = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/schedule', label: 'Schedule', icon: Calendar },
-  { href: '/news', label: 'Habbo News', icon: Newspaper },
-  { href: '/request', label: 'Request Song', icon: Music },
-  { href: '/contact', label: 'Contact', icon: Mail },
-  { href: '/admin', label: 'Admin Panel', icon: Shield },
+  { href: '/', label: 'Inicio', icon: Home },
+  { href: '/schedule', label: 'Horarios', icon: Calendar },
+  { href: '/news', label: 'Noticias Habbo', icon: Newspaper },
+  { href: '/team', label: 'Equipo', icon: Users },
+  { href: '/request', label: 'Pide una canción', icon: Music },
+  { href: '/contact', label: 'Contacto', icon: Mail },
+  { href: '/admin', label: 'Panel Admin', icon: Shield },
 ];
 
 const socialLinks = [
@@ -49,7 +51,7 @@ export default function AppSidebar() {
             <div className="p-2 rounded-lg bg-primary">
                 <Radio className="text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-headline font-bold text-primary">Habbospeed</h1>
+            <h1 className="text-2xl font-headline font-bold text-primary">Ekus FM</h1>
         </div>
       </SidebarHeader>
       <SidebarContent>

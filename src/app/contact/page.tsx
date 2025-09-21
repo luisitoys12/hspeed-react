@@ -9,10 +9,10 @@ export default function ContactPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-headline text-2xl">
             <Mail className="text-primary" />
-            Contact Us
+            Contáctanos
           </CardTitle>
           <CardDescription>
-            Have a question, suggestion, or just want to say hi? Drop us a message!
+            ¿Tienes alguna pregunta, sugerencia o simplemente quieres saludar? ¡Escríbenos un mensaje!
           </CardDescription>
         </CardHeader>
         <CardContent>

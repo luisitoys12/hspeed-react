@@ -25,9 +25,9 @@ export default function ScheduleDisplay({ schedule = mockSchedule }: ScheduleDis
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[150px] font-headline">Day</TableHead>
-              <TableHead className="w-[200px] font-headline">Time (UTC)</TableHead>
-              <TableHead className="font-headline">Show</TableHead>
+              <TableHead className="w-[150px] font-headline">Día</TableHead>
+              <TableHead className="w-[200px] font-headline">Hora (UTC)</TableHead>
+              <TableHead className="font-headline">Programa</TableHead>
               <TableHead className="text-right font-headline">DJ</TableHead>
             </TableRow>
           </TableHeader>

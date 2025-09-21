@@ -13,7 +13,7 @@ import {
 import { z } from 'zod';
 
 const songRequestFormSchema = z.object({
-  songRequest: z.string().min(3, 'Song request must be at least 3 characters.'),
+  songRequest: z.string().min(3, 'La petición debe tener al menos 3 caracteres.'),
 });
 
 type SongRequestFormState = {
@@ -46,20 +46,20 @@ export async function submitSongRequest(
 
     if (result.isValid) {
       return {
-        message: "Your song request has been successfully submitted and approved! We'll play it soon.",
+        message: "¡Tu petición de canción ha sido enviada y aprobada! La pondremos pronto.",
         isSuccess: true,
         isError: false,
       };
     } else {
       return {
-        message: `Your request was not approved. Reason: ${result.reason}`,
+        message: `Tu petición no fue aprobada. Razón: ${result.reason}`,
         isSuccess: false,
         isError: true,
       };
     }
   } catch (error) {
     return {
-      message: 'An AI-related error occurred. Please try again later.',
+      message: 'Ocurrió un error con la IA. Por favor, inténtalo de nuevo más tarde.',
       isSuccess: false,
       isError: true,
     };
@@ -68,12 +68,11 @@ export async function submitSongRequest(
 
 export async function getLatestNews(input: FetchLatestNewsInput): Promise<FetchLatestNewsOutput> {
   try {
-    // In a real app, you might add more logic or error handling here.
     const news = await fetchLatestNews(input);
     return news;
   } catch (e) {
     console.error("Failed to fetch latest news", e);
-    return { newsSummary: "Sorry, we couldn't fetch the latest news at the moment." }
+    return { newsSummary: "Lo sentimos, no pudimos obtener las últimas noticias en este momento." }
   }
 }
 
@@ -85,5 +84,5 @@ export async function submitContactForm(formData: FormData) {
         message: formData.get('message'),
     });
     // In a real app, you would process this data (e.g., send an email, save to DB)
-    return { success: true, message: "Your message has been sent successfully!" };
+    return { success: true, message: "¡Tu mensaje ha sido enviado con éxito!" };
 }

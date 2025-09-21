@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Sparkles, LoaderCircle } from 'lucide-react';
+import { Sparkles, LoaderCircle, Ghost } from 'lucide-react';
 import { getLatestNews } from '@/lib/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -17,14 +17,14 @@ export default function LatestNews() {
     setError(null);
     setNews(null);
     try {
-      const result = await getLatestNews({ stationName: 'Habbospeed Radio' });
+      const result = await getLatestNews({ stationName: 'Ekus FM' });
       if(result.newsSummary) {
         setNews(result.newsSummary);
       } else {
-        setError('Could not fetch the latest news. Please try again.');
+        setError('No se pudieron obtener las últimas noticias. Por favor, inténtalo de nuevo.');
       }
     } catch (e) {
-      setError('An unexpected error occurred.');
+      setError('Ocurrió un error inesperado.');
     } finally {
       setIsLoading(false);
     }
@@ -34,11 +34,11 @@ export default function LatestNews() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline">
-          <Sparkles className="text-primary" />
-          Station News AI
+          <Ghost className="text-primary" />
+          Campañas y Eventos de Habbo (IA)
         </CardTitle>
         <CardDescription>
-          Click the button to get the latest AI-generated news summary about Habbospeed.
+          Pulsa el botón para obtener un resumen de las últimas campañas y eventos en Habbo, generado por IA.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -46,18 +46,18 @@ export default function LatestNews() {
           {isLoading ? (
             <>
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-              Fetching...
+              Buscando...
             </>
           ) : (
             <>
               <Sparkles className="mr-2 h-4 w-4" />
-              Fetch Latest News
+              Obtener Últimas Campañas
             </>
           )}
         </Button>
         {news && (
           <Alert>
-            <AlertTitle className="font-headline">Latest Update</AlertTitle>
+            <AlertTitle className="font-headline">Última Actualización</AlertTitle>
             <AlertDescription>{news}</AlertDescription>
           </Alert>
         )}

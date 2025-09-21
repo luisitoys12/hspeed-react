@@ -8,10 +8,10 @@ export default function NewsPage() {
       <div className="mb-8">
         <h1 className="flex items-center gap-3 text-3xl md:text-4xl font-headline font-bold">
           <Newspaper className="h-8 w-8 text-primary" />
-          Habbo News & Guides
+          Noticias y Guías de Habbo
         </h1>
         <p className="text-muted-foreground mt-2">
-            The latest news, guides, and analysis from the Habbo community.
+            Las últimas noticias, guías y análisis de la comunidad Habbo.
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

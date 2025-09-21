@@ -1,46 +1,65 @@
-import type { LucideIcon } from 'lucide-react';
-
 export const djInfo = {
-    name: 'DJ-Pixel',
-    habboName: 'PixelMaster',
-    avatarUrl: 'https://www.habbo.com/habbo-imaging/avatarimage?user=PixelMaster&action=std&direction=2&head_direction=2&gesture=sml&size=l',
-    roles: ['Head DJ', 'Event Manager'],
+    name: 'hspeed',
+    habboName: 'hspeed',
+    avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=hspeed&action=std&direction=2&head_direction=2&gesture=sml&size=l',
+    roles: ['AutoDJ'],
 };
 
+export const teamMembers = [
+    { 
+        name: 'PixelMaster', 
+        motto: 'Construyendo mundos, un bloque a la vez.', 
+        roles: ['Head DJ', 'Manager de Eventos'],
+        avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=PixelMaster&action=wav&direction=2&head_direction=3&gesture=sml&size=l'
+    },
+    { 
+        name: 'DJ Glitch', 
+        motto: 'Viviendo en el código, mezclando en las ondas.', 
+        roles: ['DJ Residente', 'Técnico'],
+        avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=DJ-Glitch&action=drk&direction=4&head_direction=2&gesture=sml&size=l'
+    },
+    { 
+        name: 'MC Flow', 
+        motto: 'Rimas y ritmos para el alma.', 
+        roles: ['Anfitrión', 'Relaciones Públicas'],
+        avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=MC-Flow&action=std&direction=3&head_direction=3&gesture=nrm&size=l'
+    },
+];
+
 export const schedule = [
-    { day: 'Monday', time: '18:00 - 20:00', show: 'Pixel Pop Party', dj: 'DJ-Pixel' },
-    { day: 'Tuesday', time: '20:00 - 22:00', show: 'Retro Rewind', dj: 'DJ Glitch' },
-    { day: 'Wednesday', time: '19:00 - 21:00', show: 'Wavey Wednesday', dj: 'MC Flow' },
-    { day: 'Thursday', time: '21:00 - 23:00', show: 'Throwback Thursday', dj: 'DJ-Pixel' },
-    { day: 'Friday', time: '20:00 - 00:00', show: 'Friday Night Fuse', dj: 'All Stars' },
-    { day: 'Saturday', time: '16:00 - 18:00', show: 'The Habbo Hot 20', dj: 'DJ Glitch' },
-    { day: 'Sunday', time: '14:00 - 16:00', show: 'Chillout Session', dj: 'MC Flow' },
+    { day: 'Lunes', time: '18:00 - 20:00', show: 'Fiesta Pixel Pop', dj: 'PixelMaster' },
+    { day: 'Martes', time: '20:00 - 22:00', show: 'Retro Rewind', dj: 'DJ Glitch' },
+    { day: 'Miércoles', time: '19:00 - 21:00', show: 'Miércoles de Onda', dj: 'MC Flow' },
+    { day: 'Jueves', time: '21:00 - 23:00', show: 'Jueves de Recuerdo', dj: 'PixelMaster' },
+    { day: 'Viernes', time: '20:00 - 00:00', show: 'Fusión de Viernes por la Noche', dj: 'Todos los DJs' },
+    { day: 'Sábado', time: '16:00 - 18:00', show: 'El Top 20 de Habbo', dj: 'DJ Glitch' },
+    { day: 'Domingo', time: '14:00 - 16:00', show: 'Sesión de Chillout', dj: 'MC Flow' },
 ];
 
 export const habboProfile = {
-    name: 'PixelMaster',
-    motto: 'Building worlds, one block at a time.',
-    registrationDate: '2010-01-15',
-    rewards: 125,
+    name: 'hspeed',
+    motto: 'Tu radio, tu comunidad.',
+    registrationDate: '2024-01-01',
+    rewards: 42,
     badges: [
-        { id: '1', name: 'Hotel Veteran', imageUrl: 'https://picsum.photos/seed/badge1/50/50', imageHint: 'medal icon' },
-        { id: '2', name: 'Room Builder', imageUrl: 'https://picsum.photos/seed/badge2/50/50', imageHint: 'hammer icon' },
-        { id: '3', name: 'Top Trader', imageUrl: 'https://picsum.photos/seed/badge3/50/50', imageHint: 'coin icon' },
-        { id: '4', name: 'Game Master', imageUrl: 'https://picsum.photos/seed/badge4/50/50', imageHint: 'joystick icon' },
-        { id: '5', name: 'Social Butterfly', imageUrl: 'https://picsum.photos/seed/badge5/50/50', imageHint: 'butterfly icon' },
+        { id: '1', name: 'Placa Halloween 2024', imageUrl: 'https://picsum.photos/seed/badge1/50/50', imageHint: 'calabaza halloween' },
+        { id: '2', name: 'Placa Radio Fan', imageUrl: 'https://picsum.photos/seed/badge2/50/50', imageHint: 'auriculares icono' },
+        { id: '3', name: 'Placa Veterano', imageUrl: 'https://picsum.photos/seed/badge3/50/50', imageHint: 'medalla icono' },
+        { id: '4', name: 'Placa Gamer', imageUrl: 'https://picsum.photos/seed/badge4/50/50', imageHint: 'joystick icono' },
+        { id: '5', name: 'Placa Social', imageUrl: 'https://picsum.photos/seed/badge5/50/50', imageHint: 'burbuja de chat' },
     ],
     rooms: [
-        { id: '1', name: 'Pixel Palace', imageUrl: 'https://picsum.photos/seed/room1/200/150', imageHint: 'castle interior' },
-        { id: '2', name: 'Neon Arcade', imageUrl: 'https://picsum.photos/seed/room2/200/150', imageHint: 'arcade room' },
-        { id: '3', name: 'Zen Garden', imageUrl: 'https://picsum.photos/seed/room3/200/150', imageHint: 'zen garden' },
+        { id: '1', name: 'Estudio Principal Ekus FM', imageUrl: 'https://picsum.photos/seed/room1/200/150', imageHint: 'estudio de radio' },
+        { id: '2', name: 'Salón de Fiestas Halloween', imageUrl: 'https://picsum.photos/seed/room2/200/150', imageHint: 'fiesta de halloween' },
+        { id: '3', name: 'Jardín Embrujado', imageUrl: 'https://picsum.photos/seed/room3/200/150', imageHint: 'jardín embrujado' },
     ],
 };
 
 export const newsArticles = [
     {
         id: '1',
-        title: 'New "Cyberpunk" Furni Line Released!',
-        summary: 'A brand new line of futuristic furni has dropped in the catalog. Get your hands on these neon-drenched items now!',
+        title: '¡Nueva línea de furnis "Cyberpunk" lanzada!',
+        summary: 'Una nueva línea de furnis futuristas ha llegado al catálogo. ¡Consigue ya estos artículos bañados en neón!',
         imageUrl: 'https://picsum.photos/seed/news1/600/400',
         imageHint: 'cyberpunk city',
         category: 'FURNI',
@@ -48,29 +67,29 @@ export const newsArticles = [
     },
     {
         id: '2',
-        title: 'Guide: Mastering the "Wobble Squabble" Game',
-        summary: 'Struggling to get that top score? Our comprehensive guide breaks down the best strategies to become a Wobble Squabble champion.',
+        title: 'Guía: Dominando el juego "Wobble Squabble"',
+        summary: '¿Te cuesta conseguir la máxima puntuación? Nuestra completa guía desglosa las mejores estrategias para convertirte en un campeón.',
         imageUrl: 'https://picsum.photos/seed/news2/600/400',
         imageHint: 'game strategy',
-        category: 'GUIDE',
+        category: 'GUÍA',
         date: '2024-07-18',
     },
     {
         id: '3',
-        title: 'Community Spotlight: The Art of Room Building',
-        summary: 'We interviewed three of the most talented room builders in the community to get their tips on creating stunning spaces.',
+        title: 'Foco en la comunidad: El arte de construir salas',
+        summary: 'Entrevistamos a tres de los constructores de salas más talentosos de la comunidad para que nos den sus consejos.',
         imageUrl: 'https://picsum.photos/seed/news3/600/400',
         imageHint: 'interior design',
-        category: 'COMMUNITY',
+        category: 'COMUNIDAD',
         date: '2024-07-15',
     },
     {
         id: '4',
-        title: 'Analysis: The Habbo Economy in 2024',
-        summary: 'An in-depth look at the current state of the Habbo marketplace, trading trends, and the value of rare items.',
+        title: 'Análisis: La economía de Habbo en 2024',
+        summary: 'Una mirada en profundidad al estado actual del mercado de Habbo, las tendencias de tradeo y el valor de los raros.',
         imageUrl: 'https://picsum.photos/seed/news4/600/400',
         imageHint: 'stock market',
-        category: 'ANALYSIS',
+        category: 'ANÁLISIS',
         date: '2024-07-12',
     }
 ];

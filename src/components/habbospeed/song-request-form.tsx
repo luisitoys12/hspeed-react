@@ -23,12 +23,12 @@ function SubmitButton() {
       {pending ? (
         <>
           <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-          Submitting...
+          Enviando...
         </>
       ) : (
         <>
           <Send className="mr-2 h-4 w-4" />
-          Submit Request
+          Enviar Petición
         </>
       )}
     </Button>
@@ -44,7 +44,7 @@ export default function SongRequestForm() {
     if (state.isError && state.message) {
       toast({
         variant: 'destructive',
-        title: 'Submission Failed',
+        title: 'Petición Fallida',
         description: state.message,
       });
     }
@@ -58,16 +58,16 @@ export default function SongRequestForm() {
       <div className="flex flex-col sm:flex-row gap-2">
         <Input
           name="songRequest"
-          placeholder="Enter song title and artist"
+          placeholder="Escribe el título de la canción y el artista"
           required
           className="text-base flex-grow"
         />
         <SubmitButton />
       </div>
        {state.isSuccess && !state.isError && state.message && (
-        <Alert className="mt-4">
-          <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle>Success!</AlertTitle>
+        <Alert className="mt-4 border-green-500 text-green-500">
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <AlertTitle>¡Éxito!</AlertTitle>
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       )}

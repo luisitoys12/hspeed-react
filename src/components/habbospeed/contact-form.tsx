@@ -23,13 +23,13 @@ import { CheckCircle2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
+    message: "El nombre debe tener al menos 2 caracteres.",
   }),
   email: z.string().email({
-    message: "Please enter a valid email address.",
+    message: "Por favor, introduce una dirección de correo electrónico válida.",
   }),
   message: z.string().min(10, {
-    message: "Message must be at least 10 characters.",
+    message: "El mensaje debe tener al menos 10 caracteres.",
   }),
 });
 
@@ -64,15 +64,15 @@ export default function ContactForm() {
       } else {
          toast({
             variant: "destructive",
-            title: "Submission Failed",
-            description: result.message || "Something went wrong.",
+            title: "Envío Fallido",
+            description: result.message || "Algo salió mal.",
         });
       }
     } catch (error) {
        toast({
             variant: "destructive",
             title: "Error",
-            description: "Could not submit the form. Please try again later.",
+            description: "No se pudo enviar el formulario. Por favor, inténtalo de nuevo más tarde.",
         });
     }
     setIsSubmitting(false);
@@ -87,9 +87,9 @@ export default function ContactForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Nombre</FormLabel>
               <FormControl>
-                <Input placeholder="Your Name" {...field} />
+                <Input placeholder="Tu Nombre" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -102,7 +102,7 @@ export default function ContactForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="your.email@example.com" {...field} />
+                <Input placeholder="tu.email@ejemplo.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -113,9 +113,9 @@ export default function ContactForm() {
           name="message"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Message</FormLabel>
+              <FormLabel>Mensaje</FormLabel>
               <FormControl>
-                <Textarea placeholder="Your message..." {...field} rows={5} />
+                <Textarea placeholder="Tu mensaje..." {...field} rows={5} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -125,21 +125,21 @@ export default function ContactForm() {
          {isSubmitting ? (
             <>
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
+              Enviando...
             </>
           ) : (
             <>
               <Send className="mr-2 h-4 w-4" />
-              Send Message
+              Enviar Mensaje
             </>
           )}
         </Button>
       </form>
     </Form>
     {submissionResult?.success && (
-        <Alert className="mt-4">
-            <CheckCircle2 className="h-4 w-4" />
-            <AlertTitle>Success!</AlertTitle>
+        <Alert className="mt-4 border-green-500 text-green-500">
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <AlertTitle>¡Éxito!</AlertTitle>
             <AlertDescription>{submissionResult.message}</AlertDescription>
         </Alert>
     )}
