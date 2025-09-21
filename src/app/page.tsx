@@ -1,20 +1,25 @@
 import LatestNews from '@/components/habbospeed/latest-news';
-import AboutUs from '@/components/habbospeed/about-us';
 import HabboProfile from '@/components/habbospeed/habbo-profile';
+import HeroSlideshow from '@/components/habbospeed/hero-slideshow';
+import OfficialAlliances from '@/components/habbospeed/official-alliances';
+import ActiveRooms from '@/components/habbospeed/active-rooms';
 
-// Forcing a re-render to apply config changes
 export default function Home() {
   return (
-    <div className="container mx-auto p-4 md:p-8">
-      <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <LatestNews />
-        </div>
-        <div className="lg:col-span-1 space-y-8">
-          <AboutUs />
-          <HabboProfile />
-        </div>
-      </main>
+    <div className="space-y-8">
+      <HeroSlideshow />
+      <div className="container mx-auto p-4 md:p-8">
+        <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <LatestNews />
+            <OfficialAlliances />
+            <ActiveRooms />
+          </div>
+          <div className="lg:col-span-1 space-y-8">
+            <HabboProfile />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
