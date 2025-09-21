@@ -56,16 +56,19 @@ const defaultDj = {
 };
 
 const getCurrentAndNextDjs = (schedule: ScheduleItem[], azuracastStreamer?: string) => {
-    if (azuracastStreamer) {
+    // If a DJ is live on Azuracast, prioritize that
+    if (azuracastStreamer && azuracastStreamer.toLowerCase() !== 'autodj' && azuracastStreamer.trim() !== '') {
         const liveDj = schedule.find(item => item.dj.toLowerCase() === azuracastStreamer.toLowerCase());
-        if(liveDj) {
-            return {
-                current: { name: liveDj.dj, habboName: liveDj.dj },
-                next: { name: 'Por anunciar', habboName: 'estacionkusfm' } // Simplified
-            }
-        }
+        const current = liveDj ? { name: liveDj.dj, habboName: liveDj.dj } : { name: azuracastStreamer, habboName: azuracastStreamer };
+        
+        // Simplified next DJ logic for when someone is live
+        return {
+            current: current,
+            next: { name: 'Por anunciar', habboName: 'estacionkusfm' } 
+        };
     }
-
+    
+    // If no one is live, determine from schedule
     const now = new Date();
     const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][now.getUTCDay()];
     const currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
@@ -79,16 +82,21 @@ const getCurrentAndNextDjs = (schedule: ScheduleItem[], azuracastStreamer?: stri
 
     for (let i = 0; i < todaySchedule.length; i++) {
         const item = todaySchedule[i];
+        const nextItem = todaySchedule[i + 1];
+
+        // Check for currently active show
         if (currentTime >= item.startTime && currentTime <= item.endTime) {
             currentDj = { name: item.dj, habboName: item.dj };
-            if (todaySchedule[i + 1]) {
-                nextDj = { name: todaySchedule[i + 1].dj, habboName: todaySchedule[i + 1].dj };
+            if (nextItem) {
+                nextDj = { name: nextItem.dj, habboName: nextItem.dj };
             }
-            break;
+            return { current: currentDj, next: nextDj };
         }
+        
+        // Find the next upcoming show
         if (currentTime < item.startTime) {
             nextDj = { name: item.dj, habboName: item.dj };
-            break;
+            return { current: currentDj, next: nextDj };
         }
     }
 
@@ -110,12 +118,13 @@ export default function FloatingPlayer() {
     const configRef = ref(db, 'config');
     const unsubscribe = onValue(configRef, (snapshot) => {
         const data = snapshot.val();
-        if (data) {
+        if (data && data.apiUrl && data.listenUrl) {
           setRadioConfig({
               apiUrl: data.apiUrl,
               listenUrl: data.listenUrl,
           });
         } else {
+            // Fallback default config if Firebase is empty
             setRadioConfig({
                 apiUrl: 'https://radio.kusmedios.lat/api/nowplaying/ekus-fm',
                 listenUrl: 'http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3'
@@ -138,7 +147,10 @@ export default function FloatingPlayer() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!radioConfig?.apiUrl) return;
+      if (!radioConfig?.apiUrl) {
+          setIsLoading(false);
+          return;
+      };
       
       try {
         const response = await fetch(radioConfig.apiUrl);
@@ -163,6 +175,14 @@ export default function FloatingPlayer() {
        const liveStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : undefined;
        const calculatedDjs = getCurrentAndNextDjs(schedule, liveStreamer);
        setDjs(calculatedDjs);
+    } else {
+      // If schedule is empty, just use streamer name if available
+      const liveStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : undefined;
+      if (liveStreamer && liveStreamer.toLowerCase() !== 'autodj' && liveStreamer.trim() !== '') {
+        setDjs(prev => ({...prev, current: { name: liveStreamer, habboName: liveStreamer }}));
+      } else {
+        setDjs(prev => ({...prev, current: defaultDj}));
+      }
     }
   }, [schedule, azuracastData]);
 
