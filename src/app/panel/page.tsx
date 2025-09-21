@@ -1,50 +1,132 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
+import { useAuth } from '@/hooks/use-auth';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Shield, Users, BarChart, Settings, Calendar, Newspaper, BookmarkPlus } from 'lucide-react';
+import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
 
 const panelLinks = [
-    { href: '/panel/team', title: 'Gestión de Equipo', description: 'Añadir o quitar miembros del equipo.', icon: Users },
+    { href: '/panel/config', title: 'Ajustes Generales', description: 'URLs, carrusel y configuración clave.', icon: Settings },
+    { href: '/panel/team', title: 'Gestión de Equipo', description: 'Añadir o quitar miembros del staff.', icon: Users },
+    { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos.', icon: Newspaper },
     { href: '/panel/schedule', title: 'Gestión de Horarios', description: 'Actualizar la programación semanal.', icon: Calendar },
     { href: '/panel/booking', title: 'Gestión de Reservas', description: 'Vaciar la parrilla de reservas de DJ.', icon: BookmarkPlus },
-    { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos de noticias.', icon: Newspaper },
-    { href: '/panel/config', title: 'Ajustes Generales', description: 'Configurar URLs de la radio y redes.', icon: Settings },
-    { href: '#', title: 'Analíticas', description: 'Ver estadísticas de oyentes y web.', icon: BarChart },
-]
+];
 
-export default function AdminPage() {
-  return (
-    <div className="container mx-auto p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="flex items-center gap-3 text-2xl md:text-4xl font-headline font-bold">
-          <Shield className="h-8 w-8 text-primary" />
-          Panel de Administración
-        </h1>
-        <p className="text-muted-foreground mt-2">
-            Gestiona el contenido y la configuración de Ekus FM.
-        </p>
-      </div>
+const StatCard = ({ title, value, icon: Icon, loading }: { title: string, value: number, icon: React.ElementType, loading: boolean }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <Icon className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+            {loading ? (
+                <LoaderCircle className="h-6 w-6 animate-spin" />
+            ) : (
+                <div className="text-2xl font-bold">{value}</div>
+            )}
+        </CardContent>
+    </Card>
+);
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {panelLinks.map(link => (
-            <Link href={link.href} key={link.title}>
-                <Card className="hover:border-primary transition-colors h-full">
+export default function AdminDashboardPage() {
+    const { user, loading: authLoading } = useAuth();
+    const [stats, setStats] = useState({ team: 0, news: 0, schedule: 0, messages: 0 });
+    const [loadingStats, setLoadingStats] = useState(true);
+
+    useEffect(() => {
+        if (user?.isSuperAdmin) {
+            const refs = {
+                team: ref(db, 'team'),
+                news: ref(db, 'news'),
+                schedule: ref(db, 'schedule'),
+                messages: query(ref(db, 'contact-messages'), orderByChild('read'), equalTo(false))
+            };
+
+            const unsubscribes = Object.entries(refs).map(([key, dbRef]) => 
+                onValue(dbRef, (snapshot) => {
+                    setStats(prevStats => ({
+                        ...prevStats,
+                        [key]: snapshot.exists() ? snapshot.size : 0
+                    }));
+                })
+            );
+
+            setLoadingStats(false); // Simplificación: asumimos carga rápida
+
+            return () => {
+                unsubscribes.forEach(unsubscribe => unsubscribe());
+            };
+        }
+    }, [user]);
+
+    if (authLoading) {
+        return <div className="container mx-auto p-8"><LoaderCircle className="h-8 w-8 animate-spin" /></div>;
+    }
+
+    if (!user?.isSuperAdmin) {
+        return (
+            <div className="container mx-auto p-4 md:p-8">
+                <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 font-headline text-base md:text-lg">
-                        <link.icon /> {link.title}
-                        </CardTitle>
+                        <CardTitle>Acceso Denegado</CardTitle>
+                        <CardDescription>No tienes permisos para acceder a esta sección.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground">
-                        {link.description}
-                        </p>
-                    </CardContent>
                 </Card>
-            </Link>
-        ))}
-      </div>
-       <div className="mt-8 text-center p-8 bg-card rounded-lg border-2 border-dashed">
-            <p className="text-muted-foreground">Este es el centro de control de tu sitio. Las funcionalidades se conectarán a Firebase para gestionar datos en tiempo real.</p>
-       </div>
-    </div>
-  );
+            </div>
+        );
+    }
+
+    return (
+        <div className="container mx-auto p-4 md:p-8">
+            <div className="mb-8">
+                <h1 className="flex items-center gap-3 text-2xl md:text-4xl font-headline font-bold">
+                    <Shield className="h-8 w-8 text-primary" />
+                    Panel de Administración
+                </h1>
+                <p className="text-muted-foreground mt-2">
+                    Una vista general del contenido y la actividad de Ekus FM.
+                </p>
+            </div>
+
+            {/* Stat Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+                <StatCard title="Miembros del Equipo" value={stats.team} icon={Users} loading={loadingStats} />
+                <StatCard title="Artículos de Noticias" value={stats.news} icon={Newspaper} loading={loadingStats} />
+                <StatCard title="Programas en Horario" value={stats.schedule} icon={Calendar} loading={loadingStats} />
+                <StatCard title="Mensajes Sin Leer" value={stats.messages} icon={MessageSquare} loading={loadingStats} />
+            </div>
+            
+            {/* Quick Actions */}
+             <Card>
+                <CardHeader>
+                    <CardTitle>Accesos Directos</CardTitle>
+                    <CardDescription>Gestiona las secciones principales del sitio.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col space-y-4">
+                    {panelLinks.map(link => (
+                        <Link href={link.href} key={link.title} className="group">
+                            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted hover:shadow-md transition-all">
+                               <div className="flex items-center gap-4">
+                                    <div className="p-2 bg-background rounded-lg">
+                                        <link.icon className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">{link.title}</p>
+                                        <p className="text-sm text-muted-foreground">{link.description}</p>
+                                    </div>
+                               </div>
+                                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                            </div>
+                        </Link>
+                    ))}
+                </CardContent>
+            </Card>
+
+        </div>
+    );
 }

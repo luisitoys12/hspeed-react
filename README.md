@@ -1,7 +1,6 @@
 
 # Ekus FM - Sitio de Fans de Habbo
 
-![Ekus FM](https://i.imgur.com/your-banner-image.png) <!-- Reemplaza esto con una URL de un banner si tienes uno -->
 
 Bienvenido al repositorio oficial de **Ekus FM**, una moderna aplicación web para la fansite de radio de Habbo.es. Este proyecto está construido con un enfoque *headless* y en tiempo real, utilizando **Next.js** para el frontend y **Firebase** como el backend principal para la gestión de contenido, autenticación y datos dinámicos.
 
