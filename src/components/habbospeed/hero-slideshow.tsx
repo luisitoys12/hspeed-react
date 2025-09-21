@@ -29,10 +29,8 @@ type Slide = {
   };
 };
 
-const defaultSlides: Slide[] = [];
-
 export default function HeroSlideshow() {
-  const [slides, setSlides] = useState<Slide[]>(defaultSlides);
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -109,8 +107,14 @@ export default function HeroSlideshow() {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 hidden md:flex" />
-      <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:flex" />
+       {slides.length > 1 && (
+        <>
+            <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 hidden md:flex" />
+            <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:flex" />
+        </>
+      )}
     </Carousel>
   );
 }
+
+    

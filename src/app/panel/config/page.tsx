@@ -65,10 +65,12 @@ export default function ConfigPage() {
       const unsubscribe = onValue(configRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
+          // Convert slideshow object back to array for the form
+          const slideshowArray = data.slideshow ? Object.keys(data.slideshow).map(key => data.slideshow[key]) : [];
           form.reset({
             apiUrl: data.apiUrl || "",
             listenUrl: data.listenUrl || "",
-            slideshow: data.slideshow ? Object.values(data.slideshow) : []
+            slideshow: slideshowArray
           });
         }
         setDbLoading(false);
@@ -88,13 +90,13 @@ export default function ConfigPage() {
 
     setIsSubmitting(true);
     try {
-      // Convert array to object for Firebase
+      // Convert array to object for Firebase with keys like "slide1", "slide2", etc.
       const dataToSave = {
         ...values,
         slideshow: values.slideshow?.reduce((acc, slide, index) => {
           acc[`slide${index + 1}`] = slide;
           return acc;
-        }, {} as any)
+        }, {} as Record<string, any>)
       };
 
       const configRef = ref(db, 'config');
@@ -259,3 +261,5 @@ const ConfigSkeleton = () => (
     </div>
   </div>
 );
+
+    
