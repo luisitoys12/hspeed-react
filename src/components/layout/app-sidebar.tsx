@@ -121,7 +121,7 @@ export default function AppSidebar() {
                     <Link href={link.href}>
                     <SidebarMenuButton
                         asChild
-                        isActive={pathname.startsWith(link.href)}
+                        isActive={pathname.startsWith(link.href) && (link.href !== '/' || pathname === '/')}
                         tooltip={link.label}
                     >
                         <span>
