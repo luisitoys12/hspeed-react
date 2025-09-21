@@ -90,7 +90,7 @@ export default function OnAirDjs() {
 
     if (isLoading) {
         return (
-            <Card className="mt-8">
+            <Card className="mt-8 bg-card/80 backdrop-blur-sm">
                 <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-center justify-center min-h-[120px]">
                    <div className="col-span-1 md:col-span-2 flex justify-center items-center">
                      <Image 
@@ -107,7 +107,7 @@ export default function OnAirDjs() {
     }
 
     return (
-        <Card className="mt-8">
+        <Card className="mt-8 bg-card/80 backdrop-blur-sm">
             <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 divide-y md:divide-y-0 md:divide-x divide-border">
                 <div className="flex items-center justify-center gap-4 p-4">
                     <Avatar className="h-16 w-16 border-4 border-green-500">
