@@ -7,6 +7,7 @@ import {
   Sidebar,
   SidebarInset,
 } from '@/components/ui/sidebar';
+import FloatingPlayer from '@/components/layout/floating-player';
 
 export const metadata: Metadata = {
   title: 'Ekus FM',
@@ -31,9 +32,12 @@ export default function RootLayout({
             <AppSidebar />
           </Sidebar>
           <SidebarInset>
-            {children}
+            <div className="pb-32 lg:pb-24">
+              {children}
+            </div>
           </SidebarInset>
         </SidebarProvider>
+        <FloatingPlayer />
         <Toaster />
       </body>
     </html>
