@@ -1,3 +1,4 @@
+
 import LatestNews from '@/components/habbospeed/latest-news';
 import HabboProfile from '@/components/habbospeed/habbo-profile';
 import HeroSlideshow from '@/components/habbospeed/hero-slideshow';
@@ -5,6 +6,7 @@ import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import OnAirMarquee from '@/components/habbospeed/on-air-marquee';
 
 function HabboProfileSkeleton() {
   return (
@@ -19,6 +21,7 @@ function HabboProfileSkeleton() {
 export default function Home() {
   return (
     <div className="space-y-8">
+      <OnAirMarquee />
       <HeroSlideshow />
       <div className="container mx-auto p-4 md:p-8">
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
