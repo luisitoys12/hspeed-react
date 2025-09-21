@@ -8,8 +8,8 @@ import OnAirDjs from '@/components/habbospeed/on-air-djs';
 import LatestCampaigns from '@/components/habbospeed/latest-campaigns';
 import ActiveEvents from '@/components/habbospeed/active-events';
 import Image from 'next/image';
-import AchievementRanking from '@/components/habbospeed/achievement-ranking';
 import HomeHeader from '@/components/layout/home-header';
+import RecentWinners from '@/components/habbospeed/recent-winners';
 
 function LoadingSkeleton() {
   return (
@@ -53,7 +53,7 @@ export default function Home() {
               <ActiveEvents />
             </Suspense>
             <Suspense fallback={<LoadingSkeleton />}>
-              <AchievementRanking />
+              <RecentWinners />
             </Suspense>
           </div>
         </div>

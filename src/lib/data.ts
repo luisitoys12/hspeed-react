@@ -60,7 +60,7 @@ export async function getTeamMembers() {
         console.error("Failed to fetch team members from Firebase:", error);
         // Return a default member to avoid empty team page on DB error
         return [{
-            name: 'Ekus FM',
+            name: 'Habbospeed',
             motto: 'Error al cargar el equipo',
             roles: ['Fansite'],
             avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=estacionkusfm&direction=2&head_direction=3&size=l`,
@@ -135,46 +135,6 @@ export async function getNewsArticles(): Promise<NewsArticle[]> {
         console.error("Failed to fetch news from Firebase:", error);
         return [];
     }
-}
-
-export async function getLeaderboardData() {
-  try {
-    const teamRef = ref(db, 'team');
-    const snapshot = await get(teamRef);
-
-    if (!snapshot.exists()) return [];
-
-    const teamData = snapshot.val();
-    const usersToFetch = Object.keys(teamData);
-
-    const userPromises = usersToFetch.map(async (name) => {
-        try {
-            const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${name}`);
-            if (!userResponse.ok) return null;
-            const userData = await userResponse.json();
-
-            const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`);
-            if (!profileResponse.ok) return null;
-            const profileData = await profileResponse.json();
-
-            return {
-                name: userData.name,
-                achievementScore: profileData.achievementScore,
-            };
-        } catch (error) {
-            console.error(`Failed to fetch leaderboard data for ${name}:`, error);
-            return null;
-        }
-    });
-
-    const users = (await Promise.all(userPromises)).filter((user): user is { name: string; achievementScore: number } => user !== null && typeof user.achievementScore === 'number');
-    
-    // Sort users by achievement score in descending order
-    return users.sort((a, b) => b.achievementScore - a.achievementScore);
-  } catch (dbError) {
-      console.error("Failed to fetch team for leaderboard:", dbError);
-      return [];
-  }
 }
 
 export async function getMarketplaceMockData() {

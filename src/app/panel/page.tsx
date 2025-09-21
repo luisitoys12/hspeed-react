@@ -6,13 +6,14 @@ import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
 import { useAuth } from '@/hooks/use-auth';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell } from 'lucide-react';
+import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award } from 'lucide-react';
 import Link from 'next/link';
 
 const panelLinks = [
     { href: '/panel/config', title: 'Ajustes Generales', description: 'URLs, carrusel y configuración clave.', icon: Settings },
     { href: '/panel/users', title: 'Gestión de Usuarios', description: 'Aprobar usuarios y asignar roles.', icon: Users },
     { href: '/panel/team', title: 'Gestión de Equipo', description: 'Añadir o quitar miembros del staff.', icon: Users },
+    { href: '/panel/awards', title: 'Premios y Destacados', description: 'Gestionar premios y ganadores.', icon: Award },
     { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos.', icon: Newspaper },
     { href: '/panel/events', title: 'Gestión de Eventos', description: 'Administrar los eventos de la fansite.', icon: PartyPopper },
     { href: '/panel/schedule', title: 'Gestión de Horarios', description: 'Actualizar la programación semanal.', icon: Calendar },
@@ -122,7 +123,7 @@ export default function AdminDashboardPage() {
                     <CardDescription>Gestiona las secciones principales del sitio.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col space-y-4">
-                    {panelLinks.map(link => (
+                    {panelLinks.sort((a, b) => a.title.localeCompare(b.title)).map(link => (
                         <Link href={link.href} key={link.title} className="group">
                             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted hover:shadow-md transition-all">
                                <div className="flex items-center gap-4">
