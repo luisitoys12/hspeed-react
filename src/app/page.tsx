@@ -1,5 +1,4 @@
 
-import LatestNews from '@/components/habbospeed/latest-news';
 import HabboProfile from '@/components/habbospeed/habbo-profile';
 import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
@@ -8,6 +7,7 @@ import HeroSlideshow from '@/components/habbospeed/hero-slideshow';
 import OnAirDjs from '@/components/habbospeed/on-air-djs';
 import WeeklyAwards from '@/components/habbospeed/weekly-awards';
 import Image from 'next/image';
+import LatestCampaigns from '@/components/habbospeed/latest-campaigns';
 
 function LoadingSkeleton() {
   return (
@@ -32,7 +32,7 @@ export default function Home() {
       </Suspense>
       <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <div className="lg:col-span-2 space-y-8">
-          <LatestNews />
+          <LatestCampaigns />
           <OfficialAlliances />
           <ActiveRooms />
         </div>
