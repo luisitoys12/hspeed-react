@@ -121,7 +121,7 @@ const getDjs = (schedule: ScheduleItem[], onAirOverride?: OnAirOverride, azuraca
 };
 
 
-export default function FloatingPlayer() {
+export default function HeaderPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(50);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -295,84 +295,95 @@ export default function FloatingPlayer() {
   const listeners = azuracastData?.listeners.current ?? 0;
   
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
-      <Card className="overflow-hidden shadow-2xl border-primary/20 backdrop-blur-sm bg-card/80">
-        <audio ref={audioRef} src={radioConfig?.listenUrl || undefined} preload="none" />
-        <div className="p-2 md:p-3 grid grid-cols-[auto_1fr_auto] md:grid-cols-3 items-center gap-4">
-          
-          {/* Left Section: Song Info */}
-          <div className="flex items-center gap-3 min-w-0 col-span-1 md:col-span-1">
-            {isLoading || !radioConfig ? (
-              <>
-                <Skeleton className="h-12 w-12 rounded-md" />
-                <div className="space-y-2 hidden md:block">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              </>
-            ) : (
-              <>
-                <Image src={songArt} alt={songTitle} width={48} height={48} className="rounded-md h-12 w-12 object-cover" unoptimized/>
-                <div className="min-w-0 hidden md:block">
-                  <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
-                </div>
-              </>
-            )}
-          </div>
-          
-          {/* Center Section: Player Controls */}
-          <div className="flex items-center justify-center gap-2 col-span-1 md:col-span-1">
-            <Button variant="default" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading || !radioConfig}>
-              {isPlaying ? <Pause className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" />}
-            </Button>
-            <div className="hidden md:flex items-center gap-2 w-24">
-              <Volume2 className="text-muted-foreground" />
-              <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
-            </div>
-          </div>
-
-          {/* Right Section: DJ, Listeners, Request */}
-          <div className="flex items-center justify-end gap-2 md:gap-4 col-span-1 md:col-span-1">
-             <div className="hidden lg:flex items-center gap-4 bg-black/50 p-2 rounded-lg">
-                <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djs.current.habboName}&headonly=1&size=s`} alt={djs.current.name} />
-                        <AvatarFallback>{djs.current.name?.substring(0,2)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <div className="text-xs font-bold text-white/90">AL AIRE</div>
-                        <div className="text-xs text-muted-foreground">{djs.current.name}</div>
-                    </div>
-                </div>
-            </div>
-            <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
-                <Users className="text-primary h-5 w-5" />
-                <span className="font-bold text-white text-sm">{listeners}</span>
-            </div>
-            
-            <Sheet>
-                <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="hidden md:flex">
-                    <Music className="h-4 w-4 mr-2" />
-                    Pide una canción
-                </Button>
-                </SheetTrigger>
-                <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>Pide una Canción</SheetTitle>
-                    <SheetDescription>
-                    ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
-                    </SheetDescription>
-                </SheetHeader>
-                <div className="py-4">
-                    <SongRequestForm />
-                </div>
-                </SheetContent>
-            </Sheet>
+    <div className="w-full bg-card/80 backdrop-blur-sm border-b border-border">
+      <audio ref={audioRef} src={radioConfig?.listenUrl || undefined} preload="none" />
+      <div className="container mx-auto p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        
+        {/* Left Section: Song Info */}
+        <div className="flex items-center gap-3 min-w-0 justify-start">
+          {isLoading || !radioConfig ? (
+            <>
+              <Skeleton className="h-12 w-12 rounded-md" />
+              <div className="space-y-2 hidden md:block">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            </>
+          ) : (
+            <>
+              <Image src={songArt} alt={songTitle} width={48} height={48} className="rounded-md h-12 w-12 object-cover" unoptimized/>
+              <div className="min-w-0 hidden md:block">
+                <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
+                <p className="text-xs md:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
+              </div>
+            </>
+          )}
+        </div>
+        
+        {/* Center Section: Player Controls */}
+        <div className="flex items-center justify-center gap-4">
+          <Button variant="default" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading || !radioConfig}>
+            {isPlaying ? <Pause className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" />}
+          </Button>
+          <div className="hidden md:flex items-center gap-2 w-24">
+            <Volume2 className="text-muted-foreground" />
+            <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
           </div>
         </div>
-      </Card>
+
+        {/* Right Section: DJ, Listeners, Request */}
+        <div className="flex items-center justify-end gap-2 md:gap-4">
+           <div className="hidden lg:flex items-center gap-4 bg-black/50 p-2 rounded-lg">
+              <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                      <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djs.current.habboName}&headonly=1&size=s`} alt={djs.current.name} />
+                      <AvatarFallback>{djs.current.name?.substring(0,2)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                      <div className="text-xs font-bold text-white/90">AL AIRE</div>
+                      <div className="text-xs text-muted-foreground">{djs.current.name}</div>
+                  </div>
+              </div>
+          </div>
+          <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
+              <Users className="text-primary h-5 w-5" />
+              <span className="font-bold text-white text-sm">{listeners}</span>
+          </div>
+          
+          <Sheet>
+              <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="hidden md:flex">
+                  <Music className="h-4 w-4 mr-2" />
+                  Petición
+              </Button>
+              </SheetTrigger>
+              <SheetContent>
+              <SheetHeader>
+                  <SheetTitle>Pide una Canción</SheetTitle>
+                  <SheetDescription>
+                  ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
+                  </SheetDescription>
+              </SheetHeader>
+              <div className="py-4">
+                  <SongRequestForm />
+              </div>
+              </SheetContent>
+          </Sheet>
+           <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleNotificationClick}
+              className={cn(notificationPermission === 'granted' && 'text-primary')}
+              title={
+                notificationPermission === 'granted'
+                  ? 'Notificaciones activadas'
+                  : 'Activar notificaciones de DJ'
+              }
+            >
+              <Bell className="h-5 w-5" />
+            </Button>
+        </div>
+      </div>
     </div>
   );
 }

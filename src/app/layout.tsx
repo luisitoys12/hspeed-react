@@ -7,7 +7,7 @@ import {
   Sidebar,
   SidebarInset,
 } from '@/components/ui/sidebar';
-import FloatingPlayer from '@/components/layout/floating-player';
+import HeaderPlayer from '@/components/layout/header-player';
 import { AuthProvider } from '@/hooks/use-auth';
 import Footer from '@/components/layout/footer';
 
@@ -36,15 +36,15 @@ export default function RootLayout({
                 <AppSidebar />
             </Sidebar>
             <SidebarInset>
+                <HeaderPlayer />
                 <div className="flex flex-col min-h-screen">
-                    <main className="flex-grow pb-48 lg:pb-32">
+                    <main className="flex-grow">
                         {children}
                     </main>
                     <Footer />
                 </div>
             </SidebarInset>
             </SidebarProvider>
-            <FloatingPlayer />
             <Toaster />
         </AuthProvider>
       </body>
