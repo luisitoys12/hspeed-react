@@ -7,9 +7,9 @@ import {
   Sidebar,
   SidebarInset,
 } from '@/components/ui/sidebar';
-import HeaderPlayer from '@/components/layout/header-player';
 import { AuthProvider } from '@/hooks/use-auth';
 import Footer from '@/components/layout/footer';
+import FloatingPlayer from '@/components/layout/floating-player';
 
 
 export const metadata: Metadata = {
@@ -36,7 +36,6 @@ export default function RootLayout({
                 <AppSidebar />
             </Sidebar>
             <SidebarInset>
-                <HeaderPlayer />
                 <div className="flex flex-col min-h-screen">
                     <main className="flex-grow">
                         {children}
@@ -45,6 +44,7 @@ export default function RootLayout({
                 </div>
             </SidebarInset>
             </SidebarProvider>
+            <FloatingPlayer />
             <Toaster />
         </AuthProvider>
       </body>
