@@ -3,6 +3,7 @@ import { Newspaper } from 'lucide-react';
 import { getNewsArticles } from '@/lib/data';
 import Image from 'next/image';
 import { Badge } from '../ui/badge';
+import Link from 'next/link';
 
 export default async function LatestCampaigns() {
   const articles = await getNewsArticles();
@@ -24,7 +25,7 @@ export default async function LatestCampaigns() {
       <CardContent>
         <div className="space-y-6">
           {latestArticles.map((article) => (
-            <div key={article.id} className="flex items-start gap-4 group">
+           <Link href={`/news/${article.id}`} key={article.id} className="flex items-start gap-4 group">
               <div className="relative w-24 h-24 md:w-32 md:h-20 flex-shrink-0">
                 <Image
                   src={article.imageUrl}
@@ -44,10 +45,10 @@ export default async function LatestCampaigns() {
                   {article.summary}
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
-         <p className="text-xs text-muted-foreground mt-4 text-center">Datos de campañas simulados. Se requiere una API de noticias para datos en vivo.</p>
+         <p className="text-xs text-muted-foreground mt-4 text-center">Datos de campañas obtenidos desde Firebase.</p>
       </CardContent>
     </Card>
   );

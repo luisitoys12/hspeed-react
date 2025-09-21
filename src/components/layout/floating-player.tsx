@@ -17,9 +17,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import SongRequestForm from '../habbospeed/song-request-form';
-import { getSchedule } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
+import { ScheduleItem } from '@/lib/types';
 
 
 // Estructura de datos de Azuracast
@@ -54,19 +54,46 @@ const defaultDj = {
     habboName: 'estacionkusfm',
 };
 
-type ScheduleItem = {
-    day: string;
-    time: string;
-    show: string;
-    dj: string;
-}
-
-const getNextDj = (schedule: ScheduleItem[]) => {
-    if (schedule && schedule.length > 0) {
-        return { name: schedule[0].dj, habboName: schedule[0].dj };
+const getCurrentAndNextDjs = (schedule: ScheduleItem[], azuracastStreamer?: string) => {
+    if (azuracastStreamer) {
+        const liveDj = schedule.find(item => item.dj.toLowerCase() === azuracastStreamer.toLowerCase());
+        if(liveDj) {
+            return {
+                current: { name: liveDj.dj, habboName: liveDj.dj },
+                next: { name: 'Por anunciar', habboName: 'estacionkusfm' } // Simplified
+            }
+        }
     }
-    return { name: 'Por anunciar', habboName: 'estacionkusfm' };
+
+    const now = new Date();
+    const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][now.getUTCDay()];
+    const currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
+    
+    const todaySchedule = schedule
+        .filter(item => item.day === dayOfWeek)
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+    let currentDj = { ...defaultDj };
+    let nextDj = { name: 'Por anunciar', habboName: 'estacionkusfm' };
+
+    for (let i = 0; i < todaySchedule.length; i++) {
+        const item = todaySchedule[i];
+        if (currentTime >= item.startTime && currentTime <= item.endTime) {
+            currentDj = { name: item.dj, habboName: item.dj };
+            if (todaySchedule[i + 1]) {
+                nextDj = { name: todaySchedule[i + 1].dj, habboName: todaySchedule[i + 1].dj };
+            }
+            break;
+        }
+        if (currentTime < item.startTime) {
+            nextDj = { name: item.dj, habboName: item.dj };
+            break;
+        }
+    }
+
+    return { current: currentDj, next: nextDj };
 };
+
 
 export default function FloatingPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -76,56 +103,67 @@ export default function FloatingPlayer() {
   const [radioConfig, setRadioConfig] = useState<RadioConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
+  const [djs, setDjs] = useState({ current: defaultDj, next: { name: 'Por anunciar', habboName: 'estacionkusfm' } });
 
   useEffect(() => {
-    if (db) {
-      const configRef = ref(db, 'config');
-      const unsubscribe = onValue(configRef, (snapshot) => {
+    const configRef = ref(db, 'config');
+    const unsubscribe = onValue(configRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          setRadioConfig(data);
+          setRadioConfig({
+              apiUrl: data.apiUrl,
+              listenUrl: data.listenUrl,
+          });
         } else {
-            // Set default fallbacks if no config in DB
             setRadioConfig({
                 apiUrl: 'https://radio.kusmedios.lat/api/nowplaying/ekus-fm',
                 listenUrl: 'http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3'
             })
         }
-      });
-      return () => unsubscribe();
-    }
+    });
+    
+    const scheduleRef = ref(db, 'schedule');
+    const unsubscribeSchedule = onValue(scheduleRef, (snapshot) => {
+        const data = snapshot.val();
+        const scheduleArray = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+        setSchedule(scheduleArray);
+    });
+
+    return () => {
+        unsubscribe();
+        unsubscribeSchedule();
+    };
   }, []);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!radioConfig) return;
-      setIsLoading(true);
+      if (!radioConfig?.apiUrl) return;
+      
       try {
         const response = await fetch(radioConfig.apiUrl);
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data: AzuracastData = await response.json();
         setAzuracastData(data);
       } catch (error) {
         console.error("Error fetching Azuracast data:", error);
-        setAzuracastData(null); // Clear data on error
+        setAzuracastData(null);
       } finally {
         setIsLoading(false);
       }
     };
     
-    const fetchSchedule = async () => {
-        const scheduleData = await getSchedule();
-        setSchedule(scheduleData);
-    }
-
     fetchData();
-    fetchSchedule();
     const interval = setInterval(fetchData, 15000); 
-
     return () => clearInterval(interval);
   }, [radioConfig]);
+
+  useEffect(() => {
+    if (schedule.length > 0) {
+       const liveStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : undefined;
+       const calculatedDjs = getCurrentAndNextDjs(schedule, liveStreamer);
+       setDjs(calculatedDjs);
+    }
+  }, [schedule, azuracastData]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -143,7 +181,6 @@ export default function FloatingPlayer() {
             audioRef.current.play().catch(e => console.error("Error playing audio:", e));
         }
       }
-      setIsPlaying(!isPlaying);
     }
   };
   
@@ -161,19 +198,7 @@ export default function FloatingPlayer() {
     }
   }, [audioRef])
 
-  const listenUrl = radioConfig?.listenUrl || "";
-
-  const currentDjHabboName = azuracastData?.live.is_live && azuracastData.live.streamer_name 
-    ? azuracastData.live.streamer_name 
-    : defaultDj.habboName;
-
-  const currentDjName = azuracastData?.live.is_live && azuracastData.live.streamer_name 
-    ? azuracastData.live.streamer_name 
-    : defaultDj.name;
-    
-  const nextDj = getNextDj(schedule);
-
-  const songArt = azuracastData?.now_playing.song.art || "/placeholder-song.png";
+  const songArt = azuracastData?.now_playing.song.art || "https://picsum.photos/seed/songart/100/100";
   const songTitle = azuracastData?.now_playing.song.title || 'Canción no disponible';
   const songArtist = azuracastData?.now_playing.song.artist || 'Artista no disponible';
   const listeners = azuracastData?.listeners.current ?? 0;
@@ -181,8 +206,8 @@ export default function FloatingPlayer() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
       <Card className="overflow-hidden shadow-2xl border-primary/20 backdrop-blur-sm bg-card/80">
-        <audio ref={audioRef} src={listenUrl} preload="none" />
-        <CardContent className="p-3 md:p-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        <audio ref={audioRef} src={radioConfig?.listenUrl} preload="none" />
+        <CardContent className="p-3 md:p-4 grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center gap-4">
           
           {/* Left Section: Song Info */}
           <div className="flex items-center gap-3 min-w-0">
@@ -196,7 +221,7 @@ export default function FloatingPlayer() {
               </>
             ) : (
               <>
-                <Image src={songArt} alt={songTitle} width={56} height={56} className="rounded-md h-14 w-14 object-cover" />
+                <Image src={songArt} alt={songTitle} width={56} height={56} className="rounded-md h-14 w-14 object-cover" unoptimized/>
                 <div className="min-w-0">
                   <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
                   <p className="text-xs md:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
@@ -210,33 +235,33 @@ export default function FloatingPlayer() {
             <Button variant="default" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading || !radioConfig}>
               {isPlaying ? <Pause className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" />}
             </Button>
-            <div className="hidden lg:flex items-center gap-2 w-24">
-              <Volume2 className="text-muted-foreground" />
-              <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
-            </div>
           </div>
 
           {/* Right Section: DJ, Listeners, Request */}
-          <div className="flex items-center justify-end gap-2 md:gap-4">
-            <div className="hidden md:flex items-center gap-4 bg-black/50 p-2 rounded-lg">
+          <div className="hidden lg:flex items-center justify-end gap-2 md:gap-4">
+            <div className="flex items-center gap-2 w-24">
+              <Volume2 className="text-muted-foreground" />
+              <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
+            </div>
+             <div className="flex items-center gap-4 bg-black/50 p-2 rounded-lg">
                 <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
-                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjHabboName}&headonly=1&size=s`} alt={currentDjName} />
-                        <AvatarFallback>{currentDjName?.substring(0,2)}</AvatarFallback>
+                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djs.current.habboName}&headonly=1&size=s`} alt={djs.current.name} />
+                        <AvatarFallback>{djs.current.name?.substring(0,2)}</AvatarFallback>
                     </Avatar>
                     <div>
                         <div className="text-xs font-bold text-white/90">AL AIRE</div>
-                        <div className="text-xs text-muted-foreground">{currentDjName}</div>
+                        <div className="text-xs text-muted-foreground">{djs.current.name}</div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
-                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${nextDj.habboName}&headonly=1&size=s`} alt={nextDj.name} />
-                        <AvatarFallback>{nextDj.name?.substring(0,2)}</AvatarFallback>
+                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djs.next.habboName}&headonly=1&size=s`} alt={djs.next.name} />
+                        <AvatarFallback>{djs.next.name?.substring(0,2)}</AvatarFallback>
                     </Avatar>
                     <div>
                         <div className="text-xs font-bold text-white/90">SIGUIENTE</div>
-                        <div className="text-xs text-muted-foreground">{nextDj.name}</div>
+                        <div className="text-xs text-muted-foreground">{djs.next.name}</div>
                     </div>
                 </div>
             </div>

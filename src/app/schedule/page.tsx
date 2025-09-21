@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -7,10 +9,29 @@ import {
 } from '@/components/ui/card';
 import { Calendar } from 'lucide-react';
 import ScheduleDisplay from '@/components/habbospeed/schedule-display';
-import { getSchedule } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
+import { ScheduleItem } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default async function SchedulePage() {
-  const scheduleData = await getSchedule();
+
+export default function SchedulePage() {
+  const [scheduleData, setScheduleData] = useState<ScheduleItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const scheduleRef = ref(db, 'schedule');
+    const unsubscribe = onValue(scheduleRef, (snapshot) => {
+      const data = snapshot.val();
+      const scheduleArray = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+      setScheduleData(scheduleArray);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -25,7 +46,13 @@ export default async function SchedulePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ScheduleDisplay schedule={scheduleData} />
+          {loading ? (
+             <div className="border rounded-lg p-4 space-y-2">
+                {Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+             </div>
+          ) : (
+             <ScheduleDisplay schedule={scheduleData} />
+          )}
         </CardContent>
       </Card>
     </div>

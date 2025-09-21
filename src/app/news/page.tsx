@@ -21,7 +21,7 @@ export default async function NewsPage() {
           <NewsCard key={article.id} article={article} />
         ))}
       </div>
-       <p className="text-xs text-muted-foreground mt-4 text-center">Datos de noticias simulados. Se requiere API para datos en vivo.</p>
+       <p className="text-xs text-muted-foreground mt-4 text-center">Datos de noticias obtenidos desde Firebase Realtime Database.</p>
     </div>
   );
 }

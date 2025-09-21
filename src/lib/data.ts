@@ -2,20 +2,8 @@
 // We are simulating the API responses here.
 import { db } from './firebase';
 import { ref, get } from 'firebase/database';
+import { NewsArticle } from './types';
 
-type HabboUser = {
-    name: string;
-    motto: string;
-    online: boolean;
-    // ... and other fields from the API
-};
-
-export const djInfo = {
-    name: 'hspeed',
-    habboName: 'hspeed',
-    avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=hspeed&action=std&direction=2&head_direction=2&gesture=sml&size=l&headonly=1',
-    roles: ['AutoDJ'],
-};
 
 export async function getTeamMembers() {
     try {
@@ -35,6 +23,7 @@ export async function getTeamMembers() {
 
         const memberPromises = teamConfig.map(async (memberConfig) => {
             try {
+                // Using a short revalidation time to keep online status somewhat fresh
                 const response = await fetch(`https://www.habbo.es/api/public/users?name=${memberConfig.name}`, { next: { revalidate: 300 } });
                 if (!response.ok) {
                     return {
@@ -69,21 +58,17 @@ export async function getTeamMembers() {
         return members;
     } catch (error) {
         console.error("Failed to fetch team members from Firebase:", error);
-        return [];
+        // Return a default member to avoid empty team page on DB error
+        return [{
+            name: 'Ekus FM',
+            motto: 'Error al cargar el equipo',
+            roles: ['Fansite'],
+            avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=estacionkusfm&direction=2&head_direction=3&size=l`,
+            online: true,
+        }];
     }
 }
 
-export async function getSchedule() {
-    return Promise.resolve([
-        { day: 'Lunes', time: '18:00 - 20:00', show: 'Fiesta Pixel Pop', dj: 'PixelMaster' },
-        { day: 'Martes', time: '20:00 - 22:00', show: 'Retro Rewind', dj: 'DJ Glitch' },
-        { day: 'Miércoles', time: '19:00 - 21:00', show: 'Miércoles de Onda', dj: 'MC Flow' },
-        { day: 'Jueves', time: '21:00 - 23:00', show: 'Jueves de Recuerdo', dj: 'PixelMaster' },
-        { day: 'Viernes', time: '20:00 - 00:00', show: 'Fusión de Viernes por la Noche', dj: 'Todos los DJs' },
-        { day: 'Sábado', time: '16:00 - 18:00', show: 'El Top 20 de Habbo', dj: 'DJ Glitch' },
-        { day: 'Domingo', time: '14:00 - 16:00', show: 'Sesión de Chillout', dj: 'MC Flow' },
-    ]);
-}
 
 export async function getHabboProfileData(username: string) {
     try {
@@ -128,7 +113,7 @@ export async function getHabboProfileData(username: string) {
 }
 
 export async function getActiveRooms() {
-    const username = 'estacionkusfm';
+    const username = 'official_rooms'; // A user with many public rooms
     try {
         const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${username}`, { next: { revalidate: 600 } });
         if (!userResponse.ok) {
@@ -155,46 +140,29 @@ export async function getActiveRooms() {
 }
 
 
-export async function getNewsArticles() {
-    // In a real app, you would fetch this from Habbo's news API or RSS feed.
-    return Promise.resolve([
-        {
-            id: '1',
-            title: '¡Nueva línea de furnis "Cyberpunk" lanzada!',
-            summary: 'Una nueva línea de furnis futuristas ha llegado al catálogo. ¡Consigue ya estos artículos bañados en neón!',
-            imageUrl: 'https://picsum.photos/seed/news1/600/400',
-            imageHint: 'cyberpunk city',
-            category: 'FURNI',
-            date: '2024-07-20',
-        },
-        {
-            id: '2',
-            title: 'Guía: Dominando el juego "Wobble Squabble"',
-            summary: '¿Te cuesta conseguir la máxima puntuación? Nuestra completa guía desglosa las mejores estrategias para convertirte en un campeón.',
-            imageUrl: 'https://picsum.photos/seed/news2/600/400',
-            imageHint: 'game strategy',
-            category: 'GUÍA',
-            date: '2024-07-18',
-        },
-        {
-            id: '3',
-            title: 'Foco en la comunidad: El arte de construir salas',
-            summary: 'Entrevistamos a tres de los constructores de salas más talentosos de la comunidad para que nos den sus consejos.',
-            imageUrl: 'https://picsum.photos/seed/news3/600/400',
-            imageHint: 'interior design',
-            category: 'COMUNIDAD',
-            date: '2024-07-15',
-        },
-        {
-            id: '4',
-            title: 'Análisis: La economía de Habbo en 2024',
-            summary: 'Una mirada en profundidad al estado actual del mercado de Habbo, las tendencias de tradeo y el valor de los raros.',
-            imageUrl: 'https://picsum.photos/seed/news4/600/400',
-            imageHint: 'stock market',
-            category: 'ANÁLISIS',
-            date: '2024-07-12',
+export async function getNewsArticles(): Promise<NewsArticle[]> {
+    try {
+        const newsRef = ref(db, 'news');
+        const snapshot = await get(newsRef);
+        
+        if (!snapshot.exists()) {
+            console.log("No news articles found in Firebase.");
+            return [];
         }
-    ]);
+
+        const newsData = snapshot.val();
+        const articlesArray = Object.keys(newsData).map(key => ({
+            id: key,
+            ...newsData[key]
+        }));
+        
+        // Sort by date descending
+        return articlesArray.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    } catch (error) {
+        console.error("Failed to fetch news from Firebase:", error);
+        return [];
+    }
 }
 
 export async function getLeaderboardData() {

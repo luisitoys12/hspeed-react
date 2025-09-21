@@ -12,10 +12,26 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { Button } from '../ui/button';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { db } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
+import { Skeleton } from '../ui/skeleton';
 
-const slides = [
+type Slide = {
+  id: string;
+  imageUrl: string;
+  imageHint: string;
+  title: string;
+  subtitle: string;
+  cta: {
+    text: string;
+    href: string;
+  };
+};
+
+const defaultSlides = [
   {
-    id: 1,
+    id: '1',
     imageUrl: 'https://picsum.photos/seed/habboparty/1200/400',
     imageHint: 'habbo party',
     title: '¡Bienvenidos a Ekus FM!',
@@ -25,42 +41,31 @@ const slides = [
       href: '/schedule',
     }
   },
-  {
-    id: 2,
-    imageUrl: 'https://picsum.photos/seed/livemusic/1200/400',
-    imageHint: 'live music',
-    title: 'Eventos Especiales Cada Semana',
-    subtitle: 'Participa en nuestros concursos en vivo y gana premios exclusivos.',
-     cta: {
-      text: 'Ver Noticias',
-      href: '/news',
-    }
-  },
-  {
-    id: 3,
-    imageUrl: 'https://picsum.photos/seed/radiostudio/1200/400',
-    imageHint: 'radio studio',
-    title: 'Pide Tus Canciones Favoritas',
-    subtitle: 'Nuestros DJs están esperando tu petición para ponerla al aire.',
-     cta: {
-      text: 'Pedir una canción',
-      href: '/request',
-    }
-  },
-  {
-    id: 4,
-    imageUrl: 'https://picsum.photos/seed/haboteam/1200/400',
-    imageHint: 'community team',
-    title: 'Únete a Nuestra Comunidad',
-    subtitle: 'Conoce a nuestro equipo y haz nuevos amigos en el hotel.',
-     cta: {
-      text: 'Conoce al Equipo',
-      href: '/team',
-    }
-  },
 ];
 
+
 export default function HeroSlideshow() {
+  const [slides, setSlides] = useState<Slide[]>(defaultSlides);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const slidesRef = ref(db, 'config/slideshow');
+    const unsubscribe = onValue(slidesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const slidesArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        setSlides(slidesArray);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <Skeleton className="w-full aspect-video md:aspect-[3/1] rounded-lg" />;
+  }
+
   return (
     <Carousel
       className="w-full"
@@ -84,6 +89,7 @@ export default function HeroSlideshow() {
                   fill
                   className="object-cover"
                   data-ai-hint={slide.imageHint}
+                  unoptimized
                 />
                 <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-center p-4">
                   <h2 className="text-2xl md:text-4xl font-headline font-bold text-white drop-shadow-lg">
@@ -92,7 +98,7 @@ export default function HeroSlideshow() {
                   <p className="text-md md:text-lg text-white/90 drop-shadow-md mt-2 max-w-2xl">
                     {slide.subtitle}
                   </p>
-                   {slide.cta && (
+                   {slide.cta && slide.cta.text && slide.cta.href && (
                     <Button asChild className="mt-4">
                       <Link href={slide.cta.href}>{slide.cta.text}</Link>
                     </Button>

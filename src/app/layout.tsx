@@ -8,7 +8,7 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import FloatingPlayer from '@/components/layout/floating-player';
-import { AuthProvider } from '@/hooks/use-auth.tsx';
+import { AuthProvider } from '@/hooks/use-auth';
 
 
 export const metadata: Metadata = {
@@ -35,7 +35,7 @@ export default function RootLayout({
                 <AppSidebar />
             </Sidebar>
             <SidebarInset>
-                <div className="pb-32 lg:pb-24">
+                <div className="pb-48 lg:pb-32">
                 {children}
                 </div>
             </SidebarInset>

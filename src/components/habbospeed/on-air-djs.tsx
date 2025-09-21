@@ -3,8 +3,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
-import { getSchedule } from "@/lib/data";
 import Image from "next/image";
+import { db } from "@/lib/firebase";
+import { ref, onValue } from "firebase/database";
+import { ScheduleItem } from "@/lib/types";
 
 interface AzuracastData {
   live: {
@@ -13,25 +15,33 @@ interface AzuracastData {
   };
 }
 
-type ScheduleItem = {
-    day: string;
-    time: string;
-    show: string;
-    dj: string;
-}
-
 const defaultDj = {
     name: 'AutoDJ',
     habboName: 'estacionkusfm',
 };
 
 const getNextDj = (schedule: ScheduleItem[]) => {
-    if (schedule && schedule.length > 0) {
-        // This is a simplified logic, a real implementation would check current time
-        return { name: schedule[0].dj, habboName: schedule[0].dj };
+    if (!schedule || schedule.length === 0) {
+        return { name: 'Por anunciar', habboName: 'estacionkusfm' };
     }
+    
+    const now = new Date();
+    const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][now.getUTCDay()];
+    const currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
+
+    const todaySchedule = schedule
+        .filter(item => item.day === dayOfWeek)
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    
+    for (const item of todaySchedule) {
+        if (currentTime < item.startTime) {
+            return { name: item.dj, habboName: item.dj };
+        }
+    }
+    
     return { name: 'Por anunciar', habboName: 'estacionkusfm' };
 };
+
 
 export default function OnAirDjs() {
     const [azuracastData, setAzuracastData] = useState<AzuracastData | null>(null);
@@ -51,16 +61,21 @@ export default function OnAirDjs() {
             setIsLoading(false);
           }
         };
-
-        const fetchSchedule = async () => {
-            const scheduleData = await getSchedule();
-            setSchedule(scheduleData);
-        }
+        
+        const scheduleRef = ref(db, 'schedule');
+        const unsubscribeSchedule = onValue(scheduleRef, (snapshot) => {
+            const data = snapshot.val();
+            const scheduleArray = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+            setSchedule(scheduleArray);
+        });
 
         fetchData();
-        fetchSchedule();
         const interval = setInterval(fetchData, 30000); 
-        return () => clearInterval(interval);
+        
+        return () => {
+            clearInterval(interval);
+            unsubscribeSchedule();
+        };
     }, []);
 
     const currentDjHabboName = azuracastData?.live.is_live && azuracastData.live.streamer_name 

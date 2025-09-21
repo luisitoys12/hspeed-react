@@ -5,7 +5,7 @@ import Link from 'next/link';
 const panelLinks = [
     { href: '/panel/team', title: 'Gestión de Equipo', description: 'Añadir o quitar miembros del equipo.', icon: Users },
     { href: '/panel/schedule', title: 'Gestión de Horarios', description: 'Actualizar la programación semanal.', icon: Calendar },
-    { href: '#', title: 'Gestión de Noticias', description: 'Publicar y editar artículos de noticias.', icon: Newspaper },
+    { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos de noticias.', icon: Newspaper },
     { href: '/panel/config', title: 'Ajustes Generales', description: 'Configurar URLs de la radio y redes.', icon: Settings },
     { href: '#', title: 'Analíticas', description: 'Ver estadísticas de oyentes y web.', icon: BarChart },
 ]

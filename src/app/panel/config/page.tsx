@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useEffect, useMemo } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ref, onValue, set } from "firebase/database";
@@ -9,17 +9,30 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, Radio, Link as LinkIcon, LoaderCircle } from 'lucide-react';
+import { Settings, Radio, Link as LinkIcon, LoaderCircle, Trash2, PlusCircle, Image as ImageIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+
+const slideSchema = z.object({
+  title: z.string().min(1, "El título es requerido."),
+  subtitle: z.string().min(1, "El subtítulo es requerido."),
+  imageUrl: z.string().url("Debe ser una URL válida."),
+  imageHint: z.string().optional(),
+  cta: z.object({
+    text: z.string().min(1, "El texto del botón es requerido."),
+    href: z.string().min(1, "El enlace del botón es requerido."),
+  })
+});
 
 const configSchema = z.object({
   apiUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
   listenUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
+  slideshow: z.array(slideSchema).optional(),
 });
 
 type ConfigFormValues = z.infer<typeof configSchema>;
@@ -30,12 +43,20 @@ export default function ConfigPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dbLoading, setDbLoading] = useState(true);
 
+  const defaultValues = useMemo(() => ({
+    apiUrl: "",
+    listenUrl: "",
+    slideshow: [],
+  }), []);
+
   const form = useForm<ConfigFormValues>({
     resolver: zodResolver(configSchema),
-    defaultValues: {
-      apiUrl: "",
-      listenUrl: "",
-    },
+    defaultValues,
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "slideshow",
   });
 
   useEffect(() => {
@@ -47,13 +68,17 @@ export default function ConfigPage() {
           form.reset({
             apiUrl: data.apiUrl || "",
             listenUrl: data.listenUrl || "",
+            slideshow: data.slideshow ? Object.values(data.slideshow) : []
           });
         }
+        setDbLoading(false);
+      }, (error) => {
+        console.error(error);
         setDbLoading(false);
       });
       return () => unsubscribe();
     }
-  }, [form]);
+  }, [form, defaultValues]);
 
   async function onSubmit(values: ConfigFormValues) {
     if (!user) {
@@ -63,8 +88,17 @@ export default function ConfigPage() {
 
     setIsSubmitting(true);
     try {
+      // Convert array to object for Firebase
+      const dataToSave = {
+        ...values,
+        slideshow: values.slideshow?.reduce((acc, slide, index) => {
+          acc[`slide${index + 1}`] = slide;
+          return acc;
+        }, {} as any)
+      };
+
       const configRef = ref(db, 'config');
-      await set(configRef, values);
+      await set(configRef, dataToSave);
       toast({ title: "¡Éxito!", description: "La configuración se ha guardado correctamente." });
     } catch (error) {
       console.error("Error saving config:", error);
@@ -73,38 +107,18 @@ export default function ConfigPage() {
       setIsSubmitting(false);
     }
   }
-
+  
   if (authLoading || dbLoading) {
-    return (
-      <div className="container mx-auto p-4 md:p-8">
-        <div className="mb-8">
-          <Skeleton className="h-10 w-3/4" />
-          <Skeleton className="h-4 w-1/2 mt-2" />
-        </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-8 w-1/3" />
-            <Skeleton className="h-4 w-2/3 mt-2" />
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <div className="flex justify-end">
-              <Skeleton className="h-10 w-24" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <ConfigSkeleton />;
   }
   
-  if (!user) {
+  if (!user?.isSuperAdmin) {
      return (
        <div className="container mx-auto p-4 md:p-8">
          <Card>
            <CardHeader>
              <CardTitle>Acceso Denegado</CardTitle>
-             <CardDescription>Debes iniciar sesión para ver esta página.</CardDescription>
+             <CardDescription>Debes ser administrador para ver esta página.</CardDescription>
            </CardHeader>
          </Card>
        </div>
@@ -116,74 +130,132 @@ export default function ConfigPage() {
       <div className="mb-8">
         <h1 className="flex items-center gap-3 text-2xl md:text-4xl font-headline font-bold">
           <Settings className="h-8 w-8 text-primary" />
-          Configuración de la Estación
+          Ajustes Generales
         </h1>
         <p className="text-muted-foreground mt-2">
-          Gestiona las URLs y otros ajustes importantes para Ekus FM. Los cambios se guardarán en tiempo real.
+          Gestiona las URLs, el carrusel de la página principal y otros ajustes importantes.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
-            <Radio />
-            Configuración de Azuracast
-          </CardTitle>
-          <CardDescription>
-            Introduce las URLs para la API de Azuracast y el stream de la radio.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="apiUrl"
-                render={({ field }) => (
+       <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
+                <Radio />
+                Configuración de Azuracast
+              </CardTitle>
+              <CardDescription>
+                Introduce las URLs para la API de Azuracast y el stream de la radio.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <FormField control={form.control} name="apiUrl" render={({ field }) => (
                   <FormItem>
-                    <Label htmlFor="api-url" className="flex items-center gap-2">
-                      <LinkIcon className="h-4 w-4" />
-                      URL de la API Now Playing
-                    </Label>
-                    <FormControl>
-                      <Input id="api-url" placeholder="https://radio.kusmedios.lat/api/nowplaying/ekus-fm" {...field} />
-                    </FormControl>
-                    <p className="text-sm text-muted-foreground">
-                      Esta URL se usa para obtener la información de la canción actual, el DJ y los oyentes.
-                    </p>
+                    <FormLabel>URL de la API Now Playing</FormLabel>
+                    <FormControl><Input placeholder="https://radio.kusmedios.lat/api/nowplaying/ekus-fm" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="listenUrl"
-                render={({ field }) => (
+              )}/>
+               <FormField control={form.control} name="listenUrl" render={({ field }) => (
                   <FormItem>
-                    <Label htmlFor="listen-url" className="flex items-center gap-2">
-                      <LinkIcon className="h-4 w-4" />
-                      URL del Stream de Audio
-                    </Label>
-                    <FormControl>
-                      <Input id="listen-url" placeholder="http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3" {...field} />
-                    </FormControl>
-                    <p className="text-sm text-muted-foreground">
-                      Esta es la URL que los usuarios usarán para escuchar la radio en directo.
-                    </p>
+                    <FormLabel>URL del Stream de Audio</FormLabel>
+                    <FormControl><Input placeholder="http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3" {...field} /></FormControl>
                      <FormMessage />
                   </FormItem>
-                )}
-              />
-              <div className="flex justify-end">
-                <Button type="submit" disabled={isSubmitting}>
-                   {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  Guardar Cambios
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+              )}/>
+            </CardContent>
+          </Card>
+          
+          <Card>
+             <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
+                <ImageIcon />
+                Gestión del Carrusel (Slideshow)
+              </CardTitle>
+              <CardDescription>
+                Añade o edita las diapositivas que aparecen en la página principal.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                {fields.map((field, index) => (
+                  <div key={field.id} className="p-4 border rounded-md relative space-y-4">
+                    <h4 className="font-bold">Diapositiva {index + 1}</h4>
+                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => remove(index)}>
+                        <Trash2 className="h-4 w-4" />
+                     </Button>
+                    <FormField control={form.control} name={`slideshow.${index}.title`} render={({ field }) => (
+                      <FormItem><FormLabel>Título</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                     <FormField control={form.control} name={`slideshow.${index}.subtitle`} render={({ field }) => (
+                      <FormItem><FormLabel>Subtítulo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                    <FormField control={form.control} name={`slideshow.${index}.imageUrl`} render={({ field }) => (
+                      <FormItem><FormLabel>URL de la Imagen</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                     <div className="grid grid-cols-2 gap-4">
+                        <FormField control={form.control} name={`slideshow.${index}.cta.text`} render={({ field }) => (
+                          <FormItem><FormLabel>Texto del Botón</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={form.control} name={`slideshow.${index}.cta.href`} render={({ field }) => (
+                          <FormItem><FormLabel>Enlace del Botón</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                     </div>
+                  </div>
+                ))}
+                 <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => append({ title: '', subtitle: '', imageUrl: '', cta: { text: '', href: '' }})}
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Añadir Diapositiva
+                  </Button>
+            </CardContent>
+          </Card>
+          
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+              Guardar Todos los Cambios
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }
+
+const ConfigSkeleton = () => (
+  <div className="container mx-auto p-4 md:p-8">
+    <Skeleton className="h-10 w-3/4 mb-2" />
+    <Skeleton className="h-4 w-1/2 mb-8" />
+    <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-2/3 mt-2" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+          <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+        </CardContent>
+      </Card>
+       <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-2/3 mt-2" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <Skeleton className="h-40 w-full rounded-md" />
+            <Skeleton className="h-10 w-32" />
+        </CardContent>
+      </Card>
+      <div className="flex justify-end">
+        <Skeleton className="h-10 w-40" />
+      </div>
+    </div>
+  </div>
+);
