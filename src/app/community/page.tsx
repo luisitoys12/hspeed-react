@@ -8,8 +8,8 @@ const tools = [
     description: 'Calcula el valor de tus tradeos para asegurarte de que son justos.',
     icon: Calculator,
     isNew: true,
-    href: '#',
-    disabled: true
+    href: '/community/trade-calculator',
+    disabled: false
   },
   {
     title: 'Generador de Nombres',
@@ -24,16 +24,16 @@ const tools = [
     description: 'Participa en sorteos automáticos para ganar premios exclusivos.',
     icon: Dice5,
     isNew: false,
-    href: '#',
-    disabled: true
+    href: '/community/raffles',
+    disabled: false
   },
   {
     title: 'Diseñador de Avatares',
     description: 'Prueba combinaciones de ropa y accesorios antes de comprarlos.',
     icon: Paintbrush,
     isNew: false,
-    href: '#',
-    disabled: true
+    href: '/community/avatar-designer',
+    disabled: false
   },
     {
     title: 'Guías de Wired',
