@@ -45,8 +45,7 @@ const publicLinks = [
 ];
 
 const authLinks = [
-  { href: '/admin', label: 'Panel Admin', icon: Shield },
-  { href: '/panel/config', label: 'Configuración', icon: Settings },
+  { href: '/panel', label: 'Panel Admin', icon: Shield },
   { href: '/docs', label: 'Documentación', icon: BookOpen },
 ];
 
@@ -120,7 +119,7 @@ export default function AppSidebar() {
                     <Link href={link.href}>
                     <SidebarMenuButton
                         asChild
-                        isActive={pathname === link.href}
+                        isActive={pathname.startsWith(link.href)}
                         tooltip={link.label}
                     >
                         <span>
