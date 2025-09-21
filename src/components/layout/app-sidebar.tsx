@@ -35,7 +35,6 @@ const publicLinks = [
   { href: '/schedule', label: 'Horarios', icon: Calendar },
   { href: '/news', label: 'Noticias Habbo', icon: Newspaper },
   { href: '/team', label: 'Equipo', icon: Users },
-  { href: '/request', label: 'Pide una canción', icon: Music },
   { href: '/contact', label: 'Contacto', icon: Mail },
 ];
 
@@ -83,6 +82,21 @@ export default function AppSidebar() {
                 </Link>
               </SidebarMenuItem>
           ))}
+           <SidebarMenuItem>
+              <Link href="/request">
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/request'}
+                  tooltip="Pide una canción"
+                  className="lg:hidden"
+                >
+                  <span>
+                    <Music />
+                    <span>Pide una canción</span>
+                  </span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
 
           {user?.isLoggedIn ? (
             authLinks.map((link) => (

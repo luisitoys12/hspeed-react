@@ -8,6 +8,7 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import FloatingPlayer from '@/components/layout/floating-player';
+import { Sheet } from '@/components/ui/sheet';
 
 export const metadata: Metadata = {
   title: 'Ekus FM',
