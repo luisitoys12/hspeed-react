@@ -18,7 +18,7 @@ export function useAuth() {
     uid: 'dev-user-123',
     email: 'dev@example.com',
     displayName: 'Dev User',
-    isLoggedIn: true, // Set to true to simulate a logged-in user for development
+    isLoggedIn: false, // Set to false to simulate a logged-out user
   });
 
   const [loading] = useState(false);

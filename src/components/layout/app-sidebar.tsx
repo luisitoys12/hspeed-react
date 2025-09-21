@@ -22,22 +22,27 @@ import {
   Users,
   BookOpen,
   Settings,
+  LogIn,
+  UserPlus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 
-const links = [
-  { href: '/', label: 'Inicio', icon: Home, auth: false },
-  { href: '/schedule', label: 'Horarios', icon: Calendar, auth: false },
-  { href: '/news', label: 'Noticias Habbo', icon: Newspaper, auth: false },
-  { href: '/team', label: 'Equipo', icon: Users, auth: false },
-  { href: '/request', label: 'Pide una canción', icon: Music, auth: false },
-  { href: '/contact', label: 'Contacto', icon: Mail, auth: false },
-  { href: '/admin', label: 'Panel Admin', icon: Shield, auth: true },
-  { href: '/panel/config', label: 'Configuración', icon: Settings, auth: true },
-  { href: '/docs', label: 'Documentación', icon: BookOpen, auth: true },
+const publicLinks = [
+  { href: '/', label: 'Inicio', icon: Home },
+  { href: '/schedule', label: 'Horarios', icon: Calendar },
+  { href: '/news', label: 'Noticias Habbo', icon: Newspaper },
+  { href: '/team', label: 'Equipo', icon: Users },
+  { href: '/request', label: 'Pide una canción', icon: Music },
+  { href: '/contact', label: 'Contacto', icon: Mail },
+];
+
+const authLinks = [
+  { href: '/admin', label: 'Panel Admin', icon: Shield },
+  { href: '/panel/config', label: 'Configuración', icon: Settings },
+  { href: '/docs', label: 'Documentación', icon: BookOpen },
 ];
 
 const socialLinks = [
@@ -62,11 +67,7 @@ export default function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {links.map((link) => {
-            if (link.auth && !user?.isLoggedIn) {
-              return null;
-            }
-            return (
+          {publicLinks.map((link) => (
               <SidebarMenuItem key={link.href}>
                 <Link href={link.href}>
                   <SidebarMenuButton
@@ -81,8 +82,50 @@ export default function AppSidebar() {
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
-            );
-          })}
+          ))}
+
+          {user?.isLoggedIn ? (
+            authLinks.map((link) => (
+                <SidebarMenuItem key={link.href}>
+                    <Link href={link.href}>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={pathname === link.href}
+                        tooltip={link.label}
+                    >
+                        <span>
+                        <link.icon />
+                        <span>{link.label}</span>
+                        </span>
+                    </SidebarMenuButton>
+                    </Link>
+                </SidebarMenuItem>
+            ))
+          ) : (
+            <>
+                <SidebarMenuItem>
+                    <Link href="#">
+                        <SidebarMenuButton tooltip="Iniciar Sesión">
+                            <span>
+                                <LogIn />
+                                <span>Iniciar Sesión</span>
+                            </span>
+                        </SidebarMenuButton>
+                    </Link>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <Link href="#">
+                        <SidebarMenuButton tooltip="Registrarse con código admin">
+                            <span>
+                                <UserPlus />
+                                <span>Registrarse</span>
+                            </span>
+                        </SidebarMenuButton>
+                    </Link>
+                </SidebarMenuItem>
+            </>
+          )}
+
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
