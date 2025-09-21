@@ -17,6 +17,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import SongRequestForm from '../habbospeed/song-request-form';
+import { getSchedule } from '@/lib/data';
 
 
 // Estructura de datos de Azuracast
@@ -46,12 +47,27 @@ const defaultDj = {
     habboName: 'estacionkusfm',
 };
 
+type ScheduleItem = {
+    day: string;
+    time: string;
+    show: string;
+    dj: string;
+}
+
+const getNextDj = (schedule: ScheduleItem[]) => {
+    if (schedule && schedule.length > 0) {
+        return { name: schedule[0].dj, habboName: schedule[0].dj };
+    }
+    return { name: 'Por anunciar', habboName: 'estacionkusfm' };
+};
+
 export default function FloatingPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(50);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [azuracastData, setAzuracastData] = useState<AzuracastData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,11 +86,17 @@ export default function FloatingPlayer() {
         setIsLoading(false);
       }
     };
+    
+    const fetchSchedule = async () => {
+        const scheduleData = await getSchedule();
+        setSchedule(scheduleData);
+    }
 
-    fetchData(); // Fetch immediately on mount
-    const interval = setInterval(fetchData, 15000); // Refresh every 15 seconds
+    fetchData();
+    fetchSchedule();
+    const interval = setInterval(fetchData, 15000); 
 
-    return () => clearInterval(interval); // Cleanup on unmount
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -120,7 +142,9 @@ export default function FloatingPlayer() {
   const currentDjName = azuracastData?.live.is_live && azuracastData.live.streamer_name 
     ? azuracastData.live.streamer_name 
     : defaultDj.name;
-  
+    
+  const nextDj = getNextDj(schedule);
+
   const songArt = azuracastData?.now_playing.song.art || "/placeholder-song.png";
   const songTitle = azuracastData?.now_playing.song.title || 'Canción no disponible';
   const songArtist = azuracastData?.now_playing.song.artist || 'Artista no disponible';
@@ -130,7 +154,7 @@ export default function FloatingPlayer() {
     <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
       <Card className="overflow-hidden shadow-2xl border-primary/20 backdrop-blur-sm bg-card/80">
         <audio ref={audioRef} src={listenUrl} preload="none" />
-        <CardContent className="p-3 md:p-4 grid grid-cols-3 items-center gap-4">
+        <CardContent className="p-3 md:p-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
           
           {/* Left Section: Song Info */}
           <div className="flex items-center gap-3 min-w-0">
@@ -166,7 +190,7 @@ export default function FloatingPlayer() {
 
           {/* Right Section: DJ, Listeners, Request */}
           <div className="flex items-center justify-end gap-2 md:gap-4">
-             <div className="hidden md:flex items-center gap-3 bg-black/50 p-2 rounded-lg">
+            <div className="hidden md:flex items-center gap-4 bg-black/50 p-2 rounded-lg">
                 <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
                         <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjHabboName}&headonly=1&size=s`} alt={currentDjName} />
@@ -177,31 +201,40 @@ export default function FloatingPlayer() {
                         <div className="text-xs text-muted-foreground">{currentDjName}</div>
                     </div>
                 </div>
-             </div>
-             <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${nextDj.habboName}&headonly=1&size=s`} alt={nextDj.name} />
+                        <AvatarFallback>{nextDj.name?.substring(0,2)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <div className="text-xs font-bold text-white/90">SIGUIENTE</div>
+                        <div className="text-xs text-muted-foreground">{nextDj.name}</div>
+                    </div>
+                </div>
+            </div>
+            <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
                 <Users className="text-primary h-5 w-5" />
                 <span className="font-bold text-white text-sm">{listeners}</span>
-              </div>
+            </div>
             <Sheet>
-              <SheetTrigger asChild>
+                <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="flex-shrink-0 h-10 w-10">
-                  <Music className="h-4 w-4" />
+                    <Music className="h-4 w-4" />
                 </Button>
-              </SheetTrigger>
-              <SheetContent>
+                </SheetTrigger>
+                <SheetContent>
                 <SheetHeader>
-                  <SheetTitle>Pide una Canción</SheetTitle>
-                  <SheetDescription>
+                    <SheetTitle>Pide una Canción</SheetTitle>
+                    <SheetDescription>
                     ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
-                  </SheetDescription>
+                    </SheetDescription>
                 </SheetHeader>
                 <div className="py-4">
-                  <SongRequestForm />
+                    <SongRequestForm />
                 </div>
-              </SheetContent>
+                </SheetContent>
             </Sheet>
           </div>
-
         </CardContent>
       </Card>
     </div>
