@@ -1,5 +1,6 @@
 
 
+
 // In a real application, this data would come from the Habbo API.
 // We are simulating the API responses here.
 
@@ -76,11 +77,17 @@ export async function getSchedule() {
 export async function getHabboProfileData(username: string) {
     try {
         const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${username}`);
-        if (!userResponse.ok) throw new Error('User not found');
+        if (!userResponse.ok) {
+            const errorData = await userResponse.json().catch(() => null);
+            const errorMessage = errorData?.error ? `Usuario no encontrado: ${errorData.error}` : 'Usuario no encontrado o la API no está disponible.';
+            return { error: errorMessage };
+        }
         const userData = await userResponse.json();
 
         const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`);
-        if (!profileResponse.ok) throw new Error('Profile not found');
+         if (!profileResponse.ok) {
+            return { error: 'No se pudo cargar el perfil de este usuario.' };
+        }
         const profileData = await profileResponse.json();
 
         return {
@@ -100,24 +107,12 @@ export async function getHabboProfileData(username: string) {
                 imageUrl: `https://www.habbo.com/habbo-imaging/room/${room.id}/thumbnail.png`,
                 imageHint: 'habbo room',
             })),
+            error: null,
         };
 
     } catch (error) {
         console.error("Failed to fetch Habbo profile data:", error);
-        // Fallback to mock data on error
-        return Promise.resolve({
-            name: username,
-            motto: 'Tu radio, tu comunidad.',
-            registrationDate: '2024-01-01',
-            rewards: 42,
-            badges: [
-                { id: '1', name: 'Placa Halloween 2024', imageUrl: 'https://picsum.photos/seed/badge1/50/50', imageHint: 'calabaza halloween' },
-                { id: '2', name: 'Placa Radio Fan', imageUrl: 'https://picsum.photos/seed/badge2/50/50', imageHint: 'auriculares icono' },
-            ],
-            rooms: [
-                { id: '1', name: 'Estudio Principal Ekus FM', imageUrl: 'https://picsum.photos/seed/room1/200/150', imageHint: 'estudio de radio' },
-            ],
-        });
+        return { error: 'Ocurrió un error inesperado al buscar el perfil.' };
     }
 }
 
