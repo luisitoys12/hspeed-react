@@ -1,12 +1,14 @@
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 type TeamMember = {
   name: string;
   motto: string;
   roles: string[];
   avatarUrl: string;
+  online: boolean;
 };
 
 type TeamMemberCardProps = {
@@ -25,8 +27,14 @@ export default function TeamMemberCard({ member }: TeamMemberCardProps) {
             height={96}
             className="rounded-full border-4 border-primary"
           />
+           <div className={cn(
+               "absolute bottom-0 right-1 h-5 w-5 rounded-full border-2 border-background",
+               member.online ? 'bg-green-500' : 'bg-gray-500'
+           )} />
         </div>
-        <CardTitle className="font-headline text-xl">{member.name}</CardTitle>
+        <CardTitle className="font-headline text-xl flex items-center gap-2">
+            {member.name}
+        </CardTitle>
         <CardDescription className="italic">"{member.motto}"</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-center items-center">

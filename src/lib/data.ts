@@ -1,4 +1,5 @@
 
+
 // In a real application, this data would come from the Habbo API.
 // We are simulating the API responses here.
 
@@ -12,22 +13,25 @@ export const djInfo = {
 export async function getTeamMembers() {
     return Promise.resolve([
         { 
-            name: 'PixelMaster', 
-            motto: 'Construyendo mundos, un bloque a la vez.', 
-            roles: ['Head DJ', 'Manager de Eventos'],
-            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=PixelMaster&action=wav&direction=2&head_direction=3&gesture=sml&size=l&headonly=1'
+            name: 'magnituder', 
+            motto: 'Administrando el universo pixelado.', 
+            roles: ['Administrador'],
+            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=magnituder&action=wav&direction=2&head_direction=3&gesture=sml&size=l&headonly=1',
+            online: true,
         },
         { 
-            name: 'DJ Glitch', 
-            motto: 'Viviendo en el código, mezclando en las ondas.', 
-            roles: ['DJ Residente', 'Técnico'],
-            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=DJ-Glitch&action=drk&direction=4&head_direction=2&gesture=sml&size=l&headonly=1'
+            name: 'ser03z-51', 
+            motto: 'Coordinando la diversión y el caos.', 
+            roles: ['Coordinador'],
+            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=ser03z-51&action=drk&direction=4&head_direction=2&gesture=sml&size=l&headonly=1',
+            online: false,
         },
         { 
-            name: 'MC Flow', 
-            motto: 'Rimas y ritmos para el alma.', 
-            roles: ['Anfitrión', 'Relaciones Públicas'],
-            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=MC-Flow&action=std&direction=3&head_direction=3&gesture=nrm&size=l&headonly=1'
+            name: 'djluisalegre', 
+            motto: 'Poniendo ritmo a tus días.', 
+            roles: ['Coordinador'],
+            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=djluisalegre&action=std&direction=3&head_direction=3&gesture=nrm&size=l&headonly=1',
+            online: true,
         },
     ]);
 }

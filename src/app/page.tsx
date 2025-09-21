@@ -5,6 +5,9 @@ import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import HeroSlideshow from '@/components/habbospeed/hero-slideshow';
+import OnAirDjs from '@/components/habbospeed/on-air-djs';
+import WeeklyAwards from '@/components/habbospeed/weekly-awards';
 
 function HabboProfileSkeleton() {
   return (
@@ -19,7 +22,9 @@ function HabboProfileSkeleton() {
 export default function Home() {
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <HeroSlideshow />
+      <OnAirDjs />
+      <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <div className="lg:col-span-2 space-y-8">
           <LatestNews />
           <OfficialAlliances />
@@ -29,6 +34,7 @@ export default function Home() {
            <Suspense fallback={<HabboProfileSkeleton />}>
               <HabboProfile />
            </Suspense>
+           <WeeklyAwards />
         </div>
       </main>
     </div>
