@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -11,6 +12,9 @@ import {
   FetchLatestNewsOutput
 } from '@/ai/flows/fetch-latest-news';
 import { z } from 'zod';
+import { db } from './firebase';
+import { ref, push, serverTimestamp } from 'firebase/database';
+
 
 const songRequestFormSchema = z.object({
   songRequest: z.string().min(3, 'La petición debe tener al menos 3 caracteres.'),
@@ -45,6 +49,7 @@ export async function submitSongRequest(
     const result: ValidateSongRequestOutput = await validateSongRequest(input);
 
     if (result.isValid) {
+      // Here you could also save the request to a database
       return {
         message: "¡Tu petición de canción ha sido enviada y aprobada! La pondremos pronto.",
         isSuccess: true,
@@ -76,13 +81,34 @@ export async function getLatestNews(input: FetchLatestNewsInput): Promise<FetchL
   }
 }
 
-// Placeholder for contact form
+
+const contactFormSchema = z.object({
+  name: z.string().min(2, "El nombre es requerido."),
+  email: z.string().email("El email no es válido."),
+  message: z.string().min(10, "El mensaje debe tener al menos 10 caracteres."),
+});
+
 export async function submitContactForm(formData: FormData) {
-    console.log("Contact form submitted with:", {
+    const validatedFields = contactFormSchema.safeParse({
         name: formData.get('name'),
         email: formData.get('email'),
         message: formData.get('message'),
     });
-    // In a real app, you would process this data (e.g., send an email, save to DB)
-    return { success: true, message: "¡Tu mensaje ha sido enviado con éxito!" };
+
+    if (!validatedFields.success) {
+        return { success: false, message: "Por favor, revisa los campos del formulario." };
+    }
+
+    try {
+        const messagesRef = ref(db, 'contact-messages');
+        await push(messagesRef, {
+            ...validatedFields.data,
+            timestamp: serverTimestamp(),
+            read: false,
+        });
+        return { success: true, message: "¡Tu mensaje ha sido enviado con éxito!" };
+    } catch (error) {
+        console.error("Error saving contact message:", error);
+        return { success: false, message: "No se pudo enviar tu mensaje. Inténtalo de nuevo más tarde." };
+    }
 }

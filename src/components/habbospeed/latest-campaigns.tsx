@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Newspaper } from 'lucide-react';
 import { getNewsArticles } from '@/lib/data';
