@@ -17,7 +17,7 @@ export default function AdminPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="hover:border-primary transition-colors">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-headline">
+            <CardTitle className="flex items-center gap-2 font-headline text-base md:text-lg">
               <Users /> Gestión de Usuarios
             </CardTitle>
           </CardHeader>
@@ -29,7 +29,7 @@ export default function AdminPage() {
         </Card>
         <Card className="hover:border-primary transition-colors">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-headline">
+            <CardTitle className="flex items-center gap-2 font-headline text-base md:text-lg">
               <BarChart /> Analíticas
             </CardTitle>
           </CardHeader>
@@ -41,7 +41,7 @@ export default function AdminPage() {
         </Card>
          <Card className="hover:border-primary transition-colors">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-headline">
+            <CardTitle className="flex items-center gap-2 font-headline text-base md:text-lg">
               <Settings /> Gestión de Contenido
             </CardTitle>
           </CardHeader>
@@ -53,7 +53,7 @@ export default function AdminPage() {
         </Card>
         <Card className="hover:border-primary transition-colors">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-headline">
+            <CardTitle className="flex items-center gap-2 font-headline text-base md:text-lg">
               <Settings /> Ajustes Generales
             </CardTitle>
           </CardHeader>

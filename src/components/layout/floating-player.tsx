@@ -125,71 +125,85 @@ export default function FloatingPlayer() {
   const songTitle = azuracastData?.now_playing.song.title || 'Canción no disponible';
   const songArtist = azuracastData?.now_playing.song.artist || 'Artista no disponible';
   const listeners = azuracastData?.listeners.current ?? 0;
-  const djAvatarUrl = `https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjHabboName}&headonly=1&size=s`;
-
+  
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
-        <Card className="overflow-hidden shadow-2xl border-primary/20 backdrop-blur-sm bg-card/80">
+      <Card className="overflow-hidden shadow-2xl border-primary/20 backdrop-blur-sm bg-card/80">
         <audio ref={audioRef} src={listenUrl} preload="none" />
-        <CardContent className="p-3 sm:p-4 flex items-center justify-between gap-4">
-            
-            <div className="flex items-center gap-4 flex-1 min-w-0 md:w-1/3">
-                {isLoading ? (
-                    <>
-                        <Skeleton className="h-14 w-14 rounded-md" />
-                        <div className="flex-grow space-y-2">
-                            <Skeleton className="h-4 w-32" />
-                            <Skeleton className="h-4 w-24" />
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <Image src={songArt} alt={songTitle} width={56} height={56} className="rounded-md h-14 w-14 object-cover" />
-                        <div className="flex-grow min-w-0">
-                            <h3 className="text-sm sm:text-md font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
-                            <p className="text-xs sm:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
-                        </div>
-                    </>
-                )}
+        <CardContent className="p-3 md:p-4 grid grid-cols-3 items-center gap-4">
+          
+          {/* Left Section: Song Info */}
+          <div className="flex items-center gap-3 min-w-0">
+            {isLoading ? (
+              <>
+                <Skeleton className="h-14 w-14 rounded-md" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </>
+            ) : (
+              <>
+                <Image src={songArt} alt={songTitle} width={56} height={56} className="rounded-md h-14 w-14 object-cover" />
+                <div className="min-w-0">
+                  <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
+                  <p className="text-xs md:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
+                </div>
+              </>
+            )}
+          </div>
+          
+          {/* Center Section: Player Controls */}
+          <div className="flex items-center justify-center gap-2">
+            <Button variant="default" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading}>
+              {isPlaying ? <Pause className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" />}
+            </Button>
+            <div className="hidden lg:flex items-center gap-2 w-24">
+              <Volume2 className="text-muted-foreground" />
+              <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
             </div>
-            
-            <div className="flex items-center gap-2 sm:gap-4 justify-center">
-                <Button variant="default" size="icon" className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading}>
-                    {isPlaying ? <Pause className="h-5 w-5 sm:h-6 sm:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-primary-foreground" />}
-                </Button>
-            </div>
+          </div>
 
-            <div className="flex items-center justify-end gap-2 md:gap-4 flex-1 md:w-1/3">
-                 <div className="hidden lg:flex items-center gap-2 w-24">
-                    <Volume2 className="text-muted-foreground" />
-                    <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
-                </div>
-                <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
-                    <Users className="text-primary h-5 w-5" />
-                    <span className="font-bold text-white text-sm">{listeners}</span>
-                </div>
-                 <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant="outline" size="icon" className="flex-shrink-0 h-10 w-10">
-                            <Music className="h-4 w-4" />
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent>
-                    <SheetHeader>
-                        <SheetTitle>Pide una Canción</SheetTitle>
-                        <SheetDescription>
-                        ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
-                        </SheetDescription>
-                    </SheetHeader>
-                    <div className="py-4">
-                        <SongRequestForm />
+          {/* Right Section: DJ, Listeners, Request */}
+          <div className="flex items-center justify-end gap-2 md:gap-4">
+             <div className="hidden md:flex items-center gap-3 bg-black/50 p-2 rounded-lg">
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjHabboName}&headonly=1&size=s`} alt={currentDjName} />
+                        <AvatarFallback>{currentDjName?.substring(0,2)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <div className="text-xs font-bold text-white/90">AL AIRE</div>
+                        <div className="text-xs text-muted-foreground">{currentDjName}</div>
                     </div>
-                    </SheetContent>
-                </Sheet>
-            </div>
+                </div>
+             </div>
+             <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
+                <Users className="text-primary h-5 w-5" />
+                <span className="font-bold text-white text-sm">{listeners}</span>
+              </div>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="flex-shrink-0 h-10 w-10">
+                  <Music className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Pide una Canción</SheetTitle>
+                  <SheetDescription>
+                    ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="py-4">
+                  <SongRequestForm />
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
 
         </CardContent>
-        </Card>
+      </Card>
     </div>
   );
 }

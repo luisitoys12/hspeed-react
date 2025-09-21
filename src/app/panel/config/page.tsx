@@ -19,7 +19,7 @@ export default function ConfigPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
             <Radio />
             Configuración de Azuracast
           </CardTitle>

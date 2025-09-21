@@ -7,7 +7,7 @@ export default function ContactPage() {
     <div className="container mx-auto p-4 md:p-8 flex justify-center items-start">
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+          <CardTitle className="flex items-center gap-2 font-headline text-xl md:text-2xl">
             <Mail className="text-primary" />
             Contáctanos
           </CardTitle>

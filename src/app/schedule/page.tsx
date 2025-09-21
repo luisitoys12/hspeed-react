@@ -16,7 +16,7 @@ export default async function SchedulePage() {
     <div className="container mx-auto p-4 md:p-8">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+          <CardTitle className="flex items-center gap-2 font-headline text-xl md:text-2xl">
             <Calendar className="text-primary" />
             Horario de la Radio
           </CardTitle>

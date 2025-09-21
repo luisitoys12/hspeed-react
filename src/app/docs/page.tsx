@@ -44,7 +44,7 @@ export default function DocsPage() {
             <ol className="list-decimal list-inside space-y-4">
                 <li>
                     <p><strong>Clonar el repositorio y moverse al directorio:</strong></p>
-                    <pre className="bg-muted p-2 rounded-md text-sm mt-1"><code>git clone &lt;URL_DEL_REPOSITORIO&gt;<br/>cd &lt;NOMBRE_DEL_DIRECTORIO&gt;</code></pre>
+                    <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>git clone &lt;URL_DEL_REPOSITORIO&gt;<br/>cd &lt;NOMBRE_DEL_DIRECTORIO&gt;</code></pre>
                 </li>
                 <li>
                     <p><strong>Instalar dependencias:</strong></p>
@@ -82,7 +82,7 @@ export default function DocsPage() {
                 <li>
                     <p><strong>Copia el objeto de configuración de Firebase:</strong></p>
                     <p>Firebase te proporcionará un objeto `firebaseConfig`. Cópialo. Se verá así:</p>
-                    <pre className="bg-muted p-2 rounded-md text-sm mt-1"><code>
+                    <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
 const firebaseConfig = &#123;
   apiKey: "AIza...",
   authDomain: "...",
@@ -96,7 +96,7 @@ const firebaseConfig = &#123;
                 <li>
                     <p><strong>Crea el archivo de configuración en tu proyecto:</strong></p>
                     <p>Crea un nuevo archivo en <code>src/lib/firebase-config.js</code> y pega el objeto `firebaseConfig` dentro, exportándolo.</p>
-                     <pre className="bg-muted p-2 rounded-md text-sm mt-1"><code>
+                     <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
 // src/lib/firebase-config.js
 export const firebaseConfig = &#123;
   // ... tu configuración aquí
