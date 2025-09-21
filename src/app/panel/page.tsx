@@ -6,13 +6,14 @@ import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
 import { useAuth } from '@/hooks/use-auth';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2 } from 'lucide-react';
+import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper } from 'lucide-react';
 import Link from 'next/link';
 
 const panelLinks = [
     { href: '/panel/config', title: 'Ajustes Generales', description: 'URLs, carrusel y configuración clave.', icon: Settings },
     { href: '/panel/team', title: 'Gestión de Equipo', description: 'Añadir o quitar miembros del staff.', icon: Users },
     { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos.', icon: Newspaper },
+    { href: '/panel/events', title: 'Gestión de Eventos', description: 'Administrar los eventos de la fansite.', icon: PartyPopper },
     { href: '/panel/schedule', title: 'Gestión de Horarios', description: 'Actualizar la programación semanal.', icon: Calendar },
     { href: '/panel/booking', title: 'Gestión de Reservas', description: 'Vaciar la parrilla de reservas de DJ.', icon: BookmarkPlus },
     { href: '/panel/alliances', title: 'Gestión de Alianzas', description: 'Administrar las alianzas oficiales.', icon: Handshake },
@@ -38,7 +39,7 @@ const StatCard = ({ title, value, icon: Icon, loading }: { title: string, value:
 
 export default function AdminDashboardPage() {
     const { user, loading: authLoading } = useAuth();
-    const [stats, setStats] = useState({ team: 0, news: 0, schedule: 0, messages: 0 });
+    const [stats, setStats] = useState({ team: 0, news: 0, schedule: 0, messages: 0, events: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
 
     useEffect(() => {
@@ -47,6 +48,7 @@ export default function AdminDashboardPage() {
                 team: ref(db, 'team'),
                 news: ref(db, 'news'),
                 schedule: ref(db, 'schedule'),
+                events: ref(db, 'events'),
                 messages: query(ref(db, 'contact-messages'), orderByChild('read'), equalTo(false))
             };
 
@@ -58,8 +60,12 @@ export default function AdminDashboardPage() {
                     }));
                 })
             );
+            
+            // Wait for all initial data to be loaded before setting loading to false
+            Promise.all(Object.values(refs).map(r => onValue(r, () => {}, { onlyOnce: true }))).then(() => {
+                setLoadingStats(false);
+            });
 
-            setLoadingStats(false); // Simplificación: asumimos carga rápida
 
             return () => {
                 unsubscribes.forEach(unsubscribe => unsubscribe());
@@ -97,9 +103,10 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Stat Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
                 <StatCard title="Miembros del Equipo" value={stats.team} icon={Users} loading={loadingStats} />
                 <StatCard title="Artículos de Noticias" value={stats.news} icon={Newspaper} loading={loadingStats} />
+                <StatCard title="Eventos Próximos" value={stats.events} icon={PartyPopper} loading={loadingStats} />
                 <StatCard title="Programas en Horario" value={stats.schedule} icon={Calendar} loading={loadingStats} />
                 <StatCard title="Mensajes Sin Leer" value={stats.messages} icon={MessageSquare} loading={loadingStats} />
             </div>

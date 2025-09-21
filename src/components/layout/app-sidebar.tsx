@@ -28,7 +28,7 @@ import {
   LogOut,
   BookmarkPlus,
   HeartHandshake,
-  BarChart2
+  PartyPopper
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -54,6 +54,7 @@ const authLinks = [
 
 const adminLinks = [
   { href: '/panel', label: 'Panel Admin', icon: Shield },
+  { href: '/panel/events', label: 'Eventos', icon: PartyPopper },
   { href: '/docs', label: 'Documentación', icon: BookOpen },
 ]
 

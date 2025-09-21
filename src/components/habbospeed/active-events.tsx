@@ -2,41 +2,64 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CalendarCheck2, Info, Clock, Home, User, Server } from 'lucide-react';
-import { getNewsArticles } from '@/lib/data';
+import { CalendarCheck2, Clock, Home, User, Server, PartyPopper } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Separator } from '../ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useEffect, useState } from 'react';
-import { NewsArticle } from '@/lib/types';
+import { EventItem } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
 import { Skeleton } from '../ui/skeleton';
+import Link from 'next/link';
 
+function Countdown({ targetDate }: { targetDate: string }) {
+  const [countdown, setCountdown] = useState('');
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const target = new Date(targetDate);
+      const difference = target.getTime() - now.getTime();
+
+      if (difference <= 0) {
+        setCountdown('¡El evento ha comenzado!');
+        clearInterval(interval);
+        return;
+      }
+
+      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((difference / 1000 / 60) % 60);
+      const seconds = Math.floor((difference / 1000) % 60);
+
+      setCountdown(`en ${hours}h ${minutes}m ${seconds}s`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  return <span className="font-mono">{countdown}</span>;
+}
 
 export default function ActiveEvents() {
-  const [events, setEvents] = useState<NewsArticle[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const newsRef = ref(db, 'news');
-    const unsubscribe = onValue(newsRef, (snapshot) => {
+    const eventsRef = ref(db, 'events');
+    const unsubscribe = onValue(eventsRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            const allArticles = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-            const eventArticles = allArticles
-                .filter(article => article.category.toUpperCase() === 'EVENTO')
-                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            setEvents(eventArticles);
+            const now = new Date();
+            const allEvents = Object.keys(data)
+                .map(key => ({ id: key, ...data[key] }))
+                .map(event => ({
+                    ...event,
+                    dateTime: new Date(`${event.date}T${event.time}:00`)
+                }))
+                .filter(event => event.dateTime > now) // Filter for future events
+                .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime()); // Sort by soonest
+            setEvents(allEvents);
         }
         setLoading(false);
     });
@@ -49,6 +72,7 @@ export default function ActiveEvents() {
           <Card>
               <CardHeader><Skeleton className='h-6 w-1/2' /></CardHeader>
               <CardContent className="space-y-4">
+                  <Skeleton className="h-24 w-full" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-1/2" />
                   <Skeleton className="h-10 w-full" />
@@ -65,19 +89,23 @@ export default function ActiveEvents() {
         <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline">
                 <CalendarCheck2 className="text-primary" />
-                Próximos Eventos
+                Próximo Evento
             </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col flex-grow">
         {latestEvent ? (
-          <div className="flex flex-col flex-grow">
-            <div className="space-y-2 text-sm flex-grow">
-                <p className='font-bold text-base text-primary'>{latestEvent.title}</p>
-                <div className='text-muted-foreground'>
-                    <p className='flex items-center gap-2'><Clock className="h-4 w-4" /> {new Date(latestEvent.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
-                    <p className='flex items-center gap-2'><Server className="h-4 w-4" /> Habbo (ES)</p>
-                    <p className='flex items-center gap-2'><Home className="h-4 w-4" /> {latestEvent.summary}</p>
-                </div>
+          <div className="flex flex-col flex-grow text-sm">
+            <div className="relative w-full aspect-video mb-4 rounded-lg overflow-hidden">
+                <Image src={latestEvent.imageUrl} alt={latestEvent.title} fill className="object-cover" unoptimized/>
+            </div>
+            <p className='font-bold text-lg text-primary'>🏁 {latestEvent.title} 🏁</p>
+            <div className='text-muted-foreground space-y-1 mt-2 flex-grow'>
+                <p className='flex items-center gap-2'><Server className="h-4 w-4" /> {latestEvent.server}</p>
+                <p className='flex items-center gap-2'><CalendarCheck2 className="h-4 w-4" /> {new Date(latestEvent.dateTime).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                <p className='flex items-center gap-2'><Clock className="h-4 w-4" /> {latestEvent.time} (<Countdown targetDate={latestEvent.dateTime.toISOString()} />)</p>
+                <p className='flex items-center gap-2'><Home className="h-4 w-4" /> {latestEvent.roomName}</p>
+                <p className='flex items-center gap-2'><User className="h-4 w-4" /> {latestEvent.roomOwner}</p>
+                 <p className='flex items-center gap-2'><PartyPopper className="h-4 w-4" /> {latestEvent.host}</p>
             </div>
              <Dialog>
                 <DialogTrigger asChild>
@@ -85,22 +113,17 @@ export default function ActiveEvents() {
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
-                    <DialogTitle>Próximos Eventos de Fansite</DialogTitle>
+                    <DialogTitle>Próximos Eventos</DialogTitle>
                     <DialogDescription>
                         Esta es la lista de los próximos eventos organizados. ¡No te los pierdas!
                     </DialogDescription>
                     </DialogHeader>
-                    <div className="max-h-[60vh] overflow-y-auto space-y-4 p-1">
-                        {[latestEvent, ...otherEvents].map((event, index) => (
-                            <div key={event.id}>
-                                <Link href={`/news/${event.id}`}>
-                                    <div className="p-4 rounded-lg bg-muted hover:bg-muted/80">
-                                        <h3 className="font-bold text-primary">{event.title}</h3>
-                                        <p className="text-sm text-muted-foreground">{event.summary}</p>
-                                        <p className="text-xs text-muted-foreground mt-2">{new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                                    </div>
-                                </Link>
-                                {index < events.length - 1 && <Separator className="mt-4" />}
+                    <div className="max-h-[60vh] overflow-y-auto space-y-2 p-1">
+                        {[latestEvent, ...otherEvents].map((event) => (
+                            <div key={event.id} className="p-3 rounded-lg bg-muted">
+                                <h3 className="font-bold text-primary">{event.title}</h3>
+                                <p className="text-sm text-muted-foreground">{event.roomName} por {event.roomOwner}</p>
+                                <p className="text-xs text-muted-foreground mt-2">{new Date(event.dateTime).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })}</p>
                             </div>
                         ))}
                     </div>
@@ -109,7 +132,7 @@ export default function ActiveEvents() {
           </div>
         ) : (
             <div className="text-center text-muted-foreground flex-grow flex items-center justify-center">
-                <p>No hay eventos programados.</p>
+                <p>No hay eventos programados por el momento.</p>
             </div>
         )}
         </CardContent>

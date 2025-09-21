@@ -4,21 +4,6 @@
       "imageHint": "security logo",
       "imageUrl": "https://picsum.photos/seed/alliance1/200/100",
       "name": "HabboSecurity"
-    },
-    "alliance2": {
-      "imageHint": "university logo",
-      "imageUrl": "https://picsum.photos/seed/alliance2/200/100",
-      "name": "Habbo University"
-    },
-    "alliance3": {
-      "imageHint": "gaming logo",
-      "imageUrl": "https://picsum.photos/seed/alliance3/200/100",
-      "name": "Habbo RPG"
-    },
-    "alliance4": {
-      "imageHint": "fashion logo",
-      "imageUrl": "https://picsum.photos/seed/alliance4/200/100",
-      "name": "Habbo Fashion"
     }
   },
   "bookings": {
@@ -52,26 +37,6 @@
         "imageUrl": "https://picsum.photos/seed/habboparty/1200/400",
         "subtitle": "La radio #1 para la comunidad de Habbo.es. Música, eventos y diversión 24/7.",
         "title": "¡Bienvenidos a Ekus FM!"
-      },
-      "slide2": {
-        "cta": {
-          "href": "/team",
-          "text": "Conoce al Equipo"
-        },
-        "imageHint": "dj console",
-        "imageUrl": "https://picsum.photos/seed/habbodjs/1200/400",
-        "subtitle": "Conoce a los locutores y al staff que hacen posible tu radio favorita.",
-        "title": "Un Equipo Apasionado"
-      },
-      "slide3": {
-        "cta": {
-          "href": "/news",
-          "text": "Leer Noticias"
-        },
-        "imageHint": "retro room",
-        "imageUrl": "https://picsum.photos/seed/habbonews/1200/400",
-        "subtitle": "No te pierdas las últimas novedades, guías y eventos de la comunidad.",
-        "title": "Campañas y Eventos"
       }
     }
   },
@@ -89,16 +54,6 @@
       "name": "Recibidor",
       "owner": "official_rooms",
       "imageUrl": "https://www.habbo.com/habbo-imaging/room/1/thumbnail.png"
-    },
-    "room2": {
-      "name": "Club NX",
-      "owner": "official_rooms",
-      "imageUrl": "https://www.habbo.com/habbo-imaging/room/3/thumbnail.png"
-    },
-    "room3": {
-      "name": "Teatro",
-      "owner": "official_rooms",
-      "imageUrl": "https://www.habbo.com/habbo-imaging/room/2/thumbnail.png"
     }
   },
   "news": {
@@ -110,15 +65,6 @@
       "imageUrl": "https://picsum.photos/seed/summerhabbo/600/400",
       "summary": "Descubre los nuevos furnis de verano y participa en los eventos playeros para ganar premios.",
       "title": "¡Sol, Arena y Pixeles! Llega el Evento de Verano"
-    },
-    "noticia2": {
-      "category": "GUÍA",
-      "content": "El Wired es una herramienta poderosa pero a veces complicada. En esta guía te enseñaremos los conceptos básicos para empezar a automatizar tus salas. Aprenderás a usar los Activadores, Efectos y Condiciones más comunes para crear juegos y sistemas automáticos. ¡Convierte tus salas en una obra de arte interactiva!",
-      "date": "2024-07-14",
-      "imageHint": "habbo wired",
-      "imageUrl": "https://picsum.photos/seed/wiredguide/600/400",
-      "summary": "Una guía completa para principiantes sobre cómo usar los bloques Wired para crear juegos y salas automáticas.",
-      "title": "Guía de Wired: Automatiza tus Salas como un Profesional"
     }
   },
   "onAir": {
@@ -132,20 +78,6 @@
       "endTime": "16:00",
       "show": "Tardes de Pop",
       "startTime": "14:00"
-    },
-    "horario2": {
-      "day": "Miércoles",
-      "dj": "DJ-Frank",
-      "endTime": "22:00",
-      "show": "Noches de Rock",
-      "startTime": "20:00"
-    },
-    "horario3": {
-      "day": "Viernes",
-      "dj": "DJ-Pixel",
-      "endTime": "19:00",
-      "show": "Hits del Viernes",
-      "startTime": "17:00"
     }
   },
   "team": {
@@ -158,12 +90,19 @@
       "roles": [
         "DJ"
       ]
-    },
-    "DJ-Frank": {
-      "roles": [
-        "Coordinador",
-        "DJ"
-      ]
+    }
+  },
+  "events": {
+    "evento1": {
+      "title": "BANZAI RACING",
+      "server": "Habbo (ES)",
+      "date": "2025-09-21",
+      "time": "16:00",
+      "roomName": "Banzai Racing R🌩️ [💜] HABBOTICOS",
+      "roomOwner": "JayAngel",
+      "host": "Habboticos",
+      "imageUrl": "https://picsum.photos/seed/banzairacing/600/400",
+      "imageHint": "racing game"
     }
   }
 }

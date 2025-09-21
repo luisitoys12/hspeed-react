@@ -31,3 +31,18 @@ export type Comment = {
   comment: string;
   timestamp: number;
 };
+
+export type EventItem = {
+  id: string;
+  title: string;
+  server: string;
+  date: string;
+  time: string;
+  roomName: string;
+  roomOwner: string;
+  host: string;
+  imageUrl: string;
+  imageHint: string;
+};
+
+export type EventFormValues = Omit<EventItem, 'id'>;
