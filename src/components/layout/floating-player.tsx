@@ -203,6 +203,17 @@ export default function FloatingPlayer() {
       audioRef.current.volume = volume / 100;
     }
   }, [volume]);
+  
+  useEffect(() => {
+    if ("mediaSession" in navigator && azuracastData) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: azuracastData.now_playing.song.title,
+        artist: azuracastData.now_playing.song.artist,
+        album: 'Ekus FM',
+        artwork: [{ src: azuracastData.now_playing.song.art, sizes: '500x500', type: 'image/jpeg' }],
+      });
+    }
+  }, [azuracastData]);
 
   const togglePlayPause = () => {
     if (audioRef.current) {
@@ -240,14 +251,14 @@ export default function FloatingPlayer() {
     <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
       <Card className="overflow-hidden shadow-2xl border-primary/20 backdrop-blur-sm bg-card/80">
         <audio ref={audioRef} src={radioConfig?.listenUrl || undefined} preload="none" />
-        <div className="p-2 md:p-3 grid grid-cols-2 md:grid-cols-3 items-center gap-4">
+        <div className="p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] md:grid-cols-3 items-center gap-4">
           
           {/* Left Section: Song Info */}
           <div className="flex items-center gap-3 min-w-0">
             {isLoading || !radioConfig ? (
               <>
                 <Skeleton className="h-12 w-12 rounded-md" />
-                <div className="space-y-2">
+                <div className="space-y-2 hidden md:block">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-4 w-24" />
                 </div>
@@ -255,7 +266,7 @@ export default function FloatingPlayer() {
             ) : (
               <>
                 <Image src={songArt} alt={songTitle} width={48} height={48} className="rounded-md h-12 w-12 object-cover" unoptimized/>
-                <div className="min-w-0">
+                <div className="min-w-0 hidden md:block">
                   <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
                   <p className="text-xs md:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
                 </div>
@@ -264,7 +275,7 @@ export default function FloatingPlayer() {
           </div>
           
           {/* Center Section: Player Controls */}
-          <div className="flex items-center justify-center md:justify-start gap-2">
+          <div className="flex items-center justify-center gap-2">
             <Button variant="default" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading || !radioConfig}>
               {isPlaying ? <Pause className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" />}
             </Button>
@@ -272,11 +283,29 @@ export default function FloatingPlayer() {
               <Volume2 className="text-muted-foreground" />
               <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
             </div>
+             <Sheet>
+                <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="flex-shrink-0 h-10 w-10 md:hidden">
+                    <Music className="h-4 w-4" />
+                </Button>
+                </SheetTrigger>
+                <SheetContent>
+                <SheetHeader>
+                    <SheetTitle>Pide una Canción</SheetTitle>
+                    <SheetDescription>
+                    ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
+                    </SheetDescription>
+                </SheetHeader>
+                <div className="py-4">
+                    <SongRequestForm />
+                </div>
+                </SheetContent>
+            </Sheet>
           </div>
 
           {/* Right Section: DJ, Listeners, Request */}
-          <div className="hidden md:flex items-center justify-end gap-2 md:gap-4">
-             <div className="flex items-center gap-4 bg-black/50 p-2 rounded-lg">
+          <div className="flex items-center justify-end gap-2 md:gap-4">
+             <div className="hidden md:flex items-center gap-4 bg-black/50 p-2 rounded-lg">
                 <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
                         <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djs.current.habboName}&headonly=1&size=s`} alt={djs.current.name} />
@@ -304,7 +333,7 @@ export default function FloatingPlayer() {
             </div>
             <Sheet>
                 <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="flex-shrink-0 h-10 w-10">
+                <Button variant="outline" size="icon" className="hidden md:inline-flex flex-shrink-0 h-10 w-10">
                     <Music className="h-4 w-4" />
                 </Button>
                 </SheetTrigger>
