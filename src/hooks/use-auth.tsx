@@ -5,7 +5,7 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 // Hardcoded super admin UID for demo purposes
-const SUPER_ADMIN_UID = "F2xicORf3wX9G9z9X6N9jA2i9I23";
+const SUPER_ADMIN_UID = "HKWwHx43uuVxGjHeo099cX7im273";
 
 interface User {
   uid: string;
