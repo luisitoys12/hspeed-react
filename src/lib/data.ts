@@ -5,7 +5,7 @@
 export const djInfo = {
     name: 'hspeed',
     habboName: 'hspeed',
-    avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=hspeed&action=std&direction=2&head_direction=2&gesture=sml&size=l',
+    avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=hspeed&action=std&direction=2&head_direction=2&gesture=sml&size=l&headonly=1',
     roles: ['AutoDJ'],
 };
 
@@ -15,19 +15,19 @@ export async function getTeamMembers() {
             name: 'PixelMaster', 
             motto: 'Construyendo mundos, un bloque a la vez.', 
             roles: ['Head DJ', 'Manager de Eventos'],
-            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=PixelMaster&action=wav&direction=2&head_direction=3&gesture=sml&size=l'
+            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=PixelMaster&action=wav&direction=2&head_direction=3&gesture=sml&size=l&headonly=1'
         },
         { 
             name: 'DJ Glitch', 
             motto: 'Viviendo en el código, mezclando en las ondas.', 
             roles: ['DJ Residente', 'Técnico'],
-            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=DJ-Glitch&action=drk&direction=4&head_direction=2&gesture=sml&size=l'
+            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=DJ-Glitch&action=drk&direction=4&head_direction=2&gesture=sml&size=l&headonly=1'
         },
         { 
             name: 'MC Flow', 
             motto: 'Rimas y ritmos para el alma.', 
             roles: ['Anfitrión', 'Relaciones Públicas'],
-            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=MC-Flow&action=std&direction=3&head_direction=3&gesture=nrm&size=l'
+            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=MC-Flow&action=std&direction=3&head_direction=3&gesture=nrm&size=l&headonly=1'
         },
     ]);
 }

@@ -127,7 +127,7 @@ export default function FloatingPlayer() {
   const songTitle = azuracastData?.now_playing.song.title || 'Canción no disponible';
   const songArtist = azuracastData?.now_playing.song.artist || 'Artista no disponible';
   const listeners = azuracastData?.listeners.current ?? 0;
-  const djAvatarUrl = `https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjHabboName}&direction=2&head_direction=3&size=s`;
+  const djAvatarUrl = `https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjHabboName}&headonly=1&size=s`;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
@@ -173,7 +173,7 @@ export default function FloatingPlayer() {
                 </div>
                  <div className="flex items-center gap-3 bg-background/50 p-2 rounded-lg text-center">
                     <Avatar className="h-10 w-10">
-                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=Placeholder&direction=2&head_direction=3&size=s&gesture=sml`} alt={"Siguiente DJ"} />
+                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=Placeholder&direction=2&head_direction=3&size=s&gesture=sml&headonly=1`} alt={"Siguiente DJ"} />
                         <AvatarFallback>??</AvatarFallback>
                     </Avatar>
                     <div>

@@ -22,7 +22,7 @@ export default async function HabboProfile() {
       <CardHeader>
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${habboProfile.name}&direction=2&head_direction=3&size=m`} alt={habboProfile.name} />
+            <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${habboProfile.name}&headonly=1&size=l`} alt={habboProfile.name} />
             <AvatarFallback>{habboProfile.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div>
