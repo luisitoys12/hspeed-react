@@ -32,6 +32,7 @@ export default async function LatestCampaigns() {
                   fill
                   className="rounded-md object-cover transition-transform group-hover:scale-105"
                   data-ai-hint={article.imageHint}
+                  unoptimized
                 />
               </div>
               <div className="flex-grow">

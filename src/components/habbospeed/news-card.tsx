@@ -27,6 +27,7 @@ export default function NewsCard({ article }: NewsCardProps) {
             fill
             className="object-cover"
             data-ai-hint={article.imageHint}
+            unoptimized
           />
         </div>
       </CardHeader>
@@ -36,7 +37,7 @@ export default function NewsCard({ article }: NewsCardProps) {
         <CardDescription className="text-sm">{article.summary}</CardDescription>
       </CardContent>
       <CardFooter>
-        <p className="text-sm text-muted-foreground">{new Date(article.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <p className="text-sm text-muted-foreground">{new Date(article.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </CardFooter>
     </Card>
   );
