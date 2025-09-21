@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Volume2, Users, Music, LoaderCircle } from 'lucide-react';
+import { Play, Pause, Volume2, Users, Music } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
@@ -145,16 +146,21 @@ export default function FloatingPlayer() {
                 ) : (
                     <div className="flex items-center gap-4 w-full sm:w-auto flex-1 min-w-0">
                         <Image src={songArt} alt={songTitle} width={64} height={64} className="rounded-md h-12 w-12 sm:h-16 sm:w-16 object-cover" />
-                        <div className="flex-grow min-w-0">
-                            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2"><Music size={14}/> Sonando Ahora</p>
-                            <h3 className="text-sm sm:text-md font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
-                            <p className="text-xs sm:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
+                        <div className="flex items-center gap-3">
+                           <Avatar className="h-8 w-8 hidden sm:flex">
+                              <AvatarImage src={djAvatarUrl} alt={currentDjName} />
+                              <AvatarFallback>{currentDjName.substring(0,2)}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-grow min-w-0">
+                              <h3 className="text-sm sm:text-md font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
+                              <p className="text-xs sm:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
+                          </div>
                         </div>
                     </div>
                 )}
             </div>
             
-            <div className="hidden lg:flex items-center gap-4 justify-center">
+            <div className="hidden md:flex items-center gap-4 justify-center">
                  <div className="flex items-center gap-3 bg-background/50 p-2 rounded-lg text-center">
                     <Avatar className="h-10 w-10">
                         <AvatarImage src={djAvatarUrl} alt={currentDjName} />
