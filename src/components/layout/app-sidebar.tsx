@@ -28,7 +28,8 @@ import {
   LogOut,
   BookmarkPlus,
   HeartHandshake,
-  PartyPopper
+  PartyPopper,
+  LayoutDashboard
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -49,7 +50,7 @@ const publicLinks = [
 ];
 
 const authLinks = [
-  { href: '/booking', label: 'Reservar Horario', icon: BookmarkPlus },
+  { href: '/dj-panel', label: 'Panel de DJ', icon: LayoutDashboard },
 ];
 
 const adminLinks = [
