@@ -6,7 +6,6 @@ import { BarChart2, Users, MousePointerClick, Clock, UserCheck } from "lucide-re
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { ChartTooltip, ChartTooltipContent, ChartContainer } from "@/components/ui/chart";
 import { useEffect, useState } from 'react';
-import { Math } from 'Math';
 
 const chartData = [
   { month: "Enero", total: 0 },
