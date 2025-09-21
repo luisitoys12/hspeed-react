@@ -7,7 +7,7 @@ export default function AboutUs() {
     <Card className="h-full">
       <CardHeader>
         <div className="flex flex-col items-center text-center">
-            <Image src="https://www.habbo.es/habbo-imaging/avatarimage?user=estacionkusfm&headonly=1&size=l" alt="Ekus FM" width={80} height={80} className="rounded-full border-4 border-primary mb-4" />
+            <Image src="https://www.habbo.es/habbo-imaging/avatarimage?user=estacionkusfm&headonly=1&size=l" alt="Ekus FM" width={80} height={80} className="rounded-full border-4 border-primary mb-4" unoptimized/>
           <CardTitle className="font-headline text-2xl">Sobre Ekus FM</CardTitle>
           <CardDescription className="italic">Tu radio, tu comunidad.</CardDescription>
         </div>

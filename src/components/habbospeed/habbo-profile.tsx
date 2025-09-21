@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/carousel"
 import { ScrollArea } from '../ui/scroll-area';
 
-const HABBO_USERNAME = 'hspeed'; // You can make this dynamic later
+const HABBO_USERNAME = 'estacionkusfm'; // You can make this dynamic later
 
 export default async function HabboProfile() {
   const habboProfile = await getHabboProfileData(HABBO_USERNAME);
