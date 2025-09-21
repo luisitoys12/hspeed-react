@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
         hostname: 'radio.kusmedios.lat',
         pathname: '/**',
       },
+       {
+        protocol: 'http',
+        hostname: 'radio.kusmedios.lat',
+        pathname: '/**',
+      },
     ],
   },
 };
