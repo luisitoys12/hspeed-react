@@ -23,18 +23,17 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https'
-      },
-      {
         protocol: 'https',
         hostname: 'www.habbo.es',
         port: '',
         pathname: '/**',
       },
       {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+      {
         hostname: 'radio.kusmedios.lat',
-        port: '',
-        pathname: '/**',
       }
     ],
   },
