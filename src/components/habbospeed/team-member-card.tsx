@@ -18,7 +18,7 @@ type TeamMemberCardProps = {
 
 export default function TeamMemberCard({ member }: TeamMemberCardProps) {
   return (
-    <Card className="relative pt-12 overflow-visible transition-all hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1 mt-12">
+    <Card className="relative pt-12 overflow-visible transition-all hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1 mt-12 h-56">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
         <div className="relative h-24 w-24">
           <Image
@@ -35,13 +35,15 @@ export default function TeamMemberCard({ member }: TeamMemberCardProps) {
           )} title={member.online ? 'Conectado' : 'Desconectado'} />
         </div>
       </div>
-      <CardContent className="p-6 text-center">
-        <CardTitle className="font-headline text-xl">{member.name}</CardTitle>
-        <CardDescription className="italic mt-1">"{member.motto}"</CardDescription>
-        <div className="flex flex-wrap gap-2 justify-center mt-4">
-          {member.roles.map(role => (
-            <Badge key={role} variant="secondary">{role}</Badge>
-          ))}
+      <CardContent className="p-6 text-center h-full flex flex-col justify-end">
+        <div>
+            <CardTitle className="font-headline text-xl">{member.name}</CardTitle>
+            <CardDescription className="italic mt-1">"{member.motto}"</CardDescription>
+            <div className="flex flex-wrap gap-2 justify-center mt-4">
+            {member.roles.map(role => (
+                <Badge key={role} variant="secondary">{role}</Badge>
+            ))}
+            </div>
         </div>
       </CardContent>
     </Card>
