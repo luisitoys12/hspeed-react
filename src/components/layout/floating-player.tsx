@@ -8,6 +8,7 @@ import { Play, Pause, Volume2, Users, Music, LoaderCircle } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Estructura de datos de Azuracast
 interface AzuracastData {
@@ -103,6 +104,10 @@ export default function FloatingPlayer() {
 
   const listenUrl = azuracastData?.station.listen_url || "http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3";
 
+  const currentDjHabboName = azuracastData?.live.is_live && azuracastData.live.streamer_name 
+    ? azuracastData.live.streamer_name 
+    : defaultDj.habboName;
+
   const currentDjName = azuracastData?.live.is_live && azuracastData.live.streamer_name 
     ? azuracastData.live.streamer_name 
     : defaultDj.name;
@@ -111,6 +116,7 @@ export default function FloatingPlayer() {
   const songTitle = azuracastData?.now_playing.song.title || 'Canción no disponible';
   const songArtist = azuracastData?.now_playing.song.artist || 'Artista no disponible';
   const listeners = azuracastData?.listeners.current ?? 0;
+  const djAvatarUrl = `https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjHabboName}&direction=2&head_direction=3&size=s`;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
@@ -136,9 +142,15 @@ export default function FloatingPlayer() {
                 </div>
             )}
             
-            <div className="hidden lg:flex items-center gap-2 bg-background/50 p-2 rounded-lg">
-                <p className="text-sm text-muted-foreground">Al Aire:</p>
-                <p className="font-bold text-sm text-primary">{currentDjName}</p>
+            <div className="hidden lg:flex items-center gap-3 bg-background/50 p-2 rounded-lg">
+                <Avatar className="h-8 w-8">
+                    <AvatarImage src={djAvatarUrl} alt={currentDjName} />
+                    <AvatarFallback>{currentDjName.substring(0,2)}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="text-xs text-muted-foreground">Al Aire:</p>
+                    <p className="font-bold text-sm text-primary">{currentDjName}</p>
+                </div>
             </div>
 
             <div className="flex items-center justify-center gap-2 sm:gap-4">
