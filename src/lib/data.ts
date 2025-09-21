@@ -117,13 +117,15 @@ export async function getActiveRooms() {
     try {
         const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${username}`, { next: { revalidate: 600 } });
         if (!userResponse.ok) {
-            throw new Error('User not found');
+            console.error("Failed to fetch official_rooms user from Habbo API");
+            return [];
         }
         const userData = await userResponse.json();
 
         const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`, { next: { revalidate: 600 } });
         if (!profileResponse.ok) {
-            throw new Error('Profile not found');
+             console.error("Failed to fetch official_rooms profile from Habbo API");
+            return [];
         }
         const profileData = await profileResponse.json();
 
