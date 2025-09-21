@@ -58,8 +58,8 @@ const azuracastData = {
     }
   },
   "live": {
-    "is_live": true,
-    "streamer_name": "hspeed",
+    "is_live": false,
+    "streamer_name": "",
     "broadcast_start": 1678882800,
     "art": ""
   },
@@ -67,9 +67,9 @@ const azuracastData = {
 };
 
 const djInfo = {
-    name: 'hspeed',
-    habboName: 'hspeed',
-    avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=hspeed&action=std&direction=2&head_direction=2&gesture=sml&size=l`,
+    name: 'AutoDJ',
+    habboName: 'estacionkusfm',
+    avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=estacionkusfm&action=std&direction=2&head_direction=2&gesture=sml&size=l`,
     roles: ['AutoDJ'],
 };
 
