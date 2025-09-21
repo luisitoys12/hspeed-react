@@ -206,9 +206,10 @@ export async function getLeaderboardData() {
     }
   });
 
-  const users = (await Promise.all(userPromises)).filter(Boolean);
+  const users = (await Promise.all(userPromises)).filter(user => user && typeof user.achievementScore === 'number');
   
   // Sort users by achievement score in descending order
+  // @ts-ignore
   return users.sort((a, b) => b.achievementScore - a.achievementScore);
 }
 

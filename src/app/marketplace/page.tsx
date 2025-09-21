@@ -62,7 +62,7 @@ export default async function MarketplacePage() {
                           <span>{user.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-mono">{user.achievementScore.toLocaleString('es-ES')}</TableCell>
+                      <TableCell className="text-right font-mono">{(user.achievementScore || 0).toLocaleString('es-ES')}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
