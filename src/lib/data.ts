@@ -3,6 +3,13 @@
 // In a real application, this data would come from the Habbo API.
 // We are simulating the API responses here.
 
+type HabboUser = {
+    name: string;
+    motto: string;
+    online: boolean;
+    // ... and other fields from the API
+};
+
 export const djInfo = {
     name: 'hspeed',
     habboName: 'hspeed',
@@ -10,30 +17,48 @@ export const djInfo = {
     roles: ['AutoDJ'],
 };
 
+const teamConfig = [
+    { name: 'magnituder', roles: ['Administrador'] },
+    { name: 'ser03z-51', roles: ['Coordinador'] },
+    { name: 'djluisalegre', roles: ['Coordinador'] },
+];
+
 export async function getTeamMembers() {
-    return Promise.resolve([
-        { 
-            name: 'magnituder', 
-            motto: 'Administrando el universo pixelado.', 
-            roles: ['Administrador'],
-            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=magnituder&action=wav&direction=2&head_direction=3&gesture=sml&size=l&headonly=1',
-            online: true,
-        },
-        { 
-            name: 'ser03z-51', 
-            motto: 'Coordinando la diversión y el caos.', 
-            roles: ['Coordinador'],
-            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=ser03z-51&action=drk&direction=4&head_direction=2&gesture=sml&size=l&headonly=1',
-            online: false,
-        },
-        { 
-            name: 'djluisalegre', 
-            motto: 'Poniendo ritmo a tus días.', 
-            roles: ['Coordinador'],
-            avatarUrl: 'https://www.habbo.es/habbo-imaging/avatarimage?user=djluisalegre&action=std&direction=3&head_direction=3&gesture=nrm&size=l&headonly=1',
-            online: true,
-        },
-    ]);
+    try {
+        const memberPromises = teamConfig.map(async (memberConfig) => {
+            const response = await fetch(`https://www.habbo.es/api/public/users?name=${memberConfig.name}`, { next: { revalidate: 300 } });
+            if (!response.ok) {
+                // Return a default state if the user is not found or API fails
+                return {
+                    name: memberConfig.name,
+                    motto: 'Lema no disponible',
+                    roles: memberConfig.roles,
+                    avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${memberConfig.name}&direction=2&head_direction=3&size=l&headonly=1`,
+                    online: false,
+                };
+            }
+            const data = await response.json();
+            return {
+                name: data.name,
+                motto: data.motto,
+                roles: memberConfig.roles,
+                avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${data.name}&direction=2&head_direction=3&size=l&headonly=1`,
+                online: data.online,
+            };
+        });
+        const members = await Promise.all(memberPromises);
+        return members;
+    } catch (error) {
+        console.error("Failed to fetch team members from Habbo API:", error);
+        // Return static data as a fallback
+        return teamConfig.map(m => ({
+             name: m.name,
+             motto: 'Error al cargar',
+             roles: m.roles,
+             avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${m.name}&direction=2&head_direction=3&size=l&headonly=1`,
+             online: false,
+        }));
+    }
 }
 
 export async function getSchedule() {
@@ -49,27 +74,51 @@ export async function getSchedule() {
 }
 
 export async function getHabboProfileData(username: string) {
-    // In a real app, you would fetch this from:
-    // `https://www.habbo.es/api/public/users?name=${username}`
-    // And then other endpoints for badges, rooms, etc.
-    return Promise.resolve({
-        name: username,
-        motto: 'Tu radio, tu comunidad.',
-        registrationDate: '2024-01-01',
-        rewards: 42,
-        badges: [
-            { id: '1', name: 'Placa Halloween 2024', imageUrl: 'https://picsum.photos/seed/badge1/50/50', imageHint: 'calabaza halloween' },
-            { id: '2', name: 'Placa Radio Fan', imageUrl: 'https://picsum.photos/seed/badge2/50/50', imageHint: 'auriculares icono' },
-            { id: '3', name: 'Placa Veterano', imageUrl: 'https://picsum.photos/seed/badge3/50/50', imageHint: 'medalla icono' },
-            { id: '4', name: 'Placa Gamer', imageUrl: 'https://picsum.photos/seed/badge4/50/50', imageHint: 'joystick icono' },
-            { id: '5', name: 'Placa Social', imageUrl: 'https://picsum.photos/seed/badge5/50/50', imageHint: 'burbuja de chat' },
-        ],
-        rooms: [
-            { id: '1', name: 'Estudio Principal Ekus FM', imageUrl: 'https://picsum.photos/seed/room1/200/150', imageHint: 'estudio de radio' },
-            { id: '2', name: 'Salón de Fiestas Halloween', imageUrl: 'https://picsum.photos/seed/room2/200/150', imageHint: 'fiesta de halloween' },
-            { id: '3', name: 'Jardín Embrujado', imageUrl: 'https://picsum.photos/seed/room3/200/150', imageHint: 'jardín embrujado' },
-        ],
-    });
+    try {
+        const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${username}`);
+        if (!userResponse.ok) throw new Error('User not found');
+        const userData = await userResponse.json();
+
+        const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`);
+        if (!profileResponse.ok) throw new Error('Profile not found');
+        const profileData = await profileResponse.json();
+
+        return {
+            name: userData.name,
+            motto: userData.motto,
+            registrationDate: userData.memberSince,
+            rewards: profileData.achievementScore,
+            badges: profileData.badges.slice(0, 5).map((badge: any) => ({
+                id: badge.code,
+                name: badge.name,
+                imageUrl: `https://images.habbo.com/c_images/album1584/${badge.code}.gif`,
+                imageHint: 'habbo badge', 
+            })),
+            rooms: profileData.rooms.slice(0, 3).map((room: any) => ({
+                id: room.id,
+                name: room.name,
+                imageUrl: `https://www.habbo.com/habbo-imaging/room/${room.id}/thumbnail.png`,
+                imageHint: 'habbo room',
+            })),
+        };
+
+    } catch (error) {
+        console.error("Failed to fetch Habbo profile data:", error);
+        // Fallback to mock data on error
+        return Promise.resolve({
+            name: username,
+            motto: 'Tu radio, tu comunidad.',
+            registrationDate: '2024-01-01',
+            rewards: 42,
+            badges: [
+                { id: '1', name: 'Placa Halloween 2024', imageUrl: 'https://picsum.photos/seed/badge1/50/50', imageHint: 'calabaza halloween' },
+                { id: '2', name: 'Placa Radio Fan', imageUrl: 'https://picsum.photos/seed/badge2/50/50', imageHint: 'auriculares icono' },
+            ],
+            rooms: [
+                { id: '1', name: 'Estudio Principal Ekus FM', imageUrl: 'https://picsum.photos/seed/room1/200/150', imageHint: 'estudio de radio' },
+            ],
+        });
+    }
 }
 
 export async function getNewsArticles() {

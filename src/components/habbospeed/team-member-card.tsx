@@ -26,11 +26,12 @@ export default function TeamMemberCard({ member }: TeamMemberCardProps) {
             width={96}
             height={96}
             className="rounded-full border-4 border-primary"
+            unoptimized
           />
            <div className={cn(
                "absolute bottom-0 right-1 h-5 w-5 rounded-full border-2 border-background",
                member.online ? 'bg-green-500' : 'bg-gray-500'
-           )} />
+           )} title={member.online ? 'Conectado' : 'Desconectado'} />
         </div>
         <CardTitle className="font-headline text-xl flex items-center gap-2">
             {member.name}

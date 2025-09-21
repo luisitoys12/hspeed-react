@@ -35,6 +35,16 @@ const nextConfig = {
         hostname: 'www.habbo.es',
         pathname: '/**',
       },
+       {
+        protocol: 'https',
+        hostname: 'www.habbo.com',
+        pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: 'images.habbo.com',
+        pathname: '/**',
+      },
       {
         protocol: 'https',
         hostname: 'picsum.photos',
