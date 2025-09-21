@@ -21,6 +21,7 @@ import {
   Facebook,
   Users,
   BookOpen,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -34,6 +35,7 @@ const links = [
   { href: '/request', label: 'Pide una canción', icon: Music },
   { href: '/contact', label: 'Contacto', icon: Mail },
   { href: '/admin', label: 'Panel Admin', icon: Shield },
+  { href: '/panel/config', label: 'Configuración', icon: Settings },
   { href: '/docs', label: 'Documentación', icon: BookOpen },
 ];
 
