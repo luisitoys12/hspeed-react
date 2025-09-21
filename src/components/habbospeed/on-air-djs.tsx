@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { getSchedule } from "@/lib/data";
-import { Skeleton } from "../ui/skeleton";
+import Image from "next/image";
 
 interface AzuracastData {
   live: {
@@ -76,21 +76,16 @@ export default function OnAirDjs() {
     if (isLoading) {
         return (
             <Card className="mt-8">
-                <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-4">
-                        <Skeleton className="h-16 w-16 rounded-full" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-4 w-20" />
-                            <Skeleton className="h-6 w-28" />
-                        </div>
-                    </div>
-                     <div className="flex items-center gap-4">
-                        <Skeleton className="h-16 w-16 rounded-full" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-4 w-20" />
-                            <Skeleton className="h-6 w-28" />
-                        </div>
-                    </div>
+                <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-center justify-center min-h-[120px]">
+                   <div className="col-span-1 md:col-span-2 flex justify-center items-center">
+                     <Image 
+                        src="https://files.habboemotion.com/resources/images/seasons/habboween/handsuphabbo.gif" 
+                        alt="Cargando..."
+                        width={60}
+                        height={100}
+                        unoptimized
+                    />
+                   </div>
                 </CardContent>
             </Card>
         )

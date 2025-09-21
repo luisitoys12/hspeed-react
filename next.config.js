@@ -50,6 +50,11 @@ const nextConfig = {
         hostname: 'picsum.photos',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'files.habboemotion.com',
+        pathname: '/**',
+      }
     ],
   },
 };
