@@ -1,1 +1,5 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/fetch-latest-news.ts';
+import '@/ai/flows/validate-song-request.ts';
