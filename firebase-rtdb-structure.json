@@ -21,6 +21,14 @@
       "name": "Habbo Fashion"
     }
   },
+  "bookings": {
+    "Jueves": {
+      "0300": {
+        "djName": "Dj Chey",
+        "uid": "some-dj-uid"
+      }
+    }
+  },
   "comments": {
     "noticia1": {
       "comment1": {

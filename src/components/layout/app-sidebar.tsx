@@ -26,6 +26,7 @@ import {
   UserPlus,
   Store,
   LogOut,
+  BookmarkPlus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -45,6 +46,7 @@ const publicLinks = [
 ];
 
 const authLinks = [
+  { href: '/booking', label: 'Reservar Horario', icon: BookmarkPlus },
   { href: '/panel', label: 'Panel Admin', icon: Shield },
   { href: '/docs', label: 'Documentación', icon: BookOpen },
 ];
@@ -114,7 +116,7 @@ export default function AppSidebar() {
              </div>
           ) : user ? (
             <>
-            {authLinks.map((link) => (
+            {authLinks.filter(link => link.href !== '/panel' || user.isSuperAdmin).map((link) => (
                 <SidebarMenuItem key={link.href}>
                     <Link href={link.href}>
                     <SidebarMenuButton
