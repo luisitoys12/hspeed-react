@@ -1,14 +1,14 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getDatabase } from "firebase/database";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAYgRkL0gdopxs8Dl5JusRSDLsiMcbSUc0",
   authDomain: "hspeed-fan.firebaseapp.com",
   projectId: "hspeed-fan",
+  databaseURL: "https://hspeed-fan-default-rtdb.firebaseio.com",
   storageBucket: "hspeed-fan.appspot.com",
   messagingSenderId: "699475017104",
   appId: "1:699475017104:web:6b9c9119babc0882774715",
@@ -18,5 +18,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+const db = getDatabase(app);
 
-export { app, auth };
+export { app, auth, db };

@@ -28,7 +28,7 @@ export default function DocsPage() {
                 <li><strong>Framework:</strong> Next.js (con App Router)</li>
                 <li><strong>UI:</strong> React, TypeScript, Tailwind CSS, ShadCN/UI</li>
                 <li><strong>Inteligencia Artificial:</strong> Genkit con Google AI (Gemini)</li>
-                <li><strong>Configuración y Datos:</strong> Firebase (Firestore, Realtime Database)</li>
+                <li><strong>Base de Datos y Auth:</strong> Firebase (Authentication, Realtime Database)</li>
                 <li><strong>Audio Stream:</strong> Azuracast</li>
                 <li><strong>Alojamiento:</strong> Netlify</li>
               </ul>
@@ -68,7 +68,7 @@ export default function DocsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Flame /> Configuración de Firebase</CardTitle>
-            <CardDescription>Para funcionalidades como la página de configuración, es necesario configurar Firebase.</CardDescription>
+            <CardDescription>Para funcionalidades como la autenticación y la base de datos, es necesario configurar Firebase.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <ol className="list-decimal list-inside space-y-4">
@@ -81,38 +81,38 @@ export default function DocsPage() {
                 </li>
                 <li>
                     <p><strong>Copia el objeto de configuración de Firebase:</strong></p>
-                    <p>Firebase te proporcionará un objeto `firebaseConfig`. Cópialo. Se verá así:</p>
+                    <p>Firebase te proporcionará un objeto `firebaseConfig`. Cópialo y pégalo en el archivo `src/lib/firebase.ts`. Asegúrate de añadir la URL de tu Realtime Database.</p>
                     <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
-// src/lib/firebase.ts
-import &#123; initializeApp, getApps, getApp &#125; from "firebase/app";
-import &#123; getAuth &#125; from "firebase/auth";
+{`// src/lib/firebase.ts
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database"; // Importar
 
-const firebaseConfig = &#123;
+const firebaseConfig = {
   apiKey: "AIza...",
   authDomain: "...",
   projectId: "...",
+  // Añade la URL de tu Realtime Database aquí
+  databaseURL: "https://<TU-PROYECTO>-default-rtdb.firebaseio.com", 
   storageBucket: "...",
   messagingSenderId: "...",
   appId: "..."
-&#125;;
+};
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+const db = getDatabase(app); // Exportar instancia de DB
 
-export &#123; app, auth &#125;;
+export { app, auth, db };`}
                     </code></pre>
                 </li>
-                <li>
-                    <p><strong>Crea el archivo de configuración en tu proyecto:</strong></p>
-                    <p>Copia el objeto `firebaseConfig` que te proporcionó Firebase en el archivo `src/lib/firebase.ts`.</p>
-                </li>
                  <li>
-                    <p><strong>Activa Firestore:</strong></p>
-                    <p className="text-muted-foreground text-sm mt-1">En el menú de Firebase, ve a "Firestore Database", crea una base de datos y comienza en "modo de prueba" (te permitirá leer/escribir sin configurar reglas de seguridad por ahora).</p>
+                    <p><strong>Activa Authentication y Realtime Database:</strong></p>
+                    <p className="text-muted-foreground text-sm mt-1">En tu consola de Firebase, ve a las secciones "Authentication" y "Realtime Database" y actívalas. Comienza ambas en "modo de prueba" para permitir el acceso durante el desarrollo.</p>
                 </li>
             </ol>
             <div className="mt-4 text-center p-4 bg-muted rounded-lg border-2 border-dashed">
-                <p className="text-sm text-muted-foreground">La aplicación intentará leer desde la colección 'config' en Firestore para las URLs de Azuracast. Necesitarás añadir estos documentos manualmente por ahora.</p>
+                <p className="text-sm text-muted-foreground">La aplicación intentará leer/escribir en la ruta 'config' en Realtime Database. Los datos se crearán automáticamente si no existen.</p>
            </div>
           </CardContent>
         </Card>
@@ -125,46 +125,8 @@ export &#123; app, auth &#125;;
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <ol className="list-decimal list-inside space-y-4">
-                    <li>
-                        <p><strong>Activa Realtime Database:</strong></p>
-                        <p className="text-muted-foreground text-sm mt-1">
-                        En tu consola de Firebase, ve a la sección "Realtime Database", haz clic en "Crear base de datos", elige una ubicación y comienza en "modo de prueba".
-                        </p>
-                    </li>
-                    <li>
-                        <p><strong>Actualiza tu archivo de configuración de Firebase:</strong></p>
-                        <p className="text-muted-foreground text-sm mt-1">Añade la URL de tu base de datos al objeto `firebaseConfig` y exporta la instancia de la base de datos.</p>
-                        <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
-{`// src/lib/firebase.ts
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getDatabase } from "firebase/database"; // Importar
-
-const firebaseConfig = {
-  apiKey: "...",
-  authDomain: "...",
-  projectId: "...",
-  // Añade la URL de tu Realtime Database aquí
-  databaseURL: "https://<TU-PROYECTO>-default-rtdb.firebaseio.com",
-  storageBucket: "...",
-  messagingSenderId: "...",
-  appId: "..."
-};
-
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getDatabase(app); // Exportar instancia de DB
-
-export { app, auth, db };`}
-                        </code></pre>
-                    </li>
-                    <li>
-                        <p><strong>Ejemplo: Leer y Escribir Datos en un Componente React:</strong></p>
-                        <p className="text-muted-foreground text-sm mt-1">
-                        Ahora puedes usar las funciones `ref`, `set`, y `onValue` para interactuar con tu base de datos en tiempo real.
-                        </p>
-                        <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
+                <p>La aplicación está configurada para usar Realtime Database para la configuración, el equipo y los horarios. El siguiente es un ejemplo genérico de cómo interactuar con ella.</p>
+                <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
 {`'use client';
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase'; // Asegúrate que exportas 'db'
@@ -174,6 +136,7 @@ function RealtimeComponent() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
+    // Escuchar cambios en la ruta 'test/data'
     const dataRef = ref(db, 'test/data');
     const unsubscribe = onValue(dataRef, (snapshot) => {
       const value = snapshot.val();
@@ -185,6 +148,7 @@ function RealtimeComponent() {
   }, []);
 
   const writeData = () => {
+    // Escribir datos en la ruta 'test/data'
     const dataRef = ref(db, 'test/data');
     set(dataRef, { message: \`Hola mundo en \${new Date().toLocaleTimeString()}\` });
   };
@@ -197,8 +161,6 @@ function RealtimeComponent() {
   );
 }`}
                         </code></pre>
-                    </li>
-                </ol>
             </CardContent>
         </Card>
 
@@ -211,26 +173,19 @@ function RealtimeComponent() {
             <ol className="list-decimal list-inside space-y-4">
                 <li>
                     <p><strong>Sube tu proyecto a un repositorio de GitHub.</strong></p>
-                    <p className="text-muted-foreground text-sm mt-1">Asegúrate de que tu código esté en un repositorio de GitHub (puede ser público o privado).</p>
                 </li>
                 <li>
                     <p><strong>Regístrate en <a href="https://www.netlify.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Netlify</a> usando tu cuenta de GitHub.</strong></p>
                 </li>
                  <li>
-                    <p><strong>Crea un nuevo sitio desde Git:</strong></p>
-                    <p className="text-muted-foreground text-sm mt-1">En tu panel de Netlify, haz clic en "Add new site" {'>'} "Import an existing project". Conéctate a GitHub y selecciona el repositorio de tu proyecto.</p>
+                    <p><strong>Crea un nuevo sitio desde Git y selecciona tu repositorio.</strong></p>
                 </li>
                 <li>
-                    <p><strong>Configura los ajustes de construcción:</strong></p>
-                    <p className="text-muted-foreground text-sm mt-1">Netlify detectará automáticamente que es un proyecto de Next.js y usará la configuración de <code>netlify.toml</code>. Los ajustes por defecto deberían funcionar.</p>
-                </li>
-                 <li>
                     <p><strong>Añade tus variables de entorno:</strong></p>
-                    <p className="text-muted-foreground text-sm mt-1">Ve a "Site settings" {'>'} "Build & deploy" {'>'} "Environment" y añade la variable <code>GEMINI_API_KEY</code> con su valor correspondiente. Haz lo mismo para cualquier otra variable que necesites en producción.</p>
+                    <p className="text-muted-foreground text-sm mt-1">Ve a "Site settings" {'>'} "Build & deploy" {'>'} "Environment" y añade la variable <code>GEMINI_API_KEY</code>. Haz lo mismo para las variables de entorno de tu configuración de Firebase si las usas (recomendado para producción).</p>
                 </li>
                  <li>
-                    <p><strong>¡Despliega!</strong></p>
-                    <p className="text-muted-foreground text-sm mt-1">Haz clic en "Deploy site". Netlify construirá y desplegará tu aplicación. ¡Y listo!</p>
+                    <p><strong>¡Despliega!</strong> Netlify construirá y desplegará tu aplicación.</p>
                 </li>
             </ol>
           </CardContent>
@@ -243,14 +198,11 @@ function RealtimeComponent() {
           <CardContent className="space-y-6">
             <div>
               <h3 className="font-bold flex items-center gap-2 mb-2"><Wind /> Configuración de Azuracast</h3>
-              <p className="text-muted-foreground">La configuración del reproductor de radio (URLs de la API y de escucha) ahora se gestiona desde la página de <Link href="/panel/config" className="text-primary underline">Configuración</Link>. Estos valores se leerán desde tu base de datos de Firebase.</p>
-              <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
-                  <li>El avatar por defecto para el AutoDJ es <strong>estacionkusfm</strong>. Cuando un DJ está en vivo, su nombre de Habbo se usará para obtener el avatar.</li>
-              </ul>
+              <p className="text-muted-foreground">La configuración del reproductor de radio (URLs de la API y de escucha) ahora se gestiona desde la página de <Link href="/panel/config" className="text-primary underline">Configuración</Link> y se guarda en Firebase Realtime Database.</p>
             </div>
             <div>
               <h3 className="font-bold flex items-center gap-2 mb-2"><Database /> Base de Datos (Datos de Ejemplo)</h3>
-              <p className="text-muted-foreground">Actualmente, la aplicación usa datos de ejemplo (mock data) desde <code>src/lib/data.ts</code> para el horario, equipo y noticias. Para usar una base de datos real, puedes adaptar el patrón de Firebase o seguir las instrucciones para MongoDB en <code>MONGODB_SETUP.md</code>.</p>
+              <p className="text-muted-foreground">La aplicación está migrando de datos de ejemplo a Firebase Realtime Database. Secciones como el horario y las noticias aún pueden usar datos locales temporalmente.</p>
             </div>
           </CardContent>
         </Card>

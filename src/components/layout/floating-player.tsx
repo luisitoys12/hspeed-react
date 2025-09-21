@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/sheet"
 import SongRequestForm from '../habbospeed/song-request-form';
 import { getSchedule } from '@/lib/data';
+import { db } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
 
 
 // Estructura de datos de Azuracast
@@ -40,6 +42,11 @@ interface AzuracastData {
     is_live: boolean;
     streamer_name: string;
   };
+}
+
+interface RadioConfig {
+    apiUrl: string;
+    listenUrl: string;
 }
 
 const defaultDj = {
@@ -66,14 +73,35 @@ export default function FloatingPlayer() {
   const [volume, setVolume] = useState(50);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [azuracastData, setAzuracastData] = useState<AzuracastData | null>(null);
+  const [radioConfig, setRadioConfig] = useState<RadioConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
   useEffect(() => {
+    if (db) {
+      const configRef = ref(db, 'config');
+      const unsubscribe = onValue(configRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setRadioConfig(data);
+        } else {
+            // Set default fallbacks if no config in DB
+            setRadioConfig({
+                apiUrl: 'https://radio.kusmedios.lat/api/nowplaying/ekus-fm',
+                listenUrl: 'http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3'
+            })
+        }
+      });
+      return () => unsubscribe();
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
+      if (!radioConfig) return;
       setIsLoading(true);
       try {
-        const response = await fetch('https://radio.kusmedios.lat/api/nowplaying/ekus-fm');
+        const response = await fetch(radioConfig.apiUrl);
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -97,7 +125,7 @@ export default function FloatingPlayer() {
     const interval = setInterval(fetchData, 15000); 
 
     return () => clearInterval(interval);
-  }, []);
+  }, [radioConfig]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -110,8 +138,8 @@ export default function FloatingPlayer() {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        if (azuracastData?.station.listen_url) {
-            audioRef.current.src = azuracastData.station.listen_url;
+        if (radioConfig?.listenUrl) {
+            audioRef.current.src = radioConfig.listenUrl;
             audioRef.current.play().catch(e => console.error("Error playing audio:", e));
         }
       }
@@ -133,7 +161,7 @@ export default function FloatingPlayer() {
     }
   }, [audioRef])
 
-  const listenUrl = azuracastData?.station.listen_url || "http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3";
+  const listenUrl = radioConfig?.listenUrl || "";
 
   const currentDjHabboName = azuracastData?.live.is_live && azuracastData.live.streamer_name 
     ? azuracastData.live.streamer_name 
@@ -158,7 +186,7 @@ export default function FloatingPlayer() {
           
           {/* Left Section: Song Info */}
           <div className="flex items-center gap-3 min-w-0">
-            {isLoading ? (
+            {isLoading || !radioConfig ? (
               <>
                 <Skeleton className="h-14 w-14 rounded-md" />
                 <div className="space-y-2">
@@ -179,7 +207,7 @@ export default function FloatingPlayer() {
           
           {/* Center Section: Player Controls */}
           <div className="flex items-center justify-center gap-2">
-            <Button variant="default" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading}>
+            <Button variant="default" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading || !radioConfig}>
               {isPlaying ? <Pause className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" />}
             </Button>
             <div className="hidden lg:flex items-center gap-2 w-24">
