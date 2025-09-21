@@ -25,7 +25,7 @@ export default async function HeroSlideshow() {
             <CarouselItem key={article.id}>
               <div className="p-1">
                 <Card className="overflow-hidden">
-                  <CardContent className="flex aspect-[2.5/1] items-center justify-center p-0 relative">
+                  <CardContent className="flex aspect-video md:max-h-[480px] items-center justify-center p-0 relative">
                     <Image 
                       src={article.imageUrl} 
                       alt={article.title} 
