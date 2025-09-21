@@ -16,8 +16,8 @@ const tools = [
     description: '¿Sin inspiración? Genera nombres de usuario únicos al estilo Habbo.',
     icon: BrainCircuit,
     isNew: false,
-    href: '#',
-    disabled: true
+    href: '/community/name-generator',
+    disabled: false
   },
   {
     title: 'Sorteos y Loterías',
@@ -68,7 +68,8 @@ export default function CommunityPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tools.map((tool) => (
-            <Card key={tool.title} className={`flex flex-col ${tool.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary/50 hover:shadow-lg transition-all'}`}>
+          <Link href={tool.href} key={tool.title} className={tool.disabled ? 'pointer-events-none' : ''}>
+            <Card className={`flex flex-col h-full ${tool.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary/50 hover:shadow-lg transition-all'}`}>
               <CardHeader>
                 <div className="flex justify-between items-center">
                     <div className="p-3 bg-muted rounded-lg">
@@ -87,6 +88,7 @@ export default function CommunityPage() {
                   </div>
               )}
             </Card>
+          </Link>
         ))}
       </div>
     </div>

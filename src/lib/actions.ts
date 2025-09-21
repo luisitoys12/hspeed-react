@@ -11,9 +11,11 @@ import {
   FetchLatestNewsInput,
   FetchLatestNewsOutput
 } from '@/ai/flows/fetch-latest-news';
+import { generateHabboName, GenerateHabboNameInput, GenerateHabboNameOutput } from '@/ai/flows/generate-habbo-name';
+
 import { z } from 'zod';
 import { db } from './firebase';
-import { ref, push, serverTimestamp, runTransaction, increment } from 'firebase/database';
+import { ref, push, serverTimestamp, runTransaction, get } from 'firebase/database';
 
 
 const songRequestFormSchema = z.object({
@@ -164,24 +166,24 @@ export async function addReaction(articleId: string, reaction: string, authorUid
     const reactionRef = ref(db, `news/${articleId}/reactions/${reaction}`);
     const userReactionRef = ref(db, `userReactions/${authorUid}/${articleId}`);
 
+    const snapshot = await get(userReactionRef);
+    const previousReaction = snapshot.val();
+
     await runTransaction(userReactionRef, (currentReaction) => {
-      if (currentReaction === reaction) {
-        // User is removing their reaction
-        return null; 
-      }
-      return reaction; // User is adding or changing reaction
+        if (currentReaction === reaction) {
+            return null; // User is removing their reaction
+        }
+        return reaction; // User is adding or changing reaction
     });
-
-    const userReactionSnapshot = await get(userReactionRef);
-    const previousReaction = userReactionSnapshot.val();
-
+    
+    // Atomically update counts
     if (previousReaction && previousReaction !== reaction) {
-        // Decrement previous reaction
-        const prevReactionRef = ref(db, `news/${articleId}/reactions/${previousReaction}`);
-        await runTransaction(prevReactionRef, (currentCount) => (currentCount || 0) - 1);
+      // Decrement the count of the previous reaction
+      const prevReactionRef = ref(db, `news/${articleId}/reactions/${previousReaction}`);
+      await runTransaction(prevReactionRef, (currentCount) => (currentCount || 0) - 1);
     }
     
-    // Increment new reaction or decrement if it was removed
+    // Increment the new reaction or decrement if it was removed
     await runTransaction(reactionRef, (currentCount) => {
         const userClickedSameReaction = previousReaction === reaction;
         if (userClickedSameReaction) {
@@ -194,5 +196,33 @@ export async function addReaction(articleId: string, reaction: string, authorUid
   } catch (error) {
     console.error('Error adding reaction:', error);
     return { success: false, message: 'No se pudo registrar tu reacción.' };
+  }
+}
+
+// Name Generator Action
+const nameGeneratorSchema = z.object({
+  keyword: z.string().min(2, "La palabra clave debe tener al menos 2 caracteres."),
+});
+
+type NameGeneratorState = {
+  names: string[];
+  error?: string;
+}
+
+export async function generateNamesAction(prevState: NameGeneratorState, formData: FormData): Promise<NameGeneratorState> {
+  const validatedFields = nameGeneratorSchema.safeParse({
+    keyword: formData.get('keyword'),
+  });
+
+  if (!validatedFields.success) {
+    return { names: [], error: validatedFields.error.errors[0].message };
+  }
+
+  try {
+    const result = await generateHabboName({ keyword: validatedFields.data.keyword });
+    return { names: result.names || [] };
+  } catch (error) {
+    console.error("Name generation failed:", error);
+    return { names: [], error: "La IA no pudo generar nombres. Inténtalo de nuevo." };
   }
 }
