@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { db } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
-import { ScheduleItem } from "@/lib/types";
 
 interface AzuracastData {
   live: {
@@ -21,12 +20,21 @@ interface OnAirOverride {
     nextDj: string;
 }
 
+type Bookings = {
+  [day: string]: {
+    [hour: string]: { // hour is like "0300"
+      djName: string;
+      uid: string;
+    };
+  };
+};
+
 const defaultDj = {
     name: 'AutoDJ',
     habboName: 'estacionkusfm',
 };
 
-const getDjs = (schedule: ScheduleItem[], onAirOverride?: OnAirOverride, azuracastData?: AzuracastData | null) => {
+const getDjs = (bookings: Bookings, onAirOverride?: OnAirOverride, azuracastData?: AzuracastData | null) => {
     let currentDj = { name: defaultDj.name, habboName: defaultDj.habboName };
     let nextDj = { name: 'Por anunciar', habboName: 'estacionkusfm' };
 
@@ -39,45 +47,48 @@ const getDjs = (schedule: ScheduleItem[], onAirOverride?: OnAirOverride, azuraca
         return { current: currentDj, next: nextDj };
     }
     
-    // 2. Azuracast live streamer takes precedence over schedule
+    // 2. Azuracast live streamer takes precedence over bookings
     const azuracastStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : '';
     if (azuracastStreamer && azuracastStreamer.toLowerCase() !== 'autodj' && azuracastStreamer.trim() !== '') {
         currentDj = { name: azuracastStreamer, habboName: azuracastStreamer };
     }
 
-    // 3. Fallback to schedule if no override
-    if (schedule && schedule.length > 0) {
-        // Simulating Mexico City Time (UTC-6)
-        const now = new Date();
-        const mexicoTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+    // 3. Fallback to booking grid if no override or live streamer
+    if (Object.keys(bookings).length > 0) {
+        const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const mexicoTime = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
         
-        const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][mexicoTime.getDay()];
-        const currentTime = `${mexicoTime.getHours().toString().padStart(2, '0')}:${mexicoTime.getMinutes().toString().padStart(2, '0')}`;
+        const currentDayName = daysOfWeek[mexicoTime.getDay()];
+        const currentHour = mexicoTime.getHours();
+        const currentHourString = `${currentHour.toString().padStart(2, '0')}00`;
 
-        const todaySchedule = schedule
-            .filter(item => item.day === dayOfWeek)
-            .sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-        // Find current show based on schedule, only if no one is live on Azuracast
+        // Find current DJ from bookings if not live on Azuracast
         if (!azuracastStreamer || azuracastStreamer.toLowerCase() === 'autodj') {
-            const currentShow = todaySchedule.find(item => currentTime >= item.startTime && currentTime <= item.endTime);
-            if(currentShow) {
-                currentDj = { name: currentShow.dj, habboName: currentShow.dj };
+            const currentBooking = bookings[currentDayName]?.[currentHourString];
+            if (currentBooking) {
+                currentDj = { name: currentBooking.djName, habboName: currentBooking.djName };
             }
         }
         
-        // Find next show based on schedule
-        const nextShow = todaySchedule.find(item => item.startTime > currentTime);
-        if (nextShow) {
-            nextDj = { name: nextShow.dj, habboName: nextShow.dj };
-        } else {
-             // If no more shows today, find the first show of the next day
-             const nextDayIndex = (mexicoTime.getDay() + 1) % 7;
-             const nextDayName = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][nextDayIndex];
-             const nextDaySchedule = schedule.filter(item => item.day === nextDayName).sort((a, b) => a.startTime.localeCompare(b.startTime));
-             if(nextDaySchedule.length > 0) {
-                 nextDj = { name: nextDaySchedule[0].dj, habboName: nextDaySchedule[0].dj };
-             }
+        // Find next DJ from bookings
+        let nextHour = currentHour + 1;
+        let nextDayIndex = mexicoTime.getDay();
+        
+        for (let i = 0; i < 48; i++) { // Look ahead up to 48 hours
+            if (nextHour > 23) {
+                nextHour = 0;
+                nextDayIndex = (nextDayIndex + 1) % 7;
+            }
+            
+            const nextDayName = daysOfWeek[nextDayIndex];
+            const nextHourString = `${nextHour.toString().padStart(2, '0')}00`;
+            const nextBooking = bookings[nextDayName]?.[nextHourString];
+
+            if (nextBooking) {
+                nextDj = { name: nextBooking.djName, habboName: nextBooking.djName };
+                break; // Found the next one
+            }
+            nextHour++;
         }
     }
     
@@ -87,7 +98,7 @@ const getDjs = (schedule: ScheduleItem[], onAirOverride?: OnAirOverride, azuraca
 
 export default function OnAirDjs() {
     const [azuracastData, setAzuracastData] = useState<AzuracastData | null>(null);
-    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
+    const [bookings, setBookings] = useState<Bookings>({});
     const [onAirOverride, setOnAirOverride] = useState<OnAirOverride | undefined>(undefined);
     const [djs, setDjs] = useState({ current: defaultDj, next: { name: 'Por anunciar', habboName: 'estacionkusfm' } });
     const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +106,6 @@ export default function OnAirDjs() {
     useEffect(() => {
         const fetchData = async () => {
           try {
-            // Using a cache-busting query parameter to get fresh data
             const response = await fetch(`https://radio.kusmedios.lat/api/nowplaying/ekus-fm?_=${new Date().getTime()}`);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
@@ -107,11 +117,9 @@ export default function OnAirDjs() {
           }
         };
         
-        const scheduleRef = ref(db, 'schedule');
-        const unsubscribeSchedule = onValue(scheduleRef, (snapshot) => {
-            const data = snapshot.val();
-            const scheduleArray = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-            setSchedule(scheduleArray);
+        const bookingsRef = ref(db, 'bookings');
+        const unsubscribeBookings = onValue(bookingsRef, (snapshot) => {
+            setBookings(snapshot.val() || {});
         });
 
         const onAirRef = ref(db, 'onAir');
@@ -124,15 +132,15 @@ export default function OnAirDjs() {
         
         return () => {
             clearInterval(interval);
-            unsubscribeSchedule();
+            unsubscribeBookings();
             unsubscribeOnAir();
         };
     }, []);
 
     useEffect(() => {
-        const calculatedDjs = getDjs(schedule, onAirOverride, azuracastData);
+        const calculatedDjs = getDjs(bookings, onAirOverride, azuracastData);
         setDjs(calculatedDjs);
-    }, [schedule, onAirOverride, azuracastData]);
+    }, [bookings, onAirOverride, azuracastData]);
 
     if (isLoading) {
         return (
