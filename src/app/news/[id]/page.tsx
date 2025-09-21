@@ -13,12 +13,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Tag, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import CommentsSection from '@/components/habbospeed/comments-section';
 
 // A simple markdown-to-html renderer
 const Markdown = ({ content }: { content: string }) => {
     // Replace newlines with <br> tags
-    const html = content.replace(/\n/g, '<br />');
-    return <div dangerouslySetInnerHTML={{ __html: html }} />;
+    const htmlContent = content.replace(/\n/g, '<br />');
+    return <div className="prose prose-invert prose-lg max-w-none text-foreground/90 leading-relaxed" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
 };
 
 export default function ArticleDetailPage() {
@@ -73,7 +74,7 @@ export default function ArticleDetailPage() {
 
   return (
     <div className="container mx-auto max-w-4xl p-4 md:p-8">
-      <article>
+      <article className="mb-8">
         <div className="mb-8">
             <Link href="/news" className="text-sm text-primary hover:underline flex items-center gap-1 mb-4">
                 <ArrowLeft size={16} />
@@ -103,11 +104,10 @@ export default function ArticleDetailPage() {
           </div>
           <p className="text-lg text-muted-foreground">{article.summary}</p>
         </div>
-
-        <div className="prose prose-invert prose-lg max-w-none text-foreground/90 leading-relaxed">
-           <Markdown content={article.content} />
-        </div>
+        <Markdown content={article.content} />
       </article>
+
+      <CommentsSection articleId={id} />
     </div>
   );
 }

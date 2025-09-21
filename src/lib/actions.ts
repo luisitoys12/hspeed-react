@@ -112,3 +112,40 @@ export async function submitContactForm(formData: FormData) {
         return { success: false, message: "No se pudo enviar tu mensaje. Inténtalo de nuevo más tarde." };
     }
 }
+
+const commentFormSchema = z.object({
+  comment: z.string().min(3, "El comentario debe tener al menos 3 caracteres.").max(500, "El comentario no puede exceder los 500 caracteres."),
+  authorUid: z.string(),
+  authorName: z.string(),
+  articleId: z.string(),
+});
+
+export async function submitComment(formData: FormData) {
+  const validatedFields = commentFormSchema.safeParse({
+    comment: formData.get('comment'),
+    authorUid: formData.get('authorUid'),
+    authorName: formData.get('authorName'),
+    articleId: formData.get('articleId'),
+  });
+
+  if (!validatedFields.success) {
+    return { success: false, message: "Datos del comentario inválidos." };
+  }
+  
+  if (!validatedFields.data.authorUid) {
+      return { success: false, message: "Debes iniciar sesión para comentar." };
+  }
+
+  try {
+    const { articleId, ...commentData } = validatedFields.data;
+    const commentsRef = ref(db, `comments/${articleId}`);
+    await push(commentsRef, {
+      ...commentData,
+      timestamp: serverTimestamp(),
+    });
+    return { success: true, message: "Comentario añadido." };
+  } catch (error) {
+    console.error("Error saving comment:", error);
+    return { success: false, message: "No se pudo añadir tu comentario. Inténtalo más tarde." };
+  }
+}

@@ -21,3 +21,11 @@ export type NewsArticle = {
 };
 
 export type NewsArticleFormValues = Omit<NewsArticle, 'id'>;
+
+export type Comment = {
+  id: string;
+  authorUid: string;
+  authorName: string;
+  comment: string;
+  timestamp: number;
+};
