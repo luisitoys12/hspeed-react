@@ -1,6 +1,6 @@
 
 import Image from 'next/image';
-import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -16,30 +16,41 @@ type TeamMemberCardProps = {
   member: TeamMember;
 };
 
+const HabboUserIcon = () => (
+    <Image 
+        src="https://habbofont.net/img/habbo/tool.gif" 
+        alt="User Icon"
+        width={15} 
+        height={19}
+        className="inline-block mr-2"
+        unoptimized
+    />
+)
+
 export default function TeamMemberCard({ member }: TeamMemberCardProps) {
   return (
-    <Card className="relative pt-12 overflow-visible transition-all hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1 mt-12 h-56">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div className="relative h-24 w-24">
+    <Card className="transition-all hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1">
+      <CardContent className="p-4 flex items-center gap-4">
+        <div className="relative flex-shrink-0">
           <Image
             src={member.avatarUrl}
             alt={member.name}
-            width={96}
-            height={96}
-            className="rounded-full border-4 border-primary bg-card"
+            width={64}
+            height={110}
+            className="bg-card"
             unoptimized
           />
-          <div className={cn(
-            "absolute bottom-0 right-1 h-5 w-5 rounded-full border-2 border-background",
+           <div className={cn(
+            "absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-background",
             member.online ? 'bg-green-500' : 'bg-gray-500'
           )} title={member.online ? 'Conectado' : 'Desconectado'} />
         </div>
-      </div>
-      <CardContent className="p-6 text-center h-full flex flex-col justify-end">
-        <div>
-            <CardTitle className="font-headline text-xl">{member.name}</CardTitle>
-            <CardDescription className="italic mt-1">"{member.motto}"</CardDescription>
-            <div className="flex flex-wrap gap-2 justify-center mt-4">
+        <div className="flex flex-col gap-2">
+            <h3 className="font-headline text-lg font-bold flex items-center">
+                <HabboUserIcon />
+                {member.name}
+            </h3>
+            <div className="flex flex-wrap gap-2">
             {member.roles.map(role => (
                 <Badge key={role} variant="secondary">{role}</Badge>
             ))}
