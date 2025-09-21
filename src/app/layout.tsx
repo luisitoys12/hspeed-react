@@ -13,8 +13,8 @@ import FloatingPlayer from '@/components/layout/floating-player';
 
 
 export const metadata: Metadata = {
-  title: 'Ekus FM',
-  description: 'Tu Radio Oficial de Habbo.es',
+  title: 'Habbospeed',
+  description: 'Tu comunidad de Habbo Hotel.',
 };
 
 export default function RootLayout({

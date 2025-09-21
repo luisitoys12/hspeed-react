@@ -2,10 +2,8 @@
 
 import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-
-// Hardcoded super admin UID for demo purposes
-const SUPER_ADMIN_UID = "HKWwHx43uuVxGjHeo099cX7im273";
+import { auth, db } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
 
 interface User {
   uid: string;
@@ -13,6 +11,8 @@ interface User {
   displayName: string | null;
   isLoggedIn: boolean;
   isSuperAdmin: boolean;
+  role: string;
+  approved: boolean;
 }
 
 interface AuthContextType {
@@ -29,17 +29,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          isLoggedIn: true,
-          isSuperAdmin: firebaseUser.uid === SUPER_ADMIN_UID,
+        // User is logged in, now fetch their role and approval status from DB
+        const userRef = ref(db, `users/${firebaseUser.uid}`);
+        onValue(userRef, (snapshot) => {
+            const dbUser = snapshot.val();
+            if (dbUser && dbUser.approved) {
+                 setUser({
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    displayName: firebaseUser.displayName,
+                    isLoggedIn: true,
+                    isSuperAdmin: dbUser.role === 'Admin',
+                    role: dbUser.role,
+                    approved: dbUser.approved,
+                });
+            } else {
+                // User exists in Auth but not in DB or is not approved
+                setUser({
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    displayName: firebaseUser.displayName,
+                    isLoggedIn: true,
+                    isSuperAdmin: false,
+                    role: 'pending',
+                    approved: false,
+                });
+            }
+             setLoading(false);
         });
       } else {
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();

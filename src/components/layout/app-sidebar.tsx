@@ -21,15 +21,12 @@ import {
   Facebook,
   Users,
   BookOpen,
-  Settings,
   LogIn,
   UserPlus,
   Store,
   LogOut,
-  BookmarkPlus,
+  LayoutDashboard,
   HeartHandshake,
-  PartyPopper,
-  LayoutDashboard
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -38,6 +35,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { Skeleton } from '../ui/skeleton';
+import Image from 'next/image';
 
 const publicLinks = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -84,7 +82,7 @@ export default function AppSidebar() {
             <div className="p-2 rounded-lg bg-primary">
                 <Radio className="text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-headline font-bold text-primary">Ekus FM</h1>
+            <h1 className="text-2xl font-headline font-bold text-primary">Habbospeed</h1>
         </div>
       </SidebarHeader>
       <SidebarContent>

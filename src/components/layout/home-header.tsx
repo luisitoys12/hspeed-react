@@ -19,133 +19,125 @@ import {
 import SongRequestForm from '../habbospeed/song-request-form';
 import { db } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
-import { ScheduleItem } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-
 // Estructura de datos de Azuracast
 interface AzuracastData {
-  station: {
-    listen_url: string;
-  };
-  listeners: {
-    current: number;
-  };
+  station: { listen_url: string; };
+  listeners: { current: number; };
   now_playing: {
-    song: {
-      text: string;
-      artist: string;
-      title: string;
-      art: string;
-    };
+    song: { text: string; artist: string; title: string; art: string; };
   };
-  live: {
-    is_live: boolean;
-    streamer_name: string;
-  };
+  live: { is_live: boolean; streamer_name: string; };
 }
 
-interface OnAirOverride {
-    currentDj: string;
-    nextDj: string;
+// Estructura de datos de ZenoFM
+interface ZenoFMData {
+    data: {
+        stream: string;
+        title: string;
+        listeners: string;
+        image_url: string;
+    }[]
 }
 
 interface RadioConfig {
+    radioService: 'azuracast' | 'zenofm';
     apiUrl: string;
     listenUrl: string;
 }
-
-const defaultDj = {
-    name: 'AutoDJ',
-    habboName: 'estacionkusfm',
-};
-
-const getDjs = (schedule: ScheduleItem[], onAirOverride?: OnAirOverride, azuracastData?: AzuracastData | null) => {
-    const azuracastStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : '';
-
-    let currentDj = { name: defaultDj.name, habboName: defaultDj.habboName };
-    let nextDj = { name: 'Por anunciar', habboName: 'estacionkusfm' };
-
-    // 1. Check for manual override from Firebase
-    if (onAirOverride?.currentDj) {
-        currentDj = { name: onAirOverride.currentDj, habboName: onAirOverride.currentDj };
-        if (onAirOverride.nextDj) {
-            nextDj = { name: onAirOverride.nextDj, habboName: onAirOverride.nextDj };
-        }
-        return { current: currentDj, next: nextDj };
-    }
-
-    // 2. Check Azuracast for a live DJ
-    if (azuracastStreamer && azuracastStreamer.toLowerCase() !== 'autodj' && azuracastStreamer.trim() !== '') {
-        currentDj = { name: azuracastStreamer, habboName: azuracastStreamer };
-        const now = new Date();
-        const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][now.getUTCDay()];
-        const currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
-        const todaySchedule = schedule
-            .filter(item => item.day === dayOfWeek)
-            .sort((a, b) => a.startTime.localeCompare(b.startTime));
-        
-        const nextShow = todaySchedule.find(item => item.startTime > currentTime);
-        if (nextShow) {
-             nextDj = { name: nextShow.dj, habboName: nextShow.dj };
-        }
-        return { current: currentDj, next: nextDj };
-    }
-    
-    // 3. Fallback to schedule if no override and no one is live on Azuracast
-    if (!schedule || schedule.length === 0) {
-        return { current: currentDj, next: nextDj };
-    }
-    
-    const now = new Date();
-    const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][now.getUTCDay()];
-    const currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
-
-    const todaySchedule = schedule
-        .filter(item => item.day === dayOfWeek)
-        .sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-    const currentShow = todaySchedule.find(item => currentTime >= item.startTime && currentTime <= item.endTime);
-    if(currentShow) {
-        currentDj = { name: currentShow.dj, habboName: currentShow.dj };
-    }
-
-    const nextShow = todaySchedule.find(item => item.startTime > currentTime);
-    if (nextShow) {
-        nextDj = { name: nextShow.dj, habboName: nextShow.dj };
-    }
-    
-    return { current: currentDj, next: nextDj };
-};
-
 
 export default function HomeHeader() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(50);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [azuracastData, setAzuracastData] = useState<AzuracastData | null>(null);
+  
   const [radioConfig, setRadioConfig] = useState<RadioConfig | null>(null);
+  const [songInfo, setSongInfo] = useState({ art: "https://picsum.photos/seed/songart/100/100", title: 'Cargando...', artist: 'Por favor espera', listeners: 0 });
+  const [djName, setDjName] = useState('AutoDJ');
+  
   const [isLoading, setIsLoading] = useState(true);
-  const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
-  const [onAirOverride, setOnAirOverride] = useState<OnAirOverride | undefined>(undefined);
-  const [djs, setDjs] = useState({ current: defaultDj, next: { name: 'Por anunciar', habboName: 'estacionkusfm' } });
   
   const [notificationPermission, setNotificationPermission] = useState('default');
   const { toast } = useToast();
   const lastNotifiedDj = useRef<string | null>(null);
 
+  // Get Radio Config from Firebase
   useEffect(() => {
-    if ("Notification" in window) {
-      setNotificationPermission(Notification.permission);
-    }
+    const configRef = ref(db, 'config');
+    const unsubscribeConfig = onValue(configRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.apiUrl && data.listenUrl) {
+          setRadioConfig({
+              radioService: data.radioService || 'azuracast',
+              apiUrl: data.apiUrl,
+              listenUrl: data.listenUrl,
+          });
+        }
+        setIsLoading(false);
+    });
+    return () => unsubscribeConfig();
   }, []);
 
-  const handleNotificationClick = () => {
-    if (!("Notification" in window)) {
-      toast({ variant: 'destructive', title: 'Navegador no compatible', description: 'Tu navegador no soporta notificaciones.' });
-      return;
+  // Fetch Now Playing Data
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!radioConfig) return;
+
+      try {
+        const response = await fetch(radioConfig.apiUrl);
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        if (radioConfig.radioService === 'zenofm') {
+            const data: ZenoFMData = await response.json();
+            const song = data?.data?.[0];
+            const [artist, title] = song?.title.split(' - ') || ['Artista desconocido', 'Canción desconocida'];
+            setSongInfo({
+                art: song?.image_url || "https://picsum.photos/seed/songart/100/100",
+                title: title.trim(),
+                artist: artist.trim(),
+                listeners: parseInt(song?.listeners || '0'),
+            });
+            // Zeno no provee info de DJ en la API
+        } else { // Azuracast
+            const data: AzuracastData = await response.json();
+            setSongInfo({
+                art: data.now_playing.song.art,
+                title: data.now_playing.song.title,
+                artist: data.now_playing.song.artist,
+                listeners: data.listeners.current,
+            });
+            if (data.live.is_live && data.live.streamer_name) {
+                setDjName(data.live.streamer_name);
+            }
+        }
+      } catch (error) {
+        console.error("Error fetching radio data:", error);
+      }
+    };
+    
+    if (radioConfig) {
+      fetchData();
+      const interval = setInterval(fetchData, 15000); 
+      return () => clearInterval(interval);
     }
+  }, [radioConfig]);
+
+  // Handle Notifications
+  useEffect(() => {
+    if ("Notification" in window) setNotificationPermission(Notification.permission);
+    
+    if (notificationPermission === 'granted' && djName !== 'AutoDJ' && djName !== lastNotifiedDj.current) {
+        new Notification("¡DJ en Vivo!", {
+          body: `${djName} está ahora en directo. ¡No te lo pierdas!`,
+          icon: `https://www.habbo.es/habbo-imaging/avatarimage?user=${djName}&headonly=1&size=l`,
+        });
+        lastNotifiedDj.current = djName;
+    }
+  }, [djName, notificationPermission]);
+
+  const handleNotificationClick = () => {
     if (notificationPermission === 'granted') {
       toast({ title: 'Notificaciones ya activadas' });
       return;
@@ -158,119 +150,25 @@ export default function HomeHeader() {
       setNotificationPermission(permission);
       if (permission === 'granted') {
         toast({ title: '¡Notificaciones activadas!', description: 'Te avisaremos cuando un DJ se conecte.' });
-        new Notification("Ekus FM", {
-            body: "¡Gracias por activar las notificaciones!",
-            icon: '/favicon.ico'
-        });
       }
     });
   };
 
+  // Audio Controls
   useEffect(() => {
-    const calculatedDjs = getDjs(schedule, onAirOverride, azuracastData);
-    if (djs.current.name !== calculatedDjs.current.name) {
-      setDjs(calculatedDjs);
-      if (notificationPermission === 'granted' && calculatedDjs.current.name !== 'AutoDJ' && calculatedDjs.current.name !== lastNotifiedDj.current) {
-        new Notification("¡DJ en Vivo!", {
-          body: `${calculatedDjs.current.name} está ahora en directo. ¡No te lo pierdas!`,
-          icon: `https://www.habbo.es/habbo-imaging/avatarimage?user=${calculatedDjs.current.habboName}&headonly=1&size=l`,
-          badge: `https://www.habbo.es/habbo-imaging/avatarimage?user=${calculatedDjs.current.habboName}&headonly=1&size=s`,
-        });
-        lastNotifiedDj.current = calculatedDjs.current.name;
-      }
-    }
-  }, [schedule, onAirOverride, azuracastData, notificationPermission, djs.current.name]);
-
-  useEffect(() => {
-    const configRef = ref(db, 'config');
-    const unsubscribeConfig = onValue(configRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data && data.apiUrl && data.listenUrl) {
-          setRadioConfig({
-              apiUrl: data.apiUrl,
-              listenUrl: data.listenUrl,
-          });
-        } else {
-            setRadioConfig({
-                apiUrl: 'https://radio.kusmedios.lat/api/nowplaying/ekus-fm',
-                listenUrl: 'http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3'
-            })
-        }
-    });
-    
-    const scheduleRef = ref(db, 'schedule');
-    const unsubscribeSchedule = onValue(scheduleRef, (snapshot) => {
-        const data = snapshot.val();
-        const scheduleArray = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-        setSchedule(scheduleArray);
-    });
-
-    const onAirRef = ref(db, 'onAir');
-    const unsubscribeOnAir = onValue(onAirRef, (snapshot) => {
-        setOnAirOverride(snapshot.val());
-    });
-
-    return () => {
-        unsubscribeConfig();
-        unsubscribeSchedule();
-        unsubscribeOnAir();
-    };
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!radioConfig?.apiUrl) {
-          setIsLoading(false);
-          return;
-      };
-      
-      try {
-        const response = await fetch(radioConfig.apiUrl);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data: AzuracastData = await response.json();
-        setAzuracastData(data);
-      } catch (error) {
-        console.error("Error fetching Azuracast data:", error);
-        setAzuracastData(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    if (radioConfig) {
-      fetchData();
-      const interval = setInterval(fetchData, 15000); 
-      return () => clearInterval(interval);
-    }
-  }, [radioConfig]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume / 100;
-    }
+    if (audioRef.current) audioRef.current.volume = volume / 100;
   }, [volume]);
   
-  useEffect(() => {
-    if ("mediaSession" in navigator && azuracastData) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: azuracastData.now_playing.song.title,
-        artist: azuracastData.now_playing.song.artist,
-        album: 'Ekus FM',
-        artwork: [{ src: azuracastData.now_playing.song.art, sizes: '500x500', type: 'image/jpeg' }],
-      });
-    }
-  }, [azuracastData]);
-
   const togglePlayPause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        if (radioConfig?.listenUrl) {
-            audioRef.current.src = radioConfig.listenUrl;
-            audioRef.current.play().catch(e => console.error("Error playing audio:", e));
-        }
-      }
+    const audio = audioRef.current;
+    if (!audio || !radioConfig) return;
+
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.src = radioConfig.listenUrl;
+      audio.load();
+      audio.play().catch(e => console.error("Error playing audio:", e));
     }
   };
   
@@ -286,21 +184,15 @@ export default function HomeHeader() {
             audioEl.removeEventListener('pause', handlePause);
         }
     }
-  }, [audioRef])
-
-  const songArt = azuracastData?.now_playing.song.art || "https://picsum.photos/seed/songart/100/100";
-  const songTitle = azuracastData?.now_playing.song.title || 'Canción no disponible';
-  const songArtist = azuracastData?.now_playing.song.artist || 'Artista no disponible';
-  const listeners = azuracastData?.listeners.current ?? 0;
+  }, [audioRef]);
   
   return (
     <div className="w-full bg-card/80 backdrop-blur-sm border-b border-border">
-      <audio ref={audioRef} src={radioConfig?.listenUrl || undefined} preload="none" />
+      <audio ref={audioRef} preload="none" />
       <div className="container mx-auto p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
         
-        {/* Left Section: Song Info */}
         <div className="flex items-center gap-3 min-w-0 justify-start">
-          {isLoading || !radioConfig ? (
+          {isLoading ? (
             <>
               <Skeleton className="h-12 w-12 rounded-md" />
               <div className="space-y-2 hidden md:block">
@@ -310,16 +202,15 @@ export default function HomeHeader() {
             </>
           ) : (
             <>
-              <Image src={songArt} alt={songTitle} width={48} height={48} className="rounded-md h-12 w-12 object-cover" unoptimized/>
+              <Image src={songInfo.art} alt={songInfo.title} width={48} height={48} className="rounded-md h-12 w-12 object-cover" unoptimized/>
               <div className="min-w-0 hidden md:block">
-                <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={songTitle}>{songTitle}</h3>
-                <p className="text-xs md:text-sm text-muted-foreground truncate" title={songArtist}>{songArtist}</p>
+                <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={songInfo.title}>{songInfo.title}</h3>
+                <p className="text-xs md:text-sm text-muted-foreground truncate" title={songInfo.artist}>{songInfo.artist}</p>
               </div>
             </>
           )}
         </div>
         
-        {/* Center Section: Player Controls */}
         <div className="flex items-center justify-center gap-4">
           <Button variant="default" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading || !radioConfig}>
             {isPlaying ? <Pause className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" /> : <Play className="h-5 w-5 md:h-6 md:w-6 fill-primary-foreground" />}
@@ -330,23 +221,22 @@ export default function HomeHeader() {
           </div>
         </div>
 
-        {/* Right Section: DJ, Listeners, Request */}
         <div className="flex items-center justify-end gap-2 md:gap-4">
            <div className="hidden lg:flex items-center gap-4 bg-black/50 p-2 rounded-lg">
               <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
-                      <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djs.current.habboName}&headonly=1&size=s`} alt={djs.current.name} />
-                      <AvatarFallback>{djs.current.name?.substring(0,2)}</AvatarFallback>
+                      <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djName}&headonly=1&size=s`} alt={djName} />
+                      <AvatarFallback>{djName?.substring(0,2)}</AvatarFallback>
                   </Avatar>
                   <div>
                       <div className="text-xs font-bold text-white/90">AL AIRE</div>
-                      <div className="text-xs text-muted-foreground">{djs.current.name}</div>
+                      <div className="text-xs text-muted-foreground">{djName}</div>
                   </div>
               </div>
           </div>
           <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg">
               <Users className="text-primary h-5 w-5" />
-              <span className="font-bold text-white text-sm">{listeners}</span>
+              <span className="font-bold text-white text-sm">{songInfo.listeners}</span>
           </div>
           
           <Sheet>

@@ -10,14 +10,13 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, Radio, Link as LinkIcon, LoaderCircle, Trash2, PlusCircle, Image as ImageIcon } from 'lucide-react';
+import { Settings, Radio, LoaderCircle, Trash2, PlusCircle, Image as ImageIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const slideSchema = z.object({
   title: z.string().min(1, "El título es requerido."),
@@ -31,6 +30,8 @@ const slideSchema = z.object({
 });
 
 const configSchema = z.object({
+  logoUrl: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
+  radioService: z.enum(['azuracast', 'zenofm']),
   apiUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
   listenUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
   slideshow: z.array(slideSchema).optional(),
@@ -40,7 +41,7 @@ type ConfigFormValues = z.infer<typeof configSchema>;
 
 const demoSlides = [
     { 
-      title: '¡Bienvenidos a Ekus FM!', 
+      title: '¡Bienvenidos a Habbospeed!', 
       subtitle: 'La radio #1 para la comunidad de Habbo.es. Música, eventos y diversión 24/7.', 
       imageUrl: 'https://picsum.photos/seed/habboparty/1200/400',
       imageHint: 'habbo party',
@@ -69,6 +70,8 @@ export default function ConfigPage() {
   const [dbLoading, setDbLoading] = useState(true);
 
   const defaultValues = useMemo(() => ({
+    logoUrl: "",
+    radioService: "azuracast" as const,
     apiUrl: "",
     listenUrl: "",
     slideshow: [],
@@ -97,6 +100,8 @@ export default function ConfigPage() {
             : [];
           
           form.reset({
+            logoUrl: data.logoUrl || "",
+            radioService: data.radioService || "azuracast",
             apiUrl: data.apiUrl || "",
             listenUrl: data.listenUrl || "",
             slideshow: slideshowArray.length > 0 ? slideshowArray : demoSlides
@@ -107,7 +112,6 @@ export default function ConfigPage() {
           }
 
         } else {
-            // If no data in DB, set demo slides
             form.reset({
                 ...defaultValues,
                 slideshow: demoSlides,
@@ -131,12 +135,8 @@ export default function ConfigPage() {
 
     setIsSubmitting(true);
     try {
-      const dataToSave = {
-        ...values,
-      };
-
       const configRef = ref(db, 'config');
-      await set(configRef, dataToSave);
+      await set(configRef, values);
       toast({ title: "¡Éxito!", description: "La configuración se ha guardado correctamente." });
     } catch (error) {
       console.error("Error saving config:", error);
@@ -171,34 +171,75 @@ export default function ConfigPage() {
           Ajustes Generales
         </h1>
         <p className="text-muted-foreground mt-2">
-          Gestiona las URLs, el carrusel de la página principal y otros ajustes importantes.
+          Gestiona el logo, servicio de radio, URLs, y el carrusel de la página principal.
         </p>
       </div>
 
        <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+           <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
+                <ImageIcon />
+                Branding
+              </CardTitle>
+              <CardDescription>
+                Personaliza el logo de tu sitio.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <FormField control={form.control} name="logoUrl" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL del Logo</FormLabel>
+                    <FormControl><Input placeholder="https://tu-sitio.com/logo.png" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+              )}/>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
                 <Radio />
-                Configuración de Azuracast
+                Configuración de Radio
               </CardTitle>
               <CardDescription>
-                Introduce las URLs para la API de Azuracast y el stream de la radio.
+                Elige tu servicio de radio e introduce las URLs correspondientes.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <FormField
+                control={form.control}
+                name="radioService"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Servicio de Radio</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un servicio" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="azuracast">Azuracast</SelectItem>
+                        <SelectItem value="zenofm">ZenoFM</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField control={form.control} name="apiUrl" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL de la API Now Playing</FormLabel>
-                    <FormControl><Input placeholder="https://radio.kusmedios.lat/api/nowplaying/ekus-fm" {...field} /></FormControl>
+                    <FormLabel>URL de la API "Now Playing"</FormLabel>
+                    <FormControl><Input placeholder="URL de la API de tu radio" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
               )}/>
                <FormField control={form.control} name="listenUrl" render={({ field }) => (
                   <FormItem>
                     <FormLabel>URL del Stream de Audio</FormLabel>
-                    <FormControl><Input placeholder="http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3" {...field} /></FormControl>
+                    <FormControl><Input placeholder="URL del stream de audio" {...field} /></FormControl>
                      <FormMessage />
                   </FormItem>
               )}/>
@@ -297,5 +338,3 @@ const ConfigSkeleton = () => (
     </div>
   </div>
 );
-
-    

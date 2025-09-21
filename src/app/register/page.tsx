@@ -6,7 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { ref, set } from "firebase/database";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LoaderCircle, UserPlus } from "lucide-react";
+import { LoaderCircle, UserPlus, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 const formSchema = z.object({
@@ -39,6 +40,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,13 +54,33 @@ export default function RegisterPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     setError(null);
+    setIsSuccess(false);
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      await updateProfile(userCredential.user, {
+      const user = userCredential.user;
+      
+      // Update Firebase Auth profile
+      await updateProfile(user, {
         displayName: values.username,
       });
-      router.push("/");
+
+      // Create a user profile entry in Realtime Database for role management
+      const userRef = ref(db, `users/${user.uid}`);
+      await set(userRef, {
+        uid: user.uid,
+        email: user.email,
+        displayName: values.username,
+        role: 'pending', // A 'pending' role until approved
+        approved: false,
+        createdAt: new Date().toISOString(),
+      });
+      
+      // Log the user out immediately after registration
+      await auth.signOut();
+
+      setIsSuccess(true);
+
     } catch (error: any) {
       if (error.code === 'auth/email-already-in-use') {
         setError("Este correo electrónico ya está en uso. Por favor, intenta con otro.");
@@ -71,6 +93,29 @@ export default function RegisterPage() {
     }
   }
 
+  if (isSuccess) {
+    return (
+        <div className="container mx-auto p-4 md:p-8 flex justify-center items-start">
+            <Card className="w-full max-w-md text-center">
+                <CardHeader>
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                        <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                    <CardTitle className="mt-4">¡Registro Exitoso!</CardTitle>
+                    <CardDescription>
+                        Tu cuenta ha sido creada. Un administrador revisará tu perfil y lo aprobará pronto.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild>
+                        <Link href="/login">Volver al Inicio de Sesión</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
+    )
+  }
+
   return (
     <div className="container mx-auto p-4 md:p-8 flex justify-center items-start">
       <Card className="w-full max-w-md">
@@ -80,7 +125,7 @@ export default function RegisterPage() {
             Crear una Cuenta
           </CardTitle>
           <CardDescription>
-            Regístrate para disfrutar de todas las funcionalidades.
+            Regístrate para unirte a la comunidad. Tu cuenta requerirá aprobación de un administrador.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -97,9 +142,9 @@ export default function RegisterPage() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre de Usuario</FormLabel>
+                    <FormLabel>Nombre de Usuario en Habbo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Tu nombre de usuario" {...field} />
+                      <Input placeholder="Tu nombre de Habbo" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
