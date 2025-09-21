@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
@@ -20,6 +21,9 @@ interface AuthContextType {
     loading: boolean;
 }
 
+// UID del Super Administrador principal
+const SUPER_ADMIN_UID = "o7VbNn8yGXYjmm3cINgBqjA1Yx12";
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -29,11 +33,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // User is logged in, now fetch their role and approval status from DB
+        const isSuperAdmin = firebaseUser.uid === SUPER_ADMIN_UID;
         const userRef = ref(db, `users/${firebaseUser.uid}`);
+        
         onValue(userRef, (snapshot) => {
             const dbUser = snapshot.val();
-            if (dbUser && dbUser.approved) {
+
+            if (isSuperAdmin) {
+                // Si es el super admin, siempre tiene acceso total
+                setUser({
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    displayName: firebaseUser.displayName,
+                    isLoggedIn: true,
+                    isSuperAdmin: true,
+                    role: 'Admin',
+                    approved: true,
+                });
+            } else if (dbUser && dbUser.approved) {
+                // Para usuarios normales, verificar si están aprobados
                  setUser({
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
@@ -44,19 +62,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     approved: dbUser.approved,
                 });
             } else {
-                // User exists in Auth but not in DB or is not approved
+                // Usuario no aprobado o sin registro en la DB
                 setUser({
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
                     displayName: firebaseUser.displayName,
                     isLoggedIn: true,
                     isSuperAdmin: false,
-                    role: 'pending',
-                    approved: false,
+                    role: dbUser?.role || 'pending',
+                    approved: dbUser?.approved || false,
                 });
             }
              setLoading(false);
-        });
+        }, { onlyOnce: true }); // Usamos onlyOnce para evitar re-renders innecesarios en cambios de DB
+
       } else {
         setUser(null);
         setLoading(false);
