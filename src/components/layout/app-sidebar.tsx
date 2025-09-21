@@ -25,11 +25,15 @@ import {
   LogIn,
   UserPlus,
   Store,
+  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { Skeleton } from '../ui/skeleton';
 
 const publicLinks = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -54,7 +58,11 @@ const socialLinks = [
 
 export default function AppSidebar() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  }
 
   return (
     <>
@@ -100,8 +108,14 @@ export default function AppSidebar() {
               </Link>
             </SidebarMenuItem>
 
-          {user?.isLoggedIn ? (
-            authLinks.map((link) => (
+          {loading ? (
+             <div className='p-2 flex flex-col gap-2'>
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+             </div>
+          ) : user ? (
+            <>
+            {authLinks.map((link) => (
                 <SidebarMenuItem key={link.href}>
                     <Link href={link.href}>
                     <SidebarMenuButton
@@ -116,12 +130,21 @@ export default function AppSidebar() {
                     </SidebarMenuButton>
                     </Link>
                 </SidebarMenuItem>
-            ))
+            ))}
+            <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Cerrar Sesión" onClick={handleLogout}>
+                    <span>
+                        <LogOut />
+                        <span>Cerrar Sesión</span>
+                    </span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+            </>
           ) : (
             <>
                 <SidebarMenuItem>
-                    <Link href="#">
-                        <SidebarMenuButton tooltip="Iniciar Sesión">
+                    <Link href="/login">
+                        <SidebarMenuButton tooltip="Iniciar Sesión" isActive={pathname === '/login'}>
                             <span>
                                 <LogIn />
                                 <span>Iniciar Sesión</span>
@@ -130,8 +153,8 @@ export default function AppSidebar() {
                     </Link>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <Link href="#">
-                        <SidebarMenuButton tooltip="Registrarse con código admin">
+                    <Link href="/register">
+                        <SidebarMenuButton tooltip="Registrarse" isActive={pathname === '/register'}>
                             <span>
                                 <UserPlus />
                                 <span>Registrarse</span>

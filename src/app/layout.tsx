@@ -8,7 +8,8 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import FloatingPlayer from '@/components/layout/floating-player';
-import { Sheet } from '@/components/ui/sheet';
+import { AuthProvider } from '@/hooks/use-auth.tsx';
+
 
 export const metadata: Metadata = {
   title: 'Ekus FM',
@@ -28,18 +29,20 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <SidebarProvider>
-          <Sidebar>
-            <AppSidebar />
-          </Sidebar>
-          <SidebarInset>
-            <div className="pb-32 lg:pb-24">
-              {children}
-            </div>
-          </SidebarInset>
-        </SidebarProvider>
-        <FloatingPlayer />
-        <Toaster />
+        <AuthProvider>
+            <SidebarProvider>
+            <Sidebar>
+                <AppSidebar />
+            </Sidebar>
+            <SidebarInset>
+                <div className="pb-32 lg:pb-24">
+                {children}
+                </div>
+            </SidebarInset>
+            </SidebarProvider>
+            <FloatingPlayer />
+            <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );
