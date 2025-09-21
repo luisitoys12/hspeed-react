@@ -37,7 +37,7 @@
     }
   },
   "contact-messages": {
-    "initial": {
+    "mensajeInicial": {
       "email": "ejemplo@ekusfm.com",
       "message": "Este es un mensaje de prueba.",
       "name": "Usuario de Prueba",
@@ -46,7 +46,7 @@
     }
   },
   "news": {
-    "-Nqg_...": {
+    "noticia1": {
       "category": "EVENTO",
       "content": "¡El verano ha llegado a Habbo y con él una nueva oleada de furnis playeros! No te pierdas la nueva colección que incluye desde tablas de surf hasta castillos de arena. Además, cada día habrá juegos y eventos especiales en la playa del hotel. ¡Participa para ganar placas exclusivas!",
       "date": "2024-07-15",
@@ -55,7 +55,7 @@
       "summary": "Descubre los nuevos furnis de verano y participa en los eventos playeros para ganar premios.",
       "title": "¡Sol, Arena y Pixeles! Llega el Evento de Verano"
     },
-    "-Nqg_..._1": {
+    "noticia2": {
       "category": "GUÍA",
       "content": "El Wired es una herramienta poderosa pero a veces complicada. En esta guía te enseñaremos los conceptos básicos para empezar a automatizar tus salas. Aprenderás a usar los Activadores, Efectos y Condiciones más comunes para crear juegos y sistemas automáticos. ¡Convierte tus salas en una obra de arte interactiva!",
       "date": "2024-07-14",
@@ -66,21 +66,21 @@
     }
   },
   "schedule": {
-    "-Nqg_...": {
+    "horario1": {
       "day": "Lunes",
       "dj": "DJ-Pixel",
       "endTime": "16:00",
       "show": "Tardes de Pop",
       "startTime": "14:00"
     },
-    "-Nqg_..._1": {
+    "horario2": {
       "day": "Miércoles",
       "dj": "DJ-Frank",
       "endTime": "22:00",
       "show": "Noches de Rock",
       "startTime": "20:00"
     },
-    "-Nqg_..._2": {
+    "horario3": {
       "day": "Viernes",
       "dj": "DJ-Pixel",
       "endTime": "19:00",
