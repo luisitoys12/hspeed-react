@@ -27,7 +27,8 @@ import {
   Store,
   LogOut,
   BookmarkPlus,
-  HeartHandshake
+  HeartHandshake,
+  BarChart2
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -49,9 +50,13 @@ const publicLinks = [
 
 const authLinks = [
   { href: '/booking', label: 'Reservar Horario', icon: BookmarkPlus },
-  { href: '/panel', label: 'Panel Admin', icon: Shield },
-  { href: '/docs', label: 'Documentación', icon: BookOpen },
 ];
+
+const adminLinks = [
+  { href: '/panel', label: 'Panel Admin', icon: Shield },
+  { href: '/panel/analytics', label: 'Analíticas', icon: BarChart2 },
+  { href: '/docs', label: 'Documentación', icon: BookOpen },
+]
 
 const socialLinks = [
     { href: '#', label: 'Twitter', icon: Twitter },
@@ -65,6 +70,10 @@ export default function AppSidebar() {
 
   const handleLogout = async () => {
     await signOut(auth);
+  }
+
+  const isLinkActive = (href: string) => {
+    return href === '/' ? pathname === href : pathname.startsWith(href);
   }
 
   return (
@@ -84,7 +93,7 @@ export default function AppSidebar() {
                 <Link href={link.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === link.href}
+                    isActive={isLinkActive(link.href)}
                     tooltip={link.label}
                   >
                     <span>
@@ -99,7 +108,7 @@ export default function AppSidebar() {
               <Link href="/request">
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === '/request'}
+                  isActive={isLinkActive('/request')}
                   tooltip="Pide una canción"
                   className="lg:hidden"
                 >
@@ -118,12 +127,28 @@ export default function AppSidebar() {
              </div>
           ) : user ? (
             <>
-            {authLinks.filter(link => link.href !== '/panel' || user.isSuperAdmin).map((link) => (
+            {authLinks.map((link) => (
                 <SidebarMenuItem key={link.href}>
                     <Link href={link.href}>
                     <SidebarMenuButton
                         asChild
-                        isActive={pathname.startsWith(link.href) && (link.href !== '/' || pathname === '/')}
+                        isActive={isLinkActive(link.href)}
+                        tooltip={link.label}
+                    >
+                        <span>
+                        <link.icon />
+                        <span>{link.label}</span>
+                        </span>
+                    </SidebarMenuButton>
+                    </Link>
+                </SidebarMenuItem>
+            ))}
+            {user.isSuperAdmin && adminLinks.map((link) => (
+                <SidebarMenuItem key={link.href}>
+                    <Link href={link.href}>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={isLinkActive(link.href)}
                         tooltip={link.label}
                     >
                         <span>
