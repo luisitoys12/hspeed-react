@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -38,7 +39,9 @@ export default function HeroSlideshow() {
     const unsubscribe = onValue(slidesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const slidesArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        const slidesArray = Array.isArray(data) 
+          ? data.filter(Boolean).map((item, index) => ({...item, id: `slide${index}`}))
+          : Object.keys(data).map(key => ({ id: key, ...data[key] }));
         setSlides(slidesArray);
       } else {
         // In case Firebase is empty, show a default placeholder slide
@@ -116,5 +119,3 @@ export default function HeroSlideshow() {
     </Carousel>
   );
 }
-
-    

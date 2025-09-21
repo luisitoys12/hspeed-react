@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -66,7 +67,11 @@ export default function ConfigPage() {
         const data = snapshot.val();
         if (data) {
           // Convert slideshow object back to array for the form
-          const slideshowArray = data.slideshow ? Object.keys(data.slideshow).map(key => data.slideshow[key]) : [];
+          const slideshowArray = data.slideshow 
+            ? Array.isArray(data.slideshow)
+              ? data.slideshow.filter(Boolean) // Handle sparse arrays from Firebase
+              : Object.keys(data.slideshow).map(key => data.slideshow[key])
+            : [];
           form.reset({
             apiUrl: data.apiUrl || "",
             listenUrl: data.listenUrl || "",
@@ -90,13 +95,9 @@ export default function ConfigPage() {
 
     setIsSubmitting(true);
     try {
-      // Convert array to object for Firebase with keys like "slide1", "slide2", etc.
+      // Keep slideshow as an array for Firebase
       const dataToSave = {
         ...values,
-        slideshow: values.slideshow?.reduce((acc, slide, index) => {
-          acc[`slide${index + 1}`] = slide;
-          return acc;
-        }, {} as Record<string, any>)
       };
 
       const configRef = ref(db, 'config');
@@ -261,5 +262,3 @@ const ConfigSkeleton = () => (
     </div>
   </div>
 );
-
-    
