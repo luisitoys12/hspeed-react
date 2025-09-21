@@ -18,12 +18,14 @@ export type NewsArticle = {
   imageHint: string;
   category: string;
   date: string;
+  reactions?: { [key: string]: number };
 };
 
 export type NewsArticleFormValues = Omit<NewsArticle, 'id'>;
 
 export type Comment = {
   id: string;
+  articleId?: string; // articleId is not always present, e.g. when fetching comments for an article
   authorUid: string;
   authorName: string;
   comment: string;

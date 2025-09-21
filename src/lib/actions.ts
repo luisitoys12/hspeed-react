@@ -13,7 +13,7 @@ import {
 } from '@/ai/flows/fetch-latest-news';
 import { z } from 'zod';
 import { db } from './firebase';
-import { ref, push, serverTimestamp } from 'firebase/database';
+import { ref, push, serverTimestamp, runTransaction, increment } from 'firebase/database';
 
 
 const songRequestFormSchema = z.object({
@@ -147,5 +147,52 @@ export async function submitComment(formData: FormData) {
   } catch (error) {
     console.error("Error saving comment:", error);
     return { success: false, message: "No se pudo añadir tu comentario. Inténtalo más tarde." };
+  }
+}
+
+export async function addReaction(articleId: string, reaction: string, authorUid: string) {
+  if (!authorUid) {
+    return { success: false, message: 'Debes iniciar sesión para reaccionar.' };
+  }
+
+  const allowedReactions = ['❤️', '🎉', '🤔', '👍'];
+  if (!allowedReactions.includes(reaction)) {
+    return { success: false, message: 'Reacción no válida.' };
+  }
+
+  try {
+    const reactionRef = ref(db, `news/${articleId}/reactions/${reaction}`);
+    const userReactionRef = ref(db, `userReactions/${authorUid}/${articleId}`);
+
+    await runTransaction(userReactionRef, (currentReaction) => {
+      if (currentReaction === reaction) {
+        // User is removing their reaction
+        return null; 
+      }
+      return reaction; // User is adding or changing reaction
+    });
+
+    const userReactionSnapshot = await get(userReactionRef);
+    const previousReaction = userReactionSnapshot.val();
+
+    if (previousReaction && previousReaction !== reaction) {
+        // Decrement previous reaction
+        const prevReactionRef = ref(db, `news/${articleId}/reactions/${previousReaction}`);
+        await runTransaction(prevReactionRef, (currentCount) => (currentCount || 0) - 1);
+    }
+    
+    // Increment new reaction or decrement if it was removed
+    await runTransaction(reactionRef, (currentCount) => {
+        const userClickedSameReaction = previousReaction === reaction;
+        if (userClickedSameReaction) {
+            return (currentCount || 1) - 1; // Decrement
+        }
+        return (currentCount || 0) + 1; // Increment
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error adding reaction:', error);
+    return { success: false, message: 'No se pudo registrar tu reacción.' };
   }
 }

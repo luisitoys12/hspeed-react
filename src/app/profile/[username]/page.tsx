@@ -1,18 +1,25 @@
 
 import { get } from 'firebase/database';
 import { db } from '@/lib/firebase';
-import { ref } from 'firebase/database';
+import { ref, query, orderByChild, equalTo, limitToLast } from 'firebase/database';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Home, Calendar, Award } from 'lucide-react';
+import { CheckCircle, MessageSquare } from 'lucide-react';
+import type { Comment } from '@/lib/types';
+import Link from 'next/link';
 
 async function getProfileData(username: string) {
     try {
         const userPromise = fetch(`https://www.habbo.es/api/public/users?name=${username}`);
         const teamPromise = get(ref(db, `team/${username}`));
+        
+        // Fetch user's latest comments
+        const commentsQuery = query(ref(db, 'comments'), orderByChild('authorName'), equalTo(username), limitToLast(5));
+        const commentsPromise = get(commentsQuery);
 
-        const [userResponse, teamSnapshot] = await Promise.all([userPromise, teamPromise]);
+
+        const [userResponse, teamSnapshot, commentsSnapshot] = await Promise.all([userPromise, teamPromise, commentsPromise]);
 
         if (!userResponse.ok) {
             return { error: 'Este usuario no existe en Habbo.' };
@@ -22,6 +29,24 @@ async function getProfileData(username: string) {
         const roles = teamSnapshot.exists() ? teamSnapshot.val().roles : [];
         const isVerified = teamSnapshot.exists();
 
+        const comments: Comment[] = [];
+        if (commentsSnapshot.exists()) {
+            commentsSnapshot.forEach((articleCommentsSnapshot) => {
+                 const articleId = articleCommentsSnapshot.key;
+                 const articleComments = articleCommentsSnapshot.val();
+                 Object.keys(articleComments).forEach(commentKey => {
+                    if (articleComments[commentKey].authorName === username) {
+                        comments.push({
+                            id: commentKey,
+                            articleId: articleId,
+                            ...articleComments[commentKey]
+                        });
+                    }
+                 });
+            });
+        }
+
+
         return {
             name: userData.name,
             motto: userData.motto,
@@ -29,6 +54,7 @@ async function getProfileData(username: string) {
             avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${userData.name}&direction=2&head_direction=3&size=l`,
             roles,
             isVerified,
+            comments: comments.sort((a, b) => b.timestamp - a.timestamp),
             error: null,
         };
 
@@ -54,7 +80,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
     }
 
     return (
-        <div className="container mx-auto p-4 md:p-8">
+        <div className="container mx-auto p-4 md:p-8 max-w-4xl">
             <Card className="overflow-hidden">
                 <div className="bg-muted h-32 md:h-40 relative">
                      <Image
@@ -62,6 +88,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
                         alt="Profile background"
                         fill
                         className="object-cover"
+                        data-ai-hint="abstract background"
                         unoptimized
                      />
                 </div>
@@ -96,7 +123,31 @@ export default async function ProfilePage({ params }: { params: { username: stri
                     </div>
                 </CardContent>
             </Card>
+
+            <Card className="mt-8">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 font-headline">
+                        <MessageSquare className="text-primary" />
+                        Actividad Reciente
+                    </CardTitle>
+                    <CardDescription>Últimos comentarios realizados por {profile.name} en el sitio.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {profile.comments && profile.comments.length > 0 ? (
+                        profile.comments.map((comment) => (
+                            <Link href={`/news/${comment.articleId}#comment-${comment.id}`} key={comment.id} className="block p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                                <p className="text-sm text-foreground/90">"{comment.comment}"</p>
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    Comentado el {new Date(comment.timestamp).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </p>
+                            </Link>
+                        ))
+                    ) : (
+                        <p className="text-center text-muted-foreground py-4">Este usuario aún no ha comentado.</p>
+                    )}
+                </CardContent>
+            </Card>
+
         </div>
     );
 }
-

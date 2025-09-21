@@ -110,7 +110,7 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
             <p className="text-muted-foreground">Cargando comentarios...</p>
           ) : comments.length > 0 ? (
             comments.map((comment) => (
-              <div key={comment.id} className="flex items-start gap-4">
+              <div key={comment.id} id={`comment-${comment.id}`} className="flex items-start gap-4 scroll-mt-20">
                 <Link href={`/profile/${comment.authorName}`}>
                     <Avatar className="h-10 w-10 cursor-pointer">
                     <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${comment.authorName}&headonly=1&size=m`} />

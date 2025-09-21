@@ -14,6 +14,8 @@ import { Calendar, Tag, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import CommentsSection from '@/components/habbospeed/comments-section';
+import ReactionButtons from '@/components/habbospeed/reaction-buttons';
+import { useAuth } from '@/hooks/use-auth';
 
 // A simple markdown-to-html renderer
 const Markdown = ({ content }: { content: string }) => {
@@ -28,6 +30,7 @@ export default function ArticleDetailPage() {
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (id) {
@@ -105,6 +108,9 @@ export default function ArticleDetailPage() {
           <p className="text-lg text-muted-foreground">{article.summary}</p>
         </div>
         <Markdown content={article.content} />
+        
+        <ReactionButtons articleId={id} reactions={article.reactions || {}} userId={user?.uid} />
+
       </article>
 
       <CommentsSection articleId={id} />
