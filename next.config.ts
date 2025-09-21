@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
         hostname: 'www.habbo.es',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'radio.kusmedios.lat',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
