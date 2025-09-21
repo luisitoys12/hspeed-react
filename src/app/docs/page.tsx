@@ -77,7 +77,7 @@ export default function DocsPage() {
                 </li>
                  <li>
                     <p><strong>Añade una aplicación web a tu proyecto:</strong></p>
-                    <p className="text-muted-foreground text-sm mt-1">En el panel de tu proyecto, haz clic en el icono web (<code></></code>) para iniciar el proceso de configuración.</p>
+                    <p className="text-muted-foreground text-sm mt-1">En el panel de tu proyecto, haz clic en el icono web (<code>&lt;/&gt;</code>) para iniciar el proceso de configuración.</p>
                 </li>
                 <li>
                     <p><strong>Copia el objeto de configuración de Firebase:</strong></p>
@@ -109,7 +109,7 @@ export const firebaseConfig = &#123;
                 </li>
             </ol>
             <div className="mt-4 text-center p-4 bg-muted rounded-lg border-2 border-dashed">
-                <p className="text-sm text-muted-foreground">La aplicación intentará leer desde la colección 'config' en Firestore para las URLs de Azuracast. Necesitarás añadir estos documentos manualmente por ahora.</p>
+                <p className="text-sm text-muted-foreground">La aplicación intentará leer desde la colección 'config' en Firestore para las URLs de Azuracast. Necesitarás añadir estos documentos manually por ahora.</p>
            </div>
           </CardContent>
         </Card>
@@ -151,7 +151,7 @@ export const firebaseConfig = &#123;
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Settings /> Otras Configuraciones</CardTitle>
-          </Header>
+          </CardHeader>
           <CardContent className="space-y-6">
             <div>
               <h3 className="font-bold flex items-center gap-2 mb-2"><Wind /> Configuración de Azuracast</h3>
