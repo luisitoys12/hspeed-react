@@ -3,13 +3,16 @@
 import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
+
+// Hardcoded super admin UID for demo purposes
+const SUPER_ADMIN_UID = "F2xicORf3wX9G9z9X6N9jA2i9I23";
 
 interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
   isLoggedIn: boolean;
+  isSuperAdmin: boolean;
 }
 
 interface AuthContextType {
@@ -31,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
           isLoggedIn: true,
+          isSuperAdmin: firebaseUser.uid === SUPER_ADMIN_UID,
         });
       } else {
         setUser(null);

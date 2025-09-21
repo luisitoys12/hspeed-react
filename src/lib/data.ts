@@ -1,5 +1,7 @@
 // In a real application, this data would come from the Habbo API.
 // We are simulating the API responses here.
+import { db } from './firebase';
+import { ref, get } from 'firebase/database';
 
 type HabboUser = {
     name: string;
@@ -15,47 +17,59 @@ export const djInfo = {
     roles: ['AutoDJ'],
 };
 
-const teamConfig = [
-    { name: 'magnituder', roles: ['Administrador'] },
-    { name: 'ser03z-51', roles: ['Coordinador'] },
-    { name: 'djluisalegre', roles: ['Coordinador'] },
-];
-
 export async function getTeamMembers() {
     try {
+        const teamRef = ref(db, 'team');
+        const snapshot = await get(teamRef);
+        
+        if (!snapshot.exists()) {
+            console.log("No team members found in Firebase.");
+            return [];
+        }
+
+        const teamData = snapshot.val();
+        const teamConfig = Object.keys(teamData).map(name => ({
+            name: name,
+            roles: teamData[name].roles || ['Miembro'],
+        }));
+
         const memberPromises = teamConfig.map(async (memberConfig) => {
-            const response = await fetch(`https://www.habbo.es/api/public/users?name=${memberConfig.name}`, { next: { revalidate: 300 } });
-            if (!response.ok) {
-                // Return a default state if the user is not found or API fails
+            try {
+                const response = await fetch(`https://www.habbo.es/api/public/users?name=${memberConfig.name}`, { next: { revalidate: 300 } });
+                if (!response.ok) {
+                    return {
+                        name: memberConfig.name,
+                        motto: 'Lema no disponible',
+                        roles: memberConfig.roles,
+                        avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${memberConfig.name}&direction=2&head_direction=3&size=l`,
+                        online: false,
+                    };
+                }
+                const data = await response.json();
+                return {
+                    name: data.name,
+                    motto: data.motto,
+                    roles: memberConfig.roles,
+                    avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${data.name}&direction=2&head_direction=3&size=l`,
+                    online: data.online,
+                };
+            } catch (apiError) {
+                console.error(`Failed to fetch Habbo data for ${memberConfig.name}:`, apiError);
                 return {
                     name: memberConfig.name,
-                    motto: 'Lema no disponible',
+                    motto: 'Error al cargar desde API',
                     roles: memberConfig.roles,
-                    avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${memberConfig.name}&direction=2&head_direction=3&size=l&headonly=1`,
+                    avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${memberConfig.name}&direction=2&head_direction=3&size=l`,
                     online: false,
                 };
             }
-            const data = await response.json();
-            return {
-                name: data.name,
-                motto: data.motto,
-                roles: memberConfig.roles,
-                avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${data.name}&direction=2&head_direction=3&size=l&headonly=1`,
-                online: data.online,
-            };
         });
+
         const members = await Promise.all(memberPromises);
         return members;
     } catch (error) {
-        console.error("Failed to fetch team members from Habbo API:", error);
-        // Return static data as a fallback
-        return teamConfig.map(m => ({
-             name: m.name,
-             motto: 'Error al cargar',
-             roles: m.roles,
-             avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${m.name}&direction=2&head_direction=3&size=l&headonly=1`,
-             online: false,
-        }));
+        console.error("Failed to fetch team members from Firebase:", error);
+        return [];
     }
 }
 
@@ -184,32 +198,43 @@ export async function getNewsArticles() {
 }
 
 export async function getLeaderboardData() {
-  const usersToFetch = teamConfig.map(member => member.name);
-  
-  const userPromises = usersToFetch.map(async (name) => {
-    try {
-      const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${name}`);
-      if (!userResponse.ok) return null;
-      const userData = await userResponse.json();
-      
-      const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`);
-      if (!profileResponse.ok) return null;
-      const profileData = await profileResponse.json();
+  try {
+    const teamRef = ref(db, 'team');
+    const snapshot = await get(teamRef);
 
-      return {
-        name: userData.name,
-        achievementScore: profileData.achievementScore,
-      };
-    } catch (error) {
-      console.error(`Failed to fetch leaderboard data for ${name}:`, error);
-      return null;
-    }
-  });
+    if (!snapshot.exists()) return [];
 
-  const users = (await Promise.all(userPromises)).filter((user): user is { name: string; achievementScore: number } => user !== null && typeof user.achievementScore === 'number');
-  
-  // Sort users by achievement score in descending order
-  return users.sort((a, b) => b.achievementScore - a.achievementScore);
+    const teamData = snapshot.val();
+    const usersToFetch = Object.keys(teamData);
+
+    const userPromises = usersToFetch.map(async (name) => {
+        try {
+            const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${name}`);
+            if (!userResponse.ok) return null;
+            const userData = await userResponse.json();
+
+            const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`);
+            if (!profileResponse.ok) return null;
+            const profileData = await profileResponse.json();
+
+            return {
+                name: userData.name,
+                achievementScore: profileData.achievementScore,
+            };
+        } catch (error) {
+            console.error(`Failed to fetch leaderboard data for ${name}:`, error);
+            return null;
+        }
+    });
+
+    const users = (await Promise.all(userPromises)).filter((user): user is { name: string; achievementScore: number } => user !== null && typeof user.achievementScore === 'number');
+    
+    // Sort users by achievement score in descending order
+    return users.sort((a, b) => b.achievementScore - a.achievementScore);
+  } catch (dbError) {
+      console.error("Failed to fetch team for leaderboard:", dbError);
+      return [];
+  }
 }
 
 export async function getMarketplaceMockData() {
