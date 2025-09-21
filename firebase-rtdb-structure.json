@@ -1,4 +1,36 @@
 {
+  "alliances": {
+    "alliance1": {
+      "imageHint": "security logo",
+      "imageUrl": "https://picsum.photos/seed/alliance1/200/100",
+      "name": "HabboSecurity"
+    },
+    "alliance2": {
+      "imageHint": "university logo",
+      "imageUrl": "https://picsum.photos/seed/alliance2/200/100",
+      "name": "Habbo University"
+    },
+    "alliance3": {
+      "imageHint": "gaming logo",
+      "imageUrl": "https://picsum.photos/seed/alliance3/200/100",
+      "name": "Habbo RPG"
+    },
+    "alliance4": {
+      "imageHint": "fashion logo",
+      "imageUrl": "https://picsum.photos/seed/alliance4/200/100",
+      "name": "Habbo Fashion"
+    }
+  },
+  "comments": {
+    "noticia1": {
+      "comment1": {
+        "authorName": "DJ-Pixel",
+        "authorUid": "some-uid-1",
+        "comment": "¡Qué buena noticia! No puedo esperar a ver los nuevos furnis de verano.",
+        "timestamp": 1672531200000
+      }
+    }
+  },
   "config": {
     "apiUrl": "https://radio.kusmedios.lat/api/nowplaying/ekus-fm",
     "listenUrl": "http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3",
