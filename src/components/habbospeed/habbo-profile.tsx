@@ -18,11 +18,11 @@ export default async function HabboProfile() {
   const habboProfile = await getHabboProfileData(HABBO_USERNAME);
   
   return (
-    <Card className="h-full flex flex-col">
+    <Card>
       <CardHeader>
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${habboProfile.name}&headonly=1&size=l`} alt={habboProfile.name} />
+            <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${habboProfile.name}&size=l`} alt={habboProfile.name} />
             <AvatarFallback>{habboProfile.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div>
@@ -31,7 +31,7 @@ export default async function HabboProfile() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6 flex-grow overflow-y-auto">
+      <CardContent className="space-y-6">
         <div className="text-sm text-muted-foreground space-y-2">
             <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
