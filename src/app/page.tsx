@@ -27,36 +27,39 @@ function LoadingSkeleton() {
 export default function Home() {
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <HeroSlideshow />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-        <div className="lg:col-span-1 space-y-8">
-             <Suspense fallback={<LoadingSkeleton />}>
-                <OnAirDjs />
-             </Suspense>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Columna Izquierda */}
+        <div className="lg:col-span-1 flex flex-col gap-8">
+          <Suspense fallback={<LoadingSkeleton />}>
+            <OnAirDjs />
+          </Suspense>
+          <Suspense fallback={<LoadingSkeleton />}>
+            <HabboProfile />
+          </Suspense>
         </div>
-        <div className="lg:col-span-1 space-y-8">
-            <Suspense fallback={<LoadingSkeleton />}>
-                <ActiveEvents />
-            </Suspense>
+
+        {/* Columna Central */}
+        <div className="lg:col-span-2 flex flex-col gap-8">
+          <HeroSlideshow />
+          <LatestCampaigns />
         </div>
-        <div className="lg:col-span-1 space-y-8">
-            <Suspense fallback={<LoadingSkeleton />}>
-                <AchievementRanking />
-            </Suspense>
+
+        {/* Columna Derecha */}
+        <div className="lg:col-span-1 flex flex-col gap-8">
+          <Suspense fallback={<LoadingSkeleton />}>
+            <ActiveEvents />
+          </Suspense>
+          <Suspense fallback={<LoadingSkeleton />}>
+            <AchievementRanking />
+          </Suspense>
         </div>
       </div>
-      <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-        <div className="lg:col-span-2 space-y-8">
-          <LatestCampaigns />
-          <OfficialAlliances />
-          <ActiveRooms />
-        </div>
-        <div className="lg:col-span-1 space-y-8">
-           <Suspense fallback={<LoadingSkeleton />}>
-              <HabboProfile />
-           </Suspense>
-        </div>
-      </main>
+
+      {/* Secciones inferiores */}
+      <div className="mt-8 space-y-8">
+        <OfficialAlliances />
+        <ActiveRooms />
+      </div>
     </div>
   );
 }
