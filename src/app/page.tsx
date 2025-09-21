@@ -28,12 +28,23 @@ export default function Home() {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <HeroSlideshow />
-      <Suspense fallback={<LoadingSkeleton />}>
-        <OnAirDjs />
-      </Suspense>
-      <Suspense fallback={<LoadingSkeleton />}>
-        <ActiveEvents />
-      </Suspense>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="lg:col-span-1 space-y-8">
+             <Suspense fallback={<LoadingSkeleton />}>
+                <OnAirDjs />
+             </Suspense>
+        </div>
+        <div className="lg:col-span-1 space-y-8">
+            <Suspense fallback={<LoadingSkeleton />}>
+                <ActiveEvents />
+            </Suspense>
+        </div>
+        <div className="lg:col-span-1 space-y-8">
+            <Suspense fallback={<LoadingSkeleton />}>
+                <AchievementRanking />
+            </Suspense>
+        </div>
+      </div>
       <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <div className="lg:col-span-2 space-y-8">
           <LatestCampaigns />
@@ -43,9 +54,6 @@ export default function Home() {
         <div className="lg:col-span-1 space-y-8">
            <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
-           </Suspense>
-           <Suspense fallback={<LoadingSkeleton />}>
-            <AchievementRanking />
            </Suspense>
         </div>
       </main>
