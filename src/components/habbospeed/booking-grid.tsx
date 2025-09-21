@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { format } from 'date-fns';
+import { format, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -128,6 +128,16 @@ export default function BookingGrid() {
     </div>
   }
 
+  const getDayDate = (dayName: string) => {
+      const today = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+      const currentDayIndex = (getDay(today) + 6) % 7; // Monday is 0
+      const targetDayIndex = daysOfWeek.indexOf(dayName);
+      const dayDifference = targetDayIndex - currentDayIndex;
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + dayDifference);
+      return format(targetDate, 'dd MMM', { locale: es });
+  }
+
   return (
     <div>
         <MexicoTimeClock />
@@ -140,7 +150,7 @@ export default function BookingGrid() {
                 <th key={day} className="p-2 border border-border">
                     {day}
                     <div className="text-xs font-normal text-muted-foreground">
-                        {format(new Date(), 'dd MMM', { locale: es })}
+                        {getDayDate(day)}
                     </div>
                 </th>
                 ))}
@@ -161,7 +171,7 @@ export default function BookingGrid() {
                         ) : (
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <button className="w-full h-full bg-background hover:bg-primary/20 text-transparent hover:text-primary transition-all duration-200 rounded-md text-xs flex items-center justify-center">
+                                <button className="w-full h-full bg-background hover:bg-primary/20 text-transparent hover:text-primary transition-all duration-200 rounded-md text-xs flex items-center justify-center group">
                                     <span className="opacity-0 group-hover:opacity-100">Reservar</span>
                                 </button>
                             </AlertDialogTrigger>

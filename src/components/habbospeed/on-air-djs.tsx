@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,12 +27,10 @@ const defaultDj = {
 };
 
 const getDjs = (schedule: ScheduleItem[], onAirOverride?: OnAirOverride, azuracastData?: AzuracastData | null) => {
-    const azuracastStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : '';
-
     let currentDj = { name: defaultDj.name, habboName: defaultDj.habboName };
     let nextDj = { name: 'Por anunciar', habboName: 'estacionkusfm' };
 
-    // 1. Check for manual override from Firebase
+    // 1. Manual override has the highest priority
     if (onAirOverride?.currentDj) {
         currentDj = { name: onAirOverride.currentDj, habboName: onAirOverride.currentDj };
         if (onAirOverride.nextDj) {
@@ -39,51 +38,47 @@ const getDjs = (schedule: ScheduleItem[], onAirOverride?: OnAirOverride, azuraca
         }
         return { current: currentDj, next: nextDj };
     }
-
-    // 2. Check Azuracast for a live DJ
+    
+    // 2. Azuracast live streamer takes precedence over schedule
+    const azuracastStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : '';
     if (azuracastStreamer && azuracastStreamer.toLowerCase() !== 'autodj' && azuracastStreamer.trim() !== '') {
         currentDj = { name: azuracastStreamer, habboName: azuracastStreamer };
-        // When a DJ is live, determining the "next" one from the schedule can be complex.
-        // We can simplify this or implement more complex logic. For now, let's keep it simple.
-        // Let's try to find the next one in the schedule.
+    }
+
+    // 3. Fallback to schedule if no override
+    if (schedule && schedule.length > 0) {
+        // Simulating Mexico City Time (UTC-6)
         const now = new Date();
-        const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][now.getUTCDay()];
-        const currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
+        const mexicoTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+        
+        const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][mexicoTime.getDay()];
+        const currentTime = `${mexicoTime.getHours().toString().padStart(2, '0')}:${mexicoTime.getMinutes().toString().padStart(2, '0')}`;
+
         const todaySchedule = schedule
             .filter(item => item.day === dayOfWeek)
             .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+        // Find current show based on schedule, only if no one is live on Azuracast
+        if (!azuracastStreamer || azuracastStreamer.toLowerCase() === 'autodj') {
+            const currentShow = todaySchedule.find(item => currentTime >= item.startTime && currentTime <= item.endTime);
+            if(currentShow) {
+                currentDj = { name: currentShow.dj, habboName: currentShow.dj };
+            }
+        }
         
+        // Find next show based on schedule
         const nextShow = todaySchedule.find(item => item.startTime > currentTime);
         if (nextShow) {
-             nextDj = { name: nextShow.dj, habboName: nextShow.dj };
+            nextDj = { name: nextShow.dj, habboName: nextShow.dj };
+        } else {
+             // If no more shows today, find the first show of the next day
+             const nextDayIndex = (mexicoTime.getDay() + 1) % 7;
+             const nextDayName = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][nextDayIndex];
+             const nextDaySchedule = schedule.filter(item => item.day === nextDayName).sort((a, b) => a.startTime.localeCompare(b.startTime));
+             if(nextDaySchedule.length > 0) {
+                 nextDj = { name: nextDaySchedule[0].dj, habboName: nextDaySchedule[0].dj };
+             }
         }
-
-        return { current: currentDj, next: nextDj };
-    }
-    
-    // 3. Fallback to schedule if no override and no one is live on Azuracast
-    if (!schedule || schedule.length === 0) {
-        return { current: currentDj, next: nextDj };
-    }
-    
-    const now = new Date();
-    const dayOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][now.getUTCDay()];
-    const currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
-
-    const todaySchedule = schedule
-        .filter(item => item.day === dayOfWeek)
-        .sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-    // Find current based on schedule
-    const currentShow = todaySchedule.find(item => currentTime >= item.startTime && currentTime <= item.endTime);
-    if(currentShow) {
-        currentDj = { name: currentShow.dj, habboName: currentShow.dj };
-    }
-
-    // Find next based on schedule
-    const nextShow = todaySchedule.find(item => item.startTime > currentTime);
-    if (nextShow) {
-        nextDj = { name: nextShow.dj, habboName: nextShow.dj };
     }
     
     return { current: currentDj, next: nextDj };
@@ -100,7 +95,8 @@ export default function OnAirDjs() {
     useEffect(() => {
         const fetchData = async () => {
           try {
-            const response = await fetch('https://radio.kusmedios.lat/api/nowplaying/ekus-fm');
+            // Using a cache-busting query parameter to get fresh data
+            const response = await fetch(`https://radio.kusmedios.lat/api/nowplaying/ekus-fm?_=${new Date().getTime()}`);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             setAzuracastData(data);
