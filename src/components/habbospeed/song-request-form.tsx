@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { submitRequest } from '@/lib/actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -45,7 +46,7 @@ function SubmitButton({ disabled }: { disabled?: boolean }) {
 
 export default function SongRequestForm() {
   const { user } = useAuth();
-  const [state, formAction] = useFormState(submitRequest, initialState);
+  const [state, formAction] = useActionState(submitRequest, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [requestType, setRequestType] = useState<RequestType | null>(null);

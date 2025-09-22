@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { generateNamesAction } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +37,7 @@ function SubmitButton() {
 }
 
 export default function NameGeneratorPage() {
-  const [state, formAction] = useFormState(generateNamesAction, initialState);
+  const [state, formAction] = useActionState(generateNamesAction, initialState);
   const { toast } = useToast();
 
   const handleCopy = (name: string) => {
