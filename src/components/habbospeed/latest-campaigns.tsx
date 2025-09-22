@@ -26,11 +26,9 @@ export default function LatestCampaigns() {
                 if (response.ok) {
                     const data = await response.json();
                     setCampaigns(data.slice(0, 3));
-                } else {
-                    console.error("Failed to fetch campaigns from API proxy.");
                 }
             } catch (error) {
-                console.error("Error calling /api/campaigns:", error);
+                // Silently fail. The component will just show nothing if the API is down.
             } finally {
                 setLoading(false);
             }
@@ -52,6 +50,10 @@ export default function LatestCampaigns() {
                 </CardContent>
             </Card>
         );
+    }
+    
+    if (campaigns.length === 0) {
+        return null; // Don't render the card if there are no campaigns to show
     }
 
     return (
