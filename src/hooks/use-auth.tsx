@@ -21,8 +21,8 @@ interface AuthContextType {
     loading: boolean;
 }
 
-// UID del Super Administrador principal
-const SUPER_ADMIN_UID = "o7VbNn8yGXYjmm3cINgBqjA1Yx12";
+// UIDs de los Super Administradores principales
+const SUPER_ADMIN_UIDS = ["HKWwHx43uuVxGjHeo099cX7im273", "qAu1hP2UKShNGtfDywF7se2D1Ao1"];
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -33,14 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        const isSuperAdmin = firebaseUser.uid === SUPER_ADMIN_UID;
+        const isSuperAdmin = SUPER_ADMIN_UIDS.includes(firebaseUser.uid);
         const userRef = ref(db, `users/${firebaseUser.uid}`);
         
         onValue(userRef, (snapshot) => {
             const dbUser = snapshot.val();
 
             if (isSuperAdmin) {
-                // Si es el super admin, siempre tiene acceso total
+                // Si es un super admin, siempre tiene acceso total
                 setUser({
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
