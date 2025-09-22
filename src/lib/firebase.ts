@@ -5,7 +5,7 @@ import { getDatabase } from "firebase/database";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 // Your web app's Firebase configuration
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyAYgRkL0gdopxs8Dl5JusRSDLsiMcbSUc0",
   authDomain: "hspeed-fan.firebaseapp.com",
   projectId: "hspeed-fan",

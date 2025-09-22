@@ -90,8 +90,8 @@ export default function BookingGrid() {
   }, []);
 
   const handleBookSlot = async (day: string, hour: string) => {
-    if (!user || !user.displayName || user.role !== 'dj') {
-      toast({ variant: 'destructive', title: 'Error', description: 'Solo los DJs pueden reservar horarios.' });
+    if (!user || !user.displayName || !['dj', 'Admin'].includes(user.role)) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Solo los DJs o Administradores pueden reservar horarios.' });
       return;
     }
 
@@ -164,7 +164,7 @@ export default function BookingGrid() {
       return format(targetDate, 'dd MMM', { locale: es });
   }
 
-  const canBook = user.role === 'dj' && !bookingLocked;
+  const canBook = user && (user.role === 'dj' || user.role === 'Admin') && !bookingLocked;
 
   return (
     <div>

@@ -9,8 +9,14 @@ import {
 import { generateHabboName, GenerateHabboNameInput, GenerateHabboNameOutput } from '@/ai/flows/generate-habbo-name';
 
 import { z } from 'zod';
-import { db, auth } from './firebase';
+import { db } from './firebase'; // Correct auth is in firebase
+import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps } from 'firebase/app';
 import { ref, push, serverTimestamp, runTransaction, get } from 'firebase/database';
+import { firebaseConfig } from './firebase';
+
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const auth = getAuth(app);
 
 
 const requestFormSchema = z.object({
