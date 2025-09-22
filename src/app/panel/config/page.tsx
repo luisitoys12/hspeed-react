@@ -70,7 +70,7 @@ export default function ConfigPage() {
   const [dbLoading, setDbLoading] = useState(true);
 
   const defaultValues = useMemo(() => ({
-    logoUrl: "",
+    logoUrl: "https://i.imgur.com/u31XFxN.png",
     radioService: "azuracast" as const,
     apiUrl: "",
     listenUrl: "",
@@ -100,7 +100,7 @@ export default function ConfigPage() {
             : [];
           
           form.reset({
-            logoUrl: data.logoUrl || "",
+            logoUrl: data.logoUrl || "https://i.imgur.com/u31XFxN.png",
             radioService: data.radioService || "azuracast",
             apiUrl: data.apiUrl || "",
             listenUrl: data.listenUrl || "",
@@ -287,7 +287,7 @@ export default function ConfigPage() {
                     variant="outline"
                     size="sm"
                     className="mt-2"
-                    onClick={() => append({ title: '', subtitle: '', imageUrl: '', cta: { text: '', href: '' }})}
+                    onClick={() => append({ title: '', subtitle: '', imageUrl: '', imageHint: '', cta: { text: '', href: '' }})}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Añadir Diapositiva
@@ -338,3 +338,5 @@ const ConfigSkeleton = () => (
     </div>
   </div>
 );
+
+    

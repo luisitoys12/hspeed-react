@@ -33,10 +33,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { Skeleton } from '../ui/skeleton';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { ref, onValue } from 'firebase/database';
 
 const publicLinks = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -65,6 +67,18 @@ const socialLinks = [
 export default function AppSidebar() {
   const pathname = usePathname();
   const { user, loading } = useAuth();
+  const [logoUrl, setLogoUrl] = useState("https://i.imgur.com/u31XFxN.png");
+
+  useEffect(() => {
+    const logoRef = ref(db, 'config/logoUrl');
+    const unsubscribe = onValue(logoRef, (snapshot) => {
+        const url = snapshot.val();
+        if (url) {
+            setLogoUrl(url);
+        }
+    });
+    return () => unsubscribe();
+  }, [])
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -79,7 +93,7 @@ export default function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
-                 <Image src="https://i.imgur.com/u31XFxN.png" alt="Habbospeed Logo" width={160} height={40} unoptimized />
+                 <Image src={logoUrl} alt="Habbospeed Logo" width={160} height={40} unoptimized />
             </Link>
         </div>
       </SidebarHeader>
@@ -206,3 +220,5 @@ export default function AppSidebar() {
     </>
   );
 }
+
+    
