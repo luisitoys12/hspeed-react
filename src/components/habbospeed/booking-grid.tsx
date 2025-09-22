@@ -90,14 +90,9 @@ export default function BookingGrid() {
   }, []);
 
   const handleBookSlot = async (day: string, hour: string) => {
-    if (!user || !user.displayName) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Debes iniciar sesión para reservar.' });
+    if (!user || !user.displayName || user.role !== 'dj') {
+      toast({ variant: 'destructive', title: 'Error', description: 'Solo los DJs pueden reservar horarios.' });
       return;
-    }
-    
-    if (user.isSuperAdmin) {
-        toast({ variant: 'destructive', title: 'Acción no permitida', description: 'Los administradores no pueden reservar desde este panel.' });
-        return;
     }
 
     const slotRef = ref(db, `bookings/${day}/${hour.replace(':', '')}`);
