@@ -22,6 +22,7 @@ import { ref, onValue } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 // Estructura de datos de Azuracast
 interface AzuracastData {
@@ -218,7 +219,19 @@ export default function FloatingPlayer() {
   return (
     <>
       <audio ref={audioRef} preload="none" />
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <div className="container mx-auto flex justify-center">
+            <Link href="/news">
+                <Image 
+                    src="https://images.habbo.com/web_images/habbo-web-articles/lpromo_Oct22.png"
+                    alt="Campaña actual"
+                    width={960}
+                    height={100}
+                    className="object-contain hover:brightness-110 transition-all hidden md:block"
+                />
+            </Link>
+        </div>
+        <div className="p-2 md:p-4 pt-0">
           <div className="container mx-auto">
               <div className="w-full bg-card/80 backdrop-blur-sm border border-border rounded-lg shadow-2xl p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
                   
@@ -301,9 +314,8 @@ export default function FloatingPlayer() {
                   </div>
               </div>
           </div>
+        </div>
       </div>
     </>
   );
 }
-
-    
