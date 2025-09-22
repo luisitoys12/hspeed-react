@@ -9,13 +9,12 @@ import {
 import { generateHabboName, GenerateHabboNameInput, GenerateHabboNameOutput } from '@/ai/flows/generate-habbo-name';
 
 import { z } from 'zod';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { ref, push, serverTimestamp, runTransaction, get } from 'firebase/database';
 
 
 const requestFormSchema = z.object({
   requestType: z.enum(["saludo", "grito", "concurso", "cancion", "declaracion"]),
-  authorName: z.string().min(1, "El nombre de autor es requerido."),
   // Fields for each type
   saludoTo: z.string().optional(),
   saludoMessage: z.string().optional(),
@@ -38,9 +37,9 @@ export async function submitRequest(
   prevState: RequestFormState,
   formData: FormData
 ): Promise<RequestFormState> {
-  const authorNameValue = formData.get('authorName');
+  const currentUser = auth.currentUser;
 
-  if (!authorNameValue || typeof authorNameValue !== 'string') {
+  if (!currentUser || !currentUser.displayName) {
     return {
       message: 'Debes iniciar sesión para enviar una petición.',
       isSuccess: false,
@@ -50,7 +49,6 @@ export async function submitRequest(
 
   const validatedFields = requestFormSchema.safeParse({
     requestType: formData.get('requestType'),
-    authorName: authorNameValue,
     saludoTo: formData.get('saludoTo'),
     saludoMessage: formData.get('saludoMessage'),
     gritoMessage: formData.get('gritoMessage'),
@@ -70,7 +68,7 @@ export async function submitRequest(
   }
 
   try {
-    const { authorName, requestType, ...details } = validatedFields.data;
+    const { requestType, ...details } = validatedFields.data;
     
     // Constructing a readable details string for the DJ
     let detailsString = '';
@@ -86,7 +84,7 @@ export async function submitRequest(
     await push(requestsRef, {
       type: requestType,
       details: detailsString,
-      user: authorName || 'Anónimo',
+      user: currentUser.displayName,
       timestamp: serverTimestamp(),
     });
 

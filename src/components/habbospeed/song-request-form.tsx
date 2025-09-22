@@ -48,7 +48,7 @@ export default function SongRequestForm() {
   const [state, formAction] = useActionState(submitRequest, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [requestType, setRequestType] = useState<RequestType | null>(null);
+  const [requestType, setRequestType] = useState<RequestType | undefined>(undefined);
 
   useEffect(() => {
     if (state.isError && state.message) {
@@ -60,14 +60,11 @@ export default function SongRequestForm() {
     }
     if (state.isSuccess) {
       formRef.current?.reset();
-      setRequestType(null); // Reset select as well
+      setRequestType(undefined); // Reset select as well
     }
   }, [state, toast]);
 
   const action = (formData: FormData) => {
-    if (user?.displayName) {
-      formData.set('authorName', user.displayName);
-    }
     if (requestType) {
         formData.set('requestType', requestType);
     }
@@ -120,7 +117,7 @@ export default function SongRequestForm() {
     <form ref={formRef} action={action} className="space-y-6">
       <div className="space-y-2">
         <Label>Tipo de Petición</Label>
-        <Select onValueChange={(value: RequestType) => setRequestType(value)} required>
+        <Select onValueChange={(value: RequestType) => setRequestType(value)} value={requestType} required>
           <SelectTrigger><SelectValue placeholder="Elige una opción..." /></SelectTrigger>
           <SelectContent>
             <SelectItem value="saludo">Enviar un Saludo</SelectItem>
