@@ -7,7 +7,7 @@ import { ref, onValue, set, get, runTransaction, remove } from 'firebase/databas
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle, AlertTriangle, CheckCircle2, Trash2 } from 'lucide-react';
+import { LoaderCircle, AlertTriangle, CheckCircle2, Trash2, Lock } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,15 +67,26 @@ export default function BookingGrid() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [bookings, setBookings] = useState<Bookings>({});
+  const [bookingLocked, setBookingLocked] = useState(false);
   const [dbLoading, setDbLoading] = useState(true);
 
   useEffect(() => {
     const bookingsRef = ref(db, 'bookings');
-    const unsubscribe = onValue(bookingsRef, (snapshot) => {
+    const configRef = ref(db, 'config/bookingLocked');
+
+    const unsubscribeBookings = onValue(bookingsRef, (snapshot) => {
       setBookings(snapshot.val() || {});
       setDbLoading(false);
     });
-    return () => unsubscribe();
+
+    const unsubscribeLock = onValue(configRef, (snapshot) => {
+        setBookingLocked(snapshot.val() === true);
+    });
+
+    return () => {
+        unsubscribeBookings();
+        unsubscribeLock();
+    }
   }, []);
 
   const handleBookSlot = async (day: string, hour: string) => {
@@ -158,11 +169,17 @@ export default function BookingGrid() {
       return format(targetDate, 'dd MMM', { locale: es });
   }
 
-  const canBook = user.role === 'dj';
+  const canBook = user.role === 'dj' && !bookingLocked;
 
   return (
     <div>
         <MexicoTimeClock />
+        {bookingLocked && (
+            <div className="text-center mb-4 p-2 bg-destructive/20 text-destructive-foreground rounded-lg border border-destructive">
+                <Lock className="inline-block mr-2" />
+                <span className="font-bold">Las reservas están temporalmente deshabilitadas por un administrador.</span>
+            </div>
+        )}
         <div className="overflow-x-auto">
         <table className="w-full border-collapse text-center table-fixed">
             <thead>
@@ -219,21 +236,23 @@ export default function BookingGrid() {
                                     <span className="opacity-0 group-hover:opacity-100">Reservar</span>
                                 </button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>Confirmar Reserva</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    ¿Estás seguro de que quieres reservar el horario de las <strong>{hour}</strong> del día <strong>{day}</strong>?
-                                    Esta acción no se puede deshacer fácilmente.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleBookSlot(day, hour)}>
-                                    Sí, reservar
-                                </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
+                             {canBook && (
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmar Reserva</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        ¿Estás seguro de que quieres reservar el horario de las <strong>{hour}</strong> del día <strong>{day}</strong>?
+                                        Esta acción no se puede deshacer fácilmente.
+                                    </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleBookSlot(day, hour)}>
+                                        Sí, reservar
+                                    </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                             )}
                         </AlertDialog>
                         )}
                     </td>

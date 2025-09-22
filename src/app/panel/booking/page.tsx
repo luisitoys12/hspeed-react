@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState } from 'react';
-import { ref, remove } from "firebase/database";
+import { useState, useEffect } from 'react';
+import { ref, remove, set, onValue } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BookmarkPlus, LoaderCircle, Trash2 } from 'lucide-react';
+import { BookmarkPlus, LoaderCircle, Trash2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,11 +17,24 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import BookingGrid from '@/components/habbospeed/booking-grid';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 export default function BookingManagementPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingLocked, setBookingLocked] = useState(false);
+  const [loadingConfig, setLoadingConfig] = useState(true);
+
+  useEffect(() => {
+      const configRef = ref(db, 'config/bookingLocked');
+      const unsubscribe = onValue(configRef, (snapshot) => {
+          setBookingLocked(snapshot.val() === true);
+          setLoadingConfig(false);
+      });
+      return () => unsubscribe();
+  }, []);
 
   const handleClearAllBookings = async () => {
     setIsSubmitting(true);
@@ -37,7 +50,18 @@ export default function BookingManagementPage() {
     }
   };
 
-  if (authLoading) {
+  const handleToggleBookingLock = async (locked: boolean) => {
+      setBookingLocked(locked);
+      try {
+        await set(ref(db, 'config/bookingLocked'), locked);
+        toast({ title: 'Configuración guardada', description: `Las reservas han sido ${locked ? 'bloqueadas' : 'desbloqueadas'}.`});
+      } catch (error) {
+        toast({ variant: "destructive", title: "Error", description: "No se pudo guardar la configuración." });
+        setBookingLocked(!locked); // Revert on error
+      }
+  }
+
+  if (authLoading || loadingConfig) {
     return (
       <div className="container mx-auto p-4 md:p-8">
         <Skeleton className="h-24 w-full" />
@@ -66,14 +90,14 @@ export default function BookingManagementPage() {
           Gestión de Reservas de DJ
         </h1>
         <p className="text-muted-foreground mt-2">
-          Visualiza y administra la parrilla de reservas de los DJs.
+          Visualiza la parrilla y administra las opciones de reserva.
         </p>
       </div>
 
        <Card className="mb-8">
         <CardHeader>
             <CardTitle>Vista de la Parrilla</CardTitle>
-            <CardDescription>Aquí puedes ver todas las reservas actuales y eliminar bloques individuales si es necesario. Esta es una vista de solo lectura y moderación.</CardDescription>
+            <CardDescription>Aquí puedes ver todas las reservas actuales y eliminar bloques individuales si es necesario. Esta vista es para supervisión y moderación.</CardDescription>
         </CardHeader>
         <CardContent>
             <BookingGrid />
@@ -83,10 +107,23 @@ export default function BookingManagementPage() {
       <Card>
         <CardHeader>
           <CardTitle>Acciones de Administración</CardTitle>
-          <CardDescription>Aquí puedes realizar acciones masivas sobre la parrilla de reservas.</CardDescription>
+          <CardDescription>Realiza acciones masivas sobre la parrilla de reservas.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Alert variant="destructive" className="mb-4">
+        <CardContent className="space-y-6">
+            <div className="flex items-center space-x-2 rounded-lg border p-4">
+                <Lock className="h-5 w-5"/>
+                <div className="flex-grow">
+                    <Label htmlFor="booking-lock" className="font-bold">Bloquear Reservas</Label>
+                    <p className="text-xs text-muted-foreground">Impide que los DJs puedan hacer nuevas reservas en la parrilla.</p>
+                </div>
+                <Switch
+                    id="booking-lock"
+                    checked={bookingLocked}
+                    onCheckedChange={handleToggleBookingLock}
+                />
+            </div>
+
+          <Alert variant="destructive">
             <Trash2 className="h-4 w-4" />
             <AlertTitle>¡Acción Destructiva!</AlertTitle>
             <AlertDescription>

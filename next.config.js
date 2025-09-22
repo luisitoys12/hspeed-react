@@ -74,6 +74,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'i.ibb.co',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'habbofurni.com',
+        pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: 'habboassets.com',
+        pathname: '/**',
       }
     ],
   },

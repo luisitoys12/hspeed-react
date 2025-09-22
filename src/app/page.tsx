@@ -1,5 +1,6 @@
 
 
+
 import HabboProfile from '@/components/habbospeed/habbo-profile';
 import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
@@ -13,6 +14,8 @@ import HomeHeader from '@/components/layout/home-header';
 import RecentWinners from '@/components/habbospeed/recent-winners';
 import AboutUs from '@/components/habbospeed/about-us';
 import Link from 'next/link';
+import LatestBadges from '@/components/habbospeed/latest-badges';
+import LatestFurnis from '@/components/habbospeed/latest-furnis';
 
 function LoadingSkeleton() {
   return (
@@ -64,8 +67,11 @@ export default function Home() {
             <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
             </Suspense>
+             <Suspense fallback={<LoadingSkeleton />}>
+              <LatestBadges />
+            </Suspense>
             <Suspense fallback={<LoadingSkeleton />}>
-                <AboutUs />
+              <AboutUs />
             </Suspense>
           </div>
 
@@ -73,6 +79,9 @@ export default function Home() {
           <div className="lg:col-span-2 flex flex-col gap-8">
             <HeroSlideshow />
             <LatestCampaigns />
+             <Suspense fallback={<LoadingSkeleton />}>
+              <LatestFurnis />
+            </Suspense>
           </div>
 
           {/* Columna Derecha */}
