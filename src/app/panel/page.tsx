@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -6,13 +7,14 @@ import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
 import { useAuth } from '@/hooks/use-auth';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award } from 'lucide-react';
+import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award, Briefcase } from 'lucide-react';
 import Link from 'next/link';
 
 const panelLinks = [
     { href: '/panel/config', title: 'Ajustes Generales', description: 'URLs, carrusel y configuración clave.', icon: Settings },
     { href: '/panel/users', title: 'Gestión de Usuarios', description: 'Aprobar usuarios y asignar roles.', icon: Users },
     { href: '/panel/team', title: 'Gestión de Equipo', description: 'Añadir o quitar miembros del staff.', icon: Users },
+    { href: '/panel/recruitment', title: 'Reclutamiento', description: 'Gestionar vacantes y postulaciones.', icon: Briefcase },
     { href: '/panel/awards', title: 'Premios y Destacados', description: 'Gestionar premios y ganadores.', icon: Award },
     { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos.', icon: Newspaper },
     { href: '/panel/events', title: 'Gestión de Eventos', description: 'Administrar los eventos de la fansite.', icon: PartyPopper },

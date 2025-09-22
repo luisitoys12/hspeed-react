@@ -12,23 +12,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from 'zod';
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { ref, push, serverTimestamp } from "firebase/database";
+import { ref, push, serverTimestamp, onValue } from "firebase/database";
 import { db } from "@/lib/firebase";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LoaderCircle, Send, HeartHandshake } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const openings = [
-    {
-        role: "DJ",
-        description: "Buscamos DJs apasionados con ganas de entretener. Debes tener una buena colección musical y carisma para interactuar con los oyentes.",
-        requirements: ["Micrófono de buena calidad.", "Disponibilidad horaria.", "Conocimiento de géneros musicales populares."]
-    },
-    {
-        role: "Coordinador de Eventos",
-        description: "¿Eres creativo y organizado? Ayúdanos a planificar y ejecutar los mejores eventos dentro de Habbo para la comunidad de Habbospeed.",
-        requirements: ["Experiencia en organización de eventos.", "Conocimiento de Wired y Furnis.", "Capacidad para trabajar en equipo."]
-    }
-];
+interface Opening {
+    id: string;
+    role: string;
+    description: string;
+    requirements: string[];
+}
 
 const applicationSchema = z.object({
   role: z.string({ required_error: "Debes seleccionar un rol." }),
@@ -42,6 +37,9 @@ export default function JoinUsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openings, setOpenings] = useState<Opening[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const form = useForm<ApplicationValues>({
     resolver: zodResolver(applicationSchema),
     defaultValues: {
@@ -50,6 +48,21 @@ export default function JoinUsPage() {
     }
   });
   
+  useEffect(() => {
+    const openingsRef = ref(db, 'openings');
+    const unsubscribe = onValue(openingsRef, (snapshot) => {
+        const data = snapshot.val();
+        const openingsArray: Opening[] = data ? Object.keys(data).map(key => ({ 
+            id: key, 
+            ...data[key],
+            requirements: Array.isArray(data[key].requirements) ? data[key].requirements : [],
+        })) : [];
+        setOpenings(openingsArray);
+        setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const onSubmit = async (values: ApplicationValues) => {
     if (!user) return;
     setIsSubmitting(true);
@@ -89,16 +102,25 @@ export default function JoinUsPage() {
                     <CardTitle>Vacantes Abiertas</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                    {openings.map(opening => (
-                        <div key={opening.role} className="p-4 border rounded-lg">
-                            <h3 className="font-bold text-lg text-primary">{opening.role}</h3>
-                            <p className="text-sm text-muted-foreground mt-1">{opening.description}</p>
-                            <h4 className="font-semibold text-sm mt-3 mb-1">Requisitos:</h4>
-                            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                                {opening.requirements.map(req => <li key={req}>{req}</li>)}
-                            </ul>
-                        </div>
-                    ))}
+                    {loading ? (
+                        <>
+                            <Skeleton className="h-32 w-full" />
+                            <Skeleton className="h-32 w-full" />
+                        </>
+                    ) : openings.length > 0 ? (
+                        openings.map(opening => (
+                            <div key={opening.id} className="p-4 border rounded-lg">
+                                <h3 className="font-bold text-lg text-primary">{opening.role}</h3>
+                                <p className="text-sm text-muted-foreground mt-1">{opening.description}</p>
+                                <h4 className="font-semibold text-sm mt-3 mb-1">Requisitos:</h4>
+                                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                                    {opening.requirements.map((req, i) => <li key={i}>{req}</li>)}
+                                </ul>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-center text-muted-foreground py-4">No hay vacantes abiertas en este momento.</p>
+                    )}
                     </CardContent>
                 </Card>
             </div>
@@ -117,10 +139,10 @@ export default function JoinUsPage() {
                                     <FormField control={form.control} name="role" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Rol al que Postulas</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loading}>
                                             <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un rol" /></SelectTrigger></FormControl>
                                             <SelectContent>
-                                                {openings.map(o => <SelectItem key={o.role} value={o.role}>{o.role}</SelectItem>)}
+                                                {openings.map(o => <SelectItem key={o.id} value={o.role}>{o.role}</SelectItem>)}
                                             </SelectContent>
                                             </Select>
                                             <FormMessage />
@@ -140,7 +162,7 @@ export default function JoinUsPage() {
                                             <FormMessage />
                                         </FormItem>
                                     )}/>
-                                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                    <Button type="submit" className="w-full" disabled={isSubmitting || loading}>
                                         {isSubmitting && <LoaderCircle className="mr-2 animate-spin"/>}
                                         <Send className="mr-2" />
                                         Enviar Postulación
