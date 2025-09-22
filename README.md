@@ -1,10 +1,10 @@
-# Ekus FM - Sitio de Fans de Habbo
+# Habbospeed - Sitio de Fans de Habbo
 
-Bienvenido al repositorio oficial de **Ekus FM**, una moderna aplicación web para la fansite de radio de Habbo.es. Este proyecto está construido con un enfoque *headless* y en tiempo real, utilizando **Next.js** para el frontend y **Firebase** como el backend principal para la gestión de contenido, autenticación y datos dinámicos.
+Bienvenido al repositorio oficial de **Habbospeed**, una moderna aplicación web para la fansite de radio de Habbo.es. Este proyecto está construido con un enfoque *headless* y en tiempo real, utilizando **Next.js** para el frontend y **Firebase** como el backend principal para la gestión de contenido, autenticación y datos dinámicos.
 
 ## ✨ Descripción General
 
-Ekus FM no es solo un sitio web, sino una plataforma dinámica donde los administradores pueden gestionar el contenido en vivo sin necesidad de editar código. Desde las noticias y los horarios de los DJs hasta las salas destacadas y las alianzas, todo se controla desde un panel de administración centralizado que se comunica directamente con **Firebase Realtime Database**.
+Habbospeed no es solo un sitio web, sino una plataforma dinámica donde los administradores pueden gestionar el contenido en vivo sin necesidad de editar código. Desde las noticias y los horarios de los DJs hasta las salas destacadas y las alianzas, todo se controla desde un panel de administración centralizado que se comunica directamente con **Firebase Realtime Database**.
 
 ### Stack Tecnológico
 
@@ -52,7 +52,7 @@ El proyecto está en constante evolución. Estas son algunas de las ideas y func
 
 - **Gamificación y Logros Internos:**
   - Sistema de puntos y logros por participar en el sitio (comentar, escuchar, etc.).
-  - Un ranking de usuarios basado en su actividad en Ekus FM.
+  - Un ranking de usuarios basado en su actividad en Habbospeed.
 
 - **Mejoras en el Panel de Administración:**
   - Un dashboard con estadísticas básicas (ej. número de comentarios, usuarios registrados).
@@ -97,4 +97,4 @@ Si quieres contribuir o ejecutar el proyecto en tu máquina local, sigue estos p
     ```
     La aplicación estará disponible en `http://localhost:9002`.
 
-¡Gracias por tu interés en Ekus FM!
+¡Gracias por tu interés en Habbospeed!

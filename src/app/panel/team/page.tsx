@@ -157,7 +157,7 @@ export default function TeamManagementPage() {
           Gestión de Equipo
         </h1>
         <p className="text-muted-foreground mt-2">
-          Añade, edita o elimina miembros del equipo de Ekus FM.
+          Añade, edita o elimina miembros del equipo de Habbospeed.
         </p>
       </div>
 

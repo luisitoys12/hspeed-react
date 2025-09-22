@@ -12,7 +12,7 @@ export default function DocsPage() {
           Documentación para Desarrolladores
         </h1>
         <p className="text-muted-foreground mt-2">
-            Una guía para configurar y trabajar en el proyecto Ekus FM.
+            Una guía para configurar y trabajar en el proyecto Habbospeed.
         </p>
       </div>
 
@@ -22,7 +22,7 @@ export default function DocsPage() {
             <CardTitle className="flex items-center gap-2"><GitBranch /> Descripción General del Proyecto</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p>Este proyecto es el sitio web para Ekus FM, una fansite de radio para la comunidad de Habbo.es. Está construido con Next.js y utiliza tecnologías modernas para ofrecer una experiencia rápida y atractiva.</p>
+            <p>Este proyecto es el sitio web para Habbospeed, una fansite de radio para la comunidad de Habbo.es. Está construido con Next.js y utiliza tecnologías modernas para ofrecer una experiencia rápida y atractiva.</p>
             <div>
               <h3 className="font-bold mb-2">Stack Tecnológico:</h3>
               <ul className="list-disc list-inside text-muted-foreground space-y-1">

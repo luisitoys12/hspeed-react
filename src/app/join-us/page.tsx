@@ -25,7 +25,7 @@ const openings = [
     },
     {
         role: "Coordinador de Eventos",
-        description: "¿Eres creativo y organizado? Ayúdanos a planificar y ejecutar los mejores eventos dentro de Habbo para la comunidad de Ekus FM.",
+        description: "¿Eres creativo y organizado? Ayúdanos a planificar y ejecutar los mejores eventos dentro de Habbo para la comunidad de Habbospeed.",
         requirements: ["Experiencia en organización de eventos.", "Conocimiento de Wired y Furnis.", "Capacidad para trabajar en equipo."]
     }
 ];
@@ -79,7 +79,7 @@ export default function JoinUsPage() {
                 Únete al Equipo
             </h1>
             <p className="text-muted-foreground mt-2">
-                ¿Quieres formar parte de Ekus FM? ¡Estas son nuestras posiciones abiertas!
+                ¿Quieres formar parte de Habbospeed? ¡Estas son nuestras posiciones abiertas!
             </p>
         </div>
         <div className="grid md:grid-cols-2 gap-8">

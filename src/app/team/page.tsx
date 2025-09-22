@@ -12,7 +12,7 @@ export default async function TeamPage() {
           Nuestro Equipo
         </h1>
         <p className="text-muted-foreground mt-2">
-            Conoce a los DJs y al staff que hacen posible Ekus FM.
+            Conoce a los DJs y al staff que hacen posible Habbospeed.
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

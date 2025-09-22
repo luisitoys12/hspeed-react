@@ -7,8 +7,8 @@ export default function AboutUs() {
     <Card className="h-full">
       <CardHeader>
         <div className="flex flex-col items-center text-center">
-            <Image src="https://www.habbo.es/habbo-imaging/avatarimage?user=estacionkusfm&headonly=1&size=l" alt="Ekus FM" width={80} height={80} className="rounded-full border-4 border-primary mb-4" unoptimized/>
-          <CardTitle className="font-headline text-2xl">Sobre Ekus FM</CardTitle>
+            <Image src="https://www.habbo.es/habbo-imaging/avatarimage?user=estacionkusfm&headonly=1&size=l" alt="Habbospeed" width={80} height={80} className="rounded-full border-4 border-primary mb-4" unoptimized/>
+          <CardTitle className="font-headline text-2xl">Sobre Habbospeed</CardTitle>
           <CardDescription className="italic">Tu radio, tu comunidad.</CardDescription>
         </div>
       </CardHeader>
@@ -26,7 +26,7 @@ export default function AboutUs() {
                 <Heart className="h-6 w-6 text-primary" />
                 <h3 className="font-headline font-bold">¿Por qué Elegirnos?</h3>
                 <p className="text-muted-foreground">
-                    Somos una fansite oficial con DJs apasionados, eventos exclusivos y una dedicación total a nuestros oyentes. ¡En Ekus FM, tú eres la estrella!
+                    Somos una fansite oficial con DJs apasionados, eventos exclusivos y una dedicación total a nuestros oyentes. ¡En Habbospeed, tú eres la estrella!
                 </p>
             </div>
              <div className="flex flex-col items-center gap-2 p-4 bg-background/50 rounded-lg">
