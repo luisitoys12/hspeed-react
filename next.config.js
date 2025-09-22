@@ -84,6 +84,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'habboassets.com',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'puhekupla.com',
+        pathname: '/**',
       }
     ],
   },
