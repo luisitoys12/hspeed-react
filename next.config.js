@@ -59,6 +59,21 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'habbo.es',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.imgur.com',
+        pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: 'imgur.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co',
+        pathname: '/**',
       }
     ],
   },

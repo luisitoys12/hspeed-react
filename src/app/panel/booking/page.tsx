@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
-import { ref, remove } from "firebase/database";
+import { useState, useEffect } from 'react';
+import { ref, remove, onValue } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -16,6 +16,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import BookingGrid from '@/components/habbospeed/booking-grid';
 
 export default function BookingManagementPage() {
   const { user, loading: authLoading } = useAuth();
@@ -65,14 +66,24 @@ export default function BookingManagementPage() {
           Gestión de Reservas de DJ
         </h1>
         <p className="text-muted-foreground mt-2">
-          Administra la parrilla de reservas de los DJs.
+          Visualiza y administra la parrilla de reservas de los DJs.
         </p>
       </div>
+
+       <Card className="mb-8">
+        <CardHeader>
+            <CardTitle>Vista de la Parrilla</CardTitle>
+            <CardDescription>Aquí puedes ver todas las reservas actuales y eliminar bloques individuales si es necesario. Los DJs no pueden reservar, solo administradores pueden eliminar.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <BookingGrid />
+        </CardContent>
+      </Card>
       
       <Card>
         <CardHeader>
           <CardTitle>Acciones de Administración</CardTitle>
-          <CardDescription>Aquí puedes realizar acciones sobre la parrilla de reservas.</CardDescription>
+          <CardDescription>Aquí puedes realizar acciones masivas sobre la parrilla de reservas.</CardDescription>
         </CardHeader>
         <CardContent>
           <Alert variant="destructive" className="mb-4">
@@ -111,4 +122,3 @@ export default function BookingManagementPage() {
     </div>
   );
 }
-

@@ -1,12 +1,13 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { ref, onValue, set, get, runTransaction } from 'firebase/database';
+import { ref, onValue, set, get, runTransaction, remove } from 'firebase/database';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { LoaderCircle, AlertTriangle, CheckCircle2, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -116,6 +117,21 @@ export default function BookingGrid() {
     }
   };
 
+  const handleAdminDeleteSlot = async (day: string, hour: string) => {
+     if (!user?.isSuperAdmin) {
+        toast({ variant: 'destructive', title: 'Error', description: 'No tienes permisos para esta acción.' });
+        return;
+     }
+     const slotRef = ref(db, `bookings/${day}/${hour.replace(':', '')}`);
+     try {
+        await remove(slotRef);
+        toast({ title: 'Reserva eliminada', description: `Se ha liberado el bloque de las ${hour} del ${day}.` });
+     } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo eliminar la reserva.' });
+     }
+  }
+
+
   if (authLoading || dbLoading) {
     return <div className="flex justify-center items-center p-8"><LoaderCircle className="animate-spin h-8 w-8" /></div>;
   }
@@ -162,12 +178,36 @@ export default function BookingGrid() {
                 <td className="p-2 border border-border font-mono text-xs">{hour}</td>
                 {daysOfWeek.map((day) => {
                     const booking = bookings[day]?.[hour.replace(':', '')];
+                    const isOwnBooking = booking?.uid === user.uid;
+
                     return (
                     <td key={`${day}-${hour}`} className="p-1 border border-border h-16">
                         {booking ? (
-                        <div className={`p-1 rounded-md text-xs h-full flex flex-col justify-center ${booking.uid === user.uid ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
-                            <span className="font-bold truncate">{booking.djName}</span>
-                        </div>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild disabled={!user.isSuperAdmin && !isOwnBooking}>
+                                     <div className={`p-1 rounded-md text-xs h-full flex flex-col justify-center ${isOwnBooking ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'} ${user.isSuperAdmin ? 'cursor-pointer hover:ring-2 hover:ring-destructive' : ''}`}>
+                                        <span className="font-bold truncate">{booking.djName}</span>
+                                    </div>
+                                </AlertDialogTrigger>
+                                {(user.isSuperAdmin || isOwnBooking) && (
+                                     <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Gestionar Reserva</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Estás a punto de eliminar la reserva de <strong>{booking.djName}</strong> para el <strong>{day} a las {hour}</strong>. Esta acción liberará el bloque.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleAdminDeleteSlot(day, hour)} className="bg-destructive hover:bg-destructive/90">
+                                                <Trash2 className="mr-2"/> Eliminar Reserva
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                     </AlertDialogContent>
+                                )}
+                            </AlertDialog>
+                        ) : user.isSuperAdmin ? (
+                            <div className="w-full h-full bg-background/20" /> // Admin can't book from this panel
                         ) : (
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
