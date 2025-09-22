@@ -1,4 +1,5 @@
 
+
 import HabboProfile from '@/components/habbospeed/habbo-profile';
 import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
@@ -11,6 +12,7 @@ import Image from 'next/image';
 import HomeHeader from '@/components/layout/home-header';
 import RecentWinners from '@/components/habbospeed/recent-winners';
 import AboutUs from '@/components/habbospeed/about-us';
+import Link from 'next/link';
 
 function LoadingSkeleton() {
   return (
@@ -29,6 +31,19 @@ function LoadingSkeleton() {
 export default function Home() {
   return (
     <>
+      <div className="w-full">
+         <div className="container mx-auto flex justify-center">
+             <Link href="/news" className='hidden md:block'>
+                <Image 
+                    src="https://images.habbo.com/web_images/habbo-web-articles/lpromo_Oct22.png"
+                    alt="Campaña actual"
+                    width={960}
+                    height={100}
+                    className="object-contain hover:brightness-110 transition-all"
+                />
+            </Link>
+        </div>
+      </div>
       <HomeHeader />
       <div className="container mx-auto p-4 md:p-8">
         
