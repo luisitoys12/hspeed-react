@@ -44,7 +44,7 @@ export default function NotificationsPage() {
         formData.append('body', values.body);
         if (values.url) formData.append('url', values.url);
 
-      const result = await submitNotification(new FormData());
+      const result = await submitNotification(formData);
       if (result.success) {
         toast({
             title: "¡Notificaciones Enviadas!",

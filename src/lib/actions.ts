@@ -10,14 +10,8 @@ import { generateHabboName, GenerateHabboNameInput, GenerateHabboNameOutput } fr
 import { adminDb, adminMessaging } from '@/lib/firebase-admin';
 
 import { z } from 'zod';
-import { db } from './firebase'; // Correct auth is in firebase
-import { getAuth } from 'firebase/auth';
-import { initializeApp, getApps } from 'firebase/app';
+import { db, auth } from './firebase';
 import { ref, push, serverTimestamp, runTransaction, get } from 'firebase/database';
-import { firebaseConfig } from './firebase';
-
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const auth = getAuth(app);
 
 
 const requestFormSchema = z.object({
@@ -272,6 +266,9 @@ const notificationSchema = z.object({
 });
 
 export async function submitNotification(formData: FormData) {
+  if (!adminDb || !adminMessaging) {
+    return { success: false, message: 'Firebase Admin not configured. Cannot send notifications.' };
+  }
   // Add admin check here in a real app
   const validatedFields = notificationSchema.safeParse({
     title: formData.get('title'),
