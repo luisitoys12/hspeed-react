@@ -16,16 +16,10 @@ import { ref, push, serverTimestamp, runTransaction, get } from 'firebase/databa
 
 const requestFormSchema = z.object({
   username: z.string().min(2, 'Tu nombre es requerido.'),
-  requestType: z.enum(["saludo", "grito", "concurso", "cancion", "declaracion"]),
-  // Fields for each type
-  saludoTo: z.string().optional(),
-  saludoMessage: z.string().optional(),
-  gritoMessage: z.string().optional(),
-  concursoName: z.string().optional(),
-  concursoAnswer: z.string().optional(),
-  cancionName: z.string().optional(),
-  declaracionTo: z.string().optional(),
-  declaracionMessage: z.string().optional(),
+  requestType: z.enum(["saludo", "grito", "concurso", "cancion", "declaracion"], {
+      required_error: "Debes seleccionar un tipo de petición."
+  }),
+  details: z.string().min(5, "El detalle de la petición es muy corto."),
 });
 
 
@@ -43,14 +37,7 @@ export async function submitRequest(
   const validatedFields = requestFormSchema.safeParse({
     username: formData.get('username'),
     requestType: formData.get('requestType'),
-    saludoTo: formData.get('saludoTo'),
-    saludoMessage: formData.get('saludoMessage'),
-    gritoMessage: formData.get('gritoMessage'),
-    concursoName: formData.get('concursoName'),
-    concursoAnswer: formData.get('concursoAnswer'),
-    cancionName: formData.get('cancionName'),
-    declaracionTo: formData.get('declaracionTo'),
-    declaracionMessage: formData.get('declaracionMessage'),
+    details: formData.get('details'),
   });
 
   if (!validatedFields.success) {
@@ -62,22 +49,12 @@ export async function submitRequest(
   }
 
   try {
-    const { requestType, username, ...details } = validatedFields.data;
-    
-    // Constructing a readable details string for the DJ
-    let detailsString = '';
-    switch(requestType) {
-        case 'saludo': detailsString = `Para: ${details.saludoTo} - Mensaje: ${details.saludoMessage}`; break;
-        case 'grito': detailsString = `Mensaje: ${details.gritoMessage}`; break;
-        case 'concurso': detailsString = `Concurso: ${details.concursoName} - Respuesta: ${details.concursoAnswer}`; break;
-        case 'cancion': detailsString = `Canción: ${details.cancionName}`; break;
-        case 'declaracion': detailsString = `Para: ${details.declaracionTo} - Mensaje: ${details.declaracionMessage}`; break;
-    }
+    const { requestType, username, details } = validatedFields.data;
 
     const requestsRef = ref(db, 'userRequests');
     await push(requestsRef, {
       type: requestType,
-      details: detailsString,
+      details: details,
       user: username,
       timestamp: serverTimestamp(),
     });

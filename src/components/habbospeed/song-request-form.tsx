@@ -61,48 +61,9 @@ export default function SongRequestForm() {
       setRequestType(undefined); // Reset select as well
     }
   }, [state, toast]);
-
-  const action = (formData: FormData) => {
-    if (requestType) {
-        formData.set('requestType', requestType);
-    }
-    formAction(formData);
-  };
   
-  const renderFields = () => {
-    switch (requestType) {
-        case 'saludo':
-            return (
-                <>
-                    <div className="space-y-2"><Label htmlFor="saludoTo">¿Para quién es el saludo?</Label><Input id="saludoTo" name="saludoTo" required /></div>
-                    <div className="space-y-2"><Label htmlFor="saludoMessage">Tu mensaje</Label><Textarea id="saludoMessage" name="saludoMessage" required /></div>
-                </>
-            );
-        case 'grito':
-             return <div className="space-y-2"><Label htmlFor="gritoMessage">¿Qué quieres gritar?</Label><Textarea id="gritoMessage" name="gritoMessage" required /></div>;
-        case 'concurso':
-             return (
-                <>
-                    <div className="space-y-2"><Label htmlFor="concursoName">Nombre del concurso</Label><Input id="concursoName" name="concursoName" required /></div>
-                    <div className="space-y-2"><Label htmlFor="concursoAnswer">Tu respuesta</Label><Textarea id="concursoAnswer" name="concursoAnswer" required /></div>
-                </>
-            );
-        case 'cancion':
-            return <div className="space-y-2"><Label htmlFor="cancionName">Nombre de la canción y artista</Label><Input id="cancionName" name="cancionName" required /></div>;
-        case 'declaracion':
-            return (
-                <>
-                    <div className="space-y-2"><Label htmlFor="declaracionTo">¿A quién te le declaras?</Label><Input id="declaracionTo" name="declaracionTo" required /></div>
-                    <div className="space-y-2"><Label htmlFor="declaracionMessage">Tu mensaje de amor</Label><Textarea id="declaracionMessage" name="declaracionMessage" required /></div>
-                </>
-            );
-        default:
-            return null;
-    }
-  }
-
   return (
-    <form ref={formRef} action={action} className="space-y-6">
+    <form ref={formRef} action={formAction} className="space-y-6">
        <div className="space-y-2">
             <Label htmlFor="username">Tu nombre de usuario</Label>
             <Input id="username" name="username" placeholder="Tu nombre en Habbo" required />
@@ -110,7 +71,7 @@ export default function SongRequestForm() {
 
       <div className="space-y-2">
         <Label>Tipo de Petición</Label>
-        <Select onValueChange={(value: RequestType) => setRequestType(value)} value={requestType} required>
+        <Select name="requestType" onValueChange={(value: RequestType) => setRequestType(value)} value={requestType} required>
           <SelectTrigger><SelectValue placeholder="Elige una opción..." /></SelectTrigger>
           <SelectContent>
             <SelectItem value="saludo">Enviar un Saludo</SelectItem>
@@ -122,12 +83,18 @@ export default function SongRequestForm() {
         </Select>
       </div>
 
-      {requestType && (
-        <div className="space-y-4 border-t pt-4">
-            {renderFields()}
-            <SubmitButton />
-        </div>
-      )}
+       <div className="space-y-2">
+        <Label htmlFor="details">Detalles de tu Petición</Label>
+        <Textarea 
+            id="details" 
+            name="details" 
+            placeholder="Escribe el nombre de la canción, tu saludo, la respuesta del concurso, etc." 
+            required 
+            rows={4}
+        />
+       </div>
+
+      <SubmitButton disabled={!requestType} />
 
       {state.isSuccess && !state.isError && state.message && (
         <Alert className="mt-4 border-green-500 text-green-500">

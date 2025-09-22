@@ -104,5 +104,13 @@
       "imageUrl": "https://picsum.photos/seed/banzairacing/600/400",
       "imageHint": "racing game"
     }
+  },
+  "userRequests": {
+    "request1": {
+      "details": "Quiero escuchar 'Shape of You' de Ed Sheeran. ¡Saludos desde la sala de juegos!",
+      "timestamp": 1672531200000,
+      "type": "cancion",
+      "user": "DJ-Pixel"
+    }
   }
 }
