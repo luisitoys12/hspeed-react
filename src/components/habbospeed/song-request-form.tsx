@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useActionState, useFormStatus } from 'react';
 import { submitRequest } from '@/lib/actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ function SubmitButton({ disabled }: { disabled?: boolean }) {
 }
 
 export default function SongRequestForm() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [state, formAction] = useActionState(submitRequest, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -101,6 +101,14 @@ export default function SongRequestForm() {
         default:
             return null;
     }
+  }
+
+  if (authLoading) {
+      return (
+          <div className="flex justify-center items-center p-8">
+              <LoaderCircle className="animate-spin text-primary" />
+          </div>
+      )
   }
 
   if (!user) {
