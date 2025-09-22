@@ -11,11 +11,9 @@ import { Send, LoaderCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import Link from 'next/link';
 
 const initialState = {
   message: '',
@@ -45,7 +43,6 @@ function SubmitButton({ disabled }: { disabled?: boolean }) {
 }
 
 export default function SongRequestForm() {
-  const { user, loading: authLoading } = useAuth();
   const [state, formAction] = useActionState(submitRequest, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -104,26 +101,13 @@ export default function SongRequestForm() {
     }
   }
 
-  if (authLoading) {
-      return (
-          <div className="flex justify-center items-center p-8">
-              <LoaderCircle className="animate-spin text-primary" />
-          </div>
-      )
-  }
-
-  if (!user) {
-    return (
-        <div className="text-center p-4 bg-muted rounded-lg">
-            <p className="text-muted-foreground">
-                Debes <Link href="/login" className="font-bold text-primary underline">iniciar sesión</Link> para enviar una petición.
-            </p>
-        </div>
-    )
-  }
-
   return (
     <form ref={formRef} action={action} className="space-y-6">
+       <div className="space-y-2">
+            <Label htmlFor="username">Tu nombre de usuario</Label>
+            <Input id="username" name="username" placeholder="Tu nombre en Habbo" required />
+       </div>
+
       <div className="space-y-2">
         <Label>Tipo de Petición</Label>
         <Select onValueChange={(value: RequestType) => setRequestType(value)} value={requestType} required>
@@ -141,7 +125,7 @@ export default function SongRequestForm() {
       {requestType && (
         <div className="space-y-4 border-t pt-4">
             {renderFields()}
-            <SubmitButton disabled={!user} />
+            <SubmitButton />
         </div>
       )}
 

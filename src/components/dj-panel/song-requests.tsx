@@ -62,7 +62,7 @@ export default function SongRequests() {
     }
   };
 
-  const isDjOrAdmin = user && (user.role === 'dj' || user.role === 'Admin');
+  const isAdmin = user && user.isSuperAdmin;
 
   const getBadgeVariant = (type: UserRequest['type']) => {
       switch(type) {
@@ -90,14 +90,14 @@ export default function SongRequests() {
                 <TableHead>Tipo</TableHead>
                 <TableHead>Detalles</TableHead>
                 <TableHead>Hora</TableHead>
-                {isDjOrAdmin && <TableHead className="text-right">Acción</TableHead>}
+                {isAdmin && <TableHead className="text-right">Acción</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={isDjOrAdmin ? 5 : 4}>
+                    <TableCell colSpan={isAdmin ? 5 : 4}>
                       <Skeleton className="h-6 w-full" />
                     </TableCell>
                   </TableRow>
@@ -111,7 +111,7 @@ export default function SongRequests() {
                     <TableCell className="text-muted-foreground text-xs">
                       {formatDistanceToNow(new Date(request.timestamp), { addSuffix: true, locale: es })}
                     </TableCell>
-                    {isDjOrAdmin && (
+                    {isAdmin && (
                       <TableCell className="text-right">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -140,7 +140,7 @@ export default function SongRequests() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={isDjOrAdmin ? 5 : 4} className="h-24 text-center">
+                  <TableCell colSpan={isAdmin ? 5 : 4} className="h-24 text-center">
                     No hay peticiones pendientes.
                   </TableCell>
                 </TableRow>

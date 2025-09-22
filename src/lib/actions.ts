@@ -10,11 +10,12 @@ import { generateHabboName, GenerateHabboNameInput, GenerateHabboNameOutput } fr
 import { adminDb, adminMessaging } from '@/lib/firebase-admin';
 
 import { z } from 'zod';
-import { db, auth } from './firebase';
+import { db } from './firebase';
 import { ref, push, serverTimestamp, runTransaction, get } from 'firebase/database';
 
 
 const requestFormSchema = z.object({
+  username: z.string().min(2, 'Tu nombre es requerido.'),
   requestType: z.enum(["saludo", "grito", "concurso", "cancion", "declaracion"]),
   // Fields for each type
   saludoTo: z.string().optional(),
@@ -38,17 +39,9 @@ export async function submitRequest(
   prevState: RequestFormState,
   formData: FormData
 ): Promise<RequestFormState> {
-  const currentUser = auth.currentUser;
-
-  if (!currentUser || !currentUser.displayName) {
-    return {
-      message: 'Debes iniciar sesión para enviar una petición.',
-      isSuccess: false,
-      isError: true,
-    };
-  }
 
   const validatedFields = requestFormSchema.safeParse({
+    username: formData.get('username'),
     requestType: formData.get('requestType'),
     saludoTo: formData.get('saludoTo'),
     saludoMessage: formData.get('saludoMessage'),
@@ -69,7 +62,7 @@ export async function submitRequest(
   }
 
   try {
-    const { requestType, ...details } = validatedFields.data;
+    const { requestType, username, ...details } = validatedFields.data;
     
     // Constructing a readable details string for the DJ
     let detailsString = '';
@@ -85,7 +78,7 @@ export async function submitRequest(
     await push(requestsRef, {
       type: requestType,
       details: detailsString,
-      user: currentUser.displayName,
+      user: username,
       timestamp: serverTimestamp(),
     });
 
