@@ -24,14 +24,12 @@ export default function LatestFurnis() {
       try {
         // Use the more general /api/furni endpoint which is more reliable
         const response = await fetch('https://habbofurni.com/api/furni?limit=10');
-        if (!response.ok) {
-          console.error('Failed to fetch furnis, response not ok.');
-        } else {
+        if (response.ok) {
           const data = await response.json();
           setFurnis(data);
         }
       } catch (error) {
-        console.error("Error fetching latest furnis:", error);
+        // Silently fail if the external API is down
       } finally {
         setLoading(false);
       }
