@@ -9,10 +9,10 @@ export default function RequestPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-headline text-xl md:text-2xl">
             <Music className="text-primary" />
-            Pide una Canción
+            Haz tu Petición
           </CardTitle>
           <CardDescription>
-            ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
+            ¿Quieres escuchar tu canción, enviar un saludo o participar en un concurso? ¡Este es tu lugar!
           </CardDescription>
         </CardHeader>
         <CardContent>

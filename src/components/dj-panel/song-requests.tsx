@@ -24,10 +24,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from '../ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '../ui/badge';
 
-type SongRequest = {
+type UserRequest = {
   id: string;
-  request: string;
+  type: "saludo" | "grito" | "concurso" | "cancion" | "declaracion";
+  details: string;
   user: string;
   timestamp: number;
 };
@@ -35,14 +37,14 @@ type SongRequest = {
 export default function SongRequests() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [requests, setRequests] = useState<SongRequest[]>([]);
+  const [requests, setRequests] = useState<UserRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const requestsRef = ref(db, 'song-requests');
+    const requestsRef = ref(db, 'userRequests');
     const unsubscribe = onValue(requestsRef, (snapshot) => {
       const data = snapshot.val() || {};
-      const requestsArray: SongRequest[] = Object.keys(data)
+      const requestsArray: UserRequest[] = Object.keys(data)
         .map(key => ({ id: key, ...data[key] }))
         .sort((a, b) => b.timestamp - a.timestamp);
       setRequests(requestsArray);
@@ -53,7 +55,7 @@ export default function SongRequests() {
 
   const handleDelete = async (id: string) => {
     try {
-      await remove(ref(db, `song-requests/${id}`));
+      await remove(ref(db, `userRequests/${id}`));
       toast({ title: 'Petición eliminada' });
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo eliminar la petición.' });
@@ -62,10 +64,19 @@ export default function SongRequests() {
 
   const isDjOrAdmin = user && (user.role === 'dj' || user.role === 'Admin');
 
+  const getBadgeVariant = (type: UserRequest['type']) => {
+      switch(type) {
+          case 'cancion': return 'default';
+          case 'saludo': return 'secondary';
+          case 'declaracion': return 'destructive';
+          default: return 'outline';
+      }
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Peticiones de Canciones</CardTitle>
+        <CardTitle>Bandeja de Peticiones</CardTitle>
         <CardDescription>
           Aquí puedes ver las últimas peticiones de los oyentes.
         </CardDescription>
@@ -75,8 +86,9 @@ export default function SongRequests() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Canción y Artista</TableHead>
                 <TableHead>Usuario</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Detalles</TableHead>
                 <TableHead>Hora</TableHead>
                 {isDjOrAdmin && <TableHead className="text-right">Acción</TableHead>}
               </TableRow>
@@ -85,7 +97,7 @@ export default function SongRequests() {
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={isDjOrAdmin ? 4 : 3}>
+                    <TableCell colSpan={isDjOrAdmin ? 5 : 4}>
                       <Skeleton className="h-6 w-full" />
                     </TableCell>
                   </TableRow>
@@ -93,8 +105,9 @@ export default function SongRequests() {
               ) : requests.length > 0 ? (
                 requests.map((request) => (
                   <TableRow key={request.id}>
-                    <TableCell className="font-medium">{request.request}</TableCell>
-                    <TableCell>{request.user}</TableCell>
+                    <TableCell className="font-medium">{request.user}</TableCell>
+                    <TableCell><Badge variant={getBadgeVariant(request.type)}>{request.type}</Badge></TableCell>
+                    <TableCell className="max-w-sm truncate">{request.details}</TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {formatDistanceToNow(new Date(request.timestamp), { addSuffix: true, locale: es })}
                     </TableCell>
@@ -110,7 +123,7 @@ export default function SongRequests() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Se eliminará la petición: "{request.request}".
+                                Se eliminará la petición de "{request.user}".
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -127,7 +140,7 @@ export default function SongRequests() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={isDjOrAdmin ? 4 : 3} className="h-24 text-center">
+                  <TableCell colSpan={isDjOrAdmin ? 5 : 4} className="h-24 text-center">
                     No hay peticiones pendientes.
                   </TableCell>
                 </TableRow>

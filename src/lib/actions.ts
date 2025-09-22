@@ -2,11 +2,6 @@
 'use server';
 
 import {
-  validateSongRequest,
-  ValidateSongRequestInput,
-  ValidateSongRequestOutput
-} from '@/ai/flows/validate-song-request';
-import {
   fetchLatestNews,
   FetchLatestNewsInput,
   FetchLatestNewsOutput
@@ -18,22 +13,42 @@ import { db } from './firebase';
 import { ref, push, serverTimestamp, runTransaction, get } from 'firebase/database';
 
 
-const songRequestFormSchema = z.object({
-  songRequest: z.string().min(3, 'La petición debe tener al menos 3 caracteres.'),
+const requestFormSchema = z.object({
+  requestType: z.enum(["saludo", "grito", "concurso", "cancion", "declaracion"]),
+  authorName: z.string().optional(),
+  // Fields for each type
+  saludoTo: z.string().optional(),
+  saludoMessage: z.string().optional(),
+  gritoMessage: z.string().optional(),
+  concursoName: z.string().optional(),
+  concursoAnswer: z.string().optional(),
+  cancionName: z.string().optional(),
+  declaracionTo: z.string().optional(),
+  declaracionMessage: z.string().optional(),
 });
 
-type SongRequestFormState = {
+
+type RequestFormState = {
   message: string;
   isSuccess: boolean;
   isError: boolean;
 };
 
-export async function submitSongRequest(
-  prevState: SongRequestFormState,
+export async function submitRequest(
+  prevState: RequestFormState,
   formData: FormData
-): Promise<SongRequestFormState> {
-  const validatedFields = songRequestFormSchema.safeParse({
-    songRequest: formData.get('songRequest'),
+): Promise<RequestFormState> {
+  const validatedFields = requestFormSchema.safeParse({
+    requestType: formData.get('requestType'),
+    authorName: formData.get('authorName'),
+    saludoTo: formData.get('saludoTo'),
+    saludoMessage: formData.get('saludoMessage'),
+    gritoMessage: formData.get('gritoMessage'),
+    concursoName: formData.get('concursoName'),
+    concursoAnswer: formData.get('concursoAnswer'),
+    cancionName: formData.get('cancionName'),
+    declaracionTo: formData.get('declaracionTo'),
+    declaracionMessage: formData.get('declaracionMessage'),
   });
 
   if (!validatedFields.success) {
@@ -45,33 +60,36 @@ export async function submitSongRequest(
   }
 
   try {
-    const input: ValidateSongRequestInput = {
-      songRequest: validatedFields.data.songRequest,
-    };
-    const result: ValidateSongRequestOutput = await validateSongRequest(input);
-
-    if (result.isValid) {
-      const requestsRef = ref(db, 'song-requests');
-      await push(requestsRef, {
-        request: validatedFields.data.songRequest,
-        user: formData.get('authorName') || 'Anónimo',
-        timestamp: serverTimestamp(),
-      });
-      return {
-        message: "¡Tu petición de canción ha sido enviada y aprobada! La pondremos pronto.",
-        isSuccess: true,
-        isError: false,
-      };
-    } else {
-      return {
-        message: `Tu petición no fue aprobada. Razón: ${result.reason}`,
-        isSuccess: false,
-        isError: true,
-      };
+    const { authorName, requestType, ...details } = validatedFields.data;
+    
+    // Constructing a readable details string for the DJ
+    let detailsString = '';
+    switch(requestType) {
+        case 'saludo': detailsString = `Para: ${details.saludoTo} - Mensaje: ${details.saludoMessage}`; break;
+        case 'grito': detailsString = `Mensaje: ${details.gritoMessage}`; break;
+        case 'concurso': detailsString = `Concurso: ${details.concursoName} - Respuesta: ${details.concursoAnswer}`; break;
+        case 'cancion': detailsString = `Canción: ${details.cancionName}`; break;
+        case 'declaracion': detailsString = `Para: ${details.declaracionTo} - Mensaje: ${details.declaracionMessage}`; break;
     }
-  } catch (error) {
+
+    const requestsRef = ref(db, 'userRequests');
+    await push(requestsRef, {
+      type: requestType,
+      details: detailsString,
+      user: authorName || 'Anónimo',
+      timestamp: serverTimestamp(),
+    });
+
     return {
-      message: 'Ocurrió un error con la IA. Por favor, inténtalo de nuevo más tarde.',
+      message: "¡Tu petición ha sido enviada! Gracias por participar.",
+      isSuccess: true,
+      isError: false,
+    };
+
+  } catch (error) {
+    console.error("Error submitting request:", error);
+    return {
+      message: 'Ocurrió un error al enviar tu petición. Por favor, inténtalo de nuevo.',
       isSuccess: false,
       isError: true,
     };
