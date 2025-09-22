@@ -95,7 +95,7 @@ export default function FloatingPlayer() {
       if (!radioConfig) return;
 
       try {
-        const response = await fetch(`${radioConfig.apiUrl}?_=${new Date().getTime()}`);
+        const response = await fetch(`/api/nowplaying`);
         if (!response.ok) throw new Error('Network response was not ok');
 
         if (radioConfig.radioService === 'zenofm') {

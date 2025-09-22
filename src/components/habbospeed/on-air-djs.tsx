@@ -106,12 +106,12 @@ export default function OnAirDjs() {
     useEffect(() => {
         const fetchData = async () => {
           try {
-            const response = await fetch(`https://radio.kusmedios.lat/api/nowplaying/ekus-fm?_=${new Date().getTime()}`);
+            const response = await fetch(`/api/nowplaying`);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             setAzuracastData(data);
           } catch (error) {
-            console.error("Error fetching Azuracast data:", error);
+            console.error("Error fetching Now Playing data:", error);
           } finally {
             setIsLoading(false);
           }
