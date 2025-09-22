@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -79,10 +80,9 @@ export default function AppSidebar() {
     <>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-primary">
-                <Radio className="text-primary-foreground" />
-            </div>
-            <h1 className="text-2xl font-headline font-bold text-primary">Habbospeed</h1>
+            <Link href="/" className="flex items-center gap-2">
+                 <Image src="https://i.imgur.com/u31XFxN.png" alt="Habbospeed Logo" width={160} height={40} unoptimized />
+            </Link>
         </div>
       </SidebarHeader>
       <SidebarContent>

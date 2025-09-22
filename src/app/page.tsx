@@ -10,6 +10,7 @@ import ActiveEvents from '@/components/habbospeed/active-events';
 import Image from 'next/image';
 import HomeHeader from '@/components/layout/home-header';
 import RecentWinners from '@/components/habbospeed/recent-winners';
+import AboutUs from '@/components/habbospeed/about-us';
 
 function LoadingSkeleton() {
   return (
@@ -30,14 +31,26 @@ export default function Home() {
     <>
       <HomeHeader />
       <div className="container mx-auto p-4 md:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Columna Izquierda */}
-          <div className="lg:col-span-1 flex flex-col gap-8">
+        
+        <div className="hidden md:block mb-8">
             <Suspense fallback={<LoadingSkeleton />}>
               <OnAirDjs />
             </Suspense>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Columna Izquierda */}
+          <div className="lg:col-span-1 flex flex-col gap-8">
+             <div className="md:hidden">
+                <Suspense fallback={<LoadingSkeleton />}>
+                <OnAirDjs />
+                </Suspense>
+            </div>
             <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
+            </Suspense>
+            <Suspense fallback={<LoadingSkeleton />}>
+                <AboutUs />
             </Suspense>
           </div>
 
