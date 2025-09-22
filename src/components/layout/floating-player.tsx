@@ -18,8 +18,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import SongRequestForm from '../habbospeed/song-request-form';
-import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { db, messaging, getToken } from '@/lib/firebase';
+import { ref, onValue, set } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
@@ -166,7 +166,8 @@ export default function FloatingPlayer() {
     }
   }, [djName, notificationPermission]);
 
-  const handleNotificationClick = () => {
+  const handleNotificationClick = async () => {
+    if (!messaging) return;
     if (notificationPermission === 'granted') {
       toast({ title: 'Notificaciones ya activadas' });
       return;
@@ -175,12 +176,20 @@ export default function FloatingPlayer() {
       toast({ variant: 'destructive', title: 'Notificaciones bloqueadas', description: 'Debes permitir las notificaciones en la configuración de tu navegador.' });
       return;
     }
-    Notification.requestPermission().then(permission => {
-      setNotificationPermission(permission);
-      if (permission === 'granted') {
-        toast({ title: '¡Notificaciones activadas!', description: 'Te avisaremos cuando un DJ se conecte.' });
-      }
-    });
+    try {
+        const permission = await Notification.requestPermission();
+        setNotificationPermission(permission);
+        if (permission === 'granted') {
+            toast({ title: '¡Notificaciones activadas!', description: 'Te avisaremos cuando un DJ se conecte.' });
+            const currentToken = await getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY' });
+            if (currentToken) {
+                const tokenRef = ref(db, `fcmTokens/${currentToken}`);
+                await set(tokenRef, true);
+            }
+        }
+    } catch(error) {
+        console.error('Error getting notification permission', error);
+    }
   };
 
   // Audio Controls

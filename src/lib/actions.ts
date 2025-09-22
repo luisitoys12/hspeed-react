@@ -7,6 +7,7 @@ import {
   FetchLatestNewsOutput
 } from '@/ai/flows/fetch-latest-news';
 import { generateHabboName, GenerateHabboNameInput, GenerateHabboNameOutput } from '@/ai/flows/generate-habbo-name';
+import { adminDb, adminMessaging } from '@/lib/firebase-admin';
 
 import { z } from 'zod';
 import { db } from './firebase'; // Correct auth is in firebase
@@ -261,5 +262,63 @@ export async function generateNamesAction(prevState: NameGeneratorState, formDat
   } catch (error) {
     console.error("Name generation failed:", error);
     return { names: [], error: "La IA no pudo generar nombres. Inténtalo de nuevo." };
+  }
+}
+
+const notificationSchema = z.object({
+  title: z.string().min(3),
+  body: z.string().min(10),
+  url: z.string().url().optional(),
+});
+
+export async function submitNotification(formData: FormData) {
+  // Add admin check here in a real app
+  const validatedFields = notificationSchema.safeParse({
+    title: formData.get('title'),
+    body: formData.get('body'),
+    url: formData.get('url'),
+  });
+
+  if (!validatedFields.success) {
+    return { success: false, message: 'Invalid notification data.' };
+  }
+  
+  try {
+    const tokensSnapshot = await adminDb.ref('fcmTokens').get();
+    if (!tokensSnapshot.exists()) {
+      return { success: false, message: 'No subscribed users to send notifications to.' };
+    }
+    const tokens = Object.keys(tokensSnapshot.val());
+
+    if (tokens.length === 0) {
+      return { success: false, message: 'No subscribed users to send notifications to.' };
+    }
+
+    const message = {
+      notification: {
+        title: validatedFields.data.title,
+        body: validatedFields.data.body,
+      },
+      webpush: {
+        fcm_options: {
+            link: validatedFields.data.url || 'https://hspeed-fan.netlify.app/',
+        },
+      },
+      tokens: tokens,
+    };
+
+    const response = await adminMessaging.sendEachForMulticast(message);
+    
+    const successCount = response.successCount;
+    const failureCount = response.failureCount;
+
+    return {
+      success: true,
+      message: `Notifications sent: ${successCount} successful, ${failureCount} failed.`,
+    };
+
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    return { success: false, message: 'Failed to send notifications.' };
   }
 }

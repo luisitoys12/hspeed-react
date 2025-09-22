@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Bell, LoaderCircle, Send } from 'lucide-react';
 import { submitNotification } from '@/lib/actions';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const notificationSchema = z.object({
   title: z.string().min(3, "El título es requerido."),
@@ -27,6 +28,8 @@ export default function NotificationsPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resultMessage, setResultMessage] = useState<string | null>(null);
+  
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),
     defaultValues: { title: '', body: '', url: '' },
@@ -34,19 +37,27 @@ export default function NotificationsPage() {
 
   const onSubmit = async (values: NotificationFormValues) => {
     setIsSubmitting(true);
+    setResultMessage(null);
     try {
-      // This would be a server action that fetches all tokens and sends notifications
-      // For now, we'll just log it.
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log("Sending notification:", values);
+        const formData = new FormData();
+        formData.append('title', values.title);
+        formData.append('body', values.body);
+        if (values.url) formData.append('url', values.url);
 
-      toast({
-        title: "Notificación Enviada (Simulado)",
-        description: "En una app real, esto se enviaría a los usuarios.",
-      });
-      form.reset();
+      const result = await submitNotification(new FormData());
+      if (result.success) {
+        toast({
+            title: "¡Notificaciones Enviadas!",
+            description: result.message,
+        });
+        form.reset();
+      } else {
+          toast({ variant: 'destructive', title: "Error", description: result.message });
+      }
+      setResultMessage(result.message);
     } catch (error) {
       toast({ variant: 'destructive', title: "Error", description: "No se pudo enviar la notificación." });
+      setResultMessage("Un error inesperado ocurrió.");
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +93,7 @@ export default function NotificationsPage() {
                 <FormItem><FormLabel>Mensaje</FormLabel><FormControl><Textarea {...field} placeholder="Ej: No te pierdas el gran juego de..." rows={4} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="url" render={({ field }) => (
-                <FormItem><FormLabel>URL (Opcional)</FormLabel><FormControl><Input {...field} placeholder="Ej: /news/id-del-articulo" /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>URL de destino (Opcional)</FormLabel><FormControl><Input {...field} placeholder="Ej: /news/id-del-articulo" /></FormControl><FormMessage /></FormItem>
               )} />
               <Button type="submit" disabled={isSubmitting} className="w-full">
                 {isSubmitting ? <LoaderCircle className="mr-2 animate-spin" /> : <Send className="mr-2" />}
@@ -90,6 +101,12 @@ export default function NotificationsPage() {
               </Button>
             </form>
           </Form>
+           {resultMessage && (
+            <Alert className="mt-4">
+              <AlertTitle>Resultado del envío</AlertTitle>
+              <AlertDescription>{resultMessage}</AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
     </div>
