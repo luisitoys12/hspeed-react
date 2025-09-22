@@ -38,9 +38,19 @@ export async function submitRequest(
   prevState: RequestFormState,
   formData: FormData
 ): Promise<RequestFormState> {
+  const authorNameValue = formData.get('authorName');
+
+  if (!authorNameValue) {
+    return {
+      message: 'Debes iniciar sesión para enviar una petición.',
+      isSuccess: false,
+      isError: true,
+    };
+  }
+
   const validatedFields = requestFormSchema.safeParse({
     requestType: formData.get('requestType'),
-    authorName: formData.get('authorName'),
+    authorName: authorNameValue,
     saludoTo: formData.get('saludoTo'),
     saludoMessage: formData.get('saludoMessage'),
     gritoMessage: formData.get('gritoMessage'),

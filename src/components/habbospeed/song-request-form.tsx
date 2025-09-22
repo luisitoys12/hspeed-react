@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
+import Link from 'next/link';
 
 const initialState = {
   message: '',
@@ -23,10 +24,10 @@ const initialState = {
 
 type RequestType = "saludo" | "grito" | "concurso" | "cancion" | "declaracion";
 
-function SubmitButton() {
+function SubmitButton({ disabled }: { disabled?: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="w-full">
+    <Button type="submit" disabled={pending || disabled} className="w-full">
       {pending ? (
         <>
           <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
@@ -105,6 +106,16 @@ export default function SongRequestForm() {
     }
   }
 
+  if (!user) {
+    return (
+        <div className="text-center p-4 bg-muted rounded-lg">
+            <p className="text-muted-foreground">
+                Debes <Link href="/login" className="font-bold text-primary underline">iniciar sesión</Link> para enviar una petición.
+            </p>
+        </div>
+    )
+  }
+
   return (
     <form ref={formRef} action={action} className="space-y-6">
       <div className="space-y-2">
@@ -124,7 +135,7 @@ export default function SongRequestForm() {
       {requestType && (
         <div className="space-y-4 border-t pt-4">
             {renderFields()}
-            <SubmitButton />
+            <SubmitButton disabled={!user} />
         </div>
       )}
 
