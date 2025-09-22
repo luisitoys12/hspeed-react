@@ -83,6 +83,11 @@ export default function BookingGrid() {
       toast({ variant: 'destructive', title: 'Error', description: 'Debes iniciar sesión para reservar.' });
       return;
     }
+    
+    if (user.isSuperAdmin) {
+        toast({ variant: 'destructive', title: 'Acción no permitida', description: 'Los administradores no pueden reservar desde este panel.' });
+        return;
+    }
 
     const slotRef = ref(db, `bookings/${day}/${hour.replace(':', '')}`);
 
@@ -117,8 +122,8 @@ export default function BookingGrid() {
     }
   };
 
-  const handleAdminDeleteSlot = async (day: string, hour: string) => {
-     if (!user?.isSuperAdmin) {
+  const handleDeleteSlot = async (day: string, hour: string) => {
+     if (!user || (!user.isSuperAdmin && bookings[day]?.[hour.replace(':', '')]?.uid !== user.uid)) {
         toast({ variant: 'destructive', title: 'Error', description: 'No tienes permisos para esta acción.' });
         return;
      }
@@ -185,7 +190,7 @@ export default function BookingGrid() {
                         {booking ? (
                             <AlertDialog>
                                 <AlertDialogTrigger asChild disabled={!user.isSuperAdmin && !isOwnBooking}>
-                                     <div className={`p-1 rounded-md text-xs h-full flex flex-col justify-center ${isOwnBooking ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'} ${user.isSuperAdmin ? 'cursor-pointer hover:ring-2 hover:ring-destructive' : ''}`}>
+                                     <div className={`p-1 rounded-md text-xs h-full flex flex-col justify-center ${isOwnBooking ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'} ${(user.isSuperAdmin || isOwnBooking) ? 'cursor-pointer hover:ring-2 hover:ring-destructive' : 'cursor-default'}`}>
                                         <span className="font-bold truncate">{booking.djName}</span>
                                     </div>
                                 </AlertDialogTrigger>
@@ -199,19 +204,17 @@ export default function BookingGrid() {
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleAdminDeleteSlot(day, hour)} className="bg-destructive hover:bg-destructive/90">
+                                            <AlertDialogAction onClick={() => handleDeleteSlot(day, hour)} className="bg-destructive hover:bg-destructive/90">
                                                 <Trash2 className="mr-2"/> Eliminar Reserva
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
                                      </AlertDialogContent>
                                 )}
                             </AlertDialog>
-                        ) : user.isSuperAdmin ? (
-                            <div className="w-full h-full bg-background/20" /> // Admin can't book from this panel
                         ) : (
                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <button className="w-full h-full bg-background hover:bg-primary/20 text-transparent hover:text-primary transition-all duration-200 rounded-md text-xs flex items-center justify-center group">
+                            <AlertDialogTrigger asChild disabled={user.isSuperAdmin}>
+                                <button className="w-full h-full bg-background hover:bg-primary/20 text-transparent hover:text-primary transition-all duration-200 rounded-md text-xs flex items-center justify-center group disabled:cursor-not-allowed disabled:hover:bg-background">
                                     <span className="opacity-0 group-hover:opacity-100">Reservar</span>
                                 </button>
                             </AlertDialogTrigger>
