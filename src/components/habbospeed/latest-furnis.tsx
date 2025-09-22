@@ -28,8 +28,7 @@ export default function LatestFurnis() {
           const data = await response.json();
           setFurnis(data);
         } else {
-          // If the proxy fails, we don't throw an error, just log it and show a message.
-          console.error('Failed to fetch furnis from API proxy.');
+          // If the proxy fails, silently fail and show a message in the UI.
         }
       } catch (error) {
         // Silently fail if the API proxy is down or there's a network error.
