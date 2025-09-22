@@ -28,12 +28,15 @@ export default function LatestBadges() {
   useEffect(() => {
     const fetchBadges = async () => {
       try {
-        const response = await fetch('https://habboassets.com/api/v1/badges?hotel=es&limit=20');
-        if (!response.ok) throw new Error('Failed to fetch badges');
-        const data = await response.json();
-        setBadges(data);
+        const response = await fetch('/api/badges');
+        if (response.ok) {
+          const data = await response.json();
+          setBadges(data);
+        } else {
+          console.error("Failed to fetch badges from API proxy.");
+        }
       } catch (error) {
-        console.error("Error fetching latest badges:", error);
+        console.error("Error calling /api/badges:", error);
       } finally {
         setLoading(false);
       }

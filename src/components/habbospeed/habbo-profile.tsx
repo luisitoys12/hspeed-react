@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { getHabboProfileData } from '@/lib/data';
 import { Calendar, Award, Home, Search, LoaderCircle } from 'lucide-react';
 import {
   Carousel,
@@ -18,10 +17,50 @@ import { useState, useEffect } from 'react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import type { getHabboProfileData as getHabboProfileDataType } from '@/lib/data';
 
-type HabboProfileData = Awaited<ReturnType<typeof getHabboProfileData>>;
+type HabboProfileData = Awaited<ReturnType<typeof getHabboProfileDataType>>;
 
 const defaultUsername = 'estacionkusfm';
+
+// We need to redefine the function on the client to call our proxy
+async function getHabboProfileData(username: string): Promise<HabboProfileData> {
+    try {
+        const response = await fetch(`/api/habbo-user?username=${username}`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            return { error: errorData.error || 'User not found or API error.' };
+        }
+        
+        const data = await response.json();
+        const { user, profile } = data;
+
+        return {
+            name: user.name,
+            motto: user.motto,
+            registrationDate: user.memberSince,
+            rewards: profile.achievementScore,
+            badges: profile.badges.slice(0, 5).map((badge: any) => ({
+                id: badge.code,
+                name: badge.name,
+                imageUrl: `https://images.habbo.com/c_images/album1584/${badge.code}.gif`,
+                imageHint: 'habbo badge', 
+            })),
+            rooms: profile.rooms.slice(0, 3).map((room: any) => ({
+                id: room.id,
+                name: room.name,
+                imageUrl: `https://www.habbo.com/habbo-imaging/room/${room.id}/thumbnail.png`,
+                imageHint: 'habbo room',
+            })),
+            error: null,
+        };
+
+    } catch (error) {
+        console.error("Failed to fetch Habbo profile data:", error);
+        return { error: 'Ocurrió un error inesperado al buscar el perfil.' };
+    }
+}
+
 
 export default function HabboProfile() {
   const [username, setUsername] = useState(defaultUsername);
@@ -96,7 +135,7 @@ export default function HabboProfile() {
                 <AlertDescription>{error}</AlertDescription>
             </Alert>
         )}
-        {profile && !isLoading && (
+        {profile && !isLoading && profile.name && (
             <ScrollArea className="flex-grow pr-4 -mr-4">
                 <div className="flex items-center gap-4 mb-4">
                     <Avatar className="h-16 w-16">
@@ -123,7 +162,7 @@ export default function HabboProfile() {
                 <div>
                     <h3 className="font-headline my-2">Placas</h3>
                     <div className="flex flex-wrap gap-2">
-                        {profile.badges.map(badge => (
+                        {profile.badges?.map(badge => (
                             <div key={badge.id} title={badge.name}>
                                 <Image src={badge.imageUrl} alt={badge.name} width={40} height={40} className="rounded-md" data-ai-hint={badge.imageHint} unoptimized />
                             </div>
@@ -140,7 +179,7 @@ export default function HabboProfile() {
                         className="w-full"
                     >
                         <CarouselContent>
-                        {profile.rooms.map((room) => (
+                        {profile.rooms?.map((room) => (
                             <CarouselItem key={room.id} className="md:basis-1/2 lg:basis-full">
                             <div className="p-1">
                                 <Card className="overflow-hidden">

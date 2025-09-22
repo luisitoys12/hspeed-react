@@ -22,17 +22,15 @@ export default function LatestCampaigns() {
     useEffect(() => {
         const fetchCampaigns = async () => {
             try {
-                const response = await fetch('https://puhekupla.com/api/v1/campaigns?hotel=es', {
-                    headers: {
-                        'X-Puhekupla-APIKey': 'demo-habbospeed'
-                    }
-                });
-                if (!response.ok) throw new Error('Failed to fetch campaigns');
-                const data = await response.json();
-                // Limitar a las primeras 2 o 3 campañas
-                setCampaigns(data.slice(0, 3));
+                const response = await fetch('/api/campaigns');
+                if (response.ok) {
+                    const data = await response.json();
+                    setCampaigns(data.slice(0, 3));
+                } else {
+                    console.error("Failed to fetch campaigns from API proxy.");
+                }
             } catch (error) {
-                console.error("Error fetching campaigns from Puhekupla:", error);
+                console.error("Error calling /api/campaigns:", error);
             } finally {
                 setLoading(false);
             }

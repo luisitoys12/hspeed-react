@@ -72,32 +72,32 @@ export async function getTeamMembers() {
 
 export async function getHabboProfileData(username: string) {
     try {
-        const userResponse = await fetch(`https://www.habbo.es/api/public/users?name=${username}`);
-        if (!userResponse.ok) {
-            const errorData = await userResponse.json().catch(() => null);
-            const errorMessage = errorData?.error ? `Usuario no encontrado: ${errorData.error}` : 'Usuario no encontrado o la API no está disponible.';
-            return { error: errorMessage };
-        }
-        const userData = await userResponse.json();
+        const absoluteUrl = process.env.NEXT_PUBLIC_VERCEL_URL 
+            ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/habbo-user?username=${username}`
+            : `http://localhost:9002/api/habbo-user?username=${username}`;
 
-        const profileResponse = await fetch(`https://www.habbo.es/api/public/users/${userData.uniqueId}/profile`);
-         if (!profileResponse.ok) {
-            return { error: 'No se pudo cargar el perfil de este usuario.' };
+        const response = await fetch(absoluteUrl);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            return { error: errorData.error || 'User not found or API error.' };
         }
-        const profileData = await profileResponse.json();
+        
+        const data = await response.json();
+        const { user, profile } = data;
 
         return {
-            name: userData.name,
-            motto: userData.motto,
-            registrationDate: userData.memberSince,
-            rewards: profileData.achievementScore,
-            badges: profileData.badges.slice(0, 5).map((badge: any) => ({
+            name: user.name,
+            motto: user.motto,
+            registrationDate: user.memberSince,
+            rewards: profile.achievementScore,
+            badges: profile.badges.slice(0, 5).map((badge: any) => ({
                 id: badge.code,
                 name: badge.name,
                 imageUrl: `https://images.habbo.com/c_images/album1584/${badge.code}.gif`,
                 imageHint: 'habbo badge', 
             })),
-            rooms: profileData.rooms.slice(0, 3).map((room: any) => ({
+            rooms: profile.rooms.slice(0, 3).map((room: any) => ({
                 id: room.id,
                 name: room.name,
                 imageUrl: `https://www.habbo.com/habbo-imaging/room/${room.id}/thumbnail.png`,
@@ -107,7 +107,7 @@ export async function getHabboProfileData(username: string) {
         };
 
     } catch (error) {
-        console.error("Failed to fetch Habbo profile data:", error);
+        console.error("Failed to fetch Habbo profile data via proxy:", error);
         return { error: 'Ocurrió un error inesperado al buscar el perfil.' };
     }
 }
