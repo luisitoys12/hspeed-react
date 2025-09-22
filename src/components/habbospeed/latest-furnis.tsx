@@ -22,14 +22,18 @@ export default function LatestFurnis() {
   useEffect(() => {
     const fetchFurnis = async () => {
       try {
-        // Use the more general /api/furni endpoint which is more reliable
-        const response = await fetch('https://habbofurni.com/api/furni?limit=10');
+        // Use our own API route as a proxy to avoid CORS issues.
+        const response = await fetch('/api/furnis');
         if (response.ok) {
           const data = await response.json();
           setFurnis(data);
+        } else {
+          // If the proxy fails, we don't throw an error, just log it and show a message.
+          console.error('Failed to fetch furnis from API proxy.');
         }
       } catch (error) {
-        // Silently fail if the external API is down
+        // Silently fail if the API proxy is down or there's a network error.
+        console.error('Error calling /api/furnis:', error);
       } finally {
         setLoading(false);
       }
