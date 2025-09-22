@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useFormState, useFormStatus } from 'react-dom';
@@ -9,6 +10,7 @@ import { useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 const initialState = {
   message: '',
@@ -36,6 +38,7 @@ function SubmitButton() {
 }
 
 export default function SongRequestForm() {
+  const { user } = useAuth();
   const [state, formAction] = useFormState(submitSongRequest, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -53,8 +56,15 @@ export default function SongRequestForm() {
     }
   }, [state, toast]);
 
+  const action = (formData: FormData) => {
+    if (user && user.displayName) {
+      formData.set('authorName', user.displayName);
+    }
+    formAction(formData);
+  };
+
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form ref={formRef} action={action} className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-2">
         <Input
           name="songRequest"

@@ -51,7 +51,12 @@ export async function submitSongRequest(
     const result: ValidateSongRequestOutput = await validateSongRequest(input);
 
     if (result.isValid) {
-      // Here you could also save the request to a database
+      const requestsRef = ref(db, 'song-requests');
+      await push(requestsRef, {
+        request: validatedFields.data.songRequest,
+        user: formData.get('authorName') || 'Anónimo',
+        timestamp: serverTimestamp(),
+      });
       return {
         message: "¡Tu petición de canción ha sido enviada y aprobada! La pondremos pronto.",
         isSuccess: true,
