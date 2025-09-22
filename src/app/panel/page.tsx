@@ -18,6 +18,8 @@ const panelLinks = [
     { href: '/panel/awards', title: 'Premios y Destacados', description: 'Gestionar premios y ganadores.', icon: Award },
     { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos.', icon: Newspaper },
     { href: '/panel/events', title: 'Gestión de Eventos', description: 'Administrar los eventos de la fansite.', icon: PartyPopper },
+    { href: '/panel/comments', title: 'Moderar Comentarios', description: 'Gestionar los comentarios de las noticias.', icon: MessageSquare },
+    { href: '/panel/messages', title: 'Bandeja de Entrada', description: 'Leer los mensajes de contacto.', icon: MessageSquare },
     { href: '/panel/on-air', title: 'Control de Transmisión', description: 'Anular el DJ en vivo manualmente.', icon: Radio },
     { href: '/panel/schedule', title: 'Gestión de Horarios', description: 'Actualizar la programación semanal.', icon: Calendar },
     { href: '/panel/booking', title: 'Gestión de Reservas', description: 'Vaciar la parrilla de reservas de DJ.', icon: BookmarkPlus },
@@ -27,21 +29,25 @@ const panelLinks = [
     { href: '/panel/notifications', title: 'Enviar Notificaciones', description: 'Enviar avisos push a los usuarios.', icon: Bell },
 ];
 
-const StatCard = ({ title, value, icon: Icon, loading }: { title: string, value: number, icon: React.ElementType, loading: boolean }) => (
-    <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{title}</CardTitle>
-            <Icon className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-            {loading ? (
-                <LoaderCircle className="h-6 w-6 animate-spin" />
-            ) : (
-                <div className="text-2xl font-bold">{value}</div>
-            )}
-        </CardContent>
-    </Card>
-);
+const StatCard = ({ title, value, icon: Icon, loading, href }: { title: string, value: number, icon: React.ElementType, loading: boolean, href?: string }) => {
+    const cardContent = (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                {loading ? (
+                    <LoaderCircle className="h-6 w-6 animate-spin" />
+                ) : (
+                    <div className="text-2xl font-bold">{value}</div>
+                )}
+            </CardContent>
+        </Card>
+    );
+
+    return href ? <Link href={href}>{cardContent}</Link> : cardContent;
+};
 
 export default function AdminDashboardPage() {
     const { user, loading: authLoading } = useAuth();
@@ -112,11 +118,11 @@ export default function AdminDashboardPage() {
 
             {/* Stat Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
-                <StatCard title="Miembros del Equipo" value={stats.team} icon={Users} loading={loadingStats} />
-                <StatCard title="Artículos de Noticias" value={stats.news} icon={Newspaper} loading={loadingStats} />
-                <StatCard title="Eventos Próximos" value={stats.events} icon={PartyPopper} loading={loadingStats} />
-                <StatCard title="Programas en Horario" value={stats.schedule} icon={Calendar} loading={loadingStats} />
-                <StatCard title="Mensajes Sin Leer" value={stats.messages} icon={MessageSquare} loading={loadingStats} />
+                <StatCard title="Miembros del Equipo" value={stats.team} icon={Users} loading={loadingStats} href="/panel/team"/>
+                <StatCard title="Artículos de Noticias" value={stats.news} icon={Newspaper} loading={loadingStats} href="/panel/news"/>
+                <StatCard title="Eventos Próximos" value={stats.events} icon={PartyPopper} loading={loadingStats} href="/panel/events"/>
+                <StatCard title="Programas en Horario" value={stats.schedule} icon={Calendar} loading={loadingStats} href="/panel/schedule"/>
+                <StatCard title="Mensajes Sin Leer" value={stats.messages} icon={MessageSquare} loading={loadingStats} href="/panel/messages"/>
             </div>
             
             {/* Quick Actions */}
