@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, MessageSquare } from 'lucide-react';
 import type { Comment } from '@/lib/types';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 async function getProfileData(username: string) {
     try {
@@ -22,9 +23,12 @@ async function getProfileData(username: string) {
         const [userResponse, teamSnapshot, commentsSnapshot] = await Promise.all([userPromise, teamPromise, commentsPromise]);
 
         if (!userResponse.ok) {
-            return { error: 'Este usuario no existe en Habbo.' };
+           return { error: 'Este usuario no existe en Habbo.' };
         }
         const userData = await userResponse.json();
+         if (!userData.uniqueId) {
+             return { error: 'Este usuario no existe en Habbo.' };
+        }
 
         const roles = teamSnapshot.exists() ? teamSnapshot.val().roles : [];
         const isVerified = teamSnapshot.exists();
@@ -68,15 +72,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
     const profile = await getProfileData(params.username);
 
     if (profile.error) {
-        return (
-            <div className="container mx-auto p-4 md:p-8">
-                <Card>
-                    <CardContent className="p-8 text-center">
-                        <p className="text-destructive font-bold">{profile.error}</p>
-                    </CardContent>
-                </Card>
-            </div>
-        );
+        return notFound();
     }
 
     return (

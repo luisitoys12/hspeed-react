@@ -43,8 +43,6 @@ const publicLinks = [
   { href: '/schedule', label: 'Horarios', icon: Calendar },
   { href: '/news', label: 'Noticias Habbo', icon: Newspaper },
   { href: '/team', label: 'Equipo', icon: Users },
-  { href: '/join-us', label: 'Únete al Equipo', icon: HeartHandshake },
-  { href: '/marketplace', label: 'Mercado', icon: Store },
   { href: '/community', label: 'Comunidad', icon: HeartHandshake },
   { href: '/contact', label: 'Contacto', icon: Mail },
 ];

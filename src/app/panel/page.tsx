@@ -7,7 +7,7 @@ import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
 import { useAuth } from '@/hooks/use-auth';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award, Briefcase } from 'lucide-react';
+import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award, Briefcase, Radio } from 'lucide-react';
 import Link from 'next/link';
 
 const panelLinks = [
@@ -18,6 +18,7 @@ const panelLinks = [
     { href: '/panel/awards', title: 'Premios y Destacados', description: 'Gestionar premios y ganadores.', icon: Award },
     { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos.', icon: Newspaper },
     { href: '/panel/events', title: 'Gestión de Eventos', description: 'Administrar los eventos de la fansite.', icon: PartyPopper },
+    { href: '/panel/on-air', title: 'Control de Transmisión', description: 'Anular el DJ en vivo manualmente.', icon: Radio },
     { href: '/panel/schedule', title: 'Gestión de Horarios', description: 'Actualizar la programación semanal.', icon: Calendar },
     { href: '/panel/booking', title: 'Gestión de Reservas', description: 'Vaciar la parrilla de reservas de DJ.', icon: BookmarkPlus },
     { href: '/panel/alliances', title: 'Gestión de Alianzas', description: 'Administrar las alianzas oficiales.', icon: Handshake },

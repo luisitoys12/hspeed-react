@@ -1,5 +1,6 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge, BrainCircuit, Calculator, Dice5, Paintbrush, Pickaxe, BookHeart, Users } from 'lucide-react';
+import { Badge, BrainCircuit, Calculator, Dice5, Paintbrush, Pickaxe, BookHeart, Users, HeartHandshake } from 'lucide-react';
 import Link from 'next/link';
 
 const tools = [
@@ -49,6 +50,14 @@ const tools = [
     icon: Pickaxe,
     isNew: false,
     href: '/marketplace',
+    disabled: false
+  },
+   {
+    title: 'Únete al Equipo',
+    description: '¿Quieres formar parte de Habbospeed? ¡Consulta las vacantes!',
+    icon: HeartHandshake,
+    isNew: false,
+    href: '/join-us',
     disabled: false
   },
 ];
