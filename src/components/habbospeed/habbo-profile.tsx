@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -56,7 +57,7 @@ async function getHabboProfileData(username: string): Promise<HabboProfileData> 
         };
 
     } catch (error) {
-        console.error("Failed to fetch Habbo profile data:", error);
+        // Silently fail on network error
         return { error: 'Ocurrió un error inesperado al buscar el perfil.' };
     }
 }

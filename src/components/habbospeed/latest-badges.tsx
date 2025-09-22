@@ -32,11 +32,9 @@ export default function LatestBadges() {
         if (response.ok) {
           const data = await response.json();
           setBadges(data);
-        } else {
-          console.error("Failed to fetch badges from API proxy.");
         }
       } catch (error) {
-        console.error("Error calling /api/badges:", error);
+        // Silently fail. The component will just show nothing if the API is down.
       } finally {
         setLoading(false);
       }
