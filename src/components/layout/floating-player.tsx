@@ -1,5 +1,5 @@
 
-"use client";
+'use client';
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,6 @@ import {
 import SongRequestForm from '../habbospeed/song-request-form';
 import { db } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
-import { ScheduleItem } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
@@ -94,7 +93,7 @@ export default function FloatingPlayer() {
       if (!radioConfig) return;
 
       try {
-        const response = await fetch(radioConfig.apiUrl);
+        const response = await fetch(`${radioConfig.apiUrl}?_=${new Date().getTime()}`);
         if (!response.ok) throw new Error('Network response was not ok');
 
         if (radioConfig.radioService === 'zenofm') {
@@ -131,6 +130,26 @@ export default function FloatingPlayer() {
       return () => clearInterval(interval);
     }
   }, [radioConfig]);
+
+  // Handle Media Session Metadata
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: songInfo.title,
+        artist: songInfo.artist,
+        album: `Habbospeed - ${djName}`,
+        artwork: [
+          { src: songInfo.art, sizes: '96x96', type: 'image/png' },
+          { src: songInfo.art, sizes: '128x128', type: 'image/png' },
+          { src: songInfo.art, sizes: '192x192', type: 'image/png' },
+          { src: songInfo.art, sizes: '256x256', type: 'image/png' },
+          { src: songInfo.art, sizes: '384x384', type: 'image/png' },
+          { src: songInfo.art, sizes: '512x512', type: 'image/png' },
+        ],
+      });
+    }
+  }, [songInfo, djName]);
+
 
   // Handle Notifications
   useEffect(() => {
