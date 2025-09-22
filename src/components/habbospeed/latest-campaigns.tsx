@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -21,7 +22,11 @@ export default function LatestCampaigns() {
     useEffect(() => {
         const fetchCampaigns = async () => {
             try {
-                const response = await fetch('https://puhekupla.com/api/v1/campaigns?hotel=es');
+                const response = await fetch('https://puhekupla.com/api/v1/campaigns?hotel=es', {
+                    headers: {
+                        'X-Puhekupla-APIKey': 'demo-habbospeed'
+                    }
+                });
                 if (!response.ok) throw new Error('Failed to fetch campaigns');
                 const data = await response.json();
                 // Limitar a las primeras 2 o 3 campañas
