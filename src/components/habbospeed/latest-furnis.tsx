@@ -22,7 +22,8 @@ export default function LatestFurnis() {
   useEffect(() => {
     const fetchFurnis = async () => {
       try {
-        const response = await fetch('https://habbofurni.com/api/ltds?limit=10');
+        // Use the more general /api/furni endpoint which is more reliable
+        const response = await fetch('https://habbofurni.com/api/furni?limit=10');
         if (!response.ok) throw new Error('Failed to fetch furnis');
         const data = await response.json();
         setFurnis(data);
