@@ -55,7 +55,7 @@ export default function JoinUsPage() {
         const openingsArray: Opening[] = data ? Object.keys(data).map(key => ({ 
             id: key, 
             ...data[key],
-            requirements: Array.isArray(data[key].requirements) ? data[key].requirements : [],
+            requirements: data[key].requirements || [],
         })) : [];
         setOpenings(openingsArray);
         setLoading(false);

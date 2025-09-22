@@ -24,6 +24,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { Label } from '@/components/ui/label';
 
 // Schemas & Types
 const openingSchema = z.object({
@@ -48,7 +49,7 @@ function OpeningForm({ onSave, isSubmitting, initialData }: { onSave: (values: O
   const form = useForm<OpeningFormValues>({
     resolver: zodResolver(openingSchema),
     defaultValues: initialData 
-      ? { ...initialData, requirements: initialData.requirements.map(r => ({ value: r })) }
+      ? { ...initialData, requirements: (initialData.requirements || []).map(r => ({ value: r })) }
       : { role: '', description: '', requirements: [{ value: '' }] },
   });
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "requirements" });
@@ -117,7 +118,7 @@ export default function RecruitmentPage() {
   const handleSaveOpening = async (data: OpeningFormValues, id?: string) => {
     setIsSubmitting(true);
     const openingRef = id ? ref(db, `openings/${id}`) : push(ref(db, 'openings'));
-    const values = { ...data, requirements: data.requirements.map(r => r.value) };
+    const values = { ...data, requirements: data.requirements.map(r => r.value).filter(Boolean) };
     await set(openingRef, values);
     toast({ title: `Vacante ${id ? 'actualizada' : 'creada'}` });
     setIsSubmitting(false);
