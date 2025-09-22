@@ -43,15 +43,15 @@ export default function DjPanelPage() {
 
       <Tabs defaultValue="booking" className="w-full">
         <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
-          <TabsTrigger value="booking"><BookmarkPlus className="mr-2" />Reservar</TabsTrigger>
-          <TabsTrigger value="requests"><Music className="mr-2" />Peticiones</TabsTrigger>
+          <TabsTrigger value="booking"><BookmarkPlus className="mr-2" />Reservar Horario</TabsTrigger>
+          <TabsTrigger value="requests"><Music className="mr-2" />Peticiones de Oyentes</TabsTrigger>
           <TabsTrigger value="propose"><FileSignature className="mr-2" />Proponer Evento</TabsTrigger>
         </TabsList>
         <TabsContent value="booking">
           <Card>
             <CardHeader>
               <CardTitle>Reservar Horario</CardTitle>
-              <CardDescription>Selecciona un espacio en la parrilla. Los horarios se basan en la hora del Centro de México (CST).</CardDescription>
+              <CardDescription>Selecciona un espacio disponible en la parrilla para tu próxima transmisión. Los horarios se basan en la hora del Centro de México (CST).</CardDescription>
             </CardHeader>
             <CardContent>
               <BookingGrid />

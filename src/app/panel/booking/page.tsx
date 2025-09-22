@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
-import { ref, remove, onValue } from "firebase/database";
+import { useState } from 'react';
+import { ref, remove } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -73,7 +73,7 @@ export default function BookingManagementPage() {
        <Card className="mb-8">
         <CardHeader>
             <CardTitle>Vista de la Parrilla</CardTitle>
-            <CardDescription>Aquí puedes ver todas las reservas actuales y eliminar bloques individuales si es necesario. Los DJs no pueden reservar, solo administradores pueden eliminar.</CardDescription>
+            <CardDescription>Aquí puedes ver todas las reservas actuales y eliminar bloques individuales si es necesario. Esta es una vista de solo lectura y moderación.</CardDescription>
         </CardHeader>
         <CardContent>
             <BookingGrid />

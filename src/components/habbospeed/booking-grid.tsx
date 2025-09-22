@@ -103,7 +103,6 @@ export default function BookingGrid() {
             toast({
                 title: '¡Reservado!',
                 description: `Has reservado el horario de las ${hour} el día ${day}.`,
-                className: 'bg-green-500 text-white'
             });
         } else {
              toast({
@@ -159,6 +158,8 @@ export default function BookingGrid() {
       return format(targetDate, 'dd MMM', { locale: es });
   }
 
+  const canBook = user.role === 'dj';
+
   return (
     <div>
         <MexicoTimeClock />
@@ -213,7 +214,7 @@ export default function BookingGrid() {
                             </AlertDialog>
                         ) : (
                          <AlertDialog>
-                            <AlertDialogTrigger asChild disabled={user.isSuperAdmin}>
+                            <AlertDialogTrigger asChild disabled={!canBook}>
                                 <button className="w-full h-full bg-background hover:bg-primary/20 text-transparent hover:text-primary transition-all duration-200 rounded-md text-xs flex items-center justify-center group disabled:cursor-not-allowed disabled:hover:bg-background">
                                     <span className="opacity-0 group-hover:opacity-100">Reservar</span>
                                 </button>

@@ -15,7 +15,7 @@ import { ref, push, serverTimestamp, runTransaction, get } from 'firebase/databa
 
 const requestFormSchema = z.object({
   requestType: z.enum(["saludo", "grito", "concurso", "cancion", "declaracion"]),
-  authorName: z.string().optional(),
+  authorName: z.string().min(1, "El nombre de autor es requerido."),
   // Fields for each type
   saludoTo: z.string().optional(),
   saludoMessage: z.string().optional(),
@@ -40,7 +40,7 @@ export async function submitRequest(
 ): Promise<RequestFormState> {
   const authorNameValue = formData.get('authorName');
 
-  if (!authorNameValue) {
+  if (!authorNameValue || typeof authorNameValue !== 'string') {
     return {
       message: 'Debes iniciar sesión para enviar una petición.',
       isSuccess: false,
