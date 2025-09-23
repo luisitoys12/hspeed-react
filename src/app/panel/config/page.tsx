@@ -10,13 +10,14 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, Radio, LoaderCircle, Trash2, PlusCircle, Image as ImageIcon } from 'lucide-react';
+import { Settings, Radio, LoaderCircle, Trash2, PlusCircle, Image as ImageIcon, Bot } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 const slideSchema = z.object({
   title: z.string().min(1, "El título es requerido."),
@@ -35,6 +36,12 @@ const configSchema = z.object({
   apiUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
   listenUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
   slideshow: z.array(slideSchema).optional(),
+  discordBot: z.object({
+      token: z.string().optional(),
+      guildId: z.string().optional(),
+      announcementChannelId: z.string().optional(),
+      voiceChannelId: z.string().optional(),
+  }).optional(),
 });
 
 type ConfigFormValues = z.infer<typeof configSchema>;
@@ -75,6 +82,12 @@ export default function ConfigPage() {
     apiUrl: "",
     listenUrl: "",
     slideshow: [],
+    discordBot: {
+      token: "",
+      guildId: "",
+      announcementChannelId: "",
+      voiceChannelId: "",
+    },
   }), []);
 
   const form = useForm<ConfigFormValues>({
@@ -104,7 +117,8 @@ export default function ConfigPage() {
             radioService: data.radioService || "azuracast",
             apiUrl: data.apiUrl || "",
             listenUrl: data.listenUrl || "",
-            slideshow: slideshowArray.length > 0 ? slideshowArray : demoSlides
+            slideshow: slideshowArray.length > 0 ? slideshowArray : demoSlides,
+            discordBot: data.discordBot || defaultValues.discordBot,
           });
           
           if(slideshowArray.length === 0){
@@ -292,6 +306,48 @@ export default function ConfigPage() {
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Añadir Diapositiva
                   </Button>
+            </CardContent>
+          </Card>
+
+           <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
+                <Bot />
+                Configuración del Bot de Discord
+              </CardTitle>
+              <CardDescription>
+                Introduce las credenciales e IDs para tu bot de Discord. Estos valores serán leídos por tu aplicación de bot.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <FormField control={form.control} name="discordBot.token" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Token del Bot</FormLabel>
+                    <FormControl><Input type="password" placeholder="Tu token secreto de bot" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+              )}/>
+               <FormField control={form.control} name="discordBot.guildId" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID del Servidor (Guild ID)</FormLabel>
+                    <FormControl><Input placeholder="ID numérico de tu servidor de Discord" {...field} /></FormControl>
+                     <FormMessage />
+                  </FormItem>
+              )}/>
+               <FormField control={form.control} name="discordBot.announcementChannelId" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID del Canal de Anuncios</FormLabel>
+                    <FormControl><Input placeholder="ID del canal para los mensajes de 'Ahora suena'" {...field} /></FormControl>
+                     <FormMessage />
+                  </FormItem>
+              )}/>
+              <FormField control={form.control} name="discordBot.voiceChannelId" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID del Canal de Voz 24/7</FormLabel>
+                    <FormControl><Input placeholder="ID del canal de voz para la música continua" {...field} /></FormControl>
+                     <FormMessage />
+                  </FormItem>
+              )}/>
             </CardContent>
           </Card>
           

@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BookOpen, Database, GitBranch, Terminal, Wind, Settings, Cloud, Flame, DatabaseZap } from 'lucide-react';
+import { BookOpen, Database, GitBranch, Terminal, Wind, Settings, Cloud, Flame, DatabaseZap, Bot } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DocsPage() {
@@ -116,6 +116,55 @@ export { app, auth, db };`}
                 <p className="text-sm text-muted-foreground">La aplicación intentará leer/escribir en la ruta 'config' en Realtime Database. Los datos se crearán automáticamente si no existen.</p>
            </div>
           </CardContent>
+        </Card>
+
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Bot /> Integración con Bot de Discord</CardTitle>
+                <CardDescription>
+                Cómo conectar un bot de Discord externo con la configuración de tu web.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <p>La aplicación está preparada para integrarse con un bot de Discord. Puedes gestionar las credenciales y IDs del bot desde la página de <Link href="/panel/config" className="text-primary underline">Ajustes Generales</Link>. Tu bot (que debe ser una aplicación Node.js separada) puede leer esta configuración directamente desde Firebase.</p>
+                <p className='text-sm text-muted-foreground'>A continuación, un ejemplo de cómo un bot de Discord podría leer la configuración:</p>
+                <pre className="bg-muted p-2 rounded-md text-sm mt-1 overflow-x-auto"><code>
+{`// Ejemplo para un bot en Node.js con 'firebase' y 'discord.js'
+const { initializeApp } = require('firebase/app');
+const { getDatabase, ref, onValue } = require('firebase/database');
+const { Client, GatewayIntentBits } = require('discord.js');
+
+// 1. Configuración de Firebase (debe coincidir con la de tu app web)
+const firebaseConfig = { /* ... tu config ... */ };
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 2. Cliente de Discord
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
+
+// 3. Leer la configuración desde Firebase
+const configRef = ref(db, 'config/discordBot');
+onValue(configRef, (snapshot) => {
+    const config = snapshot.val();
+    if (config && config.token) {
+        console.log('Configuración del bot cargada. Iniciando sesión...');
+        
+        // Inicia sesión con el token guardado en la web
+        client.login(config.token).catch(err => {
+            console.error("Error al iniciar sesión con el bot:", err);
+        });
+
+        client.on('ready', () => {
+            console.log(\`¡Bot \${client.user.tag} está en línea!\`);
+            // Aquí iría la lógica para unirse al canal de voz,
+            // anunciar la canción, etc., usando los otros IDs de la config.
+        });
+    } else {
+        console.log("No se encontró la configuración del bot en Firebase. El bot no se iniciará.");
+    }
+});`}
+                        </code></pre>
+            </CardContent>
         </Card>
 
         <Card>
