@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -66,12 +67,18 @@ export default function NewsManagementPage() {
 
   const handleDelete = async (id: string) => {
     try {
+      // First, remove the article itself
       const articleRef = ref(db, `news/${id}`);
       await remove(articleRef);
-      toast({ title: "Artículo eliminado", description: `La noticia ha sido eliminada.` });
+      
+      // Then, remove the associated comments
+      const commentsRef = ref(db, `comments/${id}`);
+      await remove(commentsRef);
+
+      toast({ title: "Artículo eliminado", description: `La noticia y sus comentarios han sido eliminados.` });
     } catch (error) {
       console.error("Error deleting article:", error);
-      toast({ variant: "destructive", title: "Error", description: "No se pudo eliminar el artículo." });
+      toast({ variant: "destructive", title: "Error", description: "No se pudo eliminar el artículo y sus comentarios." });
     }
   };
   
@@ -155,7 +162,7 @@ export default function NewsManagementPage() {
                           <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
-                          <AlertDialogHeader><AlertDialogTitle>¿Estás seguro?</AlertDialogTitle><AlertDialogDescription>Esta acción eliminará el artículo <strong>"{article.title}"</strong> permanentemente.</AlertDialogDescription></AlertDialogHeader>
+                          <AlertDialogHeader><AlertDialogTitle>¿Estás seguro?</AlertDialogTitle><AlertDialogDescription>Esta acción eliminará el artículo <strong>"{article.title}"</strong> y todos sus comentarios permanentemente.</AlertDialogDescription></AlertDialogHeader>
                           <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(article.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction></AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { ref, onValue, remove } from "firebase/database";
+import { ref, onValue, remove, get } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -38,10 +38,12 @@ export default function CommentsManagementPage() {
     const commentsRef = ref(db, 'comments');
     const newsRef = ref(db, 'news');
 
-    const unsubscribeComments = onValue(commentsRef, (commentsSnapshot) => {
-        const commentsData = commentsSnapshot.val() || {};
-        
-        onValue(newsRef, (newsSnapshot) => {
+    const fetchAndProcessComments = async () => {
+        setDbLoading(true);
+        try {
+            const [commentsSnapshot, newsSnapshot] = await Promise.all([get(commentsRef), get(newsRef)]);
+            
+            const commentsData = commentsSnapshot.val() || {};
             const newsData = newsSnapshot.val() || {};
             const newsTitleMap = new Map(Object.keys(newsData).map(key => [key, newsData[key].title]));
 
@@ -60,12 +62,23 @@ export default function CommentsManagementPage() {
 
             allComments.sort((a, b) => b.timestamp - a.timestamp);
             setComments(allComments);
+        } catch (error) {
+            console.error("Failed to fetch comments and news:", error);
+            toast({ variant: "destructive", title: "Error", description: "No se pudieron cargar los comentarios." });
+        } finally {
             setDbLoading(false);
-        }, { onlyOnce: true });
+        }
+    };
+
+    fetchAndProcessComments();
+
+    // Also listen for realtime updates
+    const unsubscribe = onValue(commentsRef, () => {
+        fetchAndProcessComments();
     });
 
-    return () => unsubscribeComments();
-  }, []);
+    return () => unsubscribe();
+  }, [toast]);
 
   const handleDelete = async (articleId: string, commentId: string) => {
     try {
