@@ -89,6 +89,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'puhekupla.com',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'fcm.googleapis.com',
+        pathname: '/**',
       }
     ],
   },
