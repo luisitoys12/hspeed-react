@@ -1,11 +1,10 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Handshake } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
 import { Skeleton } from '../ui/skeleton';
 
 type Alliance = {
@@ -15,23 +14,21 @@ type Alliance = {
   imageHint: string;
 };
 
-export default function OfficialAlliances() {
+type OfficialAlliancesProps = {
+  initialAlliances: { [key: string]: Omit<Alliance, 'id'> };
+};
+
+export default function OfficialAlliances({ initialAlliances }: OfficialAlliancesProps) {
   const [alliances, setAlliances] = useState<Alliance[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const alliancesRef = ref(db, 'alliances');
-    const unsubscribe = onValue(alliancesRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const alliancesArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        setAlliances(alliancesArray);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
+    if (initialAlliances) {
+      const alliancesArray = Object.keys(initialAlliances).map(key => ({ id: key, ...initialAlliances[key] }));
+      setAlliances(alliancesArray);
+    }
+    setLoading(false);
+  }, [initialAlliances]);
 
   return (
     <Card>

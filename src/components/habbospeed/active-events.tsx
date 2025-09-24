@@ -8,10 +8,7 @@ import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useEffect, useState } from 'react';
 import { EventItem } from '@/lib/types';
-import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
 import { Skeleton } from '../ui/skeleton';
-import Link from 'next/link';
 
 function Countdown({ targetDate }: { targetDate: string }) {
   const [countdown, setCountdown] = useState('');
@@ -41,31 +38,29 @@ function Countdown({ targetDate }: { targetDate: string }) {
   return <span className="font-mono">{countdown}</span>;
 }
 
-export default function ActiveEvents() {
+type ActiveEventsProps = {
+  initialEvents: { [key: string]: Omit<EventItem, 'id'> };
+};
+
+export default function ActiveEvents({ initialEvents }: ActiveEventsProps) {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const eventsRef = ref(db, 'events');
-    const unsubscribe = onValue(eventsRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            const now = new Date();
-            const allEvents = Object.keys(data)
-                .map(key => ({ id: key, ...data[key] }))
-                .map(event => ({
-                    ...event,
-                    dateTime: new Date(`${event.date}T${event.time}:00`)
-                }))
-                .filter(event => event.dateTime > now) // Filter for future events
-                .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime()); // Sort by soonest
-            setEvents(allEvents);
-        }
-        setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
+    if (initialEvents) {
+        const now = new Date();
+        const allEvents = Object.keys(initialEvents)
+            .map(key => ({ id: key, ...initialEvents[key] }))
+            .map(event => ({
+                ...event,
+                dateTime: new Date(`${event.date}T${event.time}:00`)
+            }))
+            .filter(event => event.dateTime > now) // Filter for future events
+            .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime()); // Sort by soonest
+        setEvents(allEvents);
+    }
+    setLoading(false);
+  }, [initialEvents]);
 
   if (loading) {
       return (

@@ -1,10 +1,9 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DoorOpen } from 'lucide-react';
 import Image from 'next/image';
-import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 
@@ -15,22 +14,21 @@ type Room = {
   imageUrl: string;
 };
 
-export default function ActiveRooms() {
+type ActiveRoomsProps = {
+  initialRooms: { [key: string]: Omit<Room, 'id'> };
+};
+
+export default function ActiveRooms({ initialRooms }: ActiveRoomsProps) {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const roomsRef = ref(db, 'featuredRooms');
-    const unsubscribe = onValue(roomsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const roomsArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        setRooms(roomsArray);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+    if (initialRooms) {
+      const roomsArray = Object.keys(initialRooms).map(key => ({ id: key, ...initialRooms[key] }));
+      setRooms(roomsArray);
+    }
+    setLoading(false);
+  }, [initialRooms]);
 
   return (
     <Card>

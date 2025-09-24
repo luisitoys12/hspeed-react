@@ -1,6 +1,4 @@
 
-
-
 import HabboProfile from '@/components/habbospeed/habbo-profile';
 import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
@@ -16,6 +14,8 @@ import AboutUs from '@/components/habbospeed/about-us';
 import Link from 'next/link';
 import LatestBadges from '@/components/habbospeed/latest-badges';
 import LatestFurnis from '@/components/habbospeed/latest-furnis';
+import { db } from '@/lib/firebase';
+import { get, ref } from 'firebase/database';
 
 function LoadingSkeleton() {
   return (
@@ -31,7 +31,41 @@ function LoadingSkeleton() {
   )
 }
 
-export default function Home() {
+async function getPageData() {
+    try {
+        const eventsRef = ref(db, 'events');
+        const alliancesRef = ref(db, 'alliances');
+        const featuredRoomsRef = ref(db, 'featuredRooms');
+        const awardTypesRef = ref(db, 'awardTypes');
+        const awardWinnersRef = ref(db, 'awardWinners');
+
+        const [eventsSnap, alliancesSnap, featuredRoomsSnap, awardTypesSnap, awardWinnersSnap] = await Promise.all([
+            get(eventsRef),
+            get(alliancesRef),
+            get(featuredRoomsRef),
+            get(awardTypesRef),
+            get(awardWinnersRef)
+        ]);
+
+        return {
+            events: eventsSnap.val() || {},
+            alliances: alliancesSnap.val() || {},
+            featuredRooms: featuredRoomsSnap.val() || {},
+            awardTypes: awardTypesSnap.val() || {},
+            awardWinners: awardWinnersSnap.val() || {}
+        };
+    } catch (error) {
+        console.error("Error fetching page data:", error);
+        return {
+            events: {}, alliances: {}, featuredRooms: {}, awardTypes: {}, awardWinners: {}
+        };
+    }
+}
+
+
+export default async function Home() {
+  const pageData = await getPageData();
+
   return (
     <>
       <div className="w-full">
@@ -86,19 +120,15 @@ export default function Home() {
 
           {/* Columna Derecha */}
           <div className="lg:col-span-1 flex flex-col gap-8">
-            <Suspense fallback={<LoadingSkeleton />}>
-              <ActiveEvents />
-            </Suspense>
-            <Suspense fallback={<LoadingSkeleton />}>
-              <RecentWinners />
-            </Suspense>
+            <ActiveEvents initialEvents={pageData.events} />
+            <RecentWinners initialWinners={pageData.awardWinners} initialAwardTypes={pageData.awardTypes} />
           </div>
         </div>
 
         {/* Secciones inferiores */}
         <div className="mt-8 space-y-8">
-          <OfficialAlliances />
-          <ActiveRooms />
+          <OfficialAlliances initialAlliances={pageData.alliances} />
+          <ActiveRooms initialRooms={pageData.featuredRooms} />
         </div>
       </div>
     </>
