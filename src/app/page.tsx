@@ -1,4 +1,5 @@
 
+
 import HabboProfile from '@/components/habbospeed/habbo-profile';
 import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
@@ -8,7 +9,6 @@ import OnAirDjs from '@/components/habbospeed/on-air-djs';
 import LatestCampaigns from '@/components/habbospeed/latest-campaigns';
 import ActiveEvents from '@/components/habbospeed/active-events';
 import Image from 'next/image';
-import HomeHeader from '@/components/layout/home-header';
 import RecentWinners from '@/components/habbospeed/recent-winners';
 import AboutUs from '@/components/habbospeed/about-us';
 import Link from 'next/link';
@@ -81,7 +81,6 @@ export default async function Home() {
             </Link>
         </div>
       </div>
-      <HomeHeader />
       <div className="container mx-auto p-4 md:p-8">
         
         <div className="hidden md:block mb-8">

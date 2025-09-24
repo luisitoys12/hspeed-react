@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,11 +42,11 @@ const getDjs = (bookings: Bookings, onAirOverride?: OnAirOverride, azuracastData
     // 1. Manual override has the highest priority
     if (onAirOverride?.currentDj) {
         currentDj = { name: onAirOverride.currentDj, habboName: onAirOverride.currentDj };
-        if (onAirOverride.nextDj) {
-            nextDj = { name: onAirOverride.nextDj, habboName: onAirOverride.nextDj };
-        }
-        return { current: currentDj, next: nextDj };
     }
+    if (onAirOverride?.nextDj) {
+        nextDj = { name: onAirOverride.nextDj, habboName: onAirOverride.nextDj };
+    }
+    if (onAirOverride?.currentDj) return { current: currentDj, next: nextDj };
     
     // 2. Azuracast live streamer takes precedence over bookings
     const azuracastStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : '';
@@ -85,7 +86,9 @@ const getDjs = (bookings: Bookings, onAirOverride?: OnAirOverride, azuracastData
             const nextBooking = bookings[nextDayName]?.[nextHourString];
 
             if (nextBooking) {
-                nextDj = { name: nextBooking.djName, habboName: nextBooking.djName };
+                if (!onAirOverride?.nextDj) { // Check if nextDj is not manually set
+                    nextDj = { name: nextBooking.djName, habboName: nextBooking.djName };
+                }
                 break; // Found the next one
             }
             nextHour++;

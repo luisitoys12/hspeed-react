@@ -173,7 +173,7 @@ export default function HomeHeader() {
         setNotificationPermission(permission);
         if (permission === 'granted') {
             toast({ title: '¡Notificaciones activadas!', description: 'Te avisaremos cuando un DJ se conecte.' });
-            const currentToken = await getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY' }); // Replace with your VAPID key
+            const currentToken = await getToken(messaging, { vapidKey: 'BGYiG1_38yBfP9T1E5Xf2lY6Cq2i_E2v6K1n-m5Z_5G6c4z1Y3r8q9Q4v4o3I7X3p8w2Z_5l8y4J1x0' });
             if (currentToken) {
                 const tokenRef = ref(db, `fcmTokens/${currentToken}`);
                 await set(tokenRef, true);
