@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -28,6 +29,8 @@ import {
   LogOut,
   LayoutDashboard,
   HeartHandshake,
+  Info,
+  Library,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';

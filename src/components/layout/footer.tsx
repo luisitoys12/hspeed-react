@@ -10,6 +10,11 @@ export default function Footer() {
         <p className="mb-4">
           Todos los derechos reservados. Se respeta la manera Habbo.
         </p>
+        <div className="flex justify-center gap-4 mb-4 text-primary">
+            <Link href="/about-us" className="hover:underline">Nuestra Historia</Link>
+            <span>•</span>
+            <Link href="/privacy-policy" className="hover:underline">Política de Privacidad</Link>
+        </div>
         <p>
           Habbospeed no está afiliada a, respaldada, promocionada o aprobada específicamente por Sulake Corporation Oy o sus Afiliados.
           De acuerdo a la <Link href="https://www.habbo.es/playing-habbo/fansites" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Política de Webs fans de Habbo</Link>, esta radio puede utilizar las marcas comerciales y otras propiedades intelectuales de Habbo.

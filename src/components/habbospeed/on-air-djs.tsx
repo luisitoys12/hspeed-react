@@ -8,7 +8,7 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { db } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
-import { Play, Pause, Volume2, Users } from 'lucide-react';
+import { Play, Pause, Volume2, Users, PartyPopper } from 'lucide-react';
 import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
 
@@ -26,6 +26,7 @@ interface AzuracastData {
 interface OnAirOverride {
     currentDj: string;
     nextDj: string;
+    isEvent?: boolean;
 }
 
 type Bookings = {
@@ -43,22 +44,22 @@ const defaultDj = {
 };
 
 const getDjs = (bookings: Bookings, onAirOverride?: OnAirOverride, azuracastData?: AzuracastData | null) => {
-    let currentDj = { name: defaultDj.name, habboName: defaultDj.habboName };
+    let currentDj = { name: defaultDj.name, habboName: defaultDj.habboName, isEvent: false };
     let nextDj = { name: 'Por anunciar', habboName: 'estacionkusfm' };
 
     // 1. Manual override has the highest priority
     if (onAirOverride?.currentDj) {
-        currentDj = { name: onAirOverride.currentDj, habboName: onAirOverride.currentDj };
+        currentDj = { name: onAirOverride.currentDj, habboName: onAirOverride.currentDj, isEvent: onAirOverride.isEvent || false };
     }
     if (onAirOverride?.nextDj) {
         nextDj = { name: onAirOverride.nextDj, habboName: onAirOverride.nextDj };
     }
-    if (onAirOverride?.currentDj) return { current: currentDj, next: nextDj };
+     if (onAirOverride?.currentDj) return { current: currentDj, next: nextDj };
     
     // 2. Azuracast live streamer takes precedence over bookings
     const azuracastStreamer = azuracastData?.live.is_live ? azuracastData.live.streamer_name : '';
     if (azuracastStreamer && azuracastStreamer.toLowerCase() !== 'autodj' && azuracastStreamer.trim() !== '') {
-        currentDj = { name: azuracastStreamer, habboName: azuracastStreamer };
+        currentDj = { name: azuracastStreamer, habboName: azuracastStreamer, isEvent: false };
     }
 
     // 3. Fallback to booking grid if no override or live streamer
@@ -74,7 +75,7 @@ const getDjs = (bookings: Bookings, onAirOverride?: OnAirOverride, azuracastData
         if (!azuracastStreamer || azuracastStreamer.toLowerCase() === 'autodj') {
             const currentBooking = bookings[currentDayName]?.[currentHourString];
             if (currentBooking) {
-                currentDj = { name: currentBooking.djName, habboName: currentBooking.djName };
+                currentDj = { name: currentBooking.djName, habboName: currentBooking.djName, isEvent: false };
             }
         }
         
@@ -109,7 +110,7 @@ export default function OnAirDjs() {
     const [azuracastData, setAzuracastData] = useState<AzuracastData | null>(null);
     const [bookings, setBookings] = useState<Bookings>({});
     const [onAirOverride, setOnAirOverride] = useState<OnAirOverride | undefined>(undefined);
-    const [djs, setDjs] = useState({ current: defaultDj, next: { name: 'Por anunciar', habboName: 'estacionkusfm' } });
+    const [djs, setDjs] = useState({ current: { ...defaultDj, isEvent: false }, next: { name: 'Por anunciar', habboName: 'estacionkusfm' } });
     const [isLoading, setIsLoading] = useState(true);
     
     const [isPlaying, setIsPlaying] = useState(false);
@@ -227,12 +228,12 @@ export default function OnAirDjs() {
              <audio ref={audioRef} preload="none" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 divide-y md:divide-y-0 md:divide-x divide-border">
                 <div className="flex items-center justify-center gap-4 p-4">
-                    <Avatar className="h-16 w-16 border-4 border-green-500">
+                    <Avatar className={`h-16 w-16 border-4 ${djs.current.isEvent ? 'border-yellow-400' : 'border-green-500'}`}>
                         <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djs.current.habboName}&headonly=1&size=l`} alt={djs.current.name} />
                         <AvatarFallback>{djs.current.name.substring(0,2)}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <p className="text-sm text-muted-foreground">Al Aire</p>
+                        <p className="text-sm text-muted-foreground">{djs.current.isEvent ? 'EVENTO EN VIVO' : 'Al Aire'}</p>
                         <p className="text-xl font-bold font-headline">{djs.current.name}</p>
                     </div>
                 </div>
@@ -247,6 +248,18 @@ export default function OnAirDjs() {
                     </div>
                 </div>
             </div>
+
+             {djs.current.isEvent && (
+                <div className="bg-yellow-400/20 text-yellow-200 p-2 rounded-lg text-center overflow-hidden cursor-pointer" onClick={() => { /* Open modal here in the future */ }}>
+                    <div className="marquee">
+                        <span className="flex items-center justify-center gap-2 text-sm font-semibold">
+                            <PartyPopper className="h-4 w-4" />
+                            ¡No te pierdas nuestro evento especial con los mejores DJs!
+                            <PartyPopper className="h-4 w-4" />
+                        </span>
+                    </div>
+                </div>
+            )}
 
             <div className="bg-background/50 rounded-lg p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
                 <div className="flex items-center gap-3 min-w-0 justify-start">

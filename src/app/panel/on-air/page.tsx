@@ -17,10 +17,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Radio, LoaderCircle, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const onAirSchema = z.object({
   currentDj: z.string().optional(),
   nextDj: z.string().optional(),
+  isEvent: z.boolean().optional(),
 });
 
 type OnAirFormValues = z.infer<typeof onAirSchema>;
@@ -33,14 +36,14 @@ export default function OnAirManagementPage() {
 
   const form = useForm<OnAirFormValues>({
     resolver: zodResolver(onAirSchema),
-    defaultValues: { currentDj: '', nextDj: '' },
+    defaultValues: { currentDj: '', nextDj: '', isEvent: false },
   });
 
   useEffect(() => {
     const onAirRef = ref(db, 'onAir');
     const unsubscribe = onValue(onAirRef, (snapshot) => {
       const data = snapshot.val();
-      form.reset(data || { currentDj: '', nextDj: '' });
+      form.reset(data || { currentDj: '', nextDj: '', isEvent: false });
       setDbLoading(false);
     });
     return () => unsubscribe();
@@ -62,7 +65,7 @@ export default function OnAirManagementPage() {
     setIsSubmitting(true);
     try {
         await remove(ref(db, 'onAir'));
-        form.reset({ currentDj: '', nextDj: '' });
+        form.reset({ currentDj: '', nextDj: '', isEvent: false });
         toast({ title: "¡Limpiado!", description: "Se ha restaurado el control automático." });
     } catch (error) {
         toast({ variant: "destructive", title: "Error", description: "No se pudo limpiar." });
@@ -99,7 +102,7 @@ export default function OnAirManagementPage() {
                     <FormField control={form.control} name="currentDj" render={({ field }) => (
                         <FormItem>
                             <FormLabel>DJ Al Aire (Actual)</FormLabel>
-                            <FormControl><Input placeholder="Nombre del DJ" {...field} /></FormControl>
+                            <FormControl><Input placeholder="Nombre del DJ o del Evento" {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}/>
@@ -108,6 +111,23 @@ export default function OnAirManagementPage() {
                             <FormLabel>Siguiente DJ</FormLabel>
                             <FormControl><Input placeholder="Nombre del DJ" {...field} /></FormControl>
                             <FormMessage />
+                        </FormItem>
+                    )}/>
+
+                    <FormField control={form.control} name="isEvent" render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                            <div className="space-y-0.5">
+                                <FormLabel>Anunciar como Evento</FormLabel>
+                                <FormDescription>
+                                    Muestra "EVENTO EN VIVO" y una marquesina en lugar de "Al Aire".
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
                         </FormItem>
                     )}/>
 
