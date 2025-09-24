@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge, BrainCircuit, Calculator, Dice5, Paintbrush, Pickaxe, BookHeart, Users, HeartHandshake } from 'lucide-react';
+import { Badge, BrainCircuit, Calculator, Dice5, Paintbrush, Pickaxe, BookHeart, Users, HeartHandshake, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
 const tools = [
@@ -45,11 +45,11 @@ const tools = [
     disabled: false
   },
   {
-    title: 'Valor de Raros',
-    description: 'Consulta una lista actualizada del valor de los furnis raros.',
-    icon: Pickaxe,
-    isNew: false,
-    href: '/marketplace',
+    title: 'Premios Noviembre',
+    description: '¡Los ganadores de los torneos de fútbol de noviembre!',
+    icon: Trophy,
+    isNew: true,
+    href: '/community/november-awards',
     disabled: false
   },
    {

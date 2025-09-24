@@ -10,7 +10,7 @@ import LatestCampaigns from '@/components/habbospeed/latest-campaigns';
 import ActiveEvents from '@/components/habbospeed/active-events';
 import Image from 'next/image';
 import RecentWinners from '@/components/habbospeed/recent-winners';
-import AboutUs from '@/components/habbospeed/about-us';
+import AboutAndNews from '@/components/habbospeed/about-and-news';
 import Link from 'next/link';
 import LatestBadges from '@/components/habbospeed/latest-badges';
 import LatestFurnis from '@/components/habbospeed/latest-furnis';
@@ -38,13 +38,15 @@ async function getPageData() {
         const featuredRoomsRef = ref(db, 'featuredRooms');
         const awardTypesRef = ref(db, 'awardTypes');
         const awardWinnersRef = ref(db, 'awardWinners');
+        const newsRef = ref(db, 'news');
 
-        const [eventsSnap, alliancesSnap, featuredRoomsSnap, awardTypesSnap, awardWinnersSnap] = await Promise.all([
+        const [eventsSnap, alliancesSnap, featuredRoomsSnap, awardTypesSnap, awardWinnersSnap, newsSnap] = await Promise.all([
             get(eventsRef),
             get(alliancesRef),
             get(featuredRoomsRef),
             get(awardTypesRef),
-            get(awardWinnersRef)
+            get(awardWinnersRef),
+            get(newsRef)
         ]);
 
         return {
@@ -52,12 +54,13 @@ async function getPageData() {
             alliances: alliancesSnap.val() || {},
             featuredRooms: featuredRoomsSnap.val() || {},
             awardTypes: awardTypesSnap.val() || {},
-            awardWinners: awardWinnersSnap.val() || {}
+            awardWinners: awardWinnersSnap.val() || {},
+            news: newsSnap.val() || {}
         };
     } catch (error) {
         console.error("Error fetching page data:", error);
         return {
-            events: {}, alliances: {}, featuredRooms: {}, awardTypes: {}, awardWinners: {}
+            events: {}, alliances: {}, featuredRooms: {}, awardTypes: {}, awardWinners: {}, news: {}
         };
     }
 }
@@ -83,7 +86,7 @@ export default async function Home() {
       </div>
       <div className="container mx-auto p-4 md:p-8">
         
-        <div className="hidden md:block mb-8">
+        <div className="mb-8">
             <Suspense fallback={<LoadingSkeleton />}>
               <OnAirDjs />
             </Suspense>
@@ -92,19 +95,14 @@ export default async function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Columna Izquierda */}
           <div className="lg:col-span-1 flex flex-col gap-8">
-             <div className="md:hidden">
-                <Suspense fallback={<LoadingSkeleton />}>
-                <OnAirDjs />
-                </Suspense>
-            </div>
             <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
             </Suspense>
              <Suspense fallback={<LoadingSkeleton />}>
               <LatestBadges />
             </Suspense>
-            <Suspense fallback={<LoadingSkeleton />}>
-              <AboutUs />
+             <Suspense fallback={<LoadingSkeleton />}>
+              <AboutAndNews initialNews={pageData.news} />
             </Suspense>
           </div>
 
