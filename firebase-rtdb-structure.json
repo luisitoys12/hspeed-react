@@ -69,7 +69,8 @@
   },
   "onAir": {
     "currentDj": "DJ-Pixel",
-    "nextDj": "DJ-Frank"
+    "nextDj": "DJ-Frank",
+    "isEvent": true
   },
   "schedule": {
     "horario1": {
