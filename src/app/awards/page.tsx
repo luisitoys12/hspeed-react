@@ -1,59 +1,98 @@
-'use client'
+
+'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Gift, Star, Trophy } from 'lucide-react';
+import { Gift, LoaderCircle, Check } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { db } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+import { submitAwardVote } from '@/lib/actions';
+import { Badge } from '@/components/ui/badge';
 
-type AwardWinner = { 
-  id: string; 
-  awardTypeName: string; 
-  winnerName: string; 
-  month: string; 
-  isCopa: boolean;
-};
+interface Nominee {
+  id: string;
+  name: string;
+  motto?: string;
+  votes: number;
+}
+
+interface AwardCategory {
+  id: string;
+  title: string;
+  nominations: Nominee[];
+}
 
 export default function AwardsPage() {
-  const [winners, setWinners] = useState<AwardWinner[]>([]);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [categories, setCategories] = useState<AwardCategory[]>([]);
+  const [userVotes, setUserVotes] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
+  const [isVotingOpen, setIsVotingOpen] = useState(true);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    const typesRef = ref(db, 'awardTypes');
-    const winnersRef = ref(db, 'awardWinners');
+    const categoriesRef = ref(db, 'award_categories');
+    const nominationsRef = ref(db, 'award_nominations');
+    const configRef = ref(db, 'config/awardVotingOpen');
 
-    onValue(typesRef, (typesSnapshot) => {
-      const typesData = typesSnapshot.val() || {};
-      const typesMap = new Map(Object.keys(typesData).map(key => [key, {name: typesData[key].name, isCopa: typesData[key].isCopa || false }]));
+    onValue(configRef, (snapshot) => {
+        setIsVotingOpen(snapshot.val() === true);
+    });
 
-      onValue(winnersRef, (winnersSnapshot) => {
-        const winnersData = winnersSnapshot.val() || {};
-        const winnersList: AwardWinner[] = Object.keys(winnersData).map(key => {
-            const winner = winnersData[key];
-            const awardTypeInfo = typesMap.get(winner.awardTypeId) || { name: "Premio Especial", isCopa: false };
-            return {
-              id: key,
-              winnerName: winner.winnerName,
-              month: winner.month,
-              awardTypeName: awardTypeInfo.name,
-              isCopa: awardTypeInfo.isCopa
-            };
-        })
-        .filter(w => !w.isCopa) // Filter out Copa awards
-        .sort((a,b) => b.month.localeCompare(a.month)) // Simple sort
-        .slice(0, 6); // Limit to recent 6
-
-        setWinners(winnersList);
+    onValue(categoriesRef, (catSnapshot) => {
+      const categoriesData = catSnapshot.val() || {};
+      
+      onValue(nominationsRef, (nomSnapshot) => {
+        const nominationsData = nomSnapshot.val() || {};
+        const categoriesArray: AwardCategory[] = Object.keys(categoriesData).map(catId => {
+          const category = categoriesData[catId];
+          const nominations = nominationsData[catId] ? 
+            Object.keys(nominationsData[catId]).map(nomId => ({
+              id: nomId,
+              ...nominationsData[catId][nomId]
+            })) : [];
+          
+          return {
+            id: catId,
+            title: category.title,
+            nominations: nominations,
+          };
+        });
+        setCategories(categoriesArray);
         setLoading(false);
       });
     });
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      const userVotesRef = ref(db, `award_votes/${user.uid}`);
+      onValue(userVotesRef, (snapshot) => {
+        setUserVotes(snapshot.val() || {});
+      });
+    }
+  }, [user]);
+
+  const handleVote = (categoryId: string, nomineeId: string) => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Debes iniciar sesión para votar.' });
+      return;
+    }
+    startTransition(async () => {
+      await submitAwardVote({ categoryId, nomineeId, userId: user.uid });
+      toast({ title: '¡Voto registrado!', description: 'Gracias por tu participación.' });
+    });
+  };
+
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden mb-8">
         <div className="relative h-48 md:h-64 bg-black">
           <Image 
             src="https://picsum.photos/seed/awardsnight/1200/500"
@@ -66,43 +105,62 @@ export default function AwardsPage() {
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4 bg-gradient-to-t from-black/80 to-transparent">
             <Gift className="h-16 w-16 text-primary drop-shadow-lg" />
             <h1 className="text-3xl md:text-5xl font-headline font-bold mt-2 drop-shadow-lg">
-              Premios Habbospeed
+              Habbospeed Awards
             </h1>
             <p className="mt-2 text-lg text-white/90">
-              Reconociendo a los miembros más destacados de nuestra comunidad.
+              ¡Tú decides! Vota por tus favoritos en cada categoría.
             </p>
           </div>
         </div>
+        {!isVotingOpen && (
+            <div className="bg-yellow-400/20 text-yellow-200 text-center p-3 font-bold">
+                Las votaciones se encuentran cerradas. ¡Gracias por participar!
+            </div>
+        )}
       </Card>
       
-      <Card className="mt-8">
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Star /> Cuadro de Honor Mensual</CardTitle>
-            <CardDescription>¡Felicidades a los ganadores por su increíble contribución!</CardDescription>
-        </CardHeader>
-        <CardContent>
-            {loading ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Skeleton className="h-24 w-full" />
-                    <Skeleton className="h-24 w-full" />
-                    <Skeleton className="h-24 w-full" />
-                </div>
-            ) : winners.length > 0 ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {winners.map(award => (
-                        <div key={award.id} className="p-6 bg-muted rounded-lg text-center flex flex-col items-center justify-center transition-all hover:shadow-primary/20 hover:shadow-lg hover:-translate-y-1">
-                            <Trophy className="h-10 w-10 text-yellow-400 mb-2" />
-                            <h3 className="font-bold text-lg text-primary">{award.awardTypeName}</h3>
-                            <p className="text-2xl font-headline mt-2">{award.winnerName}</p>
-                            <p className="text-xs text-muted-foreground">{award.month}</p>
+      {loading ? (
+        <div className="grid md:grid-cols-2 gap-8">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      ) : categories.length > 0 ? (
+        <div className="grid md:grid-cols-2 gap-8">
+          {categories.map(category => (
+            <Card key={category.id}>
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2">{category.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {category.nominations.map(nominee => {
+                  const hasVotedForThis = userVotes[category.id] === nominee.id;
+                  return (
+                    <div key={nominee.id} className={`p-3 rounded-lg flex items-center justify-between transition-all ${hasVotedForThis ? 'bg-primary/20' : 'bg-muted'}`}>
+                      <div className="flex items-center gap-3">
+                        <Image src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${nominee.name}&headonly=1&size=s`} alt={nominee.name} width={40} height={40} className="rounded-full" unoptimized />
+                        <div>
+                            <p className="font-bold">{nominee.name}</p>
+                            <p className="text-xs text-muted-foreground italic truncate max-w-[150px]">"{nominee.motto || '...'}"</p>
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <p className="text-muted-foreground text-center py-8">No se han asignado premios este mes.</p>
-            )}
-        </CardContent>
-    </Card>
+                      </div>
+                      <Button 
+                        size="sm"
+                        onClick={() => handleVote(category.id, nominee.id)}
+                        disabled={!isVotingOpen || !user || !!userVotes[category.id] || isPending}
+                      >
+                          {isPending && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                          {hasVotedForThis ? <Check className="h-4 w-4" /> : 'Votar'}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+          <p className="text-muted-foreground text-center py-8">No hay nominaciones activas en este momento.</p>
+      )}
     </div>
   );
 }

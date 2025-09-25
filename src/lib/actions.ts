@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import {
@@ -317,6 +316,35 @@ export async function generateNamesAction(prevState: NameGeneratorState, formDat
     return { names: [], error: "La IA no pudo generar nombres. Inténtalo de nuevo." };
   }
 }
+
+const awardVoteSchema = z.object({
+  categoryId: z.string(),
+  nomineeId: z.string(),
+  userId: z.string(),
+});
+
+export async function submitAwardVote(data: z.infer<typeof awardVoteSchema>) {
+    const { categoryId, nomineeId, userId } = data;
+    const userVoteRef = ref(db, `award_votes/${userId}/${categoryId}`);
+
+    const snapshot = await get(userVoteRef);
+    if(snapshot.exists()) {
+        // User has already voted in this category
+        return { success: false, message: "Ya has votado en esta categoría." };
+    }
+
+    try {
+        await runTransaction(ref(db, `award_nominations/${categoryId}/${nomineeId}/votes`), (currentVotes) => {
+            return (currentVotes || 0) + 1;
+        });
+        await set(userVoteRef, nomineeId);
+        return { success: true };
+    } catch(error) {
+        console.error("Error submitting award vote:", error);
+        return { success: false, message: "No se pudo registrar tu voto." };
+    }
+}
+
 
 // --- Notification Actions ---
 import { google } from 'googleapis';
