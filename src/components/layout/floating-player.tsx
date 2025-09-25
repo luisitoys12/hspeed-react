@@ -126,7 +126,7 @@ export default function FloatingPlayer() {
         onValue(ref(db, 'onAir'), (snapshot) => {
             const override = snapshot.val();
             setOnAirData({
-                currentDj: override?.currentDj || liveDjFromApi,
+                currentDj: override?.currentDj || liveDjFromApi || 'AutoDJ',
                 nextDj: override?.nextDj || 'N/A', // You might want a better default
                 isEvent: override?.isEvent || false
             });
@@ -268,9 +268,10 @@ export default function FloatingPlayer() {
   }, [audioRef]);
 
   const showPlayer = !['/login', '/register'].includes(pathname);
-  const isLiveDj = onAirData?.currentDj !== 'AutoDJ';
 
   if (!showPlayer) return null;
+
+  const currentDjName = onAirData?.currentDj || 'AutoDJ';
 
   return (
     <>
@@ -315,15 +316,15 @@ export default function FloatingPlayer() {
       <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
         <div className="container mx-auto flex flex-col items-center gap-2">
            {/* DJ Info for Mobile */}
-          {isLiveDj && onAirData && (
+          {onAirData && (
              <div className="md:hidden flex items-center justify-center gap-2 bg-card/80 backdrop-blur-sm p-2 rounded-lg w-full max-w-sm">
-                <Avatar className="h-8 w-8 border-2 border-green-500">
-                    <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${onAirData.currentDj}&headonly=1&size=s`} alt={onAirData.currentDj} />
-                    <AvatarFallback>{onAirData.currentDj.substring(0,2)}</AvatarFallback>
+                <Avatar className={`h-8 w-8 border-2 ${onAirData.isEvent ? 'border-yellow-400' : 'border-green-500'}`}>
+                    <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&headonly=1&size=s`} alt={currentDjName} />
+                    <AvatarFallback>{currentDjName.substring(0,2)}</AvatarFallback>
                 </Avatar>
                 <div className='text-left'>
-                    <p className="text-xs text-green-400 font-bold">AL AIRE</p>
-                    <p className="text-sm font-headline font-bold leading-tight">{onAirData.currentDj}</p>
+                    <p className={`text-xs font-bold ${onAirData.isEvent ? 'text-yellow-400' : 'text-green-400'}`}>{onAirData.isEvent ? 'EVENTO' : 'AL AIRE'}</p>
+                    <p className="text-sm font-headline font-bold leading-tight">{currentDjName}</p>
                 </div>
             </div>
           )}
@@ -331,7 +332,7 @@ export default function FloatingPlayer() {
           <div className="w-full bg-card/80 backdrop-blur-sm border border-border rounded-lg shadow-2xl p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
               
               <div className="flex items-center gap-3 min-w-0 justify-start">
-              {isLoading ? (
+              {isLoading || !onAirData ? (
                   <>
                   <Skeleton className="h-12 w-12 rounded-md" />
                   <div className="space-y-2 hidden md:block">
@@ -341,10 +342,15 @@ export default function FloatingPlayer() {
                   </>
               ) : (
                   <>
-                  <Image src={songInfo.art} alt={songInfo.title} width={48} height={48} className="rounded-md h-12 w-12 object-cover" unoptimized/>
+                    <Avatar className="h-12 w-12">
+                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=m`} alt={currentDjName} />
+                        <AvatarFallback>{currentDjName.substring(0,2)}</AvatarFallback>
+                    </Avatar>
                   <div className="min-w-0 hidden md:block">
-                      <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={songInfo.title}>{songInfo.title}</h3>
-                      <p className="text-xs md:text-sm text-muted-foreground truncate" title={songInfo.artist}>{songInfo.artist}</p>
+                      <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={currentDjName}>{currentDjName}</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground truncate" title={`${songInfo.title} - ${songInfo.artist}`}>
+                        {songInfo.title} - {songInfo.artist}
+                      </p>
                   </div>
                   </>
               )}
