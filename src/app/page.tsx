@@ -16,6 +16,7 @@ import ActiveRooms from '@/components/habbospeed/active-rooms';
 import OnAirDjs from '@/components/habbospeed/on-air-djs';
 import MobileHomeRadio from '@/components/habbospeed/mobile-home-radio';
 import HomePlayer from '@/components/habbospeed/home-player';
+import LatestCampaigns from '@/components/habbospeed/latest-campaigns';
 
 function LoadingSkeleton() {
   return (
@@ -64,32 +65,18 @@ export default async function Home() {
 
   return (
     <>
-      {/* Top Banner */}
-      <div className="w-full">
-         <div className="container mx-auto flex justify-center">
-             <Link href="/news" className='hidden md:block'>
-                <Image 
-                    src="https://images.habbo.com/web_images/habbo-web-articles/lpromo_Oct22.png"
-                    alt="Campaña actual"
-                    width={960}
-                    height={100}
-                    className="object-contain hover:brightness-110 transition-all"
-                />
-            </Link>
-        </div>
-      </div>
-
       <div className="container mx-auto p-4 md:p-8">
         
         {/* Mobile Layout */}
         <div className="lg:hidden space-y-8">
             <HeroSlideshow />
             <MobileHomeRadio />
+            <OnAirDjs />
             <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
             </Suspense>
             <AboutAndNews initialNews={pageData.news} />
-            <LatestFurnis />
+            {/* <LatestFurnis /> */}
             <ActiveEvents initialEvents={pageData.events} />
             <Suspense fallback={<LoadingSkeleton />}>
               <LatestBadges />
@@ -101,7 +88,7 @@ export default async function Home() {
           <div className="lg:col-span-2 space-y-8">
             <HeroSlideshow />
             <AboutAndNews initialNews={pageData.news} />
-            <LatestFurnis />
+            {/* <LatestFurnis /> */}
           </div>
           <div className="lg:col-span-1 space-y-8">
             <HomePlayer />
