@@ -13,9 +13,9 @@ import { get, ref } from 'firebase/database';
 import HabboProfile from '@/components/habbospeed/habbo-profile';
 import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
-import PlayerSwitcher from '@/components/habbospeed/player-switcher';
 import OnAirDjs from '@/components/habbospeed/on-air-djs';
 import MobileHomeRadio from '@/components/habbospeed/mobile-home-radio';
+import HomePlayer from '@/components/habbospeed/home-player';
 
 function LoadingSkeleton() {
   return (
@@ -104,8 +104,8 @@ export default async function Home() {
             <LatestFurnis />
           </div>
           <div className="lg:col-span-1 space-y-8">
+            <HomePlayer />
             <OnAirDjs />
-            <PlayerSwitcher />
             <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
             </Suspense>

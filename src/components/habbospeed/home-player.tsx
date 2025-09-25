@@ -10,7 +10,16 @@ import { useToast } from '@/hooks/use-toast';
 import { RadioConfig, OnAirData, SongInfo } from '@/lib/types';
 import { ref, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase';
-import { Skeleton } from '../ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import SongRequestForm from './song-request-form';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 export default function HomePlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -21,7 +30,6 @@ export default function HomePlayer() {
   const [songInfo, setSongInfo] = useState<SongInfo>({ art: "", title: 'Cargando...', artist: 'Por favor espera', listeners: 0 });
   const [onAirData, setOnAirData] = useState<OnAirData | null>(null);
   
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -29,10 +37,18 @@ export default function HomePlayer() {
     const unsubscribe = onValue(configRef, (snapshot) => {
         const data = snapshot.val();
         if (data) setRadioConfig(data);
-        setIsLoading(false);
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const onAirRef = ref(db, 'onAir');
+    const unsubscribeOnAir = onValue(onAirRef, (snapshot) => {
+        setOnAirData(snapshot.val());
+    });
+    return () => unsubscribeOnAir();
+  }, []);
+
 
   useEffect(() => {
     if (!radioConfig) return;
@@ -117,24 +133,37 @@ export default function HomePlayer() {
   const currentDjName = onAirData?.currentDj || 'AutoDJ';
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-card/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-[#1e5c8e] p-2 mt-8">
+    <div className="w-full max-w-lg mx-auto bg-card/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-[#1e5c8e] p-2">
       <audio ref={audioRef} preload="none" />
       <div 
         className="bg-[#0e2439] rounded-lg p-2 bg-center bg-no-repeat"
         style={{backgroundImage: `url('${radioConfig?.homePlayerBgUrl || 'https://i.imgur.com/uGg0a21.png'}')`}}
       >
         <div className="flex justify-between items-start">
-            {/* Left Section: Avatar & Likes */}
-            <div className="flex flex-col items-center gap-1">
-                <Image 
-                    src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=m`}
-                    alt={currentDjName}
-                    width={55}
-                    height={110}
-                    unoptimized
-                    className="drop-shadow-lg"
-                />
-            </div>
+            {/* Left Section: Avatar */}
+            <Dialog>
+                <DialogTrigger asChild>
+                    <div className="flex flex-col items-center gap-1 cursor-pointer" title="Haz una petición">
+                        <Image 
+                            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=m`}
+                            alt={currentDjName}
+                            width={55}
+                            height={110}
+                            unoptimized
+                            className="drop-shadow-lg"
+                        />
+                    </div>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Haz tu Petición</DialogTitle>
+                        <DialogDescription>
+                            ¿Quieres escuchar tu canción, enviar un saludo o participar en un concurso? ¡Este es tu lugar!
+                        </DialogDescription>
+                    </DialogHeader>
+                    <SongRequestForm />
+                </DialogContent>
+            </Dialog>
 
             {/* Center Section: Controls */}
             <div className="flex flex-col gap-1 w-full max-w-[200px]">
@@ -153,16 +182,51 @@ export default function HomePlayer() {
                         />
                     </div>
                 </div>
-                <Button variant="outline" className="h-8 bg-[#093e6c] border-[#1567a5] text-white/90 hover:bg-[#1567a5] justify-start truncate">
-                    <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                    {currentDjName}
-                </Button>
-                <div className="h-8 bg-[#093e6c] border-[#1567a5] text-white/90 rounded-md flex items-center px-3 overflow-hidden">
-                    <Music size={14} className="mr-2 flex-shrink-0" />
-                    <div className="marquee">
-                      <span className="font-bold">{songInfo.title} - {songInfo.artist}</span>
-                    </div>
+                 <div className="h-8 bg-[#093e6c] border-[#1567a5] text-white/90 rounded-md flex items-center justify-center px-3 overflow-hidden">
+                    <p className='font-bold'>{currentDjName}</p>
                 </div>
+                 <Dialog>
+                    <DialogTrigger asChild>
+                        <div className="h-8 bg-[#093e6c] border-[#1567a5] text-white/90 rounded-md flex items-center px-3 overflow-hidden cursor-pointer" title="Ver información de la canción">
+                            <Music size={14} className="mr-2 flex-shrink-0" />
+                            <div className="marquee">
+                            <span className="font-bold">{songInfo.title} - {songInfo.artist}</span>
+                            </div>
+                        </div>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Ahora Suena</DialogTitle>
+                        </DialogHeader>
+                        <div className="text-center">
+                            <Image src={songInfo.art || 'https://i.imgur.com/u31XFxN.png'} alt={songInfo.title} width={200} height={200} className="rounded-lg mx-auto mb-4" unoptimized/>
+                            <h3 className="text-2xl font-bold font-headline">{songInfo.title}</h3>
+                            <p className="text-lg text-muted-foreground">{songInfo.artist}</p>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-4">
+                           <div className="p-4 bg-muted rounded-lg text-center">
+                                <p className="text-sm text-muted-foreground">Al Aire</p>
+                                <div className="flex items-center justify-center gap-2 mt-1">
+                                    <Avatar className="h-6 w-6">
+                                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${onAirData?.currentDj}&headonly=1&size=s`} />
+                                        <AvatarFallback>{onAirData?.currentDj?.substring(0,1)}</AvatarFallback>
+                                    </Avatar>
+                                    <p className="font-bold">{onAirData?.currentDj}</p>
+                                </div>
+                            </div>
+                             <div className="p-4 bg-muted rounded-lg text-center">
+                                <p className="text-sm text-muted-foreground">Siguiente DJ</p>
+                                 <div className="flex items-center justify-center gap-2 mt-1">
+                                     <Avatar className="h-6 w-6">
+                                        <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${onAirData?.nextDj}&headonly=1&size=s`} />
+                                        <AvatarFallback>{onAirData?.nextDj?.substring(0,1)}</AvatarFallback>
+                                    </Avatar>
+                                    <p className="font-bold">{onAirData?.nextDj}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             {/* Right Section: Listeners Badge */}
