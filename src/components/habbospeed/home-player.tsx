@@ -144,7 +144,6 @@ export default function HomePlayer() {
       >
         <div className="flex justify-between items-start">
             
-            {/* Left Section: DJ Booth Scene */}
             <Dialog>
                 <DialogTrigger asChild>
                     <div className="relative w-[110px] h-[110px] cursor-pointer" title="Haz una petición">
@@ -163,7 +162,7 @@ export default function HomePlayer() {
                                 src="https://static.habbo-happy.net/img/furni/big/808151140343397.gif"
                                 alt="DJ Booth"
                                 width={110}
-                                height={110}
+                                height={80}
                                 unoptimized
                                 className="object-contain"
                             />
@@ -172,8 +171,8 @@ export default function HomePlayer() {
                             <Image 
                                 src="https://static.habbo-happy.net/img/furni/big/870020251255482.gif"
                                 alt="Micrófono"
-                                width={40}
-                                height={40}
+                                width={30}
+                                height={30}
                                 unoptimized
                             />
                         </div>
@@ -264,3 +263,5 @@ export default function HomePlayer() {
     </div>
   );
 }
+
+    
