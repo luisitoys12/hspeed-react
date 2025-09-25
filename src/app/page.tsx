@@ -2,8 +2,6 @@
 
 import { Suspense } from 'react';
 import HeroSlideshow from '@/components/habbospeed/hero-slideshow';
-import OnAirDjs from '@/components/habbospeed/on-air-djs';
-import LatestCampaigns from '@/components/habbospeed/latest-campaigns';
 import ActiveEvents from '@/components/habbospeed/active-events';
 import Image from 'next/image';
 import AboutAndNews from '@/components/habbospeed/about-and-news';
@@ -16,6 +14,8 @@ import HabboProfile from '@/components/habbospeed/habbo-profile';
 import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
 import PlayerSwitcher from '@/components/habbospeed/player-switcher';
+import OnAirDjs from '@/components/habbospeed/on-air-djs';
+import MobileHomeRadio from '@/components/habbospeed/mobile-home-radio';
 
 function LoadingSkeleton() {
   return (
@@ -80,21 +80,31 @@ export default async function Home() {
       </div>
 
       <div className="container mx-auto p-4 md:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Main Content Column */}
+        
+        {/* Mobile Layout */}
+        <div className="lg:hidden space-y-8">
+            <HeroSlideshow />
+            <MobileHomeRadio />
+            <Suspense fallback={<LoadingSkeleton />}>
+              <HabboProfile />
+            </Suspense>
+            <AboutAndNews initialNews={pageData.news} />
+            <LatestFurnis />
+            <ActiveEvents initialEvents={pageData.events} />
+            <Suspense fallback={<LoadingSkeleton />}>
+              <LatestBadges />
+            </Suspense>
+        </div>
+        
+        {/* Desktop Layout */}
+        <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <HeroSlideshow />
-            {/* <LatestCampaigns /> */}
             <AboutAndNews initialNews={pageData.news} />
             <LatestFurnis />
           </div>
-
-          {/* Sidebar Column */}
           <div className="lg:col-span-1 space-y-8">
-            <Suspense fallback={<LoadingSkeleton />}>
-              <OnAirDjs />
-            </Suspense>
+            <OnAirDjs />
             <PlayerSwitcher />
             <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
@@ -106,7 +116,7 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* Bottom Sections */}
+        {/* Common Bottom Sections */}
         <div className="mt-8 space-y-8">
           <OfficialAlliances initialAlliances={pageData.alliances} />
           <ActiveRooms initialRooms={pageData.featuredRooms} />

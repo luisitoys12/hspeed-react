@@ -80,14 +80,14 @@ export default function ActiveEvents({ initialEvents }: ActiveEventsProps) {
   const otherEvents = events.slice(1);
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card>
         <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline">
                 <CalendarCheck2 className="text-primary" />
                 Próximo Evento
             </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col flex-grow">
+        <CardContent>
         {latestEvent ? (
           <div className="flex flex-col flex-grow text-sm">
             <div className="relative w-full aspect-video mb-4 rounded-lg overflow-hidden">
@@ -102,31 +102,33 @@ export default function ActiveEvents({ initialEvents }: ActiveEventsProps) {
                 <p className='flex items-center gap-2'><User className="h-4 w-4" /> {latestEvent.roomOwner}</p>
                  <p className='flex items-center gap-2'><PartyPopper className="h-4 w-4" /> {latestEvent.host}</p>
             </div>
-             <Dialog>
-                <DialogTrigger asChild>
-                    <Button className="w-full mt-4">Ver más eventos</Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <DialogHeader>
-                    <DialogTitle>Próximos Eventos</DialogTitle>
-                    <DialogDescription>
-                        Esta es la lista de los próximos eventos organizados. ¡No te los pierdas!
-                    </DialogDescription>
-                    </DialogHeader>
-                    <div className="max-h-[60vh] overflow-y-auto space-y-2 p-1">
-                        {[latestEvent, ...otherEvents].map((event) => (
-                            <div key={event.id} className="p-3 rounded-lg bg-muted">
-                                <h3 className="font-bold text-primary">{event.title}</h3>
-                                <p className="text-sm text-muted-foreground">{event.roomName} por {event.roomOwner}</p>
-                                <p className="text-xs text-muted-foreground mt-2">{new Date(event.dateTime).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })}</p>
-                            </div>
-                        ))}
-                    </div>
-                </DialogContent>
-            </Dialog>
+             {otherEvents.length > 0 && (
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button className="w-full mt-4">Ver más eventos</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                        <DialogTitle>Próximos Eventos</DialogTitle>
+                        <DialogDescription>
+                            Esta es la lista de los próximos eventos organizados. ¡No te los pierdas!
+                        </DialogDescription>
+                        </DialogHeader>
+                        <div className="max-h-[60vh] overflow-y-auto space-y-2 p-1">
+                            {[latestEvent, ...otherEvents].map((event) => (
+                                <div key={event.id} className="p-3 rounded-lg bg-muted">
+                                    <h3 className="font-bold text-primary">{event.title}</h3>
+                                    <p className="text-sm text-muted-foreground">{event.roomName} por {event.roomOwner}</p>
+                                    <p className="text-xs text-muted-foreground mt-2">{new Date(event.dateTime).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
           </div>
         ) : (
-            <div className="text-center text-muted-foreground flex-grow flex items-center justify-center">
+            <div className="text-center text-muted-foreground py-10 flex items-center justify-center">
                 <p>No hay eventos programados por el momento.</p>
             </div>
         )}
