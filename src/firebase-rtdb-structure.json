@@ -94,6 +94,33 @@
       ]
     }
   },
+  "users": {
+    "some-uid-1": {
+      "uid": "some-uid-1",
+      "displayName": "DJ-Pixel",
+      "email": "dj-pixel@example.com",
+      "role": "dj",
+      "approved": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "speedPoints": 1500
+    }
+  },
+  "catalogItems": {
+    "item1": {
+      "name": "Placa Exclusiva de Radio",
+      "description": "Una placa única para demostrar tu apoyo a la radio.",
+      "imageUrl": "https://images.habbo.com/c_images/album1584/ADM.gif",
+      "price": 5000,
+      "stock": 100
+    },
+    "item2": {
+      "name": "Suscripción HC 1 Mes",
+      "description": "Un mes de suscripción al Habbo Club.",
+      "imageUrl": "https://images.habbo.com/c_images/catalogue/icon_3.png",
+      "price": 10000,
+      "stock": 50
+    }
+  },
   "events": {
     "evento1": {
       "title": "BANZAI RACING",

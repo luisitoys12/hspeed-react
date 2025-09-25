@@ -73,6 +73,7 @@ export default function RegisterPage() {
         displayName: values.username,
         role: 'pending', // A 'pending' role until approved
         approved: false,
+        speedPoints: 0, // Initialize speed points
         createdAt: new Date().toISOString(),
       });
       

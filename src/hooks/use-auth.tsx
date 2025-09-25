@@ -14,6 +14,7 @@ interface User {
   isSuperAdmin: boolean;
   role: string;
   approved: boolean;
+  speedPoints: number;
 }
 
 interface AuthContextType {
@@ -39,13 +40,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         onValue(userRef, (snapshot) => {
             const dbUser = snapshot.val();
 
+            const baseUser = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName,
+                isLoggedIn: true,
+                speedPoints: dbUser?.speedPoints || 0,
+            };
+
             if (isSuperAdmin) {
                 // Si es un super admin, siempre tiene acceso total
                 setUser({
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    displayName: firebaseUser.displayName,
-                    isLoggedIn: true,
+                    ...baseUser,
                     isSuperAdmin: true,
                     role: 'Admin',
                     approved: true,
@@ -53,10 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else if (dbUser && dbUser.approved) {
                 // Para usuarios normales, verificar si están aprobados
                  setUser({
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    displayName: firebaseUser.displayName,
-                    isLoggedIn: true,
+                    ...baseUser,
                     isSuperAdmin: dbUser.role === 'Admin',
                     role: dbUser.role,
                     approved: dbUser.approved,
@@ -64,10 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else {
                 // Usuario no aprobado o sin registro en la DB
                 setUser({
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    displayName: firebaseUser.displayName,
-                    isLoggedIn: true,
+                    ...baseUser,
                     isSuperAdmin: false,
                     role: dbUser?.role || 'pending',
                     approved: dbUser?.approved || false,

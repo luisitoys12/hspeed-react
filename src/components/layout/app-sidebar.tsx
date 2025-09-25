@@ -31,6 +31,7 @@ import {
   HeartHandshake,
   Info,
   Library,
+  Gem,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -49,6 +50,7 @@ const publicLinks = [
   { href: '/news', label: 'Noticias Habbo', icon: Newspaper },
   { href: '/team', label: 'Equipo', icon: Users },
   { href: '/community', label: 'Comunidad', icon: HeartHandshake },
+  { href: '/catalog', label: 'Catálogo', icon: Store },
   { href: '/contact', label: 'Contacto', icon: Mail },
 ];
 
@@ -102,6 +104,20 @@ export default function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
+          {user && (
+             <div className='px-4 py-2 mb-2'>
+                <Link href={`/profile/${user.displayName}`}>
+                    <div className='p-3 rounded-lg bg-sidebar-accent hover:bg-sidebar-accent/80'>
+                        <p className='text-sm font-bold'>{user.displayName}</p>
+                        <div className='flex items-center gap-2 text-xs text-yellow-400'>
+                            <Gem className='h-3 w-3'/>
+                            <span>{user.speedPoints} Speed Points</span>
+                        </div>
+                    </div>
+                </Link>
+             </div>
+          )}
+
           {publicLinks.map((link) => (
               <SidebarMenuItem key={link.href}>
                 <Link href={link.href}>
@@ -223,5 +239,3 @@ export default function AppSidebar() {
     </>
   );
 }
-
-    
