@@ -146,37 +146,36 @@ export default function HomePlayer() {
             
             <Dialog>
                 <DialogTrigger asChild>
-                    <div className="relative w-[110px] h-[110px] cursor-pointer" title="Haz una petición">
-                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10">
-                            <Image 
-                                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=m&gesture=sml`}
-                                alt={currentDjName}
-                                width={64}
-                                height={110}
-                                unoptimized
-                                className="drop-shadow-lg"
-                            />
-                         </div>
-                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20">
-                            <Image 
-                                src="https://static.habbo-happy.net/img/furni/big/808151140343397.gif"
-                                alt="DJ Booth"
-                                width={110}
-                                height={80}
-                                unoptimized
-                                className="object-contain"
-                            />
-                         </div>
-                         <div className="absolute bottom-6 left-[65px] z-30">
-                            <Image 
-                                src="https://static.habbo-happy.net/img/furni/big/870020251255482.gif"
-                                alt="Micrófono"
-                                width={30}
-                                height={30}
-                                unoptimized
-                            />
-                        </div>
-                    </div>
+                   <div className="relative w-[110px] h-[110px] cursor-pointer flex items-center justify-center" title="Haz una petición">
+                      <div className="absolute bottom-0 z-10">
+                        <Image 
+                            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=m&gesture=sml`}
+                            alt={currentDjName}
+                            width={64}
+                            height={110}
+                            unoptimized
+                            className="drop-shadow-lg"
+                        />
+                      </div>
+                      <div className="absolute bottom-0 z-20 w-full h-full">
+                         <Image 
+                            src="https://static.habbo-happy.net/img/furni/big/808151140343397.gif"
+                            alt="DJ Booth"
+                            fill
+                            unoptimized
+                            className="object-contain"
+                          />
+                      </div>
+                      <div className="absolute bottom-6 -right-4 z-30 w-12 h-12">
+                          <Image 
+                            src="https://static.habbo-happy.net/img/furni/big/870020251255482.gif"
+                            alt="Micrófono"
+                            fill
+                            unoptimized
+                            className="object-contain"
+                           />
+                      </div>
+                   </div>
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
@@ -263,5 +262,3 @@ export default function HomePlayer() {
     </div>
   );
 }
-
-    
