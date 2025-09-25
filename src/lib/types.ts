@@ -46,3 +46,17 @@ export type EventItem = {
 };
 
 export type EventFormValues = Omit<EventItem, 'id'>;
+
+export interface Poll {
+  id: string;
+  title: string;
+  options: { [key: string]: { name: string; votes: number } };
+  isActive: boolean;
+  createdAt: number;
+}
+
+export interface PollOption {
+  id: string;
+  name: string;
+  votes: number;
+}

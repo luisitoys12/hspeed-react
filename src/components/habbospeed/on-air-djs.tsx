@@ -38,6 +38,11 @@ type Bookings = {
   };
 };
 
+interface RadioConfig {
+    discordWebhookUrl?: string;
+    listenUrl: string;
+}
+
 const defaultDj = {
     name: 'AutoDJ',
     habboName: 'estacionkusfm',
@@ -106,6 +111,21 @@ const getDjs = (bookings: Bookings, onAirOverride?: OnAirOverride, azuracastData
     return { current: currentDj, next: nextDj };
 };
 
+// --- Webhook Logic ---
+const sendDiscordWebhook = async (webhookUrl: string, payload: any) => {
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    console.error('Error sending Discord webhook:', error);
+  }
+};
+
 export default function OnAirDjs() {
     const [azuracastData, setAzuracastData] = useState<AzuracastData | null>(null);
     const [bookings, setBookings] = useState<Bookings>({});
@@ -117,15 +137,19 @@ export default function OnAirDjs() {
     const [volume, setVolume] = useState(50);
     const audioRef = useRef<HTMLAudioElement>(null);
     
-    const [radioConfig, setRadioConfig] = useState<{listenUrl: string} | null>(null);
+    const [radioConfig, setRadioConfig] = useState<RadioConfig | null>(null);
+    const lastNotifiedDjRef = useRef<string | null>(null);
 
-    // Get Radio Config from Firebase for listenUrl
+    // Get Radio Config from Firebase for listenUrl and webhook
     useEffect(() => {
         const configRef = ref(db, 'config');
         const unsubscribe = onValue(configRef, (snapshot) => {
             const data = snapshot.val();
-            if (data && data.listenUrl) {
-                setRadioConfig({ listenUrl: data.listenUrl });
+            if (data) {
+                setRadioConfig({
+                    listenUrl: data.listenUrl,
+                    discordWebhookUrl: data.discordWebhookUrl,
+                });
             }
         });
         return () => unsubscribe();
@@ -166,11 +190,40 @@ export default function OnAirDjs() {
         };
     }, []);
 
-    // Calculate DJs
+    // Calculate DJs and send webhook if DJ changes
     useEffect(() => {
         const calculatedDjs = getDjs(bookings, onAirOverride, azuracastData);
         setDjs(calculatedDjs);
-    }, [bookings, onAirOverride, azuracastData]);
+
+        const currentDjName = calculatedDjs.current.name;
+        if (radioConfig?.discordWebhookUrl && currentDjName !== lastNotifiedDjRef.current && currentDjName !== 'AutoDJ') {
+            const song = azuracastData?.now_playing.song;
+            const payload = {
+                content: `¡No te lo pierdas! **${currentDjName}** está ahora en directo.`,
+                embeds: [{
+                    title: '¡Sintoniza Ahora!',
+                    description: `Actualmente escuchas: **${song?.title || 'Música increíble'}** de **${song?.artist || '...'}**`,
+                    color: 5814783, // A nice blue color
+                    fields: [
+                        { name: 'Siguiente DJ', value: calculatedDjs.next.name, inline: true },
+                        { name: 'Oyentes', value: azuracastData?.listeners.current || 0, inline: true },
+                    ],
+                    thumbnail: {
+                        url: song?.art || 'https://i.imgur.com/u31XFxN.png'
+                    },
+                    author: {
+                        name: 'Habbospeed - Transmisión en Vivo',
+                        icon_url: `https://www.habbo.es/habbo-imaging/avatarimage?user=${calculatedDjs.current.habboName}&headonly=1&size=m`
+                    }
+                }]
+            };
+            sendDiscordWebhook(radioConfig.discordWebhookUrl, payload);
+            lastNotifiedDjRef.current = currentDjName;
+        } else if (currentDjName === 'AutoDJ') {
+            lastNotifiedDjRef.current = 'AutoDJ'; // Reset when back to AutoDJ
+        }
+
+    }, [bookings, onAirOverride, azuracastData, radioConfig]);
 
     // Audio Controls
     useEffect(() => {
@@ -207,7 +260,7 @@ export default function OnAirDjs() {
 
     if (isLoading) {
         return (
-            <div className="mt-8 bg-card/80 backdrop-blur-sm rounded-lg">
+            <div className="hidden md:block mt-8 bg-card/80 backdrop-blur-sm rounded-lg">
                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-center justify-center min-h-[120px]">
                    <div className="col-span-1 md:col-span-2 flex justify-center items-center">
                      <Image 
@@ -224,7 +277,7 @@ export default function OnAirDjs() {
     }
 
     return (
-        <div className="mt-8 bg-card/80 backdrop-blur-sm rounded-lg space-y-4 p-4">
+        <div className="hidden md:block mt-8 bg-card/80 backdrop-blur-sm rounded-lg space-y-4 p-4">
              <audio ref={audioRef} preload="none" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 divide-y md:divide-y-0 md:divide-x divide-border">
                 <div className="flex items-center justify-center gap-4 p-4">

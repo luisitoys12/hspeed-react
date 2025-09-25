@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -35,6 +36,7 @@ const configSchema = z.object({
   radioService: z.enum(['azuracast', 'zenofm']),
   apiUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
   listenUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
+  discordWebhookUrl: z.string().url({ message: "La URL del webhook no es válida."}).optional().or(z.literal('')),
   slideshow: z.array(slideSchema).optional(),
   discordBot: z.object({
       token: z.string().optional(),
@@ -81,6 +83,7 @@ export default function ConfigPage() {
     radioService: "azuracast" as const,
     apiUrl: "",
     listenUrl: "",
+    discordWebhookUrl: "",
     slideshow: [],
     discordBot: {
       token: "",
@@ -117,6 +120,7 @@ export default function ConfigPage() {
             radioService: data.radioService || "azuracast",
             apiUrl: data.apiUrl || "",
             listenUrl: data.listenUrl || "",
+            discordWebhookUrl: data.discordWebhookUrl || "",
             slideshow: slideshowArray.length > 0 ? slideshowArray : demoSlides,
             discordBot: data.discordBot || defaultValues.discordBot,
           });
@@ -313,37 +317,46 @@ export default function ConfigPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
                 <Bot />
-                Configuración del Bot de Discord
+                Integración con Discord
               </CardTitle>
               <CardDescription>
-                Introduce las credenciales e IDs para tu bot de Discord. Estos valores serán leídos por tu aplicación de bot.
+                Introduce las credenciales e IDs para la integración con Discord.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <FormField control={form.control} name="discordWebhookUrl" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL del Webhook de Discord</FormLabel>
+                    <FormControl><Input placeholder="Pega la URL de tu webhook aquí" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+              )}/>
+              <Separator />
+               <p className="text-sm text-muted-foreground">La siguiente sección es para un bot de Node.js independiente. La integración por webhook es la recomendada y más sencilla.</p>
               <FormField control={form.control} name="discordBot.token" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Token del Bot</FormLabel>
+                    <FormLabel>Token del Bot (Opcional)</FormLabel>
                     <FormControl><Input type="password" placeholder="Tu token secreto de bot" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
               )}/>
                <FormField control={form.control} name="discordBot.guildId" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ID del Servidor (Guild ID)</FormLabel>
+                    <FormLabel>ID del Servidor (Guild ID) (Opcional)</FormLabel>
                     <FormControl><Input placeholder="ID numérico de tu servidor de Discord" {...field} /></FormControl>
                      <FormMessage />
                   </FormItem>
               )}/>
                <FormField control={form.control} name="discordBot.announcementChannelId" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ID del Canal de Anuncios</FormLabel>
+                    <FormLabel>ID del Canal de Anuncios (Opcional)</FormLabel>
                     <FormControl><Input placeholder="ID del canal para los mensajes de 'Ahora suena'" {...field} /></FormControl>
                      <FormMessage />
                   </FormItem>
               )}/>
               <FormField control={form.control} name="discordBot.voiceChannelId" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ID del Canal de Voz 24/7</FormLabel>
+                    <FormLabel>ID del Canal de Voz 24/7 (Opcional)</FormLabel>
                     <FormControl><Input placeholder="ID del canal de voz para la música continua" {...field} /></FormControl>
                      <FormMessage />
                   </FormItem>

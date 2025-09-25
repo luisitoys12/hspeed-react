@@ -1,16 +1,25 @@
 
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge, BrainCircuit, Calculator, Dice5, Paintbrush, Pickaxe, BookHeart, Users, HeartHandshake, Trophy } from 'lucide-react';
+import { Badge, BrainCircuit, Calculator, Dice5, Paintbrush, Pickaxe, BookHeart, Users, HeartHandshake, Trophy, Vote } from 'lucide-react';
 import Link from 'next/link';
 
 const tools = [
   {
+    title: 'Encuestas',
+    description: 'Vota en la encuesta de la semana y mira los resultados.',
+    icon: Vote,
+    isNew: true,
+    href: '/community/polls',
+    disabled: false
+  },
+  {
     title: 'Calculadora de Tradeos',
     description: 'Calcula el valor de tus tradeos para asegurarte de que son justos.',
     icon: Calculator,
-    isNew: true,
+    isNew: false,
     href: '/community/trade-calculator',
-    disabled: false
+    disabled: true
   },
   {
     title: 'Generador de Nombres',

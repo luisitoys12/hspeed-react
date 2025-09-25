@@ -27,6 +27,7 @@
   "config": {
     "apiUrl": "https://radio.kusmedios.lat/api/nowplaying/ekus-fm",
     "listenUrl": "http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3",
+    "discordWebhookUrl": "",
     "slideshow": {
       "slide1": {
         "cta": {
@@ -112,6 +113,24 @@
       "timestamp": 1672531200000,
       "type": "cancion",
       "user": "DJ-Pixel"
+    }
+  },
+  "polls": {
+    "poll1": {
+      "title": "¿Cuál es tu juego favorito de Habbo?",
+      "isActive": true,
+      "createdAt": 1672531200000,
+      "options": {
+        "opt1": { "name": "Battle Banzai", "votes": 120 },
+        "opt2": { "name": "Freeze", "votes": 85 },
+        "opt3": { "name": "Wobble Squabble", "votes": 45 },
+        "opt4": { "name": "Fútbol", "votes": 210 }
+      }
+    }
+  },
+  "poll_votes": {
+    "someUserId": {
+      "poll1": "opt4"
     }
   }
 }
