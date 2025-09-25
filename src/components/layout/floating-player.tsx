@@ -8,7 +8,6 @@ import { Play, Pause, Volume2, Users, Music, Bell, PartyPopper } from 'lucide-re
 import { Slider } from '@/components/ui/slider';
 import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Sheet,
   SheetContent,
@@ -275,30 +274,30 @@ export default function FloatingPlayer() {
   return (
     <>
       <audio ref={audioRef} preload="none" />
+      {isLiveDj && (
+        <div className="md:hidden fixed bottom-24 right-4 z-50">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button className="h-14 w-14 rounded-full bg-primary shadow-lg">
+                <Music className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Pide una Canción</SheetTitle>
+                <SheetDescription>
+                  ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ!
+                </SheetDescription>
+              </SheetHeader>
+              <div className="py-4">
+                <SongRequestForm />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      )}
       <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
         <div className="container mx-auto flex flex-col items-center gap-2">
-           {isLiveDj && (
-             <div className="md:hidden fixed bottom-24 right-4 z-50">
-               <Sheet>
-                 <SheetTrigger asChild>
-                   <Button className="h-14 w-14 rounded-full bg-primary shadow-lg">
-                     <Music className="h-6 w-6" />
-                   </Button>
-                 </SheetTrigger>
-                 <SheetContent>
-                    <SheetHeader>
-                        <SheetTitle>Pide una Canción</SheetTitle>
-                        <SheetDescription>
-                        ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ!
-                        </SheetDescription>
-                    </SheetHeader>
-                    <div className="py-4">
-                        <SongRequestForm />
-                    </div>
-                  </SheetContent>
-               </Sheet>
-             </div>
-           )}
           <div className="w-full bg-card/80 backdrop-blur-sm border border-border rounded-lg shadow-2xl p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
               
               <div className="flex items-center gap-3 min-w-0 justify-start">
@@ -372,5 +371,3 @@ export default function FloatingPlayer() {
     </>
   );
 }
-
-    

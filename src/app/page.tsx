@@ -9,7 +9,6 @@ import OnAirDjs from '@/components/habbospeed/on-air-djs';
 import LatestCampaigns from '@/components/habbospeed/latest-campaigns';
 import ActiveEvents from '@/components/habbospeed/active-events';
 import Image from 'next/image';
-import RecentWinners from '@/components/habbospeed/recent-winners';
 import AboutAndNews from '@/components/habbospeed/about-and-news';
 import Link from 'next/link';
 import LatestBadges from '@/components/habbospeed/latest-badges';
@@ -36,16 +35,12 @@ async function getPageData() {
         const eventsRef = ref(db, 'events');
         const alliancesRef = ref(db, 'alliances');
         const featuredRoomsRef = ref(db, 'featuredRooms');
-        const awardTypesRef = ref(db, 'awardTypes');
-        const awardWinnersRef = ref(db, 'awardWinners');
         const newsRef = ref(db, 'news');
 
-        const [eventsSnap, alliancesSnap, featuredRoomsSnap, awardTypesSnap, awardWinnersSnap, newsSnap] = await Promise.all([
+        const [eventsSnap, alliancesSnap, featuredRoomsSnap, newsSnap] = await Promise.all([
             get(eventsRef),
             get(alliancesRef),
             get(featuredRoomsRef),
-            get(awardTypesRef),
-            get(awardWinnersRef),
             get(newsRef)
         ]);
 
@@ -53,14 +48,12 @@ async function getPageData() {
             events: eventsSnap.val() || {},
             alliances: alliancesSnap.val() || {},
             featuredRooms: featuredRoomsSnap.val() || {},
-            awardTypes: awardTypesSnap.val() || {},
-            awardWinners: awardWinnersSnap.val() || {},
             news: newsSnap.val() || {}
         };
     } catch (error) {
         console.error("Error fetching page data:", error);
         return {
-            events: {}, alliances: {}, featuredRooms: {}, awardTypes: {}, awardWinners: {}, news: {}
+            events: {}, alliances: {}, featuredRooms: {}, news: {}
         };
     }
 }
@@ -118,7 +111,6 @@ export default async function Home() {
           {/* Columna Derecha */}
           <div className="lg:col-span-1 flex flex-col gap-8">
             <ActiveEvents initialEvents={pageData.events} />
-            <RecentWinners initialWinners={pageData.awardWinners} initialAwardTypes={pageData.awardTypes} />
           </div>
         </div>
 

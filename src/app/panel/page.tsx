@@ -16,7 +16,7 @@ const panelLinks = [
     { href: '/panel/users', title: 'Gestión de Usuarios', description: 'Aprobar usuarios y asignar roles.', icon: Users },
     { href: '/panel/team', title: 'Gestión de Equipo', description: 'Añadir o quitar miembros del staff.', icon: Users },
     { href: '/panel/recruitment', title: 'Reclutamiento', description: 'Gestionar vacantes y postulaciones.', icon: Briefcase },
-    { href: '/panel/awards', title: 'Premios y Destacados', description: 'Gestionar premios y ganadores.', icon: Award },
+    { href: '/panel/awards', title: 'Gestión de Premios', description: 'Gestionar premios y ganadores.', icon: Award },
     { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos.', icon: Newspaper },
     { href: '/panel/events', title: 'Gestión de Eventos', description: 'Administrar los eventos de la fansite.', icon: PartyPopper },
     { href: '/panel/polls', title: 'Gestión de Encuestas', description: 'Crear y administrar encuestas.', icon: Vote },

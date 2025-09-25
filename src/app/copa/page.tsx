@@ -1,7 +1,20 @@
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trophy, Shield, Users, Calendar } from 'lucide-react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { db } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
+import { Skeleton } from '@/components/ui/skeleton';
+
+type AwardWinner = { 
+  id: string; 
+  awardTypeName: string; 
+  winnerName: string; 
+  month: string; 
+};
 
 const champions = {
     name: "Los Furas",
@@ -16,7 +29,40 @@ const finalScore = {
     scoreB: 2,
 };
 
+
 export default function CopaPage() {
+    const [winners, setWinners] = useState<AwardWinner[]>([]);
+    const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const typesRef = ref(db, 'awardTypes');
+    const winnersRef = ref(db, 'awardWinners');
+
+    onValue(typesRef, (typesSnapshot) => {
+      const typesData = typesSnapshot.val() || {};
+      const typesMap = new Map(Object.keys(typesData).map(key => [key, {name: typesData[key].name, isCopa: typesData[key].isCopa || false }]));
+
+      onValue(winnersRef, (winnersSnapshot) => {
+        const winnersData = winnersSnapshot.val() || {};
+        const winnersList: AwardWinner[] = Object.keys(winnersData).map(key => {
+            const winner = winnersData[key];
+            const awardTypeInfo = typesMap.get(winner.awardTypeId) || { name: "Premio Especial", isCopa: false };
+            return {
+              id: key,
+              winnerName: winner.winnerName,
+              month: winner.month,
+              awardTypeName: awardTypeInfo.name,
+              isCopa: awardTypeInfo.isCopa
+            };
+        })
+        .filter(w => w.isCopa); // Only get Copa awards
+
+        setWinners(winnersList);
+        setLoading(false);
+      });
+    });
+  }, []);
+
   return (
     <div className="container mx-auto p-4 md:p-8">
       <Card className="overflow-hidden mb-8">
@@ -41,23 +87,33 @@ export default function CopaPage() {
         </div>
       </Card>
       
-      <div className="grid md:grid-cols-3 gap-8 text-center">
-        <div className="md:col-span-1">
-            <Card className="h-full">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+        <div className="lg:col-span-2">
+            <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center justify-center gap-2"><Trophy className="text-yellow-400"/>¡Campeones!</CardTitle>
+                    <CardTitle>Cuadro de Honor de la Copa</CardTitle>
+                    <CardDescription>¡Felicidades a los campeones y jugadores destacados del torneo!</CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center">
-                    <Image src={champions.image} alt="Trofeo" width={80} height={80} unoptimized />
-                    <p className="text-3xl font-headline mt-2">{champions.name}</p>
-                    <div className="mt-2 space-y-1">
-                        {champions.players.map(p => <p key={p} className="text-sm text-muted-foreground">{p}</p>)}
-                    </div>
+                <CardContent>
+                    {loading ? <Skeleton className="h-32 w-full" /> : 
+                    winners.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {winners.map(winner => (
+                                <div key={winner.id} className="p-4 bg-muted/50 rounded-lg text-center">
+                                    <h3 className="font-bold text-primary">{winner.awardTypeName}</h3>
+                                    <p className="text-xl font-headline">{winner.winnerName}</p>
+                                    <p className="text-xs text-muted-foreground">Ganador de {winner.month}</p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-muted-foreground text-center py-8">No se han asignado premios para la copa aún.</p>
+                    )}
                 </CardContent>
             </Card>
         </div>
-        <div className="md:col-span-2">
-            <Card>
+        <div className="lg:col-span-1">
+             <Card>
                 <CardHeader>
                      <CardTitle className="flex items-center justify-center gap-2"><Shield />La Gran Final</CardTitle>
                 </CardHeader>

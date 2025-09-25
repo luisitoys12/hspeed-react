@@ -1,0 +1,146 @@
+{
+  "alliances": {
+    "alliance1": {
+      "imageHint": "security logo",
+      "imageUrl": "https://picsum.photos/seed/alliance1/200/100",
+      "name": "HabboSecurity"
+    }
+  },
+  "bookings": {
+    "Jueves": {
+      "0300": {
+        "djName": "Dj Chey",
+        "uid": "some-dj-uid"
+      }
+    }
+  },
+  "comments": {
+    "noticia1": {
+      "comment1": {
+        "authorName": "DJ-Pixel",
+        "authorUid": "some-uid-1",
+        "comment": "¡Qué buena noticia! No puedo esperar a ver los nuevos furnis de verano.",
+        "timestamp": 1672531200000
+      }
+    }
+  },
+  "config": {
+    "apiUrl": "https://radio.kusmedios.lat/api/nowplaying/ekus-fm",
+    "listenUrl": "http://radio.kusmedios.lat/listen/ekus-fm/radio.mp3",
+    "discordWebhookUrl": "",
+    "slideshow": {
+      "slide1": {
+        "cta": {
+          "href": "/schedule",
+          "text": "Ver Horarios"
+        },
+        "imageHint": "habbo party",
+        "imageUrl": "https://picsum.photos/seed/habboparty/1200/400",
+        "subtitle": "La radio #1 para la comunidad de Habbo.es. Música, eventos y diversión 24/7.",
+        "title": "¡Bienvenidos a Ekus FM!"
+      }
+    }
+  },
+  "contact-messages": {
+    "mensajeInicial": {
+      "email": "ejemplo@ekusfm.com",
+      "message": "Este es un mensaje de prueba.",
+      "name": "Usuario de Prueba",
+      "read": false,
+      "timestamp": 1672531200000
+    }
+  },
+  "featuredRooms": {
+    "room1": {
+      "name": "Recibidor",
+      "owner": "official_rooms",
+      "imageUrl": "https://www.habbo.com/habbo-imaging/room/1/thumbnail.png"
+    }
+  },
+  "news": {
+    "noticia1": {
+      "category": "EVENTO",
+      "content": "¡El verano ha llegado a Habbo y con él una nueva oleada de furnis playeros! No te pierdas la nueva colección que incluye desde tablas de surf hasta castillos de arena. Además, cada día habrá juegos y eventos especiales en la playa del hotel. ¡Participa para ganar placas exclusivas!",
+      "date": "2024-07-15",
+      "imageHint": "habbo beach",
+      "imageUrl": "https://picsum.photos/seed/summerhabbo/600/400",
+      "summary": "Descubre los nuevos furnis de verano y participa en los eventos playeros para ganar premios.",
+      "title": "¡Sol, Arena y Pixeles! Llega el Evento de Verano"
+    }
+  },
+  "onAir": {
+    "currentDj": "DJ-Pixel",
+    "nextDj": "DJ-Frank",
+    "isEvent": true
+  },
+  "schedule": {
+    "horario1": {
+      "day": "Lunes",
+      "dj": "DJ-Pixel",
+      "endTime": "16:00",
+      "show": "Tardes de Pop",
+      "startTime": "14:00"
+    }
+  },
+  "team": {
+    "estacionkusfm": {
+      "roles": [
+        "Administrador"
+      ]
+    },
+    "DJ-Pixel": {
+      "roles": [
+        "DJ"
+      ]
+    }
+  },
+  "events": {
+    "evento1": {
+      "title": "BANZAI RACING",
+      "server": "Habbo (ES)",
+      "date": "2025-09-21",
+      "time": "16:00",
+      "roomName": "Banzai Racing R🌩️ [💜] HABBOTICOS",
+      "roomOwner": "JayAngel",
+      "host": "Habboticos",
+      "imageUrl": "https://picsum.photos/seed/banzairacing/600/400",
+      "imageHint": "racing game"
+    }
+  },
+  "userRequests": {
+    "request1": {
+      "details": "Quiero escuchar 'Shape of You' de Ed Sheeran. ¡Saludos desde la sala de juegos!",
+      "timestamp": 1672531200000,
+      "type": "cancion",
+      "user": "DJ-Pixel"
+    }
+  },
+  "polls": {
+    "poll1": {
+      "title": "¿Cuál es tu juego favorito de Habbo?",
+      "isActive": true,
+      "createdAt": 1672531200000,
+      "options": {
+        "opt1": { "name": "Battle Banzai", "votes": 120 },
+        "opt2": { "name": "Freeze", "votes": 85 },
+        "opt3": { "name": "Wobble Squabble", "votes": 45 },
+        "opt4": { "name": "Fútbol", "votes": 210 }
+      }
+    }
+  },
+  "poll_votes": {
+    "someUserId": {
+      "poll1": "opt4"
+    }
+  },
+   "awardTypes": {
+    "type1": { "name": "DJ del Mes", "isCopa": false },
+    "type2": { "name": "Guía del Mes", "isCopa": false },
+    "type3": { "name": "Máximo Goleador", "isCopa": true },
+    "type4": { "name": "Portero Menos Goleado", "isCopa": true }
+  },
+  "awardWinners": {
+    "winner1": { "awardTypeId": "type1", "winnerName": "DJ-Pixel", "month": "Octubre", "timestamp": 1698800000000 },
+    "winner2": { "awardTypeId": "type3", "winnerName": "xX_Pichichi_Xx", "month": "Noviembre", "timestamp": 1701388800000 }
+  }
+}

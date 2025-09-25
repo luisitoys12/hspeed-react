@@ -14,15 +14,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Award, LoaderCircle, PlusCircle, Trash2 } from 'lucide-react';
+import { Award, LoaderCircle, PlusCircle, Trash2, Checkbox } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 // Schemas
 const awardTypeSchema = z.object({
   name: z.string().min(3, "El nombre del premio es muy corto."),
+  isCopa: z.boolean().default(false).optional(),
 });
 const awardWinnerSchema = z.object({
   awardTypeId: z.string({ required_error: "Debes seleccionar un tipo de premio." }),
@@ -30,9 +29,9 @@ const awardWinnerSchema = z.object({
   month: z.string({ required_error: "El mes es requerido." }),
 });
 
-type AwardType = { id: string; name: string };
+type AwardType = { id: string; name: string, isCopa?: boolean };
 type AwardWinner = { id: string; awardTypeId: string; winnerName: string; month: string };
-type AwardWinnerWithTypeName = AwardWinner & { awardTypeName: string };
+type AwardWinnerWithTypeName = AwardWinner & { awardTypeName: string; isCopa?: boolean };
 
 const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
@@ -44,7 +43,7 @@ export default function AwardsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
 
-  const awardTypeForm = useForm({ resolver: zodResolver(awardTypeSchema) });
+  const awardTypeForm = useForm<z.infer<typeof awardTypeSchema>>({ resolver: zodResolver(awardTypeSchema) });
   const awardWinnerForm = useForm({ resolver: zodResolver(awardWinnerSchema) });
 
   useEffect(() => {
@@ -53,41 +52,47 @@ export default function AwardsPage() {
 
     const unsubscribeTypes = onValue(typesRef, (snapshot) => {
       const data = snapshot.val() || {};
-      setAwardTypes(Object.keys(data).map(key => ({ id: key, ...data[key] })));
-    });
-
-    const unsubscribeWinners = onValue(winnersRef, (snapshot) => {
-      const winnersData = snapshot.val() || {};
-      const winnersList: AwardWinner[] = Object.keys(winnersData).map(key => ({ id: key, ...winnersData[key] }));
+      const typesArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+      setAwardTypes(typesArray);
       
-      // Combine with type names
-      const typesMap = new Map(awardTypes.map(t => [t.id, t.name]));
-      const combined = winnersList.map(winner => ({
-          ...winner,
-          awardTypeName: typesMap.get(winner.awardTypeId) || "Premio Desconocido"
-      })).sort((a,b) => new Date(b.month).getTime() - new Date(a.month).getTime());
+      // Fetch winners only after types are loaded to map them correctly
+      const unsubscribeWinners = onValue(winnersRef, (winnersSnapshot) => {
+        const winnersData = winnersSnapshot.val() || {};
+        const typesMap = new Map(typesArray.map(t => [t.id, {name: t.name, isCopa: t.isCopa || false}]));
+        
+        const winnersList: AwardWinnerWithTypeName[] = Object.keys(winnersData).map(key => {
+            const winner = winnersData[key];
+            const awardTypeInfo = typesMap.get(winner.awardTypeId);
+            return {
+                ...winner,
+                id: key,
+                awardTypeName: awardTypeInfo?.name || "Premio Desconocido",
+                isCopa: awardTypeInfo?.isCopa || false
+            };
+        }).sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-      setAwardWinners(combined);
-      setLoadingData(false);
+        setAwardWinners(winnersList);
+        setLoadingData(false);
+      });
+      return () => unsubscribeWinners();
     });
 
     return () => {
       unsubscribeTypes();
-      unsubscribeWinners();
     };
-  }, [awardTypes]); // Rerun when awardTypes changes to update names
+  }, []);
 
   const handleAddAwardType = async (data: z.infer<typeof awardTypeSchema>) => {
     setIsSubmitting(true);
     await push(ref(db, 'awardTypes'), data);
     toast({ title: "Tipo de premio añadido" });
-    awardTypeForm.reset({ name: '' });
+    awardTypeForm.reset({ name: '', isCopa: false });
     setIsSubmitting(false);
   };
   
   const handleAddAwardWinner = async (data: z.infer<typeof awardWinnerSchema>) => {
     setIsSubmitting(true);
-    await push(ref(db, 'awardWinners'), { ...data, timestamp: new Date().toISOString() });
+    await push(ref(db, 'awardWinners'), { ...data, timestamp: Date.now() });
     toast({ title: "Ganador asignado" });
     awardWinnerForm.reset({ awardTypeId: '', winnerName: '', month: '' });
     setIsSubmitting(false);
@@ -121,11 +126,23 @@ export default function AwardsPage() {
                 </CardHeader>
                 <CardContent>
                     <Form {...awardTypeForm}>
-                        <form onSubmit={awardTypeForm.handleSubmit(handleAddAwardType)} className="flex gap-2">
+                        <form onSubmit={awardTypeForm.handleSubmit(handleAddAwardType)} className="space-y-4">
                             <FormField control={awardTypeForm.control} name="name" render={({ field }) => (
-                                <FormItem className="flex-grow"><FormControl><Input placeholder="Nombre del premio..." {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Nombre del premio</FormLabel><FormControl><Input placeholder="Ej: DJ del Mes" {...field} /></FormControl><FormMessage /></FormItem>
                             )}/>
-                            <Button type="submit" disabled={isSubmitting} size="icon"><PlusCircle/></Button>
+                            <FormField
+                                control={awardTypeForm.control} name="isCopa"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    <div className="space-y-1 leading-none">
+                                        <FormLabel>Es un premio de la Copa</FormLabel>
+                                        <FormDescription>Marca esto si el premio es exclusivo para la Copa Habbospeed.</FormDescription>
+                                    </div>
+                                </FormItem>
+                                )}
+                            />
+                            <Button type="submit" disabled={isSubmitting} className="w-full"><PlusCircle className="mr-2"/>Añadir Tipo</Button>
                         </form>
                     </Form>
                 </CardContent>
@@ -177,7 +194,7 @@ export default function AwardsPage() {
                             <TableBody>
                                 {awardWinners.map(winner => (
                                     <TableRow key={winner.id}>
-                                        <TableCell className="font-semibold text-primary">{winner.awardTypeName}</TableCell>
+                                        <TableCell className="font-semibold text-primary">{winner.awardTypeName} {winner.isCopa && "(Copa)"}</TableCell>
                                         <TableCell>{winner.winnerName}</TableCell>
                                         <TableCell>{winner.month}</TableCell>
                                         <TableCell className="text-right">
@@ -201,4 +218,3 @@ export default function AwardsPage() {
     </div>
   );
 }
-
