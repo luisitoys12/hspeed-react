@@ -133,26 +133,42 @@ export default function HomePlayer() {
   const currentDjName = onAirData?.currentDj || 'AutoDJ';
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-card/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-[#1e5c8e] p-2">
+    <div className="w-full max-w-lg mx-auto bg-card/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-[#1e5c8e] p-2 relative">
+       <Image src="https://habbo.es/images/catalogue/icon_1015.png" alt="Fantasma de Halloween" width={40} height={40} unoptimized className="absolute -top-5 -left-5 animate-pulse" />
+       <Image src="https://habbo.es/images/catalogue/icon_1015.png" alt="Fantasma de Halloween" width={40} height={40} unoptimized className="absolute -top-5 -right-5 animate-pulse [transform:scaleX(-1)]" />
+
       <audio ref={audioRef} preload="none" />
       <div 
         className="bg-[#0e2439] rounded-lg p-2 bg-center bg-no-repeat"
         style={{backgroundImage: `url('${radioConfig?.homePlayerBgUrl || 'https://i.imgur.com/uGg0a21.png'}')`}}
       >
         <div className="flex justify-between items-start">
-            {/* Left Section: Avatar */}
+            
+            {/* Left Section: DJ Booth Scene */}
             <Dialog>
                 <DialogTrigger asChild>
-                    <div className="relative w-[55px] h-[110px] cursor-pointer" title="Haz una petición">
-                         <Image 
-                            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=m`}
-                            alt={currentDjName}
-                            width={55}
-                            height={110}
-                            unoptimized
-                            className="drop-shadow-lg"
-                        />
-                         <div className="absolute bottom-5 -right-3 z-10">
+                    <div className="relative w-[110px] h-[110px] cursor-pointer" title="Haz una petición">
+                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10">
+                            <Image 
+                                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=m&gesture=sml`}
+                                alt={currentDjName}
+                                width={64}
+                                height={110}
+                                unoptimized
+                                className="drop-shadow-lg"
+                            />
+                         </div>
+                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20">
+                            <Image 
+                                src="https://static.habbo-happy.net/img/furni/big/808151140343397.gif"
+                                alt="DJ Booth"
+                                width={110}
+                                height={110}
+                                unoptimized
+                                className="object-contain"
+                            />
+                         </div>
+                         <div className="absolute bottom-6 left-[65px] z-30">
                             <Image 
                                 src="https://static.habbo-happy.net/img/furni/big/870020251255482.gif"
                                 alt="Micrófono"
