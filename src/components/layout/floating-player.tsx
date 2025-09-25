@@ -275,45 +275,43 @@ export default function FloatingPlayer() {
   return (
     <>
       <audio ref={audioRef} preload="none" />
-      {isLiveDj && (
-        <div className="md:hidden fixed bottom-24 right-4 z-50 flex flex-col gap-3">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button className="h-14 w-14 rounded-full bg-blue-600 shadow-lg hover:bg-blue-700">
-                <Mic className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-             <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Ahora Suena</SheetTitle>
-              </SheetHeader>
-              <div className="py-4 text-center">
-                 <Image src={songInfo.art} alt={songInfo.title} width={150} height={150} className="rounded-lg mx-auto mb-4" unoptimized/>
-                 <h3 className="font-bold text-lg">{songInfo.title}</h3>
-                 <p className="text-muted-foreground">{songInfo.artist}</p>
-              </div>
-            </SheetContent>
-          </Sheet>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button className="h-14 w-14 rounded-full bg-primary shadow-lg">
-                <Music className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
+      <div className="md:hidden fixed bottom-24 right-4 z-50 flex flex-col gap-3">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button className="h-14 w-14 rounded-full bg-blue-600 shadow-lg hover:bg-blue-700">
+              <Mic className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
             <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Pide una Canción</SheetTitle>
-                <SheetDescription>
-                  ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ!
-                </SheetDescription>
-              </SheetHeader>
-              <div className="py-4">
-                <SongRequestForm />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      )}
+            <SheetHeader>
+              <SheetTitle>Ahora Suena</SheetTitle>
+            </SheetHeader>
+            <div className="py-4 text-center">
+                <Image src={songInfo.art} alt={songInfo.title} width={150} height={150} className="rounded-lg mx-auto mb-4" unoptimized/>
+                <h3 className="font-bold text-lg">{songInfo.title}</h3>
+                <p className="text-muted-foreground">{songInfo.artist}</p>
+            </div>
+          </SheetContent>
+        </Sheet>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button className="h-14 w-14 rounded-full bg-primary shadow-lg">
+              <Music className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Pide una Canción</SheetTitle>
+              <SheetDescription>
+                ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ!
+              </SheetDescription>
+            </SheetHeader>
+            <div className="py-4">
+              <SongRequestForm />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
       <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
         <div className="container mx-auto flex flex-col items-center gap-2">
            {/* DJ Info for Mobile */}
