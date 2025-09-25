@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -168,13 +169,13 @@ export default function HomePlayer() {
                             />
                         </div>
                       )}
-                      <div className="absolute bottom-6 -right-4 z-30 w-12 h-12">
+                      <div className="absolute bottom-6 right-0 z-30 w-12 h-12">
                           <Image 
-                            src="https://static.habbo-happy.net/img/furni/big/870020251255482.gif"
+                            src="https://static.habbo-happy.net/img/furni/big/594402946997433.gif"
                             alt="Micrófono"
                             fill
                             unoptimized
-                            className="object-contain"
+                            className="object-contain [transform:scaleX(-1)]"
                            />
                       </div>
                    </div>
