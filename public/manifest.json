@@ -1,0 +1,22 @@
+{
+  "name": "Habbospeed",
+  "short_name": "Habbospeed",
+  "description": "Tu comunidad de Habbo Hotel. La radio #1 para la comunidad de Habbo.es. Música, eventos y diversión 24/7.",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/u31XFxN.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.imgur.com/u31XFxN.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#26224C",
+  "background_color": "#26224C",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}

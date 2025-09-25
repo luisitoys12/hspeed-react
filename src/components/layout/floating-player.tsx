@@ -4,7 +4,7 @@
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Volume2, Users, Music, Bell, PartyPopper } from 'lucide-react';
+import { Play, Pause, Volume2, Users, Music, Bell, PartyPopper, Mic } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { sendWebhook } from '@/lib/actions';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 
 interface OnAirData {
@@ -177,7 +178,7 @@ export default function FloatingPlayer() {
 
   // Handle Media Session Metadata
   useEffect(() => {
-    if ('mediaSession' in navigator && onAirData) {
+    if (typeof window !== 'undefined' && 'mediaSession' in navigator && onAirData && isPlaying) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: songInfo.title,
         artist: songInfo.artist,
@@ -192,7 +193,7 @@ export default function FloatingPlayer() {
         ],
       });
     }
-  }, [songInfo, onAirData]);
+  }, [songInfo, onAirData, isPlaying]);
 
 
   // Handle Push Notifications
@@ -275,7 +276,24 @@ export default function FloatingPlayer() {
     <>
       <audio ref={audioRef} preload="none" />
       {isLiveDj && (
-        <div className="md:hidden fixed bottom-24 right-4 z-50">
+        <div className="md:hidden fixed bottom-24 right-4 z-50 flex flex-col gap-3">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button className="h-14 w-14 rounded-full bg-blue-600 shadow-lg hover:bg-blue-700">
+                <Mic className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+             <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Ahora Suena</SheetTitle>
+              </SheetHeader>
+              <div className="py-4 text-center">
+                 <Image src={songInfo.art} alt={songInfo.title} width={150} height={150} className="rounded-lg mx-auto mb-4" unoptimized/>
+                 <h3 className="font-bold text-lg">{songInfo.title}</h3>
+                 <p className="text-muted-foreground">{songInfo.artist}</p>
+              </div>
+            </SheetContent>
+          </Sheet>
           <Sheet>
             <SheetTrigger asChild>
               <Button className="h-14 w-14 rounded-full bg-primary shadow-lg">
@@ -298,6 +316,20 @@ export default function FloatingPlayer() {
       )}
       <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4">
         <div className="container mx-auto flex flex-col items-center gap-2">
+           {/* DJ Info for Mobile */}
+          {isLiveDj && onAirData && (
+             <div className="md:hidden flex items-center justify-center gap-2 bg-card/80 backdrop-blur-sm p-2 rounded-lg w-full max-w-sm">
+                <Avatar className="h-8 w-8 border-2 border-green-500">
+                    <AvatarImage src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${onAirData.currentDj}&headonly=1&size=s`} alt={onAirData.currentDj} />
+                    <AvatarFallback>{onAirData.currentDj.substring(0,2)}</AvatarFallback>
+                </Avatar>
+                <div className='text-left'>
+                    <p className="text-xs text-green-400 font-bold">AL AIRE</p>
+                    <p className="text-sm font-headline font-bold leading-tight">{onAirData.currentDj}</p>
+                </div>
+            </div>
+          )}
+
           <div className="w-full bg-card/80 backdrop-blur-sm border border-border rounded-lg shadow-2xl p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
               
               <div className="flex items-center gap-3 min-w-0 justify-start">
