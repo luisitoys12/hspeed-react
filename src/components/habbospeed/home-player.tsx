@@ -147,13 +147,13 @@ export default function HomePlayer() {
             
             <Dialog>
                 <DialogTrigger asChild>
-                   <div className="relative w-[110px] h-[110px] cursor-pointer flex items-center justify-center" title="Haz una petición">
+                   <div className="relative w-32 h-32 cursor-pointer flex items-center justify-center" title="Haz una petición">
                       <div className="absolute bottom-0 z-10">
                         <Image 
-                            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=m&gesture=sml`}
+                            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=l&gesture=sml`}
                             alt={currentDjName}
-                            width={64}
-                            height={110}
+                            width={128}
+                            height={128}
                             unoptimized
                             className="drop-shadow-lg"
                         />
