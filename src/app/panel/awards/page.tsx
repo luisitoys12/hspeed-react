@@ -9,101 +9,105 @@ import { ref, onValue, set, push, remove } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Award, LoaderCircle, PlusCircle, Trash2, Checkbox } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Award, LoaderCircle, PlusCircle, Trash2, Lock, Unlock } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import Image from 'next/image';
 
 // Schemas
-const awardTypeSchema = z.object({
-  name: z.string().min(3, "El nombre del premio es muy corto."),
-  isCopa: z.boolean().default(false).optional(),
-});
-const awardWinnerSchema = z.object({
-  awardTypeId: z.string({ required_error: "Debes seleccionar un tipo de premio." }),
-  winnerName: z.string().min(3, "El nombre del ganador es requerido."),
-  month: z.string({ required_error: "El mes es requerido." }),
-});
+const categorySchema = z.object({ title: z.string().min(3, "El título es muy corto.") });
+const nomineeSchema = z.object({ categoryId: z.string(), nomineeName: z.string().min(3, "El nombre es requerido.") });
 
-type AwardType = { id: string; name: string, isCopa?: boolean };
-type AwardWinner = { id: string; awardTypeId: string; winnerName: string; month: string };
-type AwardWinnerWithTypeName = AwardWinner & { awardTypeName: string; isCopa?: boolean };
-
-const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+// Types
+type Category = { id: string; title: string; };
+type Nominee = { id: string; name: string; motto: string; votes: number; };
+type NominationData = { [key: string]: Nominee };
 
 export default function AwardsPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [awardTypes, setAwardTypes] = useState<AwardType[]>([]);
-  const [awardWinners, setAwardWinners] = useState<AwardWinnerWithTypeName[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [nominations, setNominations] = useState<{ [catId: string]: NominationData }>({});
+  const [isVotingOpen, setIsVotingOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-
-  const awardTypeForm = useForm<z.infer<typeof awardTypeSchema>>({ resolver: zodResolver(awardTypeSchema) });
-  const awardWinnerForm = useForm({ resolver: zodResolver(awardWinnerSchema) });
+  
+  const categoryForm = useForm<z.infer<typeof categorySchema>>({ resolver: zodResolver(categorySchema) });
+  const nomineeForm = useForm<z.infer<typeof nomineeSchema>>({ resolver: zodResolver(nomineeSchema) });
 
   useEffect(() => {
-    const typesRef = ref(db, 'awardTypes');
-    const winnersRef = ref(db, 'awardWinners');
+    const categoriesRef = ref(db, 'award_categories');
+    const nominationsRef = ref(db, 'award_nominations');
+    const configRef = ref(db, 'config/awardVotingOpen');
 
-    const unsubscribeTypes = onValue(typesRef, (snapshot) => {
-      const data = snapshot.val() || {};
-      const typesArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-      setAwardTypes(typesArray);
-      
-      // Fetch winners only after types are loaded to map them correctly
-      const unsubscribeWinners = onValue(winnersRef, (winnersSnapshot) => {
-        const winnersData = winnersSnapshot.val() || {};
-        const typesMap = new Map(typesArray.map(t => [t.id, {name: t.name, isCopa: t.isCopa || false}]));
-        
-        const winnersList: AwardWinnerWithTypeName[] = Object.keys(winnersData).map(key => {
-            const winner = winnersData[key];
-            const awardTypeInfo = typesMap.get(winner.awardTypeId);
-            return {
-                ...winner,
-                id: key,
-                awardTypeName: awardTypeInfo?.name || "Premio Desconocido",
-                isCopa: awardTypeInfo?.isCopa || false
-            };
-        }).sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-        setAwardWinners(winnersList);
-        setLoadingData(false);
-      });
-      return () => unsubscribeWinners();
+    const unsubCategories = onValue(categoriesRef, (snapshot) => {
+      setCategories(snapshot.val() ? Object.keys(snapshot.val()).map(k => ({ id: k, ...snapshot.val()[k] })) : []);
+      setLoadingData(false);
+    });
+    const unsubNominations = onValue(nominationsRef, (snapshot) => {
+      setNominations(snapshot.val() || {});
+    });
+    const unsubConfig = onValue(configRef, (snapshot) => {
+      setIsVotingOpen(snapshot.val() === true);
     });
 
     return () => {
-      unsubscribeTypes();
+      unsubCategories();
+      unsubNominations();
+      unsubConfig();
     };
   }, []);
+  
+  const handleAddCategory = async (data: z.infer<typeof categorySchema>) => {
+    setIsSubmitting(true);
+    await push(ref(db, 'award_categories'), { title: data.title });
+    toast({ title: "Categoría creada" });
+    categoryForm.reset({ title: '' });
+    setIsSubmitting(false);
+  };
 
-  const handleAddAwardType = async (data: z.infer<typeof awardTypeSchema>) => {
-    setIsSubmitting(true);
-    await push(ref(db, 'awardTypes'), data);
-    toast({ title: "Tipo de premio añadido" });
-    awardTypeForm.reset({ name: '', isCopa: false });
+  const handleAddNominee = async (data: z.infer<typeof nomineeSchema>) => {
+     setIsSubmitting(true);
+    // Quick check if nominee exists in Habbo API
+    try {
+        const response = await fetch(`/api/habbo-user?username=${data.nomineeName}`);
+        if (!response.ok) throw new Error();
+        const habboData = await response.json();
+
+        const nomineeRef = push(ref(db, `award_nominations/${data.categoryId}`));
+        await set(nomineeRef, { name: habboData.user.name, motto: habboData.user.motto, votes: 0 });
+        toast({ title: "Nominado añadido" });
+        nomineeForm.reset({ nomineeName: '', categoryId: data.categoryId });
+    } catch {
+        toast({ variant: 'destructive', title: 'Error', description: 'El usuario de Habbo no existe o no se pudo verificar.' });
+    }
     setIsSubmitting(false);
-  };
-  
-  const handleAddAwardWinner = async (data: z.infer<typeof awardWinnerSchema>) => {
-    setIsSubmitting(true);
-    await push(ref(db, 'awardWinners'), { ...data, timestamp: Date.now() });
-    toast({ title: "Ganador asignado" });
-    awardWinnerForm.reset({ awardTypeId: '', winnerName: '', month: '' });
-    setIsSubmitting(false);
-  };
-  
-  const handleDeleteWinner = async (id: string) => {
-      await remove(ref(db, `awardWinners/${id}`));
-      toast({ title: "Ganador eliminado" });
   }
 
-  if (authLoading || loadingData) return <div>Cargando...</div>;
+  const handleDeleteNominee = async (categoryId: string, nomineeId: string) => {
+    await remove(ref(db, `award_nominations/${categoryId}/${nomineeId}`));
+    toast({ title: "Nominado eliminado" });
+  };
+  
+  const handleDeleteCategory = async (categoryId: string) => {
+      await remove(ref(db, `award_categories/${categoryId}`));
+      await remove(ref(db, `award_nominations/${categoryId}`));
+      toast({title: "Categoría eliminada"});
+  }
+
+  const handleToggleVoting = async (isOpen: boolean) => {
+    await set(ref(db, 'config/awardVotingOpen'), isOpen);
+    toast({ title: `Votaciones ${isOpen ? 'abiertas' : 'cerradas'}` });
+  };
+
+  if (authLoading || loadingData) return <div className="container p-8"><Skeleton className="w-full h-96" /></div>;
   if (!user?.isSuperAdmin) return <div>Acceso denegado.</div>;
 
   return (
@@ -111,110 +115,108 @@ export default function AwardsPage() {
       <div className="mb-8">
         <h1 className="flex items-center gap-3 text-2xl md:text-4xl font-headline font-bold">
           <Award className="h-8 w-8 text-primary" />
-          Premios y Destacados
+          Gestión de Habbospeed Awards
         </h1>
-        <p className="text-muted-foreground mt-2">Gestiona los premios y reconoce a los miembros destacados del equipo.</p>
+        <p className="text-muted-foreground mt-2">Crea categorías, añade nominados y gestiona las votaciones.</p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Forms column */}
-        <div className="lg:col-span-1 space-y-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Añadir Tipo de Premio</CardTitle>
-                    <CardDescription>Crea una nueva categoría de premio (ej: "DJ del Mes").</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...awardTypeForm}>
-                        <form onSubmit={awardTypeForm.handleSubmit(handleAddAwardType)} className="space-y-4">
-                            <FormField control={awardTypeForm.control} name="name" render={({ field }) => (
-                                <FormItem><FormLabel>Nombre del premio</FormLabel><FormControl><Input placeholder="Ej: DJ del Mes" {...field} /></FormControl><FormMessage /></FormItem>
-                            )}/>
-                            <FormField
-                                control={awardTypeForm.control} name="isCopa"
-                                render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                    <div className="space-y-1 leading-none">
-                                        <FormLabel>Es un premio de la Copa</FormLabel>
-                                        <FormDescription>Marca esto si el premio es exclusivo para la Copa Habbospeed.</FormDescription>
-                                    </div>
-                                </FormItem>
-                                )}
-                            />
-                            <Button type="submit" disabled={isSubmitting} className="w-full"><PlusCircle className="mr-2"/>Añadir Tipo</Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+       <Card className="mb-8">
+            <CardHeader>
+                <CardTitle>Control General</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center space-x-4 rounded-lg border p-4">
+                {isVotingOpen ? <Unlock className="h-5 w-5 text-green-500" /> : <Lock className="h-5 w-5 text-red-500" />}
+                <div className="flex-grow">
+                    <Label htmlFor="voting-switch" className="font-bold">Votaciones {isVotingOpen ? 'Abiertas' : 'Cerradas'}</Label>
+                    <p className="text-xs text-muted-foreground">Activa o desactiva la posibilidad de que los usuarios voten en la página pública.</p>
+                </div>
+                <Switch id="voting-switch" checked={isVotingOpen} onCheckedChange={handleToggleVoting} />
+            </CardContent>
+        </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Asignar Ganador</CardTitle>
-                    <CardDescription>Selecciona un premio, un ganador y un mes.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...awardWinnerForm}>
-                        <form onSubmit={awardWinnerForm.handleSubmit(handleAddAwardWinner)} className="space-y-4">
-                            <FormField control={awardWinnerForm.control} name="awardTypeId" render={({ field }) => (
-                                <FormItem><FormLabel>Premio</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecciona un premio" /></SelectTrigger></FormControl><SelectContent>{awardTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                            )}/>
-                             <FormField control={awardWinnerForm.control} name="winnerName" render={({ field }) => (
-                                <FormItem><FormLabel>Nombre del Ganador</FormLabel><FormControl><Input placeholder="Nombre de usuario en Habbo" {...field} /></FormControl><FormMessage /></FormItem>
-                            )}/>
-                             <FormField control={awardWinnerForm.control} name="month" render={({ field }) => (
-                                <FormItem><FormLabel>Mes</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecciona un mes" /></SelectTrigger></FormControl><SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                            )}/>
-                            <Button type="submit" disabled={isSubmitting} className="w-full">
-                                {isSubmitting && <LoaderCircle className="mr-2 animate-spin"/>} Asignar Premio
-                            </Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+      <div className="grid lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-1 space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Añadir Categoría</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...categoryForm}>
+                <form onSubmit={categoryForm.handleSubmit(handleAddCategory)} className="space-y-4">
+                  <FormField control={categoryForm.control} name="title" render={({ field }) => (
+                    <FormItem><FormControl><Input placeholder="Ej: DJ del Año" {...field} /></FormControl><FormMessage /></FormItem>
+                  )}/>
+                  <Button type="submit" disabled={isSubmitting} className="w-full"><PlusCircle className="mr-2" />Crear Categoría</Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Winners list column */}
-        <div className="lg:col-span-2">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Historial de Ganadores</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="border rounded-lg">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Premio</TableHead>
-                                    <TableHead>Ganador</TableHead>
-                                    <TableHead>Mes</TableHead>
-                                    <TableHead className="text-right">Acción</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {awardWinners.map(winner => (
-                                    <TableRow key={winner.id}>
-                                        <TableCell className="font-semibold text-primary">{winner.awardTypeName} {winner.isCopa && "(Copa)"}</TableCell>
-                                        <TableCell>{winner.winnerName}</TableCell>
-                                        <TableCell>{winner.month}</TableCell>
-                                        <TableCell className="text-right">
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>Se eliminará la entrada de {winner.winnerName} para el premio {winner.awardTypeName}.</AlertDialogDescription></AlertDialogHeader>
-                                                    <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteWinner(winner.id)} className="bg-destructive">Eliminar</AlertDialogAction></AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+        <div className="lg:col-span-2 space-y-8">
+            {categories.map(cat => (
+                <Card key={cat.id}>
+                    <CardHeader className="flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>{cat.title}</CardTitle>
+                            <CardDescription>Gestiona los nominados para esta categoría.</CardDescription>
+                        </div>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild><Button variant="destructive" size="sm"><Trash2 className="mr-2" />Eliminar Categoría</Button></AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader><AlertDialogTitle>¿Seguro?</AlertDialogTitle><AlertDialogDescription>Se eliminará la categoría "{cat.title}" y todos sus nominados. Esta acción no se puede deshacer.</AlertDialogDescription></AlertDialogHeader>
+                                <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteCategory(cat.id)} className="bg-destructive">Eliminar</AlertDialogAction></AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...nomineeForm}>
+                            <form onSubmit={nomineeForm.handleSubmit(handleAddNominee)} className="flex items-center gap-2 mb-4">
+                                <FormField control={nomineeForm.control} name="nomineeName" render={({ field }) => (
+                                    <FormItem className="flex-grow">
+                                        <FormControl><Input placeholder="Nombre de Habbo del nominado..." {...field} /></FormControl>
+                                    </FormItem>
+                                )}/>
+                                <Button type="submit" onClick={() => nomineeForm.setValue('categoryId', cat.id)} disabled={isSubmitting}>
+                                    {isSubmitting ? <LoaderCircle className="animate-spin"/> : 'Añadir'}
+                                </Button>
+                            </form>
+                        </Form>
+                        <div className="border rounded-lg p-2 space-y-2">
+                             {(nominations[cat.id] ? Object.entries(nominations[cat.id]) : []).map(([nomineeId, nominee]) => (
+                                <div key={nomineeId} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                    <div className="flex items-center gap-3">
+                                        <Image src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${nominee.name}&headonly=1&size=s`} alt={nominee.name} width={32} height={32} unoptimized/>
+                                        <div>
+                                            <p className="font-bold">{nominee.name}</p>
+                                            <p className="text-xs text-muted-foreground italic">"{nominee.motto}"</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-center">
+                                            <p className="font-bold text-primary text-lg">{nominee.votes}</p>
+                                            <p className="text-xs text-muted-foreground">Votos</p>
+                                        </div>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="text-destructive"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader><AlertDialogTitle>Confirmar</AlertDialogTitle><AlertDialogDescription>Se eliminará a {nominee.name} de esta categoría.</AlertDialogDescription></AlertDialogHeader>
+                                                <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteNominee(cat.id, nomineeId)} className="bg-destructive">Eliminar</AlertDialogAction></AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </div>
+                                </div>
+                             ))}
+                             {!nominations[cat.id] && <p className="text-center text-sm text-muted-foreground py-4">No hay nominados en esta categoría todavía.</p>}
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
         </div>
       </div>
     </div>
   );
 }
+
+
+    

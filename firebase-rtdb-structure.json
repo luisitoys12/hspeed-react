@@ -1,3 +1,4 @@
+
 {
   "alliances": {
     "alliance1": {
@@ -66,6 +67,15 @@
       "imageUrl": "https://picsum.photos/seed/summerhabbo/600/400",
       "summary": "Descubre los nuevos furnis de verano y participa en los eventos playeros para ganar premios.",
       "title": "¡Sol, Arena y Pixeles! Llega el Evento de Verano"
+    },
+    "copanoticia1": {
+      "category": "COPA",
+      "content": "La primera jornada de la Copa Habbospeed estuvo llena de sorpresas. El equipo 'Los Furas' demostró su poderío ofensivo, mientras que 'Defensores' se mantiene como el equipo a vencer. ¡No te pierdas el resumen de los partidos!",
+      "date": "2024-11-05",
+      "imageHint": "soccer field",
+      "imageUrl": "https://picsum.photos/seed/copajornada1/600/400",
+      "summary": "Resumen de la primera jornada: sorpresas, goles y mucho fútbol.",
+      "title": "Arranca la Copa Habbospeed con Partidos de Infarto"
     }
   },
   "onAir": {
@@ -132,5 +142,47 @@
     "someUserId": {
       "poll1": "opt4"
     }
+  },
+  "copa": {
+    "teams": {
+      "LosFuras": { "name": "Los Furas", "pj": 1, "pg": 1, "pe": 0, "pp": 0, "gf": 3, "gc": 1, "dg": 2, "pts": 3 },
+      "Defensores": { "name": "Defensores", "pj": 1, "pg": 1, "pe": 0, "pp": 0, "gf": 2, "gc": 0, "dg": 2, "pts": 3 },
+      "LosAmistosos": { "name": "Los Amistosos", "pj": 1, "pg": 0, "pe": 0, "pp": 1, "gf": 0, "gc": 2, "dg": -2, "pts": 0 }
+    },
+    "topScorers": [
+      { "name": "xX_Pichichi_Xx", "team": "Los Furas", "goals": 2 },
+      { "name": "MuroDeAcero", "team": "Defensores", "goals": 1 },
+      { "name": "ElGoleador", "team": "Los Furas", "goals": 1 }
+    ],
+    "nextMatch": {
+      "teamA": "Los Furas",
+      "teamB": "Defensores",
+      "date": "2024-11-15",
+      "time": "22:00"
+    },
+    "venue": {
+      "name": "Estadio Habbospeed",
+      "owner": "estacionkusfm"
+    }
+  },
+  "award_categories": {
+    "cat1": { "title": "DJ del Año" },
+    "cat2": { "title": "Mejor Constructor de Salas" }
+  },
+  "award_nominations": {
+    "cat1": {
+      "nom1": { "name": "DJ-Pixel", "motto": "¡Pura energía en la cabina!", "votes": 42 },
+      "nom2": { "name": "DJ-Frank", "motto": "El rey de las mezclas.", "votes": 67 }
+    },
+    "cat2": {
+      "nom3": { "name": "Arq.Maria", "motto": "Construyendo sueños pixelados.", "votes": 102 }
+    }
+  },
+  "award_votes": {
+    "someUserId": {
+      "cat1": "nom2"
+    }
   }
 }
+
+    
