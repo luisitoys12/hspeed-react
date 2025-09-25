@@ -1,3 +1,4 @@
+
 import { get } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { ref, query, orderByChild, equalTo, limitToLast, getDatabase, onValue } from 'firebase/database';
@@ -41,9 +42,8 @@ async function getProfileData(username: string) {
         // 5. Fetch custom badge definitions
         const customBadgesPromise = get(ref(db, `custom_badges`));
         
-        // 6. Fetch user's latest comments
-        const commentsQuery = query(ref(db, 'comments'), orderByChild('authorName'), equalTo(username), limitToLast(5));
-        const commentsPromise = get(commentsQuery);
+        // 6. Fetch all comments and filter in code
+        const commentsPromise = get(ref(db, 'comments'));
         
         const [userResponse, teamSnapshot, commentsSnapshot, assignedBadgesSnapshot, customBadgesSnapshot] = await Promise.all([userPromise, teamPromise, commentsPromise, assignedBadgesPromise, customBadgesPromise]);
 
@@ -58,17 +58,19 @@ async function getProfileData(username: string) {
         const roles = teamSnapshot.exists() ? teamSnapshot.val().roles : [];
         const isVerified = teamSnapshot.exists();
 
+        // Filter comments in code
         const comments: Comment[] = [];
         if (commentsSnapshot.exists()) {
-            commentsSnapshot.forEach((articleCommentsSnapshot) => {
-                 const articleId = articleCommentsSnapshot.key;
-                 const articleComments = articleCommentsSnapshot.val();
+            const allCommentsData = commentsSnapshot.val();
+            Object.keys(allCommentsData).forEach(articleId => {
+                 const articleComments = allCommentsData[articleId];
                  Object.keys(articleComments).forEach(commentKey => {
-                    if (articleComments[commentKey].authorName === username) {
+                    const comment = articleComments[commentKey];
+                    if (comment.authorName.toLowerCase() === nameForQuery) {
                         comments.push({
                             id: commentKey,
                             articleId: articleId,
-                            ...articleComments[commentKey]
+                            ...comment
                         });
                     }
                  });
@@ -91,7 +93,7 @@ async function getProfileData(username: string) {
             avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${userData.name}&direction=2&head_direction=3&size=l`,
             roles,
             isVerified,
-            comments: comments.sort((a, b) => b.timestamp - a.timestamp),
+            comments: comments.sort((a, b) => b.timestamp - a.timestamp).slice(0, 5), // Sort and limit after filtering
             userBadges,
             error: null,
         };
@@ -138,7 +140,16 @@ export default async function ProfilePage({ params }: { params: { username: stri
                     <CardTitle className="font-headline text-3xl flex items-center gap-2">
                         {profile.name}
                         {profile.isVerified && (
-                            <CheckCircle className="h-6 w-6 text-blue-500" title="Miembro verificado del equipo"/>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <CheckCircle className="h-6 w-6 text-blue-500" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Miembro verificado del equipo</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         )}
                     </CardTitle>
                     <CardDescription className="italic text-base">"{profile.motto}"</CardDescription>
@@ -230,3 +241,5 @@ export default async function ProfilePage({ params }: { params: { username: stri
         </div>
     );
 }
+
+    
