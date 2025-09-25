@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BookOpen, Database, GitBranch, Terminal, Wind, Settings, Cloud, Flame, DatabaseZap, Bot } from 'lucide-react';
+import { BookOpen, Database, GitBranch, Terminal, Wind, Settings, Cloud, Flame, DatabaseZap, Bot, Sprout } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DocsPage() {
@@ -30,7 +30,8 @@ export default function DocsPage() {
                 <li><strong>UI:</strong> React, TypeScript, Tailwind CSS, ShadCN/UI</li>
                 <li><strong>Inteligencia Artificial:</strong> Genkit con Google AI (Gemini)</li>
                 <li><strong>Base de Datos y Auth:</strong> Firebase (Authentication, Realtime Database)</li>
-                <li><strong>Audio Stream:</strong> Azuracast</li>
+                <li><strong>Audio Stream:</strong> Azuracast / ZenoFM</li>
+                <li><strong>APIs Externas:</strong> Puhekupla, HabboAssets</li>
                 <li><strong>Alojamiento:</strong> Netlify</li>
               </ul>
             </div>
@@ -247,8 +248,12 @@ function RealtimeComponent() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <h3 className="font-bold flex items-center gap-2 mb-2"><Wind /> Configuración de Azuracast</h3>
-              <p className="text-muted-foreground">La configuración del reproductor de radio (URLs de la API y de escucha) ahora se gestiona desde la página de <Link href="/panel/config" className="text-primary underline">Configuración</Link> y se guarda en Firebase Realtime Database.</p>
+              <h3 className="font-bold flex items-center gap-2 mb-2"><Sprout /> Speed Origins</h3>
+              <p className="text-muted-foreground">La página <Link href="/origins" className="text-primary underline">Origins</Link> muestra datos de las campañas y placas de Habbo Origins. Utiliza los componentes `LatestCampaigns` y `LatestBadges` con el `hotel` prop establecido a `"origin"`. Los proxies de API (`/api/campaigns` y `/api/badges`) aceptan un parámetro de hotel para buscar en el hotel correcto.</p>
+            </div>
+            <div>
+              <h3 className="font-bold flex items-center gap-2 mb-2"><Wind /> Configuración del Servicio de Radio</h3>
+              <p className="text-muted-foreground">La configuración del reproductor de radio (servicio, URLs de la API y de escucha) ahora se gestiona desde la página de <Link href="/panel/config" className="text-primary underline">Configuración</Link> y se guarda en Firebase Realtime Database.</p>
             </div>
             <div>
               <h3 className="font-bold flex items-center gap-2 mb-2"><Database /> Base de Datos (Datos de Ejemplo)</h3>

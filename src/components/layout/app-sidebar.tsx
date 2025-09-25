@@ -33,6 +33,7 @@ import {
   Library,
   Gem,
   Award,
+  Sprout,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -49,6 +50,7 @@ const publicLinks = [
   { href: '/', label: 'Inicio', icon: Home },
   { href: '/schedule', label: 'Horarios', icon: Calendar },
   { href: '/news', label: 'Noticias Habbo', icon: Newspaper },
+  { href: '/origins', label: 'Origins', icon: Sprout },
   { href: '/team', label: 'Equipo', icon: Users },
   { href: '/community', label: 'Comunidad', icon: HeartHandshake },
   { href: '/awards', label: 'Premios', icon: Award },

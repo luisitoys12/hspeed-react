@@ -21,14 +21,20 @@ type Badge = {
   code: string;
 }
 
-export default function LatestBadges() {
+type LatestBadgesProps = {
+  hotel?: 'es' | 'origin';
+  title?: string;
+  description?: string;
+}
+
+export default function LatestBadges({ hotel = 'es', title = 'Últimas Placas', description = 'Las placas más recientes añadidas a Habbo.es.' }: LatestBadgesProps) {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBadges = async () => {
       try {
-        const response = await fetch('/api/badges');
+        const response = await fetch(`/api/badges?hotel=${hotel}`);
         if (response.ok) {
           const data = await response.json();
           setBadges(data);
@@ -41,7 +47,7 @@ export default function LatestBadges() {
     };
 
     fetchBadges();
-  }, []);
+  }, [hotel]);
 
   if (loading) {
     return (
@@ -62,9 +68,9 @@ export default function LatestBadges() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline">
           <Award className="text-primary" />
-          Últimas Placas
+          {title}
         </CardTitle>
-        <CardDescription>Las placas más recientes añadidas a Habbo.es.</CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         {badges.length > 0 ? (

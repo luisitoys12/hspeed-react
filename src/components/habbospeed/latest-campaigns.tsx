@@ -15,14 +15,24 @@ interface Campaign {
     link: string;
 }
 
-export default function LatestCampaigns() {
+type LatestCampaignsProps = {
+  hotel?: 'es' | 'origin';
+  title?: string;
+  description?: string;
+};
+
+export default function LatestCampaigns({ 
+    hotel = 'es', 
+    title = 'Campañas de Habbo', 
+    description = 'Un vistazo a las últimas campañas y eventos oficiales de Habbo.es.' 
+}: LatestCampaignsProps) {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchCampaigns = async () => {
             try {
-                const response = await fetch('/api/campaigns');
+                const response = await fetch(`/api/campaigns?hotel=${hotel}`);
                 if (response.ok) {
                     const data = await response.json();
                     setCampaigns(data.slice(0, 3));
@@ -35,7 +45,7 @@ export default function LatestCampaigns() {
         };
 
         fetchCampaigns();
-    }, []);
+    }, [hotel]);
 
     if (loading) {
         return (
@@ -52,8 +62,21 @@ export default function LatestCampaigns() {
         );
     }
     
-    if (campaigns.length === 0) {
-        return null; // Don't render the card if there are no campaigns to show
+    if (campaigns.length === 0 && !loading) {
+        return (
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 font-headline">
+                        <Newspaper className="text-primary" />
+                        {title}
+                    </CardTitle>
+                    <CardDescription>{description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground text-center">No hay campañas activas en este momento.</p>
+                </CardContent>
+            </Card>
+        );
     }
 
     return (
@@ -61,10 +84,10 @@ export default function LatestCampaigns() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline">
                     <Newspaper className="text-primary" />
-                    Campañas de Habbo
+                    {title}
                 </CardTitle>
                 <CardDescription>
-                    Un vistazo a las últimas campañas y eventos oficiales de Habbo.es.
+                    {description}
                 </CardDescription>
             </CardHeader>
             <CardContent>
