@@ -1,8 +1,5 @@
 
 
-import HabboProfile from '@/components/habbospeed/habbo-profile';
-import OfficialAlliances from '@/components/habbospeed/official-alliances';
-import ActiveRooms from '@/components/habbospeed/active-rooms';
 import { Suspense } from 'react';
 import HeroSlideshow from '@/components/habbospeed/hero-slideshow';
 import OnAirDjs from '@/components/habbospeed/on-air-djs';
@@ -15,7 +12,10 @@ import LatestBadges from '@/components/habbospeed/latest-badges';
 import LatestFurnis from '@/components/habbospeed/latest-furnis';
 import { db } from '@/lib/firebase';
 import { get, ref } from 'firebase/database';
-import HomePlayer from '@/components/habbospeed/home-player';
+import HabboProfile from '@/components/habbospeed/habbo-profile';
+import OfficialAlliances from '@/components/habbospeed/official-alliances';
+import ActiveRooms from '@/components/habbospeed/active-rooms';
+import PlayerSwitcher from '@/components/habbospeed/player-switcher';
 
 function LoadingSkeleton() {
   return (
@@ -59,12 +59,12 @@ async function getPageData() {
     }
 }
 
-
 export default async function Home() {
   const pageData = await getPageData();
 
   return (
     <>
+      {/* Top Banner */}
       <div className="w-full">
          <div className="container mx-auto flex justify-center">
              <Link href="/news" className='hidden md:block'>
@@ -78,47 +78,35 @@ export default async function Home() {
             </Link>
         </div>
       </div>
+
       <div className="container mx-auto p-4 md:p-8">
-        
-        <div className="mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Main Content Column */}
+          <div className="lg:col-span-2 space-y-8">
+            <HeroSlideshow />
+            <LatestCampaigns />
+            <AboutAndNews initialNews={pageData.news} />
+            <LatestFurnis />
+          </div>
+
+          {/* Sidebar Column */}
+          <div className="lg:col-span-1 space-y-8">
             <Suspense fallback={<LoadingSkeleton />}>
               <OnAirDjs />
             </Suspense>
-            <Suspense fallback={<LoadingSkeleton />}>
-              <HomePlayer />
-            </Suspense>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Columna Izquierda */}
-          <div className="lg:col-span-1 flex flex-col gap-8">
+            <PlayerSwitcher />
             <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
             </Suspense>
-             <Suspense fallback={<LoadingSkeleton />}>
+            <ActiveEvents initialEvents={pageData.events} />
+            <Suspense fallback={<LoadingSkeleton />}>
               <LatestBadges />
             </Suspense>
-             <Suspense fallback={<LoadingSkeleton />}>
-              <AboutAndNews initialNews={pageData.news} />
-            </Suspense>
-          </div>
-
-          {/* Columna Central */}
-          <div className="lg:col-span-2 flex flex-col gap-8">
-            <HeroSlideshow />
-            <LatestCampaigns />
-             <Suspense fallback={<LoadingSkeleton />}>
-              <LatestFurnis />
-            </Suspense>
-          </div>
-
-          {/* Columna Derecha */}
-          <div className="lg:col-span-1 flex flex-col gap-8">
-            <ActiveEvents initialEvents={pageData.events} />
           </div>
         </div>
 
-        {/* Secciones inferiores */}
+        {/* Bottom Sections */}
         <div className="mt-8 space-y-8">
           <OfficialAlliances initialAlliances={pageData.alliances} />
           <ActiveRooms initialRooms={pageData.featuredRooms} />

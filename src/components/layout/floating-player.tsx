@@ -46,6 +46,15 @@ export default function FloatingPlayer() {
   const lastNotifiedDj = useRef<string | null>(null);
   const lastNotifiedNextDj = useRef<string | null>(null);
   const lastNotifiedSong = useRef<string | null>(null);
+  
+  const [playerPreference, setPlayerPreference] = useState('classic');
+  
+  useEffect(() => {
+    const storedPreference = localStorage.getItem('player-preference');
+    if (storedPreference) {
+      setPlayerPreference(storedPreference);
+    }
+  }, []);
 
   // Get Radio Config from Firebase
   useEffect(() => {
@@ -237,9 +246,9 @@ export default function FloatingPlayer() {
     }
   }, [audioRef]);
 
-  const showPlayer = pathname !== '/' && !['/login', '/register'].includes(pathname);
-
+  const showPlayer = (pathname !== '/' || playerPreference === 'modern') && !['/login', '/register'].includes(pathname);
   if (!showPlayer) return null;
+
 
   const currentDjName = onAirData?.currentDj || 'AutoDJ';
 
@@ -318,7 +327,7 @@ export default function FloatingPlayer() {
               <div className="flex items-center gap-3 min-w-0 justify-start">
               {isLoading || !onAirData ? (
                   <>
-                  <Skeleton className="h-12 w-12 rounded-md" />
+                  <Skeleton className="h-12 w-12 rounded-full" />
                   <div className="space-y-2 hidden md:block">
                       <Skeleton className="h-4 w-32" />
                       <Skeleton className="h-4 w-24" />
