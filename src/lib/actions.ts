@@ -29,15 +29,20 @@ type RequestFormState = {
 };
 
 // Helper function to send webhook
-async function sendWebhook(type: string, data: any) {
-    const configSnapshot = await get(ref(db, 'config/discordWebhookUrl'));
-    const webhookUrl = configSnapshot.val();
+async function sendWebhook(type: 'news' | 'events' | 'requests', data: any) {
+    const configSnapshot = await get(ref(db, 'config/discordWebhookUrls'));
+    const webhookUrls = configSnapshot.val();
+    
+    const webhookUrl = webhookUrls ? webhookUrls[type] : null;
 
-    if (!webhookUrl) return;
+    if (!webhookUrl) {
+        console.log(`Webhook for type "${type}" is not configured. Skipping.`);
+        return;
+    }
 
     let embed;
     switch(type) {
-        case 'request':
+        case 'requests':
             embed = {
                 title: `Nueva Petición: ${data.requestType.charAt(0).toUpperCase() + data.requestType.slice(1)}`,
                 description: data.details,
@@ -56,7 +61,7 @@ async function sendWebhook(type: string, data: any) {
                 footer: { text: `Categoría: ${data.category}` }
             };
             break;
-        case 'event':
+        case 'events':
             embed = {
                 title: `¡Nuevo Evento! ${data.title}`,
                 description: `No te pierdas este gran evento en **${data.roomName}**.`,
@@ -116,7 +121,7 @@ export async function submitRequest(
     });
     
     // Send webhook notification
-    await sendWebhook('request', validatedFields.data);
+    await sendWebhook('requests', validatedFields.data);
 
     return {
       message: "¡Tu petición ha sido enviada! Gracias por participar.",

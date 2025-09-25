@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -56,7 +57,7 @@ export default function EventsManagementPage() {
         const eventsRef = ref(db, 'events');
         const newEventRef = await push(eventsRef, values);
         toast({ title: "¡Éxito!", description: "El nuevo evento ha sido publicado." });
-        await sendWebhook('event', { ...values, id: newEventRef.key });
+        await sendWebhook('events', { ...values, id: newEventRef.key });
       }
       setIsDialogOpen(false);
     } catch (error) {

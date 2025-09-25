@@ -36,7 +36,11 @@ const configSchema = z.object({
   radioService: z.enum(['azuracast', 'zenofm']),
   apiUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
   listenUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
-  discordWebhookUrl: z.string().url({ message: "La URL del webhook no es válida."}).optional().or(z.literal('')),
+  discordWebhookUrls: z.object({
+      news: z.string().url({ message: "URL de webhook no válida" }).optional().or(z.literal('')),
+      events: z.string().url({ message: "URL de webhook no válida" }).optional().or(z.literal('')),
+      requests: z.string().url({ message: "URL de webhook no válida" }).optional().or(z.literal('')),
+  }).optional(),
   slideshow: z.array(slideSchema).optional(),
   discordBot: z.object({
       token: z.string().optional(),
@@ -83,7 +87,11 @@ export default function ConfigPage() {
     radioService: "azuracast" as const,
     apiUrl: "",
     listenUrl: "",
-    discordWebhookUrl: "",
+    discordWebhookUrls: {
+      news: "",
+      events: "",
+      requests: "",
+    },
     slideshow: [],
     discordBot: {
       token: "",
@@ -120,7 +128,7 @@ export default function ConfigPage() {
             radioService: data.radioService || "azuracast",
             apiUrl: data.apiUrl || "",
             listenUrl: data.listenUrl || "",
-            discordWebhookUrl: data.discordWebhookUrl || "",
+            discordWebhookUrls: data.discordWebhookUrls || defaultValues.discordWebhookUrls,
             slideshow: slideshowArray.length > 0 ? slideshowArray : demoSlides,
             discordBot: data.discordBot || defaultValues.discordBot,
           });
@@ -320,14 +328,28 @@ export default function ConfigPage() {
                 Integración con Discord
               </CardTitle>
               <CardDescription>
-                Introduce las credenciales e IDs para la integración con Discord.
+                Introduce las credenciales e IDs para la integración con Discord. Cada webhook enviará una alerta a un canal diferente.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <FormField control={form.control} name="discordWebhookUrl" render={({ field }) => (
+               <FormField control={form.control} name="discordWebhookUrls.news" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL del Webhook de Discord</FormLabel>
-                    <FormControl><Input placeholder="Pega la URL de tu webhook aquí" {...field} /></FormControl>
+                    <FormLabel>URL del Webhook para Noticias</FormLabel>
+                    <FormControl><Input placeholder="URL para notificar nuevas noticias" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+              )}/>
+               <FormField control={form.control} name="discordWebhookUrls.events" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL del Webhook para Eventos</FormLabel>
+                    <FormControl><Input placeholder="URL para notificar nuevos eventos" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+              )}/>
+               <FormField control={form.control} name="discordWebhookUrls.requests" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL del Webhook para Peticiones</FormLabel>
+                    <FormControl><Input placeholder="URL para notificar nuevas peticiones" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
               )}/>
