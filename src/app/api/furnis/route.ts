@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     // We fetch the data on the server side
-    const response = await fetch('https://habbofurni.com/api/furni?limit=10', {
+    const response = await fetch('https://habbofurni.com/api/v2/furni/recent/10', {
       next: { revalidate: 3600 } // Cache the response for 1 hour
     });
 

@@ -85,7 +85,7 @@ export default async function Home() {
           {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-8">
             <HeroSlideshow />
-            <LatestCampaigns />
+            {/* <LatestCampaigns /> */}
             <AboutAndNews initialNews={pageData.news} />
             <LatestFurnis />
           </div>
