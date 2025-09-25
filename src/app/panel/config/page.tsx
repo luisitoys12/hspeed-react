@@ -11,7 +11,7 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, Radio, LoaderCircle, Trash2, PlusCircle, Image as ImageIcon, Bot } from 'lucide-react';
+import { Settings, Radio, LoaderCircle, Trash2, PlusCircle, Image as ImageIcon, Bot, PlaySquare } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -33,6 +33,8 @@ const slideSchema = z.object({
 
 const configSchema = z.object({
   logoUrl: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
+  homePlayerBgUrl: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
+  homePlayerListenersBadgeUrl: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
   radioService: z.enum(['azuracast', 'zenofm']),
   apiUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
   listenUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
@@ -87,6 +89,8 @@ export default function ConfigPage() {
 
   const defaultValues = useMemo(() => ({
     logoUrl: "https://i.imgur.com/u31XFxN.png",
+    homePlayerBgUrl: "https://i.imgur.com/uGg0a21.png",
+    homePlayerListenersBadgeUrl: "https://i.imgur.com/vHqPjUn.png",
     radioService: "azuracast" as const,
     apiUrl: "",
     listenUrl: "",
@@ -130,13 +134,9 @@ export default function ConfigPage() {
             : [];
           
           form.reset({
-            logoUrl: data.logoUrl || "https://i.imgur.com/u31XFxN.png",
-            radioService: data.radioService || "azuracast",
-            apiUrl: data.apiUrl || "",
-            listenUrl: data.listenUrl || "",
-            discordWebhookUrls: data.discordWebhookUrls || defaultValues.discordWebhookUrls,
+            ...defaultValues,
+            ...data,
             slideshow: slideshowArray.length > 0 ? slideshowArray : demoSlides,
-            discordBot: data.discordBot || defaultValues.discordBot,
           });
           
           if(slideshowArray.length === 0){
@@ -213,10 +213,10 @@ export default function ConfigPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
                 <ImageIcon />
-                Branding
+                Branding y Apariencia
               </CardTitle>
               <CardDescription>
-                Personaliza el logo de tu sitio.
+                Personaliza los elementos visuales clave de tu sitio.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -229,6 +229,35 @@ export default function ConfigPage() {
               )}/>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
+                    <PlaySquare />
+                    Personalización del Reproductor (Inicio)
+                </CardTitle>
+                <CardDescription>
+                    Cambia las imágenes del reproductor grande de la página de inicio.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                 <FormField control={form.control} name="homePlayerBgUrl" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL del Fondo del Reproductor</FormLabel>
+                    <FormControl><Input placeholder="https://i.imgur.com/uGg0a21.png" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}/>
+                 <FormField control={form.control} name="homePlayerListenersBadgeUrl" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL de la Placa de Oyentes</FormLabel>
+                    <FormControl><Input placeholder="https://i.imgur.com/vHqPjUn.png" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}/>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">

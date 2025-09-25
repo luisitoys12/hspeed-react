@@ -133,10 +133,6 @@ export default function OnAirDjs() {
     const [djs, setDjs] = useState({ current: { ...defaultDj, isEvent: false }, next: { name: 'Por anunciar', habboName: 'estacionkusfm' } });
     const [isLoading, setIsLoading] = useState(true);
     
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [volume, setVolume] = useState(50);
-    const audioRef = useRef<HTMLAudioElement>(null);
-    
     const [radioConfig, setRadioConfig] = useState<RadioConfig | null>(null);
     const lastNotifiedDjRef = useRef<string | null>(null);
 
@@ -225,38 +221,6 @@ export default function OnAirDjs() {
 
     }, [bookings, onAirOverride, azuracastData, radioConfig]);
 
-    // Audio Controls
-    useEffect(() => {
-        if (audioRef.current) audioRef.current.volume = volume / 100;
-    }, [volume]);
-  
-    const togglePlayPause = () => {
-        const audio = audioRef.current;
-        if (!audio || !radioConfig) return;
-
-        if (isPlaying) {
-            audio.pause();
-        } else {
-            audio.src = radioConfig.listenUrl;
-            audio.load();
-            audio.play().catch(e => console.error("Error playing audio:", e));
-        }
-    };
-  
-    useEffect(() => {
-        const audioEl = audioRef.current;
-        if(audioEl) {
-            const handlePlay = () => setIsPlaying(true);
-            const handlePause = () => setIsPlaying(false);
-            audioEl.addEventListener('play', handlePlay);
-            audioEl.addEventListener('pause', handlePause);
-            return () => {
-                audioEl.removeEventListener('play', handlePlay);
-                audioEl.removeEventListener('pause', handlePause);
-            }
-        }
-    }, [audioRef]);
-
 
     if (isLoading) {
         return (
@@ -278,7 +242,6 @@ export default function OnAirDjs() {
 
     return (
         <div className="hidden md:block mt-8 bg-card/80 backdrop-blur-sm rounded-lg space-y-4 p-4">
-             <audio ref={audioRef} preload="none" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 divide-y md:divide-y-0 md:divide-x divide-border">
                 <div className="flex items-center justify-center gap-4 p-4">
                     <Avatar className={`h-16 w-16 border-4 ${djs.current.isEvent ? 'border-yellow-400' : 'border-green-500'}`}>
@@ -298,45 +261,6 @@ export default function OnAirDjs() {
                     <div>
                         <p className="text-sm text-muted-foreground">Siguiente DJ</p>
                         <p className="text-xl font-bold font-headline">{djs.next.name}</p>
-                    </div>
-                </div>
-            </div>
-
-             {djs.current.isEvent && (
-                <div className="bg-yellow-400/20 text-yellow-200 p-2 rounded-lg text-center overflow-hidden cursor-pointer" onClick={() => { /* Open modal here in the future */ }}>
-                    <div className="marquee">
-                        <span className="flex items-center justify-center gap-2 text-sm font-semibold">
-                            <PartyPopper className="h-4 w-4" />
-                            ¡No te pierdas nuestro evento especial con los mejores DJs!
-                            <PartyPopper className="h-4 w-4" />
-                        </span>
-                    </div>
-                </div>
-            )}
-
-            <div className="bg-background/50 rounded-lg p-2 md:p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-                <div className="flex items-center gap-3 min-w-0 justify-start">
-                    <Image src={azuracastData?.now_playing.song.art || "https://picsum.photos/seed/songart/100/100"} alt={azuracastData?.now_playing.song.title || 'Canción'} width={48} height={48} className="rounded-md h-12 w-12 object-cover" unoptimized/>
-                    <div className="min-w-0 hidden md:block">
-                        <h3 className="text-sm md:text-base font-semibold font-headline truncate" title={azuracastData?.now_playing.song.title}>{azuracastData?.now_playing.song.title || 'Cargando...'}</h3>
-                        <p className="text-xs md:text-sm text-muted-foreground truncate" title={azuracastData?.now_playing.song.artist}>{azuracastData?.now_playing.song.artist || '...'}</p>
-                    </div>
-                </div>
-                
-                <div className="flex items-center justify-center gap-4">
-                    <Button variant="default" size="icon" className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" onClick={togglePlayPause} disabled={isLoading || !radioConfig}>
-                        {isPlaying ? <Pause className="h-6 w-6 fill-primary-foreground" /> : <Play className="h-6 w-6 fill-primary-foreground" />}
-                    </Button>
-                </div>
-
-                <div className="flex items-center justify-end gap-2 md:gap-4">
-                    <div className="flex items-center gap-2">
-                        <Users className="text-primary h-5 w-5" />
-                        <span className="font-bold text-white text-sm">{azuracastData?.listeners.current || 0}</span>
-                    </div>
-                    <div className="hidden md:flex items-center gap-2 w-24">
-                        <Volume2 className="text-muted-foreground" />
-                        <Slider defaultValue={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} />
                     </div>
                 </div>
             </div>

@@ -68,6 +68,8 @@ export interface RadioConfig {
     radioService: 'azuracast' | 'zenofm';
     apiUrl: string;
     listenUrl: string;
+    homePlayerBgUrl?: string;
+    homePlayerListenersBadgeUrl?: string;
     discordWebhookUrls?: {
         news?: string;
         events?: string;

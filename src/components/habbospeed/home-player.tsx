@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Play, Pause, Volume2, Users, Music, Heart, ExternalLink } from 'lucide-react';
+import { Play, Pause, Volume2, Users, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
@@ -121,7 +121,7 @@ export default function HomePlayer() {
       <audio ref={audioRef} preload="none" />
       <div 
         className="bg-[#0e2439] rounded-lg p-2 bg-center bg-no-repeat"
-        style={{backgroundImage: "url('https://i.imgur.com/uGg0a21.png')"}}
+        style={{backgroundImage: `url('${radioConfig?.homePlayerBgUrl || 'https://i.imgur.com/uGg0a21.png'}')`}}
       >
         <div className="flex justify-between items-start">
             {/* Left Section: Avatar & Likes */}
@@ -134,10 +134,6 @@ export default function HomePlayer() {
                     unoptimized
                     className="drop-shadow-lg"
                 />
-                <div className="flex items-center gap-1 text-red-500 font-bold">
-                    <Heart size={16} fill="currentColor" />
-                    <span>{songInfo.listeners}</span>
-                </div>
             </div>
 
             {/* Center Section: Controls */}
@@ -157,20 +153,21 @@ export default function HomePlayer() {
                         />
                     </div>
                 </div>
-                <Button variant="outline" className="h-8 bg-[#093e6c] border-[#1567a5] text-white/90 hover:bg-[#1567a5]">
+                <Button variant="outline" className="h-8 bg-[#093e6c] border-[#1567a5] text-white/90 hover:bg-[#1567a5] justify-start truncate">
                     <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
                     {currentDjName}
-                    <ExternalLink size={14} className="ml-auto" />
                 </Button>
-                <Button variant="outline" className="h-8 bg-[#093e6c] border-[#1567a5] text-white/90 hover:bg-[#1567a5] justify-start truncate">
-                    <Music size={14} className="mr-2" />
-                    {songInfo.title} - {songInfo.artist}
-                </Button>
+                <div className="h-8 bg-[#093e6c] border-[#1567a5] text-white/90 rounded-md flex items-center px-3 overflow-hidden">
+                    <Music size={14} className="mr-2 flex-shrink-0" />
+                    <div className="marquee">
+                      <span className="font-bold">{songInfo.title} - {songInfo.artist}</span>
+                    </div>
+                </div>
             </div>
 
             {/* Right Section: Listeners Badge */}
             <div className="relative w-12 h-12">
-                 <Image src="https://i.imgur.com/vHqPjUn.png" alt="Listeners Badge" width={48} height={48} unoptimized />
+                 <Image src={radioConfig?.homePlayerListenersBadgeUrl || "https://i.imgur.com/vHqPjUn.png"} alt="Listeners Badge" width={48} height={48} unoptimized />
                  <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm drop-shadow-lg">{songInfo.listeners}</span>
             </div>
         </div>
