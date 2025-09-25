@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import {
@@ -29,7 +30,7 @@ type RequestFormState = {
 };
 
 // Helper function to send webhook
-async function sendWebhook(type: 'news' | 'events' | 'requests', data: any) {
+async function sendWebhook(type: 'news' | 'events' | 'requests' | 'onAir' | 'nextDj' | 'song', data: any) {
     const configSnapshot = await get(ref(db, 'config/discordWebhookUrls'));
     const webhookUrls = configSnapshot.val();
     
@@ -72,6 +73,30 @@ async function sendWebhook(type: 'news' | 'events' | 'requests', data: any) {
                     { name: 'Dueño de Sala', value: data.roomOwner, inline: true },
                     { name: 'Fecha y Hora', value: `${data.date} a las ${data.time}`, inline: false }
                 ]
+            };
+            break;
+        case 'onAir':
+            embed = {
+                title: data.isEvent ? `¡EVENTO EN VIVO! ${data.currentDj}` : `¡DJ en Vivo! ${data.currentDj}`,
+                description: `Sintoniza ahora para no perderte la transmisión.\nActualmente escuchas: **${data.songInfo.title}** de **${data.songInfo.artist}**`,
+                color: data.isEvent ? 0xFFD700 : 0x00FF00,
+                thumbnail: { url: `https://www.habbo.es/habbo-imaging/avatarimage?user=${data.currentDj}&headonly=1&size=m` },
+                footer: { text: `${data.songInfo.listeners} oyentes` }
+            };
+            break;
+        case 'nextDj':
+            embed = {
+                title: 'Próxima Transmisión',
+                description: `El próximo DJ en tomar los controles será **${data.nextDj}**.`,
+                color: 0x5865F2
+            };
+            break;
+        case 'song':
+            embed = {
+                title: 'Ahora Suena',
+                description: `**${data.songInfo.title}**\nde *${data.songInfo.artist}*`,
+                color: 0xCCCCCC,
+                thumbnail: { url: data.songInfo.art }
             };
             break;
     }
@@ -389,3 +414,5 @@ export async function submitNotification(formData: FormData) {
 }
 
 export { sendWebhook };
+
+    

@@ -40,6 +40,9 @@ const configSchema = z.object({
       news: z.string().url({ message: "URL de webhook no válida" }).optional().or(z.literal('')),
       events: z.string().url({ message: "URL de webhook no válida" }).optional().or(z.literal('')),
       requests: z.string().url({ message: "URL de webhook no válida" }).optional().or(z.literal('')),
+      onAir: z.string().url({ message: "URL de webhook no válida" }).optional().or(z.literal('')),
+      nextDj: z.string().url({ message: "URL de webhook no válida" }).optional().or(z.literal('')),
+      song: z.string().url({ message: "URL de webhook no válida" }).optional().or(z.literal('')),
   }).optional(),
   slideshow: z.array(slideSchema).optional(),
   discordBot: z.object({
@@ -91,6 +94,9 @@ export default function ConfigPage() {
       news: "",
       events: "",
       requests: "",
+      onAir: "",
+      nextDj: "",
+      song: "",
     },
     slideshow: [],
     discordBot: {
@@ -332,27 +338,50 @@ export default function ConfigPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-               <FormField control={form.control} name="discordWebhookUrls.news" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL del Webhook para Noticias</FormLabel>
-                    <FormControl><Input placeholder="URL para notificar nuevas noticias" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-              )}/>
-               <FormField control={form.control} name="discordWebhookUrls.events" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL del Webhook para Eventos</FormLabel>
-                    <FormControl><Input placeholder="URL para notificar nuevos eventos" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-              )}/>
-               <FormField control={form.control} name="discordWebhookUrls.requests" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL del Webhook para Peticiones</FormLabel>
-                    <FormControl><Input placeholder="URL para notificar nuevas peticiones" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-              )}/>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="discordWebhookUrls.news" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Webhook para Noticias</FormLabel>
+                        <FormControl><Input placeholder="URL para notificar nuevas noticias" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}/>
+                    <FormField control={form.control} name="discordWebhookUrls.events" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Webhook para Eventos</FormLabel>
+                        <FormControl><Input placeholder="URL para notificar nuevos eventos" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}/>
+                    <FormField control={form.control} name="discordWebhookUrls.requests" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Webhook para Peticiones</FormLabel>
+                        <FormControl><Input placeholder="URL para notificar nuevas peticiones" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}/>
+                     <FormField control={form.control} name="discordWebhookUrls.onAir" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Webhook para DJ en Vivo</FormLabel>
+                        <FormControl><Input placeholder="URL para anunciar DJ en vivo" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}/>
+                     <FormField control={form.control} name="discordWebhookUrls.nextDj" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Webhook para Próximo DJ</FormLabel>
+                        <FormControl><Input placeholder="URL para anunciar el siguiente DJ" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}/>
+                     <FormField control={form.control} name="discordWebhookUrls.song" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Webhook para Canciones</FormLabel>
+                        <FormControl><Input placeholder="URL para anunciar cada canción" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}/>
+                </div>
               <Separator />
                <p className="text-sm text-muted-foreground">La siguiente sección es para un bot de Node.js independiente. La integración por webhook es la recomendada y más sencilla.</p>
               <FormField control={form.control} name="discordBot.token" render={({ field }) => (
@@ -429,5 +458,7 @@ const ConfigSkeleton = () => (
     </div>
   </div>
 );
+
+    
 
     

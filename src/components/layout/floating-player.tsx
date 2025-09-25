@@ -4,7 +4,7 @@
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Volume2, Users, Music, Bell } from 'lucide-react';
+import { Play, Pause, Volume2, Users, Music, Bell, PartyPopper } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
@@ -23,37 +23,31 @@ import { ref, onValue, set } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import { sendWebhook } from '@/lib/actions';
 
-// Estructura de datos de Azuracast
-interface AzuracastData {
-  station: { listen_url: string; };
-  listeners: { current: number; };
-  now_playing: {
-    song: { text: string; artist: string; title: string; art: string; };
-  };
-  live: { is_live: boolean; streamer_name: string; };
-}
 
-// Estructura de datos de ZenoFM
-interface ZenoFMData {
-    data: {
-        stream: string;
-        title: string;
-        listeners: string;
-        image_url: string;
-    }[]
-}
-
-interface OnAirOverride {
+interface OnAirData {
     currentDj: string;
     nextDj: string;
+    isEvent?: boolean;
+}
+
+interface SongInfo {
+    art: string;
+    title: string;
+    artist: string;
+    listeners: number;
 }
 
 interface RadioConfig {
     radioService: 'azuracast' | 'zenofm';
     apiUrl: string;
     listenUrl: string;
+    discordWebhookUrls?: {
+        onAir?: string;
+        nextDj?: string;
+        song?: string;
+    }
 }
 
 export default function FloatingPlayer() {
@@ -63,14 +57,17 @@ export default function FloatingPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   
   const [radioConfig, setRadioConfig] = useState<RadioConfig | null>(null);
-  const [songInfo, setSongInfo] = useState({ art: "https://picsum.photos/seed/songart/100/100", title: 'Cargando...', artist: 'Por favor espera', listeners: 0 });
-  const [djName, setDjName] = useState('AutoDJ');
+  const [songInfo, setSongInfo] = useState<SongInfo>({ art: "https://picsum.photos/seed/songart/100/100", title: 'Cargando...', artist: 'Por favor espera', listeners: 0 });
+  const [onAirData, setOnAirData] = useState<OnAirData | null>(null);
   
   const [isLoading, setIsLoading] = useState(true);
   
   const [notificationPermission, setNotificationPermission] = useState('default');
   const { toast } = useToast();
+
   const lastNotifiedDj = useRef<string | null>(null);
+  const lastNotifiedNextDj = useRef<string | null>(null);
+  const lastNotifiedSong = useRef<string | null>(null);
 
   // Get Radio Config from Firebase
   useEffect(() => {
@@ -82,6 +79,7 @@ export default function FloatingPlayer() {
               radioService: data.radioService || 'azuracast',
               apiUrl: data.apiUrl,
               listenUrl: data.listenUrl,
+              discordWebhookUrls: data.discordWebhookUrls,
           });
         }
         setIsLoading(false);
@@ -89,57 +87,102 @@ export default function FloatingPlayer() {
     return () => unsubscribeConfig();
   }, []);
 
-  // Fetch Now Playing Data
+  // Fetch On-Air Data (both from radio API and Firebase override)
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAndUpdateData = async () => {
       if (!radioConfig) return;
 
       try {
         const response = await fetch(`/api/nowplaying`);
         if (!response.ok) throw new Error('Network response was not ok');
+        const apiData = await response.json();
+        
+        let currentListeners = 0;
+        let songTitle = 'Música Programada';
+        let songArtist = 'Habbospeed';
+        let songArt = 'https://i.imgur.com/u31XFxN.png';
+        let liveDjFromApi = 'AutoDJ';
 
-        if (radioConfig.radioService === 'zenofm') {
-            const data: ZenoFMData = await response.json();
-            const song = data?.data?.[0];
-            const [artist, title] = song?.title.split(' - ') || ['Artista desconocido', 'Canción desconocida'];
-            setSongInfo({
-                art: song?.image_url || "https://picsum.photos/seed/songart/100/100",
-                title: title.trim(),
-                artist: artist.trim(),
-                listeners: parseInt(song?.listeners || '0'),
-            });
-            // Zeno no provee info de DJ en la API
-        } else { // Azuracast
-            const data: AzuracastData = await response.json();
-            setSongInfo({
-                art: data.now_playing.song.art,
-                title: data.now_playing.song.title,
-                artist: data.now_playing.song.artist,
-                listeners: data.listeners.current,
-            });
-            if (data.live.is_live && data.live.streamer_name) {
-                setDjName(data.live.streamer_name);
+        if (radioConfig.radioService === 'zenofm' && apiData?.data?.[0]) {
+            const song = apiData.data[0];
+            const [artist, title] = song.title.split(' - ') || ['Artista desconocido', 'Canción desconocida'];
+            songTitle = title.trim();
+            songArtist = artist.trim();
+            songArt = song.image_url;
+            currentListeners = parseInt(song.listeners || '0');
+        } else if (radioConfig.radioService === 'azuracast' && apiData?.now_playing) {
+            songTitle = apiData.now_playing.song.title;
+            songArtist = apiData.now_playing.song.artist;
+            songArt = apiData.now_playing.song.art;
+            currentListeners = apiData.listeners.current;
+            if (apiData.live.is_live && apiData.live.streamer_name) {
+                liveDjFromApi = apiData.live.streamer_name;
             }
         }
+        
+        setSongInfo({ title: songTitle, artist: songArtist, art: songArt, listeners: currentListeners });
+
+        // Now handle DJ info with Firebase override
+        onValue(ref(db, 'onAir'), (snapshot) => {
+            const override = snapshot.val();
+            setOnAirData({
+                currentDj: override?.currentDj || liveDjFromApi,
+                nextDj: override?.nextDj || 'N/A', // You might want a better default
+                isEvent: override?.isEvent || false
+            });
+        }, { onlyOnce: true });
+
       } catch (error) {
         console.error("Error fetching radio data:", error);
       }
     };
     
     if (radioConfig) {
-      fetchData();
-      const interval = setInterval(fetchData, 15000); 
+      fetchAndUpdateData();
+      const interval = setInterval(fetchAndUpdateData, 15000); 
       return () => clearInterval(interval);
     }
   }, [radioConfig]);
 
+
+  // Handle all webhook logic
+  useEffect(() => {
+    if (!onAirData || !radioConfig?.discordWebhookUrls) return;
+    
+    const { currentDj, nextDj, isEvent } = onAirData;
+    const { onAir, nextDj: nextDjHook, song: songHook } = radioConfig.discordWebhookUrls;
+    const currentSongId = `${songInfo.title}-${songInfo.artist}`;
+    
+    // On Air DJ Changed
+    if (onAir && currentDj !== lastNotifiedDj.current && currentDj !== 'AutoDJ') {
+        sendWebhook('onAir', { currentDj, isEvent, songInfo });
+        lastNotifiedDj.current = currentDj;
+    } else if (currentDj === 'AutoDJ') {
+        lastNotifiedDj.current = 'AutoDJ'; // Reset when back to auto
+    }
+
+    // Next DJ Changed
+    if (nextDjHook && nextDj !== lastNotifiedNextDj.current) {
+        sendWebhook('nextDj', { nextDj });
+        lastNotifiedNextDj.current = nextDj;
+    }
+    
+    // Song Changed
+    if (songHook && currentSongId !== lastNotifiedSong.current) {
+        sendWebhook('song', { songInfo });
+        lastNotifiedSong.current = currentSongId;
+    }
+
+  }, [onAirData, songInfo, radioConfig]);
+
+
   // Handle Media Session Metadata
   useEffect(() => {
-    if ('mediaSession' in navigator) {
+    if ('mediaSession' in navigator && onAirData) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: songInfo.title,
         artist: songInfo.artist,
-        album: `Habbospeed - ${djName}`,
+        album: `Habbospeed - ${onAirData.currentDj}`,
         artwork: [
           { src: songInfo.art, sizes: '96x96', type: 'image/png' },
           { src: songInfo.art, sizes: '128x128', type: 'image/png' },
@@ -150,21 +193,21 @@ export default function FloatingPlayer() {
         ],
       });
     }
-  }, [songInfo, djName]);
+  }, [songInfo, onAirData]);
 
 
-  // Handle Notifications
+  // Handle Push Notifications
   useEffect(() => {
     if ("Notification" in window) setNotificationPermission(Notification.permission);
     
-    if (notificationPermission === 'granted' && djName !== 'AutoDJ' && djName !== lastNotifiedDj.current) {
+    if (onAirData && notificationPermission === 'granted' && onAirData.currentDj !== 'AutoDJ' && onAirData.currentDj !== lastNotifiedDj.current) {
         new Notification("¡DJ en Vivo!", {
-          body: `${djName} está ahora en directo. ¡No te lo pierdas!`,
-          icon: `https://www.habbo.es/habbo-imaging/avatarimage?user=${djName}&headonly=1&size=l`,
+          body: `${onAirData.currentDj} está ahora en directo. ¡No te lo pierdas!`,
+          icon: `https://www.habbo.es/habbo-imaging/avatarimage?user=${onAirData.currentDj}&headonly=1&size=l`,
         });
-        lastNotifiedDj.current = djName;
+        if(lastNotifiedDj) lastNotifiedDj.current = onAirData.currentDj;
     }
-  }, [djName, notificationPermission]);
+  }, [onAirData, notificationPermission]);
 
   const handleNotificationClick = async () => {
     if (!messaging) return;
@@ -225,7 +268,7 @@ export default function FloatingPlayer() {
   }, [audioRef]);
 
   const showPlayer = !['/login', '/register'].includes(pathname);
-  const isLiveDj = djName !== 'AutoDJ';
+  const isLiveDj = onAirData?.currentDj !== 'AutoDJ';
 
   if (!showPlayer) return null;
 
@@ -329,3 +372,5 @@ export default function FloatingPlayer() {
     </>
   );
 }
+
+    
