@@ -15,6 +15,7 @@ import LatestBadges from '@/components/habbospeed/latest-badges';
 import LatestFurnis from '@/components/habbospeed/latest-furnis';
 import { db } from '@/lib/firebase';
 import { get, ref } from 'firebase/database';
+import HomePlayer from '@/components/habbospeed/home-player';
 
 function LoadingSkeleton() {
   return (
@@ -82,6 +83,9 @@ export default async function Home() {
         <div className="mb-8">
             <Suspense fallback={<LoadingSkeleton />}>
               <OnAirDjs />
+            </Suspense>
+            <Suspense fallback={<LoadingSkeleton />}>
+              <HomePlayer />
             </Suspense>
         </div>
 

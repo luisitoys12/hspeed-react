@@ -4,7 +4,7 @@
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Volume2, Users, Music, Bell, PartyPopper, Mic } from 'lucide-react';
+import { Play, Pause, Volume2, Users, Music, Bell, Mic, X, Headphones } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
@@ -24,40 +24,18 @@ import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { sendWebhook } from '@/lib/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { OnAirData, RadioConfig, SongInfo } from '@/lib/types';
 
-
-interface OnAirData {
-    currentDj: string;
-    nextDj: string;
-    isEvent?: boolean;
-}
-
-interface SongInfo {
-    art: string;
-    title: string;
-    artist: string;
-    listeners: number;
-}
-
-interface RadioConfig {
-    radioService: 'azuracast' | 'zenofm';
-    apiUrl: string;
-    listenUrl: string;
-    discordWebhookUrls?: {
-        onAir?: string;
-        nextDj?: string;
-        song?: string;
-    }
-}
 
 export default function FloatingPlayer() {
   const pathname = usePathname();
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(50);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [isMinimized, setIsMinimized] = useState(false);
   
   const [radioConfig, setRadioConfig] = useState<RadioConfig | null>(null);
-  const [songInfo, setSongInfo] = useState<SongInfo>({ art: "https://picsum.photos/seed/songart/100/100", title: 'Cargando...', artist: 'Por favor espera', listeners: 0 });
+  const [songInfo, setSongInfo] = useState<SongInfo>({ art: "", title: 'Cargando...', artist: 'Por favor espera', listeners: 0 });
   const [onAirData, setOnAirData] = useState<OnAirData | null>(null);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -89,45 +67,39 @@ export default function FloatingPlayer() {
 
   // Fetch On-Air Data (both from radio API and Firebase override)
   useEffect(() => {
-    const fetchAndUpdateData = async () => {
-      if (!radioConfig) return;
-
+    if (!radioConfig) return;
+    const fetchData = async () => {
       try {
         const response = await fetch(`/api/nowplaying`);
         if (!response.ok) throw new Error('Network response was not ok');
         const apiData = await response.json();
         
-        let currentListeners = 0;
-        let songTitle = 'Música Programada';
-        let songArtist = 'Habbospeed';
-        let songArt = 'https://i.imgur.com/u31XFxN.png';
+        const newSongInfo: SongInfo = { art: '', title: 'Música Programada', artist: 'Habbospeed', listeners: 0 };
         let liveDjFromApi = 'AutoDJ';
 
         if (radioConfig.radioService === 'zenofm' && apiData?.data?.[0]) {
             const song = apiData.data[0];
             const [artist, title] = song.title.split(' - ') || ['Artista desconocido', 'Canción desconocida'];
-            songTitle = title.trim();
-            songArtist = artist.trim();
-            songArt = song.image_url;
-            currentListeners = parseInt(song.listeners || '0');
+            newSongInfo.title = title.trim();
+            newSongInfo.artist = artist.trim();
+            newSongInfo.art = song.image_url;
+            newSongInfo.listeners = parseInt(song.listeners || '0');
         } else if (radioConfig.radioService === 'azuracast' && apiData?.now_playing) {
-            songTitle = apiData.now_playing.song.title;
-            songArtist = apiData.now_playing.song.artist;
-            songArt = apiData.now_playing.song.art;
-            currentListeners = apiData.listeners.current;
+            newSongInfo.title = apiData.now_playing.song.title;
+            newSongInfo.artist = apiData.now_playing.song.artist;
+            newSongInfo.art = apiData.now_playing.song.art;
+            newSongInfo.listeners = apiData.listeners.current;
             if (apiData.live.is_live && apiData.live.streamer_name) {
                 liveDjFromApi = apiData.live.streamer_name;
             }
         }
-        
-        setSongInfo({ title: songTitle, artist: songArtist, art: songArt, listeners: currentListeners });
+        setSongInfo(newSongInfo);
 
-        // Now handle DJ info with Firebase override
         onValue(ref(db, 'onAir'), (snapshot) => {
             const override = snapshot.val();
             setOnAirData({
                 currentDj: override?.currentDj || liveDjFromApi || 'AutoDJ',
-                nextDj: override?.nextDj || 'N/A', // You might want a better default
+                nextDj: override?.nextDj || 'N/A',
                 isEvent: override?.isEvent || false
             });
         }, { onlyOnce: true });
@@ -137,11 +109,9 @@ export default function FloatingPlayer() {
       }
     };
     
-    if (radioConfig) {
-      fetchAndUpdateData();
-      const interval = setInterval(fetchAndUpdateData, 15000); 
-      return () => clearInterval(interval);
-    }
+    fetchData();
+    const interval = setInterval(fetchData, 15000); 
+    return () => clearInterval(interval);
   }, [radioConfig]);
 
 
@@ -267,11 +237,25 @@ export default function FloatingPlayer() {
     }
   }, [audioRef]);
 
-  const showPlayer = !['/login', '/register'].includes(pathname);
+  const showPlayer = pathname !== '/' && !['/login', '/register'].includes(pathname);
 
   if (!showPlayer) return null;
 
   const currentDjName = onAirData?.currentDj || 'AutoDJ';
+
+  if (isMinimized) {
+    return (
+      <div className="fixed bottom-4 right-4 z-50">
+        <Button
+          onClick={() => setIsMinimized(false)}
+          className="h-16 w-16 rounded-full shadow-lg"
+          aria-label="Abrir reproductor"
+        >
+          <Headphones className="h-8 w-8" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -288,7 +272,7 @@ export default function FloatingPlayer() {
               <SheetTitle>Ahora Suena</SheetTitle>
             </SheetHeader>
             <div className="py-4 text-center">
-                <Image src={songInfo.art} alt={songInfo.title} width={150} height={150} className="rounded-lg mx-auto mb-4" unoptimized/>
+                <Image src={songInfo.art || 'https://i.imgur.com/u31XFxN.png'} alt={songInfo.title} width={150} height={150} className="rounded-lg mx-auto mb-4" unoptimized/>
                 <h3 className="font-bold text-lg">{songInfo.title}</h3>
                 <p className="text-muted-foreground">{songInfo.artist}</p>
             </div>
@@ -383,7 +367,7 @@ export default function FloatingPlayer() {
                   <SheetHeader>
                       <SheetTitle>Pide una Canción</SheetTitle>
                       <SheetDescription>
-                      ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ! Tu petición será revisada por nuestra IA para asegurar que es apropiada para la estación.
+                      ¿Quieres escuchar tu canción favorita? ¡Házselo saber a nuestro DJ!
                       </SheetDescription>
                   </SheetHeader>
                   <div className="py-4">
@@ -395,11 +379,20 @@ export default function FloatingPlayer() {
                   variant="ghost"
                   size="icon"
                   onClick={handleNotificationClick}
-                  className={cn(notificationPermission === 'granted' && 'text-primary')}
+                  className={cn('hidden md:inline-flex', notificationPermission === 'granted' && 'text-primary')}
                   title={notificationPermission === 'granted' ? 'Notificaciones activadas' : 'Activar notificaciones de DJ'}
                   >
                   <Bell className="h-5 w-5" />
-                  </Button>
+              </Button>
+               <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMinimized(true)}
+                className="hidden md:inline-flex"
+                title="Minimizar reproductor"
+              >
+                <X className="h-5 w-5" />
+              </Button>
               </div>
           </div>
         </div>

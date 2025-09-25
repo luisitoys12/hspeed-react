@@ -1,3 +1,4 @@
+
 export type ScheduleItem = {
   id: string;
   day: string;
@@ -43,9 +44,10 @@ export type EventItem = {
   host: string;
   imageUrl: string;
   imageHint: string;
+  dateTime: Date;
 };
 
-export type EventFormValues = Omit<EventItem, 'id'>;
+export type EventFormValues = Omit<EventItem, 'id' | 'dateTime'>;
 
 export interface Poll {
   id: string;
@@ -59,4 +61,32 @@ export interface PollOption {
   id: string;
   name: string;
   votes: number;
+}
+
+
+export interface RadioConfig {
+    radioService: 'azuracast' | 'zenofm';
+    apiUrl: string;
+    listenUrl: string;
+    discordWebhookUrls?: {
+        news?: string;
+        events?: string;
+        requests?: string;
+        onAir?: string;
+        nextDj?: string;
+        song?: string;
+    }
+}
+
+export interface OnAirData {
+    currentDj: string;
+    nextDj: string;
+    isEvent?: boolean;
+}
+
+export interface SongInfo {
+    art: string;
+    title: string;
+    artist: string;
+    listeners: number;
 }
