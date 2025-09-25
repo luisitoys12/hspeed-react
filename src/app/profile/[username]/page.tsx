@@ -14,19 +14,19 @@ async function getProfileData(username: string) {
     try {
         const nameForQuery = username.toLowerCase();
 
-        // 1. Find user UID from Habbospeed DB
+        // 1. Find user UID from Habbospeed DB by fetching all users and filtering
         const usersRef = ref(db, 'users');
-        const userQuery = query(usersRef, orderByChild('displayName'), equalTo(nameForQuery));
-        const userSnapshot = await get(userQuery);
+        const usersSnapshot = await get(usersRef);
 
         let habbospeedUser = null;
-        if (userSnapshot.exists()) {
-             userSnapshot.forEach((childSnapshot) => {
-                const userData = childSnapshot.val();
-                if(userData.displayName.toLowerCase() === nameForQuery) {
-                    habbospeedUser = userData;
-                }
-            });
+        if (usersSnapshot.exists()) {
+            const usersData = usersSnapshot.val();
+            const userFound = Object.values(usersData).find(
+                (user: any) => user.displayName.toLowerCase() === nameForQuery
+            );
+            if (userFound) {
+                habbospeedUser = userFound;
+            }
         }
         
         // 2. Fetch data from Habbo API
@@ -36,7 +36,7 @@ async function getProfileData(username: string) {
         const teamPromise = get(ref(db, `team/${username}`));
 
         // 4. Fetch assigned badges
-        const assignedBadgesPromise = habbospeedUser ? get(ref(db, `user_badges_assigned/${habbospeedUser.uid}`)) : Promise.resolve(null);
+        const assignedBadgesPromise = habbospeedUser ? get(ref(db, `user_badges_assigned/${(habbospeedUser as any).uid}`)) : Promise.resolve(null);
         
         // 5. Fetch custom badge definitions
         const customBadgesPromise = get(ref(db, `custom_badges`));
