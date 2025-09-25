@@ -94,7 +94,12 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'fcm.googleapis.com',
         pathname: '/**',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'static.habbo-happy.net',
+        pathname: '/**',
+      },
     ],
   },
 };

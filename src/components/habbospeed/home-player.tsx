@@ -143,8 +143,8 @@ export default function HomePlayer() {
             {/* Left Section: Avatar */}
             <Dialog>
                 <DialogTrigger asChild>
-                    <div className="flex flex-col items-center gap-1 cursor-pointer" title="Haz una petición">
-                        <Image 
+                    <div className="relative w-[55px] h-[110px] cursor-pointer" title="Haz una petición">
+                         <Image 
                             src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=m`}
                             alt={currentDjName}
                             width={55}
@@ -152,6 +152,15 @@ export default function HomePlayer() {
                             unoptimized
                             className="drop-shadow-lg"
                         />
+                         <div className="absolute bottom-5 -right-3 z-10">
+                            <Image 
+                                src="https://static.habbo-happy.net/img/furni/big/870020251255482.gif"
+                                alt="Micrófono"
+                                width={40}
+                                height={40}
+                                unoptimized
+                            />
+                        </div>
                     </div>
                 </DialogTrigger>
                 <DialogContent>
