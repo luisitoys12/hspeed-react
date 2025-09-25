@@ -147,17 +147,7 @@ export default function HomePlayer() {
             
             <Dialog>
                 <DialogTrigger asChild>
-                   <div className="relative w-32 h-32 cursor-pointer flex items-center justify-center" title="Haz una petición">
-                      <div className="absolute bottom-0 z-10">
-                        <Image 
-                            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=l&gesture=sml`}
-                            alt={currentDjName}
-                            width={128}
-                            height={128}
-                            unoptimized
-                            className="drop-shadow-lg"
-                        />
-                      </div>
+                    <div className="relative w-[110px] h-[110px] cursor-pointer flex items-center justify-center" title="Haz una petición">
                       {radioConfig?.homePlayerDjSetUrl && (
                         <div className="absolute bottom-0 z-20 w-full h-full">
                             <Image 
@@ -169,6 +159,16 @@ export default function HomePlayer() {
                             />
                         </div>
                       )}
+                      <div className="z-10">
+                        <Image 
+                            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=l&gesture=sml`}
+                            alt={currentDjName}
+                            width={64}
+                            height={110}
+                            unoptimized
+                            className="drop-shadow-lg"
+                        />
+                      </div>
                       <div className="absolute bottom-6 right-0 z-30 w-12 h-12">
                           <Image 
                             src="https://static.habbo-happy.net/img/furni/big/594402946997433.gif"
