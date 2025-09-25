@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import EventsForm from '@/components/habbospeed/events-form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { sendWebhook } from '@/lib/actions';
 
 export default function EventsManagementPage() {
   const { user, loading: authLoading } = useAuth();
@@ -52,8 +54,9 @@ export default function EventsManagementPage() {
         toast({ title: "¡Éxito!", description: "El evento ha sido actualizado." });
       } else {
         const eventsRef = ref(db, 'events');
-        await push(eventsRef, values);
+        const newEventRef = await push(eventsRef, values);
         toast({ title: "¡Éxito!", description: "El nuevo evento ha sido publicado." });
+        await sendWebhook('event', { ...values, id: newEventRef.key });
       }
       setIsDialogOpen(false);
     } catch (error) {

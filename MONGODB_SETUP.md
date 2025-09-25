@@ -1,3 +1,4 @@
+
 # MongoDB Configuration for Habbospeed
 
 This document provides a guide on how to set up and configure MongoDB for the Habbospeed application. In a production environment, you would replace the mock data located in `src/lib/data.ts` with data fetched from a MongoDB database.

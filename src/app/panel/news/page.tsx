@@ -6,6 +6,7 @@ import { ref, onValue, set, remove, push } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 import { NewsArticle, NewsArticleFormValues } from '@/lib/types';
+import { sendWebhook } from '@/lib/actions';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Newspaper, Edit, Trash2, PlusCircle } from 'lucide-react';
@@ -53,8 +54,9 @@ export default function NewsManagementPage() {
         toast({ title: "¡Éxito!", description: "El artículo ha sido actualizado." });
       } else {
         const articlesRef = ref(db, 'news');
-        await push(articlesRef, values);
+        const newArticleRef = await push(articlesRef, values);
         toast({ title: "¡Éxito!", description: "El nuevo artículo ha sido publicado." });
+        await sendWebhook('news', { ...values, id: newArticleRef.key });
       }
       setIsDialogOpen(false);
     } catch (error) {

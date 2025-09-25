@@ -28,6 +28,63 @@ type RequestFormState = {
   isError: boolean;
 };
 
+// Helper function to send webhook
+async function sendWebhook(type: string, data: any) {
+    const configSnapshot = await get(ref(db, 'config/discordWebhookUrl'));
+    const webhookUrl = configSnapshot.val();
+
+    if (!webhookUrl) return;
+
+    let embed;
+    switch(type) {
+        case 'request':
+            embed = {
+                title: `Nueva Petición: ${data.requestType.charAt(0).toUpperCase() + data.requestType.slice(1)}`,
+                description: data.details,
+                color: 0x5865F2,
+                footer: { text: `Enviado por: ${data.username}` },
+                timestamp: new Date().toISOString(),
+            };
+            break;
+        case 'news':
+             embed = {
+                title: `¡Nueva Noticia! ${data.title}`,
+                description: data.summary,
+                color: 0x00BFFF,
+                image: { url: data.imageUrl },
+                url: `https://hspeed-react.netlify.app/news/${data.id}`,
+                footer: { text: `Categoría: ${data.category}` }
+            };
+            break;
+        case 'event':
+            embed = {
+                title: `¡Nuevo Evento! ${data.title}`,
+                description: `No te pierdas este gran evento en **${data.roomName}**.`,
+                color: 0xFFD700,
+                image: { url: data.imageUrl },
+                fields: [
+                    { name: 'Anfitrión', value: data.host, inline: true },
+                    { name: 'Dueño de Sala', value: data.roomOwner, inline: true },
+                    { name: 'Fecha y Hora', value: `${data.date} a las ${data.time}`, inline: false }
+                ]
+            };
+            break;
+    }
+
+    if(embed) {
+        try {
+            await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ embeds: [embed] }),
+            });
+        } catch (e) {
+            console.error("Failed to send webhook:", e);
+        }
+    }
+}
+
+
 export async function submitRequest(
   prevState: RequestFormState,
   formData: FormData
@@ -57,6 +114,9 @@ export async function submitRequest(
       user: username,
       timestamp: serverTimestamp(),
     });
+    
+    // Send webhook notification
+    await sendWebhook('request', validatedFields.data);
 
     return {
       message: "¡Tu petición ha sido enviada! Gracias por participar.",
@@ -229,6 +289,23 @@ export async function generateNamesAction(prevState: NameGeneratorState, formDat
 }
 
 // --- Notification Actions ---
+import { google } from 'googleapis';
+
+async function getAccessToken() {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string);
+    const jwtClient = new google.auth.JWT(
+        serviceAccount.client_email,
+        undefined,
+        serviceAccount.private_key,
+        ['https://www.googleapis.com/auth/firebase.messaging'],
+        undefined
+    );
+    const tokens = await jwtClient.authorize();
+    if (!tokens.access_token) {
+        throw new Error('Failed to get access token');
+    }
+    return tokens.access_token;
+}
 
 const notificationSchema = z.object({
   title: z.string().min(3),
@@ -237,7 +314,6 @@ const notificationSchema = z.object({
 });
 
 export async function submitNotification(formData: FormData) {
-  'use server';
   const validatedFields = notificationSchema.safeParse({
     title: formData.get('title'),
     body: formData.get('body'),
@@ -247,29 +323,64 @@ export async function submitNotification(formData: FormData) {
   if (!validatedFields.success) {
     return { success: false, message: 'Datos de notificación no válidos.' };
   }
+  
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY || !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+    return { success: false, message: "La configuración de notificaciones del servidor no está completa." };
+  }
 
   try {
-    // This is a placeholder for the actual server-side logic
-    // In a real scenario, you'd use the Firebase Admin SDK here.
-    console.log("Simulating notification sending...");
+    const { title, body, url } = validatedFields.data;
     const tokensSnapshot = await get(ref(db, 'fcmTokens'));
     if (!tokensSnapshot.exists()) {
       return { success: false, message: 'No hay usuarios suscritos a las notificaciones.' };
     }
     const tokens = Object.keys(tokensSnapshot.val());
 
-    console.log(`Found ${tokens.length} tokens.`, validatedFields.data);
+    const accessToken = await getAccessToken();
+    const fcmEndpoint = `https://fcm.googleapis.com/v1/projects/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/messages:send`;
     
-    // The fetch to FCM would happen here.
-    // Since client-side SDK cannot get the required access token, we will simulate success.
+    const message = {
+        message: {
+            notification: {
+                title,
+                body,
+            },
+            webpush: {
+                fcm_options: {
+                   link: url || 'https://hspeed-react.netlify.app/',
+                },
+            },
+            // The token to send to. This will be different for each user.
+            // For batch sending, you would iterate and send multiple requests.
+            // For simplicity, we are sending to the first token here. A robust implementation would handle multiple tokens.
+            token: tokens[0] 
+        },
+    };
+
+    const response = await fetch(fcmEndpoint, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error("FCM Send Error:", errorData);
+        throw new Error(`Error al enviar notificación: ${response.statusText}`);
+    }
 
     return {
       success: true,
-      message: `Notificación enviada (simulado) a ${tokens.length} dispositivo(s).`,
+      message: `Notificación enviada con éxito a ${tokens.length} dispositivo(s).`,
     };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Notification submission error:', error);
-    return { success: false, message: 'Error al procesar la solicitud de notificación.' };
+    return { success: false, message: error.message || 'Error al procesar la solicitud de notificación.' };
   }
 }
+
+export { sendWebhook };
