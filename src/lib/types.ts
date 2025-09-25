@@ -70,6 +70,7 @@ export interface RadioConfig {
     listenUrl: string;
     homePlayerBgUrl?: string;
     homePlayerListenersBadgeUrl?: string;
+    homePlayerDjSetUrl?: string;
     discordWebhookUrls?: {
         news?: string;
         events?: string;

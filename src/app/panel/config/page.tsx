@@ -35,6 +35,7 @@ const configSchema = z.object({
   logoUrl: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
   homePlayerBgUrl: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
   homePlayerListenersBadgeUrl: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
+  homePlayerDjSetUrl: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
   radioService: z.enum(['azuracast', 'zenofm']),
   apiUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
   listenUrl: z.string().url({ message: "Por favor, introduce una URL válida." }),
@@ -91,6 +92,7 @@ export default function ConfigPage() {
     logoUrl: "https://i.imgur.com/u31XFxN.png",
     homePlayerBgUrl: "https://i.imgur.com/uGg0a21.png",
     homePlayerListenersBadgeUrl: "https://i.imgur.com/vHqPjUn.png",
+    homePlayerDjSetUrl: "",
     radioService: "azuracast" as const,
     apiUrl: "",
     listenUrl: "",
@@ -252,6 +254,13 @@ export default function ConfigPage() {
                   <FormItem>
                     <FormLabel>URL de la Placa de Oyentes</FormLabel>
                     <FormControl><Input placeholder="https://i.imgur.com/vHqPjUn.png" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}/>
+                 <FormField control={form.control} name="homePlayerDjSetUrl" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL de la Imagen de la Cabina de DJ (Opcional)</FormLabel>
+                    <FormControl><Input placeholder="https://static.habbo-happy.net/img/furni/big/808151140343397.gif" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}/>

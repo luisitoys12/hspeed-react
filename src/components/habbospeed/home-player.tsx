@@ -157,15 +157,17 @@ export default function HomePlayer() {
                             className="drop-shadow-lg"
                         />
                       </div>
-                      <div className="absolute bottom-0 z-20 w-full h-full">
-                         <Image 
-                            src="https://static.habbo-happy.net/img/furni/big/808151140343397.gif"
-                            alt="DJ Booth"
-                            fill
-                            unoptimized
-                            className="object-contain"
-                          />
-                      </div>
+                      {radioConfig?.homePlayerDjSetUrl && (
+                        <div className="absolute bottom-0 z-20 w-full h-full">
+                            <Image 
+                                src={radioConfig.homePlayerDjSetUrl}
+                                alt="DJ Booth"
+                                fill
+                                unoptimized
+                                className="object-contain"
+                            />
+                        </div>
+                      )}
                       <div className="absolute bottom-6 -right-4 z-30 w-12 h-12">
                           <Image 
                             src="https://static.habbo-happy.net/img/furni/big/870020251255482.gif"
