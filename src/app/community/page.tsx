@@ -14,6 +14,14 @@ const tools = [
     disabled: false
   },
   {
+    title: 'Copa Habbospeed',
+    description: 'Sigue toda la acción del torneo de fútbol: posiciones, goleadores y más.',
+    icon: Trophy,
+    isNew: true,
+    href: '/copa',
+    disabled: false
+  },
+  {
     title: 'Calculadora de Tradeos',
     description: 'Calcula el valor de tus tradeos para asegurarte de que son justos.',
     icon: Calculator,
@@ -51,14 +59,6 @@ const tools = [
     icon: BookHeart,
     isNew: false,
     href: '/news',
-    disabled: false
-  },
-  {
-    title: 'Premios Noviembre',
-    description: '¡Los ganadores de los torneos de fútbol de noviembre!',
-    icon: Trophy,
-    isNew: true,
-    href: '/community/november-awards',
     disabled: false
   },
    {

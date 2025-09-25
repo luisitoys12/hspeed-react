@@ -66,6 +66,15 @@
       "imageUrl": "https://picsum.photos/seed/summerhabbo/600/400",
       "summary": "Descubre los nuevos furnis de verano y participa en los eventos playeros para ganar premios.",
       "title": "¡Sol, Arena y Pixeles! Llega el Evento de Verano"
+    },
+    "copanoticia1": {
+      "category": "COPA",
+      "content": "La primera jornada de la Copa Habbospeed estuvo llena de sorpresas. El equipo 'Los Furas' demostró su poderío ofensivo, mientras que 'Defensores' se mantiene como el equipo a vencer. ¡No te pierdas el resumen de los partidos!",
+      "date": "2024-11-05",
+      "imageHint": "soccer field",
+      "imageUrl": "https://picsum.photos/seed/copajornada1/600/400",
+      "summary": "Resumen de la primera jornada: sorpresas, goles y mucho fútbol.",
+      "title": "Arranca la Copa Habbospeed con Partidos de Infarto"
     }
   },
   "onAir": {
@@ -92,33 +101,6 @@
       "roles": [
         "DJ"
       ]
-    }
-  },
-  "users": {
-    "some-uid-1": {
-      "uid": "some-uid-1",
-      "displayName": "DJ-Pixel",
-      "email": "dj-pixel@example.com",
-      "role": "dj",
-      "approved": true,
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "speedPoints": 1500
-    }
-  },
-  "catalogItems": {
-    "item1": {
-      "name": "Placa Exclusiva de Radio",
-      "description": "Una placa única para demostrar tu apoyo a la radio.",
-      "imageUrl": "https://images.habbo.com/c_images/album1584/ADM.gif",
-      "price": 5000,
-      "stock": 100
-    },
-    "item2": {
-      "name": "Suscripción HC 1 Mes",
-      "description": "Un mes de suscripción al Habbo Club.",
-      "imageUrl": "https://images.habbo.com/c_images/catalogue/icon_3.png",
-      "price": 10000,
-      "stock": 50
     }
   },
   "events": {
@@ -160,14 +142,26 @@
       "poll1": "opt4"
     }
   },
-   "awardTypes": {
-    "type1": { "name": "DJ del Mes", "isCopa": false },
-    "type2": { "name": "Guía del Mes", "isCopa": false },
-    "type3": { "name": "Máximo Goleador", "isCopa": true },
-    "type4": { "name": "Portero Menos Goleado", "isCopa": true }
-  },
-  "awardWinners": {
-    "winner1": { "awardTypeId": "type1", "winnerName": "DJ-Pixel", "month": "Octubre", "timestamp": 1698800000000 },
-    "winner2": { "awardTypeId": "type3", "winnerName": "xX_Pichichi_Xx", "month": "Noviembre", "timestamp": 1701388800000 }
+  "copa": {
+    "teams": {
+      "LosFuras": { "name": "Los Furas", "pj": 1, "pg": 1, "pe": 0, "pp": 0, "gf": 3, "gc": 1, "dg": 2, "pts": 3 },
+      "Defensores": { "name": "Defensores", "pj": 1, "pg": 1, "pe": 0, "pp": 0, "gf": 2, "gc": 0, "dg": 2, "pts": 3 },
+      "LosAmistosos": { "name": "Los Amistosos", "pj": 1, "pg": 0, "pe": 0, "pp": 1, "gf": 0, "gc": 2, "dg": -2, "pts": 0 }
+    },
+    "topScorers": [
+      { "name": "xX_Pichichi_Xx", "team": "Los Furas", "goals": 2 },
+      { "name": "MuroDeAcero", "team": "Defensores", "goals": 1 },
+      { "name": "ElGoleador", "team": "Los Furas", "goals": 1 }
+    ],
+    "nextMatch": {
+      "teamA": "Los Furas",
+      "teamB": "Defensores",
+      "date": "2024-11-15",
+      "time": "22:00"
+    },
+    "venue": {
+      "name": "Estadio Habbospeed",
+      "owner": "estacionkusfm"
+    }
   }
 }
