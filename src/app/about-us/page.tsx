@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Users, BookHeart, Milestone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function AboutUsPage() {
   return (
