@@ -1,8 +1,9 @@
 
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge, BrainCircuit, Calculator, Dice5, Paintbrush, Pickaxe, BookHeart, Users, HeartHandshake, Trophy, Vote } from 'lucide-react';
+import { Badge as BadgeIcon, BrainCircuit, Calculator, Dice5, Paintbrush, Pickaxe, BookHeart, Users, HeartHandshake, Trophy, Vote, Award } from 'lucide-react';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 const tools = [
   {
@@ -20,6 +21,22 @@ const tools = [
     isNew: true,
     href: '/copa',
     disabled: false
+  },
+   {
+    title: 'Habbospeed Awards',
+    description: '¡Vota por tus favoritos en los premios anuales de la comunidad!',
+    icon: Award,
+    isNew: false,
+    href: '/awards',
+    disabled: false
+  },
+    {
+    title: 'Galería de Placas',
+    description: 'Mira las placas exclusivas que puedes ganar en los eventos de Habbospeed.',
+    icon: BadgeIcon,
+    isNew: false,
+    href: '/community/badges',
+    disabled: true
   },
   {
     title: 'Calculadora de Tradeos',

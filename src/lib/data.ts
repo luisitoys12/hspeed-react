@@ -1,7 +1,7 @@
 // In a real application, this data would come from the Habbo API.
 // We are simulating the API responses here.
 import { db } from './firebase';
-import { ref, get } from 'firebase/database';
+import { ref, get, query, orderByChild, equalTo } from 'firebase/database';
 import { NewsArticle } from './types';
 
 
@@ -66,49 +66,6 @@ export async function getTeamMembers() {
             avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=estacionkusfm&direction=2&head_direction=3&size=l`,
             online: true,
         }];
-    }
-}
-
-
-export async function getHabboProfileData(username: string) {
-    try {
-        const absoluteUrl = process.env.NEXT_PUBLIC_VERCEL_URL 
-            ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/habbo-user?username=${username}`
-            : `http://localhost:9002/api/habbo-user?username=${username}`;
-
-        const response = await fetch(absoluteUrl);
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            return { error: errorData.error || 'User not found or API error.' };
-        }
-        
-        const data = await response.json();
-        const { user, profile } = data;
-
-        return {
-            name: user.name,
-            motto: user.motto,
-            registrationDate: user.memberSince,
-            rewards: profile.achievementScore,
-            badges: profile.badges.slice(0, 5).map((badge: any) => ({
-                id: badge.code,
-                name: badge.name,
-                imageUrl: `https://images.habbo.com/c_images/album1584/${badge.code}.gif`,
-                imageHint: 'habbo badge', 
-            })),
-            rooms: profile.rooms.slice(0, 3).map((room: any) => ({
-                id: room.id,
-                name: room.name,
-                imageUrl: `https://www.habbo.com/habbo-imaging/room/${room.id}/thumbnail.png`,
-                imageHint: 'habbo room',
-            })),
-            error: null,
-        };
-
-    } catch (error) {
-        console.error("Failed to fetch Habbo profile data via proxy:", error);
-        return { error: 'Ocurrió un error inesperado al buscar el perfil.' };
     }
 }
 

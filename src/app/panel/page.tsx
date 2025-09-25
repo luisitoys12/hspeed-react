@@ -8,7 +8,7 @@ import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
 import { useAuth } from '@/hooks/use-auth';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award, Briefcase, Radio, Vote, Trophy } from 'lucide-react';
+import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award, Briefcase, Radio, Vote, Trophy, Badge } from 'lucide-react';
 import Link from 'next/link';
 
 const panelLinks = [
@@ -16,7 +16,8 @@ const panelLinks = [
     { href: '/panel/users', title: 'Gestión de Usuarios', description: 'Aprobar usuarios y asignar roles.', icon: Users },
     { href: '/panel/team', title: 'Gestión de Equipo', description: 'Añadir o quitar miembros del staff.', icon: Users },
     { href: '/panel/recruitment', title: 'Reclutamiento', description: 'Gestionar vacantes y postulaciones.', icon: Briefcase },
-    { href: '/panel/awards', title: 'Gestión de Premios', description: 'Gestionar premios y ganadores.', icon: Award },
+    { href: '/panel/awards', title: 'Gestión de Premios', description: 'Gestionar nominaciones y votaciones.', icon: Award },
+    { href: '/panel/badges', title: 'Gestión de Placas', description: 'Crear y asignar placas personalizadas.', icon: Badge },
     { href: '/panel/news', title: 'Gestión de Noticias', description: 'Publicar y editar artículos.', icon: Newspaper },
     { href: '/panel/events', title: 'Gestión de Eventos', description: 'Administrar los eventos de la fansite.', icon: PartyPopper },
     { href: '/panel/polls', title: 'Gestión de Encuestas', description: 'Crear y administrar encuestas.', icon: Vote },

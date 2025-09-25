@@ -1,26 +1,51 @@
-
 import { get } from 'firebase/database';
 import { db } from '@/lib/firebase';
-import { ref, query, orderByChild, equalTo, limitToLast } from 'firebase/database';
+import { ref, query, orderByChild, equalTo, limitToLast, getDatabase, onValue } from 'firebase/database';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, MessageSquare } from 'lucide-react';
+import { CheckCircle, MessageSquare, Calendar, Award } from 'lucide-react';
 import type { Comment } from '@/lib/types';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 async function getProfileData(username: string) {
     try {
-        const userPromise = fetch(`https://www.habbo.es/api/public/users?name=${username}`);
-        const teamPromise = get(ref(db, `team/${username}`));
+        const nameForQuery = username.toLowerCase();
+
+        // 1. Find user UID from Habbospeed DB
+        const usersRef = ref(db, 'users');
+        const userQuery = query(usersRef, orderByChild('displayName'), equalTo(nameForQuery));
+        const userSnapshot = await get(userQuery);
+
+        let habbospeedUser = null;
+        if (userSnapshot.exists()) {
+             userSnapshot.forEach((childSnapshot) => {
+                const userData = childSnapshot.val();
+                if(userData.displayName.toLowerCase() === nameForQuery) {
+                    habbospeedUser = userData;
+                }
+            });
+        }
         
-        // Fetch user's latest comments
+        // 2. Fetch data from Habbo API
+        const userPromise = fetch(`https://www.habbo.es/api/public/users?name=${username}`);
+        
+        // 3. Fetch team roles
+        const teamPromise = get(ref(db, `team/${username}`));
+
+        // 4. Fetch assigned badges
+        const assignedBadgesPromise = habbospeedUser ? get(ref(db, `user_badges_assigned/${habbospeedUser.uid}`)) : Promise.resolve(null);
+        
+        // 5. Fetch custom badge definitions
+        const customBadgesPromise = get(ref(db, `custom_badges`));
+        
+        // 6. Fetch user's latest comments
         const commentsQuery = query(ref(db, 'comments'), orderByChild('authorName'), equalTo(username), limitToLast(5));
         const commentsPromise = get(commentsQuery);
-
-
-        const [userResponse, teamSnapshot, commentsSnapshot] = await Promise.all([userPromise, teamPromise, commentsPromise]);
+        
+        const [userResponse, teamSnapshot, commentsSnapshot, assignedBadgesSnapshot, customBadgesSnapshot] = await Promise.all([userPromise, teamPromise, commentsPromise, assignedBadgesPromise, customBadgesPromise]);
 
         if (!userResponse.ok) {
            return { error: 'Este usuario no existe en Habbo.' };
@@ -49,16 +74,25 @@ async function getProfileData(username: string) {
                  });
             });
         }
+        
+        const assignedBadges = assignedBadgesSnapshot?.exists() ? assignedBadgesSnapshot.val() : {};
+        const customBadges = customBadgesSnapshot?.exists() ? customBadgesSnapshot.val() : {};
+        const userBadges = Object.keys(assignedBadges).map(badgeId => {
+            return customBadges[badgeId] ? { id: badgeId, ...customBadges[badgeId] } : null;
+        }).filter(Boolean);
 
 
         return {
             name: userData.name,
             motto: userData.motto,
             online: userData.online,
+            registrationDate: userData.memberSince,
+            rewards: userData.achievementScore,
             avatarUrl: `https://www.habbo.es/habbo-imaging/avatarimage?user=${userData.name}&direction=2&head_direction=3&size=l`,
             roles,
             isVerified,
             comments: comments.sort((a, b) => b.timestamp - a.timestamp),
+            userBadges,
             error: null,
         };
 
@@ -87,40 +121,89 @@ export default async function ProfilePage({ params }: { params: { username: stri
                         data-ai-hint="abstract background"
                         unoptimized
                      />
-                </div>
-                <CardContent className="p-6 relative">
-                    <div className="absolute left-6 -top-16">
-                        <div className="relative w-28 h-28 md:w-32 md:h-32 border-4 border-background rounded-full overflow-hidden">
+                     <div className="absolute left-6 -bottom-12">
+                        <div className="relative w-28 h-28 md:w-32 md:h-32 border-4 border-background rounded-full overflow-hidden bg-background">
                              <Image
-                                src={profile.avatarUrl.replace('size=l','size=l&headonly=1')}
+                                src={profile.avatarUrl}
                                 alt={profile.name}
                                 width={128}
-                                height={128}
-                                className="bg-background"
+                                height={200}
+                                className="drop-shadow-lg"
                                 unoptimized
                             />
                         </div>
                     </div>
-                    
-                    <div className="pt-16">
-                        <CardTitle className="font-headline text-3xl flex items-center gap-2">
-                            {profile.name}
-                            {profile.isVerified && (
-                                <CheckCircle className="h-6 w-6 text-blue-500" title="Miembro verificado del equipo"/>
-                            )}
-                        </CardTitle>
-                        <CardDescription className="italic text-base">"{profile.motto}"</CardDescription>
+                </div>
+                <CardHeader className="pt-16 pb-4">
+                    <CardTitle className="font-headline text-3xl flex items-center gap-2">
+                        {profile.name}
+                        {profile.isVerified && (
+                            <CheckCircle className="h-6 w-6 text-blue-500" title="Miembro verificado del equipo"/>
+                        )}
+                    </CardTitle>
+                    <CardDescription className="italic text-base">"{profile.motto}"</CardDescription>
 
-                        <div className="mt-4 flex flex-wrap gap-2">
-                            {profile.roles.map((role: string) => (
-                                <Badge key={role} variant="secondary">{role}</Badge>
-                            ))}
-                        </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                        {profile.roles.map((role: string) => (
+                            <Badge key={role} variant="secondary">{role}</Badge>
+                        ))}
                     </div>
-                </CardContent>
+                </CardHeader>
             </Card>
 
-            <Card className="mt-8">
+            <div className="grid md:grid-cols-3 gap-6 mt-6">
+                <Card className="md:col-span-1">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Estadísticas</CardTitle>
+                    </CardHeader>
+                     <CardContent className="text-sm text-muted-foreground space-y-3">
+                        <div className="flex items-center gap-3">
+                            <Calendar className="h-5 w-5 text-primary" />
+                            <div>
+                                <p className="font-bold text-foreground">{new Date(profile.registrationDate).toLocaleDateString('es-ES')}</p>
+                                <p>En Habbo desde</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Award className="h-5 w-5 text-primary" />
+                            <div>
+                                <p className="font-bold text-foreground">{profile.rewards}</p>
+                                <p>Puntos de Logro</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                 <Card className="md:col-span-2">
+                     <CardHeader>
+                        <CardTitle className="text-lg">Placas Habbospeed</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {profile.userBadges && profile.userBadges.length > 0 ? (
+                            <TooltipProvider>
+                                <div className="flex flex-wrap gap-4">
+                                {profile.userBadges.map((badge: any) => (
+                                    <Tooltip key={badge.id}>
+                                        <TooltipTrigger>
+                                            <Image src={badge.imageUrl} alt={badge.name} width={48} height={48} className="rounded-md" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="font-bold">{badge.name}</p>
+                                            <p>{badge.description}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ))}
+                                </div>
+                            </TooltipProvider>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Este usuario no tiene placas de Habbospeed.</p>
+                        )}
+                    </CardContent>
+                 </Card>
+            </div>
+
+
+            <Card className="mt-6">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-headline">
                         <MessageSquare className="text-primary" />

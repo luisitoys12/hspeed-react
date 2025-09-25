@@ -32,6 +32,7 @@ import {
   Info,
   Library,
   Gem,
+  Award,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -50,6 +51,7 @@ const publicLinks = [
   { href: '/news', label: 'Noticias Habbo', icon: Newspaper },
   { href: '/team', label: 'Equipo', icon: Users },
   { href: '/community', label: 'Comunidad', icon: HeartHandshake },
+  { href: '/awards', label: 'Premios', icon: Award },
   { href: '/catalog', label: 'Catálogo', icon: Store },
   { href: '/contact', label: 'Contacto', icon: Mail },
 ];

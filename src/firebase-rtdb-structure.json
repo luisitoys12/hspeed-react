@@ -1,3 +1,4 @@
+
 {
   "alliances": {
     "alliance1": {
@@ -162,6 +163,36 @@
     "venue": {
       "name": "Estadio Habbospeed",
       "owner": "estacionkusfm"
+    }
+  },
+  "award_categories": {
+    "cat1": { "title": "DJ del Año" },
+    "cat2": { "title": "Mejor Constructor de Salas" }
+  },
+  "award_nominations": {
+    "cat1": {
+      "nom1": { "name": "DJ-Pixel", "motto": "¡Pura energía en la cabina!", "votes": 42 },
+      "nom2": { "name": "DJ-Frank", "motto": "El rey de las mezclas.", "votes": 67 }
+    },
+    "cat2": {
+      "nom3": { "name": "Arq.Maria", "motto": "Construyendo sueños pixelados.", "votes": 102 }
+    }
+  },
+  "award_votes": {
+    "someUserId": {
+      "cat1": "nom2"
+    }
+  },
+  "custom_badges": {
+    "badge_hsa_2024": {
+      "name": "HSA 2024",
+      "description": "Ganador de los Habbospeed Awards 2024",
+      "imageUrl": "https://i.imgur.com/example.gif"
+    }
+  },
+  "user_badges_assigned": {
+    "someUserId": {
+      "badge_hsa_2024": true
     }
   }
 }
