@@ -8,7 +8,7 @@ import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
 import { useAuth } from '@/hooks/use-auth';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award, Briefcase, Radio, Vote, Trophy, Badge } from 'lucide-react';
+import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award, Briefcase, Radio, Vote, Trophy, Badge, Sprout } from 'lucide-react';
 import Link from 'next/link';
 
 const panelLinks = [
@@ -29,6 +29,7 @@ const panelLinks = [
     { href: '/panel/booking', title: 'Gestión de Reservas', description: 'Vaciar la parrilla de reservas de DJ.', icon: BookmarkPlus },
     { href: '/panel/alliances', title: 'Gestión de Alianzas', description: 'Administrar las alianzas oficiales.', icon: Handshake },
     { href: '/panel/featured-rooms', title: 'Salas Destacadas', description: 'Gestionar las salas que aparecen en inicio.', icon: DoorOpen },
+    { href: '/panel/origins', title: 'Panel de Origins', description: 'Gestionar contenido de Habbo Origins.', icon: Sprout },
     { href: '/panel/analytics', title: 'Analíticas', description: 'Ver estadísticas de visitas y uso.', icon: BarChart2 },
     { href: '/panel/notifications', title: 'Enviar Notificaciones', description: 'Enviar avisos push a los usuarios.', icon: Bell },
 ];

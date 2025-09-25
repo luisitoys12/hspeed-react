@@ -16,7 +16,7 @@ interface Campaign {
 }
 
 type LatestCampaignsProps = {
-  hotel?: 'es' | 'origin';
+  hotel?: 'es' | 'com.br' | 'com.tr' | 'de' | 'fi' | 'fr' | 'it' | 'nl';
   title?: string;
   description?: string;
 };

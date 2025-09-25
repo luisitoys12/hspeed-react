@@ -183,16 +183,28 @@
       "cat1": "nom2"
     }
   },
-  "custom_badges": {
-    "badge_hsa_2024": {
-      "name": "HSA 2024",
-      "description": "Ganador de los Habbospeed Awards 2024",
-      "imageUrl": "https://i.imgur.com/example.gif"
+  "origins_news": {
+    "originNoticia1": {
+      "category": "Origins",
+      "content": "Habbo Origins ha lanzado un nuevo raro clásico: ¡la Heladera Roja! Disponible solo por tiempo limitado.",
+      "date": "2024-07-20",
+      "imageHint": "vintage red fridge",
+      "imageUrl": "https://picsum.photos/seed/originsnews1/600/400",
+      "summary": "El raro clásico Heladera Roja está de vuelta en Habbo Origins por tiempo limitado.",
+      "title": "Raro Clásico: Heladera Roja"
     }
   },
-  "user_badges_assigned": {
-    "someUserId": {
-      "badge_hsa_2024": true
+  "origins_events": {
+    "originEvento1": {
+      "title": "CARRERA DE TRINEOS",
+      "server": "Habbo Origins",
+      "date": "2024-12-25",
+      "time": "20:00",
+      "roomName": "Juegos en la Nieve",
+      "roomOwner": "SantaClaus",
+      "host": "Staff",
+      "imageUrl": "https://picsum.photos/seed/originsevent1/600/400",
+      "imageHint": "snow race"
     }
   }
 }
