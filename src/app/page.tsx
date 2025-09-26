@@ -67,47 +67,27 @@ export default async function Home() {
     <>
       <div className="container mx-auto p-4 md:p-8">
         
-        {/* Mobile Layout */}
-        <div className="lg:hidden space-y-8">
+        <div className="space-y-8">
             <HeroSlideshow />
-            <MobileHomeRadio />
+            <div className="lg:hidden">
+              <MobileHomeRadio />
+            </div>
+            <div className="hidden lg:flex lg:justify-center">
+              <HomePlayer />
+            </div>
             <OnAirDjs />
             <Suspense fallback={<LoadingSkeleton />}>
               <HabboProfile />
             </Suspense>
             <AboutAndNews initialNews={pageData.news} />
-            {/* <LatestFurnis /> */}
             <ActiveEvents initialEvents={pageData.events} />
             <Suspense fallback={<LoadingSkeleton />}>
               <LatestBadges />
             </Suspense>
-        </div>
-        
-        {/* Desktop Layout */}
-        <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <HeroSlideshow />
-            <AboutAndNews initialNews={pageData.news} />
-            {/* <LatestFurnis /> */}
-          </div>
-          <div className="lg:col-span-1 space-y-8">
-            <HomePlayer />
-            <OnAirDjs />
-            <Suspense fallback={<LoadingSkeleton />}>
-              <HabboProfile />
-            </Suspense>
-            <ActiveEvents initialEvents={pageData.events} />
-            <Suspense fallback={<LoadingSkeleton />}>
-              <LatestBadges />
-            </Suspense>
-          </div>
+             <OfficialAlliances initialAlliances={pageData.alliances} />
+             <ActiveRooms initialRooms={pageData.featuredRooms} />
         </div>
 
-        {/* Common Bottom Sections */}
-        <div className="mt-8 space-y-8">
-          <OfficialAlliances initialAlliances={pageData.alliances} />
-          <ActiveRooms initialRooms={pageData.featuredRooms} />
-        </div>
       </div>
     </>
   );
