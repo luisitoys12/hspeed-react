@@ -34,6 +34,7 @@ import {
   Gem,
   Award,
   Sprout,
+  Trophy,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -54,6 +55,7 @@ const publicLinks = [
   { href: '/team', label: 'Equipo', icon: Users },
   { href: '/community', label: 'Comunidad', icon: HeartHandshake },
   { href: '/awards', label: 'Premios', icon: Award },
+  { href: '/community/dj-ranking', label: 'Ranking DJs', icon: Trophy },
   { href: '/catalog', label: 'Catálogo', icon: Store },
   { href: '/contact', label: 'Contacto', icon: Mail },
 ];

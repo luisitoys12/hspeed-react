@@ -15,6 +15,14 @@ const tools = [
     disabled: false
   },
   {
+    title: 'Ranking de DJs',
+    description: 'Mira quiénes son los DJs más populares según los likes de la comunidad.',
+    icon: Trophy,
+    isNew: true,
+    href: '/community/dj-ranking',
+    disabled: false
+  },
+  {
     title: 'Copa Habbospeed',
     description: 'Sigue toda la acción del torneo de fútbol: posiciones, goleadores y más.',
     icon: Trophy,
