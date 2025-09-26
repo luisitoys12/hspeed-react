@@ -167,7 +167,7 @@ export default function OnAirDjs() {
                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-center justify-center min-h-[120px]">
                    <div className="col-span-1 md:col-span-2 flex justify-center items-center">
                      <Image 
-                        src="https://files.habboemotion.com/resources/images/seasons/habboween/handsuphabbo.gif" 
+                        src="https://i.imgur.com/u31XFxN.png" 
                         alt="Cargando..."
                         width={60}
                         height={100}

@@ -14,9 +14,9 @@ import { db } from '@/lib/firebase';
 import {
   Dialog,
   DialogContent,
+  DialogTrigger,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
 import SongRequestForm from './song-request-form';
@@ -131,12 +131,14 @@ export default function HomePlayer() {
     }
   }, [audioRef]);
 
-  const currentDjName = onAirData?.currentDj || 'Habbospeed';
+  let currentDjName = onAirData?.currentDj || 'Habbospeed';
+  if (currentDjName.toLowerCase() === 'autodj') {
+      currentDjName = 'Habbospeed';
+  }
+
 
   return (
     <div className="w-full max-w-lg mx-auto bg-card/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-[#1e5c8e] p-2 relative">
-       <Image src="https://images.habbo.com/c_images/catalogue/HWEEN14_pumpkin1.png" alt="Calabaza de Halloween" width={40} height={40} unoptimized className="absolute -top-5 -left-5 animate-pulse" />
-       <Image src="https://images.habbo.com/c_images/catalogue/HWEEN14_pumpkin2.png" alt="Calabaza de Halloween" width={40} height={40} unoptimized className="absolute -top-5 -right-5 animate-pulse [transform:scaleX(-1)]" />
 
       <audio ref={audioRef} preload="none" />
       <div 
@@ -147,18 +149,7 @@ export default function HomePlayer() {
             
             <Dialog>
                 <DialogTrigger asChild>
-                    <div className="relative w-24 h-24 md:w-32 md:h-32 cursor-pointer flex items-center justify-center" title="Haz una petición">
-                      {radioConfig?.homePlayerDjSetUrl && (
-                        <div className="absolute bottom-0 z-20 w-full h-full">
-                            <Image 
-                                src={radioConfig.homePlayerDjSetUrl}
-                                alt="DJ Booth"
-                                fill
-                                unoptimized
-                                className="object-contain"
-                            />
-                        </div>
-                      )}
+                    <div className="relative w-24 h-32 md:w-32 md:h-32 cursor-pointer flex items-center justify-center" title="Haz una petición">
                       <div className="z-10">
                         <Image 
                             src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDjName}&direction=2&head_direction=3&size=l&gesture=sml`}
@@ -168,15 +159,6 @@ export default function HomePlayer() {
                             unoptimized
                             className="drop-shadow-lg"
                         />
-                      </div>
-                      <div className="absolute bottom-8 left-1 md:left-6 z-30 w-12 h-12">
-                          <Image 
-                            src="https://static.habbo-happy.net/img/furni/big/594402946997433.gif"
-                            alt="Micrófono"
-                            fill
-                            unoptimized
-                            className="object-contain [transform:scaleX(-1)]"
-                           />
                       </div>
                    </div>
                 </DialogTrigger>
