@@ -83,8 +83,8 @@ export default function HomePlayer() {
         onValue(ref(db, 'onAir'), (snapshot) => {
             const override = snapshot.val();
             setOnAirData({
-                currentDj: override?.currentDj || liveDjFromApi || 'AutoDJ',
-                nextDj: override?.nextDj || 'N/A',
+                currentDj: override?.currentDj || liveDjFromApi || 'Habbospeed',
+                nextDj: override?.nextDj || 'Habbospeed',
                 isEvent: override?.isEvent || false
             });
         }, { onlyOnce: true });
@@ -131,12 +131,12 @@ export default function HomePlayer() {
     }
   }, [audioRef]);
 
-  const currentDjName = onAirData?.currentDj || 'AutoDJ';
+  const currentDjName = onAirData?.currentDj || 'Habbospeed';
 
   return (
     <div className="w-full max-w-lg mx-auto bg-card/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-[#1e5c8e] p-2 relative">
-       <Image src="https://habbo.es/images/catalogue/icon_1015.png" alt="Fantasma de Halloween" width={40} height={40} unoptimized className="absolute -top-5 -left-5 animate-pulse" />
-       <Image src="https://habbo.es/images/catalogue/icon_1015.png" alt="Fantasma de Halloween" width={40} height={40} unoptimized className="absolute -top-5 -right-5 animate-pulse [transform:scaleX(-1)]" />
+       <Image src="https://images.habbo.com/c_images/catalogue/HWEEN14_pumpkin1.png" alt="Calabaza de Halloween" width={40} height={40} unoptimized className="absolute -top-5 -left-5 animate-pulse" />
+       <Image src="https://images.habbo.com/c_images/catalogue/HWEEN14_pumpkin2.png" alt="Calabaza de Halloween" width={40} height={40} unoptimized className="absolute -top-5 -right-5 animate-pulse [transform:scaleX(-1)]" />
 
       <audio ref={audioRef} preload="none" />
       <div 
@@ -147,7 +147,7 @@ export default function HomePlayer() {
             
             <Dialog>
                 <DialogTrigger asChild>
-                    <div className="relative w-[110px] h-[110px] cursor-pointer flex items-center justify-center" title="Haz una petición">
+                    <div className="relative w-24 h-24 md:w-32 md:h-32 cursor-pointer flex items-center justify-center" title="Haz una petición">
                       {radioConfig?.homePlayerDjSetUrl && (
                         <div className="absolute bottom-0 z-20 w-full h-full">
                             <Image 
@@ -169,7 +169,7 @@ export default function HomePlayer() {
                             className="drop-shadow-lg"
                         />
                       </div>
-                      <div className="absolute bottom-6 right-0 z-30 w-12 h-12">
+                      <div className="absolute bottom-8 left-1 md:left-6 z-30 w-12 h-12">
                           <Image 
                             src="https://static.habbo-happy.net/img/furni/big/594402946997433.gif"
                             alt="Micrófono"

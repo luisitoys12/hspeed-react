@@ -31,7 +31,7 @@ type Bookings = {
 
 const getDjs = (bookings: Bookings, onAirOverride?: OnAirData, azuracastStreamer?: string) => {
     let currentDj = { name: defaultDj.name, habboName: defaultDj.habboName, isEvent: false };
-    let nextDj = { name: 'Por anunciar', habboName: 'Habbospeed' };
+    let nextDj = { name: defaultDj.name, habboName: defaultDj.habboName };
 
     // 1. Manual override has the highest priority
     if (onAirOverride?.currentDj) {
@@ -98,7 +98,7 @@ export default function OnAirDjs() {
     const [azuracastStreamer, setAzuracastStreamer] = useState<string | undefined>(undefined);
     const [bookings, setBookings] = useState<Bookings>({});
     const [onAirOverride, setOnAirOverride] = useState<OnAirData | undefined>(undefined);
-    const [djs, setDjs] = useState({ current: { ...defaultDj, isEvent: false }, next: { name: 'Por anunciar', habboName: 'Habbospeed' } });
+    const [djs, setDjs] = useState({ current: { ...defaultDj, isEvent: false }, next: { name: defaultDj.name, habboName: defaultDj.habboName } });
     const [isLoading, setIsLoading] = useState(true);
     
     useEffect(() => {
