@@ -1,4 +1,3 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -75,7 +74,32 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'i.ibb.co',
         pathname: '/**',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'habbofurni.com',
+        pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: 'habboassets.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'puhekupla.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'fcm.googleapis.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'static.habbo-happy.net',
+        pathname: '/**',
+      },
     ],
   },
 };

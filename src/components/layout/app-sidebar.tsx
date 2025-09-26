@@ -35,6 +35,7 @@ import {
   Award,
   Sprout,
   Trophy,
+  ThumbsUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -66,6 +67,7 @@ const authLinks = [
 
 const adminLinks = [
   { href: '/panel', label: 'Panel Admin', icon: Shield },
+  { href: '/panel/likes', label: 'Panel de Likes', icon: ThumbsUp },
   { href: '/docs', label: 'Documentación', icon: BookOpen },
 ]
 

@@ -446,7 +446,7 @@ export async function addLikeToDj(userId: string, djName: string) {
         return { success: false, message: "Debes iniciar sesión para dar 'like'." };
     }
 
-    const likeCooldownHours = 24;
+    const likeCooldownHours = 1; // Cooldown de 1 hora por sesión
     const now = Date.now();
     const cooldownPeriod = likeCooldownHours * 60 * 60 * 1000;
 
@@ -458,7 +458,7 @@ export async function addLikeToDj(userId: string, djName: string) {
         const lastLikeTimestamp = userLikeSnapshot.val();
 
         if (lastLikeTimestamp && (now - lastLikeTimestamp < cooldownPeriod)) {
-            return { success: false, message: `Ya has apoyado a este DJ recientemente. ¡Inténtalo de nuevo más tarde!` };
+            return { success: false, message: `Ya has apoyado a este DJ durante esta sesión.` };
         }
 
         await runTransaction(djLikesRef, (currentLikes) => (currentLikes || 0) + 1);
@@ -473,5 +473,3 @@ export async function addLikeToDj(userId: string, djName: string) {
 
 
 export { sendWebhook };
-
-    

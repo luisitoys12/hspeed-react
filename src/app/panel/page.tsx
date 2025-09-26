@@ -8,7 +8,7 @@ import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
 import { useAuth } from '@/hooks/use-auth';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award, Briefcase, Radio, Vote, Trophy, Badge, Sprout } from 'lucide-react';
+import { Shield, Users, Newspaper, Calendar, MessageSquare, Settings, BookmarkPlus, ArrowRight, LoaderCircle, Handshake, DoorOpen, BarChart2, PartyPopper, Bell, Award, Briefcase, Radio, Vote, Trophy, Badge, Sprout, ThumbsUp } from 'lucide-react';
 import Link from 'next/link';
 
 const panelLinks = [
@@ -22,6 +22,7 @@ const panelLinks = [
     { href: '/panel/events', title: 'Gestión de Eventos', description: 'Administrar los eventos de la fansite.', icon: PartyPopper },
     { href: '/panel/polls', title: 'Gestión de Encuestas', description: 'Crear y administrar encuestas.', icon: Vote },
     { href: '/panel/copa', title: 'Gestión de la Copa', description: 'Administrar equipos, goleadores y partidos.', icon: Trophy },
+    { href: '/panel/likes', title: 'Gestión de Likes a DJs', description: 'Ver y resetear los likes del ranking.', icon: ThumbsUp },
     { href: '/panel/comments', title: 'Moderar Comentarios', description: 'Gestionar los comentarios de las noticias.', icon: MessageSquare },
     { href: '/panel/messages', title: 'Bandeja de Entrada', description: 'Leer los mensajes de contacto.', icon: MessageSquare },
     { href: '/panel/on-air', title: 'Control de Transmisión', description: 'Anular el DJ en vivo manualmente.', icon: Radio },
