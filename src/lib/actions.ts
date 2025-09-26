@@ -10,7 +10,7 @@ import { generateHabboName, GenerateHabboNameInput, GenerateHabboNameOutput } fr
 
 import { z } from 'zod';
 import { db, firebaseConfig } from './firebase';
-import { ref, push, serverTimestamp, runTransaction, get, remove } from 'firebase/database';
+import { ref, push, serverTimestamp, runTransaction, get, remove, set } from 'firebase/database';
 
 
 const requestFormSchema = z.object({
@@ -440,6 +440,37 @@ export async function submitNotification(formData: FormData) {
     return { success: false, message: error.message || 'Error al procesar la solicitud de notificación.' };
   }
 }
+
+export async function addLikeToDj(userId: string, djName: string) {
+    if (!userId) {
+        return { success: false, message: "Debes iniciar sesión para dar 'like'." };
+    }
+
+    const likeCooldownHours = 24;
+    const now = Date.now();
+    const cooldownPeriod = likeCooldownHours * 60 * 60 * 1000;
+
+    const userLikeRef = ref(db, `user_dj_likes/${userId}/${djName}`);
+    const djLikesRef = ref(db, `dj_likes/${djName}`);
+
+    try {
+        const userLikeSnapshot = await get(userLikeRef);
+        const lastLikeTimestamp = userLikeSnapshot.val();
+
+        if (lastLikeTimestamp && (now - lastLikeTimestamp < cooldownPeriod)) {
+            return { success: false, message: `Ya has apoyado a este DJ recientemente. ¡Inténtalo de nuevo más tarde!` };
+        }
+
+        await runTransaction(djLikesRef, (currentLikes) => (currentLikes || 0) + 1);
+        await set(userLikeRef, now);
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error adding like to DJ:", error);
+        return { success: false, message: "No se pudo registrar tu apoyo." };
+    }
+}
+
 
 export { sendWebhook };
 
