@@ -1,100 +1,348 @@
-# Habbospeed v3 - Sitio de Fans de Habbo
+# 🎵 Habbospeed - Radio Fansite para Habbo
 
-Bienvenido al repositorio oficial de **Habbospeed**, una moderna aplicación web para la fansite de radio de Habbo.es. Este proyecto está construido con un enfoque *headless* y en tiempo real, utilizando **Next.js** para el frontend y **Firebase** como el backend principal para la gestión de contenido, autenticación y datos dinámicos.
+<div align="center">
 
-## ✨ Descripción General
+![Habbospeed Logo](https://i.imgur.com/u31XFxN.png)
 
-Habbospeed no es solo un sitio web, sino una plataforma dinámica donde los administradores pueden gestionar el contenido en vivo sin necesidad de editar código. Desde las noticias y los horarios de los DJs hasta las salas destacadas y las alianzas, todo se controla desde un panel de administración centralizado que se comunica directamente con **Firebase Realtime Database**.
+**La plataforma definitiva para fansites de radio Habbo**
 
-### Stack Tecnológico
+[![Next.js](https://img.shields.io/badge/Next.js-15.3-black?logo=next.js)](https://nextjs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green?logo=mongodb)](https://www.mongodb.com/)
+[![Express](https://img.shields.io/badge/Express-4.18-blue?logo=express)](https://expressjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 
-- **Framework:** Next.js (con App Router y Server Components)
-- **Lenguaje:** TypeScript
-- **Estilos:** Tailwind CSS y ShadCN/UI para componentes.
-- **Backend y Base de Datos:** Firebase (Realtime Database, Authentication).
-- **Inteligencia Artificial:** Google AI (Gemini) a través de Genkit para funcionalidades como la validación de peticiones de canciones.
-- **Alojamiento:** Netlify
+[Demo](https://9002--019ab4a0-e101-76da-8fc3-828dff257fb4.us-east-1-01.gitpod.dev) · [Documentación](./MIGRATION_GUIDE.md) · [Reportar Bug](https://github.com/luisitoys12/hspeed-react/issues)
 
----
-
-## 🔥 Funcionalidades Implementadas
-
-La plataforma ya cuenta con un robusto conjunto de características gestionadas casi en su totalidad a través de Firebase:
-
-- **Gestión de Contenido Dinámico:**
-  - **Carrusel Principal:** Administra las diapositivas de la página de inicio desde la base de datos.
-  - **Noticias y Guías:** Un completo CRUD para crear, editar y eliminar artículos que se muestran en el sitio.
-  - **Horarios de Radio:** Gestiona la programación semanal de los DJs.
-  - **Equipo de la Fansite:** Añade y elimina miembros del equipo.
-  - **Alianzas Oficiales y Salas Destacadas:** Controla qué salas y fansites aliadas se muestran en la página principal.
-
-- **Panel de Administración (`/panel`):**
-  - **Acceso Restringido:** Solo los usuarios con UID de administrador pueden acceder.
-  - **Control Centralizado:** Puntos de entrada para gestionar noticias, horarios, equipo y configuración general del sitio.
-
-- **Interactividad para Usuarios:**
-  - **Autenticación de Usuarios:** Sistema de registro e inicio de sesión con Firebase Auth.
-  - **Sistema de Comentarios:** Los usuarios registrados pueden comentar en las noticias, mostrando su avatar de Habbo.
-  - **Reserva de Horarios para DJs:** Una parrilla interactiva donde los DJs pueden reservar sus turnos, con un sistema de borrado semanal para administradores.
-
-- **Integración con IA (Genkit):**
-  - **Validación de Peticiones de Canciones:** Una IA analiza las peticiones de los usuarios para asegurar que sean apropiadas para la radio.
+</div>
 
 ---
 
-## 🚀 Próximas Actualizaciones (Hoja de Ruta)
+## ✨ Características Principales
 
-El proyecto está en constante evolución. Estas son algunas de las ideas y funcionalidades planeadas para el futuro:
+### 🎙️ **Radio en Vivo**
+- **Reproductor flotante** con controles completos
+- **Integración con Azuracast y ZenoFM**
+- **Información en tiempo real** de canciones y DJs
+- **Media Session API** para controles del sistema
+- **Visualización de oyentes** en tiempo real
 
-- **Perfiles de Usuario Públicos:**
-  - Cada usuario registrado tendrá una página de perfil personal.
-  - Mostrará su avatar de Habbo, placas, logros y comentarios realizados en el sitio.
+### 📰 **Sistema de Noticias**
+- **Editor completo** con soporte Markdown
+- **Categorías personalizables** (Eventos, Copa, Noticias)
+- **Sistema de reacciones** (❤️ 🎉 🤔 👍)
+- **Comentarios en tiempo real**
+- **Imágenes optimizadas** con Next.js Image
 
-- **Gamificación y Logros Internos:**
-  - Sistema de puntos y logros por participar en el sitio (comentar, escuchar, etc.).
-  - Un ranking de usuarios basado en su actividad en Habbospeed.
+### 📅 **Gestión de Horarios**
+- **Programación semanal** de DJs
+- **Vista por días** con horarios detallados
+- **Información de programas** y presentadores
+- **Actualización en tiempo real**
 
-- **Mejoras en el Panel de Administración:**
-  - Un dashboard con estadísticas básicas (ej. número de comentarios, usuarios registrados).
-  - Un editor de texto enriquecido (WYSIWYG) para la creación de noticias.
+### 🎉 **Sistema de Eventos**
+- **Calendario de eventos** de Habbo
+- **Detalles completos** (sala, anfitrión, fecha, hora)
+- **Countdown en tiempo real** hasta el evento
+- **Integración con salas** de Habbo
 
-- **Integración Social Más Profunda:**
-  - Notificaciones en tiempo real (ej. cuando un DJ inicia una transmisión).
-  - Posibilidad de reaccionar a las noticias y comentarios.
+### 👥 **Gestión de Equipo**
+- **Perfiles de DJs** con avatares de Habbo
+- **Sistema de roles** (Admin, DJ, User)
+- **Aprobación de usuarios** por administradores
+- **Speed Points** - Sistema de puntos gamificado
+
+### 🏆 **Sistema de Premios**
+- **Votaciones anuales** para DJs y comunidad
+- **Categorías personalizables**
+- **Sistema anti-fraude** (un voto por categoría)
+- **Resultados en tiempo real**
+
+### ⚽ **Copa Habbospeed**
+- **Tabla de posiciones** automática
+- **Estadísticas de equipos** (PJ, PG, PE, PP, GF, GC, DG, PTS)
+- **Tabla de goleadores**
+- **Próximos partidos** con countdown
+
+### 🎨 **Herramientas de Comunidad**
+- **Generador de nombres** con IA (Google Gemini)
+- **Diseñador de avatares** Habbo
+- **Calculadora de trueques**
+- **Ranking de DJs** con sistema de likes
+- **Encuestas interactivas**
+
+### 🛠️ **Panel de Administración**
+- **Dashboard completo** con analíticas
+- **Gestión de noticias** (CRUD completo)
+- **Gestión de eventos** y horarios
+- **Gestión de usuarios** y permisos
+- **Configuración de radio** (URLs, webhooks)
+- **Sistema de notificaciones** push
+- **Gestión de alianzas** y salas destacadas
+
+### 🔐 **Autenticación y Seguridad**
+- **JWT Authentication** seguro
+- **Bcrypt** para hash de contraseñas
+- **Roles y permisos** granulares
+- **Protección de rutas** en frontend y backend
+- **Validación de datos** con Zod
 
 ---
 
-## 🛠️ Cómo Empezar (Para Desarrolladores)
+## 🚀 Inicio Rápido
 
-Si quieres contribuir o ejecutar el proyecto en tu máquina local, sigue estos pasos:
+### Prerrequisitos
 
-1.  **Clona el Repositorio:**
-    ```bash
-    git clone https://github.com/luisitoys12/hspeed-react.git
-    cd hspeed-react
-    ```
+```bash
+Node.js 20+
+MongoDB 7.0+
+npm o yarn
+```
 
-2.  **Instala las Dependencias:**
-    ```bash
-    npm install
-    ```
+### Instalación
 
-3.  **Configura las Variables de Entorno:**
-    - Crea un archivo `.env` en la raíz del proyecto.
-    - Configura tu proyecto de Firebase y añade las credenciales al archivo `src/lib/firebase.ts`.
-    - Añade tu clave de API de Google AI al archivo `.env`:
-      ```
-      GEMINI_API_KEY="TU_API_KEY_AQUI"
-      ```
+1. **Clonar el repositorio**
+```bash
+git clone https://github.com/luisitoys12/hspeed-react.git
+cd hspeed-react
+```
 
-4.  **Importa la Estructura de Datos a Firebase:**
-    - Ve a tu Realtime Database en la consola de Firebase.
-    - Importa el archivo `firebase-rtdb-structure.json` para tener todos los nodos y datos de ejemplo necesarios.
+2. **Instalar dependencias del frontend**
+```bash
+npm install
+```
 
-5.  **Ejecuta el Servidor de Desarrollo:**
-    ```bash
-    npm run dev
-    ```
-    La aplicación estará disponible en `http://localhost:9002`.
+3. **Instalar dependencias del backend**
+```bash
+cd backend
+npm install
+```
 
-¡Gracias por tu interés en Habbospeed!
+4. **Configurar variables de entorno**
+
+**Frontend (`.env.local`):**
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_GOOGLE_AI_API_KEY=tu-api-key-de-google-ai
+```
+
+**Backend (`backend/.env`):**
+```env
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/hspeed
+JWT_SECRET=tu-secreto-super-seguro-cambiar-en-produccion
+JWT_EXPIRE=7d
+NODE_ENV=development
+FRONTEND_URL=http://localhost:9002
+```
+
+5. **Iniciar MongoDB**
+```bash
+sudo mongod --fork --logpath /var/log/mongodb.log --dbpath /data/db
+```
+
+6. **Cargar datos iniciales**
+```bash
+cd backend
+npm run seed
+```
+
+7. **Iniciar servidores**
+
+Terminal 1 (Backend):
+```bash
+cd backend
+npm run dev
+```
+
+Terminal 2 (Frontend):
+```bash
+npm run dev
+```
+
+8. **Acceder a la aplicación**
+- Frontend: [http://localhost:9002](http://localhost:9002)
+- Backend API: [http://localhost:5000/api](http://localhost:5000/api)
+
+### 👤 Credenciales de Prueba
+
+**Administrador:**
+- Email: `admin@hspeed.com`
+- Password: `admin123`
+
+**DJ:**
+- Email: `dj@hspeed.com`
+- Password: `dj123456`
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+hspeed-react/
+├── backend/                    # Backend API (Express + MongoDB)
+│   ├── src/
+│   │   ├── config/            # Configuración de BD
+│   │   ├── controllers/       # Controladores
+│   │   ├── middleware/        # Middleware (auth, etc)
+│   │   ├── models/            # Modelos de Mongoose
+│   │   ├── routes/            # Rutas de la API
+│   │   ├── scripts/           # Scripts (seed, etc)
+│   │   └── server.ts          # Punto de entrada
+│   ├── .env                   # Variables de entorno
+│   └── package.json
+│
+├── src/
+│   ├── app/                   # App Router de Next.js
+│   │   ├── (auth)/           # Rutas de autenticación
+│   │   ├── api/              # API Routes
+│   │   ├── panel/            # Panel de administración
+│   │   ├── dj-panel/         # Panel de DJs
+│   │   └── ...               # Páginas públicas
+│   │
+│   ├── components/
+│   │   ├── habbospeed/       # Componentes específicos
+│   │   ├── layout/           # Layout components
+│   │   └── ui/               # Componentes UI (shadcn)
+│   │
+│   ├── hooks/                # Custom hooks
+│   │   └── use-auth.tsx      # Hook de autenticación
+│   │
+│   ├── lib/
+│   │   ├── api.ts            # Cliente API REST
+│   │   ├── actions.ts        # Server Actions
+│   │   ├── types.ts          # TypeScript types
+│   │   └── utils.ts          # Utilidades
+│   │
+│   └── ai/                   # Flujos de IA (Genkit)
+│
+├── public/                   # Archivos estáticos
+├── .env.local               # Variables de entorno frontend
+├── next.config.mjs          # Configuración de Next.js
+├── tailwind.config.ts       # Configuración de Tailwind
+└── package.json
+```
+
+---
+
+## 🎯 Características Únicas para Fansites Habbo
+
+### 1. **Integración Completa con Habbo**
+- Avatares en tiempo real desde Habbo Imaging API
+- Links directos a salas de Habbo
+- Información de usuarios de Habbo
+- Badges y furnis del catálogo oficial
+
+### 2. **Sistema de Radio Profesional**
+- Compatible con Azuracast y ZenoFM
+- Reproductor flotante que persiste entre páginas
+- Controles de media del sistema operativo
+- Visualización de artwork de canciones
+
+### 3. **Gamificación**
+- **Speed Points**: Sistema de puntos por participación
+- **Ranking de DJs**: Likes y popularidad
+- **Premios anuales**: Votaciones de la comunidad
+- **Copa Habbospeed**: Competencia de fútbol
+
+### 4. **Herramientas con IA**
+- **Generador de nombres** con Google Gemini
+- **Resumen de noticias** automático
+- Sugerencias inteligentes de contenido
+
+### 5. **Comunidad Activa**
+- Sistema de comentarios en noticias
+- Peticiones de canciones en tiempo real
+- Encuestas interactivas
+- Formulario de contacto
+
+### 6. **Panel de Administración Completo**
+- Dashboard con métricas
+- Gestión de contenido (CRUD)
+- Gestión de usuarios y permisos
+- Configuración de radio
+- Sistema de notificaciones
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+### Frontend
+- **Next.js 15.3** - Framework React con App Router
+- **TypeScript** - Tipado estático
+- **Tailwind CSS** - Estilos utility-first
+- **shadcn/ui** - Componentes UI
+- **Radix UI** - Primitivos accesibles
+- **React Hook Form** - Manejo de formularios
+- **Zod** - Validación de esquemas
+- **Genkit** - Framework de IA de Google
+
+### Backend
+- **Express.js** - Framework web
+- **MongoDB** - Base de datos NoSQL
+- **Mongoose** - ODM para MongoDB
+- **JWT** - Autenticación
+- **Bcrypt** - Hash de contraseñas
+- **Helmet** - Seguridad HTTP
+- **Morgan** - Logger HTTP
+- **CORS** - Cross-Origin Resource Sharing
+
+### DevOps
+- **Docker** - Containerización
+- **Gitpod** - Entorno de desarrollo en la nube
+- **MongoDB Atlas** - Base de datos en la nube (producción)
+
+---
+
+## 📚 API Endpoints
+
+Ver documentación completa en [backend/README.md](./backend/README.md)
+
+---
+
+## 🚀 Despliegue
+
+Ver guía completa de despliegue en [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)
+
+---
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas! Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+---
+
+## 📝 Licencia
+
+Este proyecto está bajo la Licencia MIT.
+
+---
+
+## 👨‍💻 Autor
+
+**Luis** - [@luisitoys12](https://github.com/luisitoys12)
+
+---
+
+## 🙏 Agradecimientos
+
+- [Habbo](https://www.habbo.com/) por la inspiración
+- [shadcn/ui](https://ui.shadcn.com/) por los componentes UI
+- [Vercel](https://vercel.com/) por Next.js
+- [MongoDB](https://www.mongodb.com/) por la base de datos
+- Comunidad de Habbo España
+
+---
+
+<div align="center">
+
+**Hecho con ❤️ para la comunidad de Habbo**
+
+⭐ Si te gusta este proyecto, dale una estrella en GitHub!
+
+</div>
