@@ -8,8 +8,6 @@ import AboutAndNews from '@/components/habbospeed/about-and-news';
 import Link from 'next/link';
 import LatestBadges from '@/components/habbospeed/latest-badges';
 import LatestFurnis from '@/components/habbospeed/latest-furnis';
-import { db } from '@/lib/firebase';
-import { get, ref } from 'firebase/database';
 import HabboProfile from '@/components/habbospeed/habbo-profile';
 import OfficialAlliances from '@/components/habbospeed/official-alliances';
 import ActiveRooms from '@/components/habbospeed/active-rooms';
@@ -34,23 +32,49 @@ function LoadingSkeleton() {
 
 async function getPageData() {
     try {
-        const eventsRef = ref(db, 'events');
-        const alliancesRef = ref(db, 'alliances');
-        const featuredRoomsRef = ref(db, 'featuredRooms');
-        const newsRef = ref(db, 'news');
-
-        const [eventsSnap, alliancesSnap, featuredRoomsSnap, newsSnap] = await Promise.all([
-            get(eventsRef),
-            get(alliancesRef),
-            get(featuredRoomsRef),
-            get(newsRef)
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        
+        const [eventsRes, newsRes] = await Promise.all([
+            fetch(`${API_URL}/events`, { cache: 'no-store' }),
+            fetch(`${API_URL}/news`, { cache: 'no-store' })
         ]);
 
+        const events = eventsRes.ok ? await eventsRes.json() : [];
+        const news = newsRes.ok ? await newsRes.json() : [];
+
+        const eventsObj = events.reduce((acc: any, event: any) => {
+            acc[event._id] = {
+                title: event.title,
+                server: event.server,
+                date: event.date,
+                time: event.time,
+                roomName: event.roomName,
+                roomOwner: event.roomOwner,
+                host: event.host,
+                imageUrl: event.imageUrl,
+                imageHint: event.imageHint
+            };
+            return acc;
+        }, {});
+
+        const newsObj = news.reduce((acc: any, article: any) => {
+            acc[article._id] = {
+                title: article.title,
+                summary: article.summary,
+                content: article.content,
+                imageUrl: article.imageUrl,
+                imageHint: article.imageHint,
+                category: article.category,
+                date: article.date
+            };
+            return acc;
+        }, {});
+
         return {
-            events: eventsSnap.val() || {},
-            alliances: alliancesSnap.val() || {},
-            featuredRooms: featuredRoomsSnap.val() || {},
-            news: newsSnap.val() || {}
+            events: eventsObj,
+            alliances: {},
+            featuredRooms: {},
+            news: newsObj
         };
     } catch (error) {
         console.error("Error fetching page data:", error);

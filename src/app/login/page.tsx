@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { useAuth } from "@/hooks/use-auth";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +33,7 @@ const formSchema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,10 +50,10 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      await login(values.email, values.password);
       router.push("/");
     } catch (error: any) {
-      setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
+      setError(error.message || "Credenciales incorrectas. Por favor, inténtalo de nuevo.");
       console.error(error);
     } finally {
       setIsSubmitting(false);

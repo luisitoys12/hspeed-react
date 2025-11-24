@@ -2,8 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { db } from '@/lib/firebase';
-import { ref, onValue, remove } from 'firebase/database';
+import { requestsApi } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -40,22 +39,34 @@ export default function SongRequests() {
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const requestsRef = ref(db, 'userRequests');
-    const unsubscribe = onValue(requestsRef, (snapshot) => {
-      const data = snapshot.val() || {};
-      const requestsArray: UserRequest[] = Object.keys(data)
-        .map(key => ({ id: key, ...data[key] }))
-        .sort((a, b) => b.timestamp - a.timestamp);
+  const fetchRequests = async () => {
+    try {
+      const data: any = await requestsApi.getAll();
+      const requestsArray: UserRequest[] = data.map((req: any) => ({
+        id: req._id,
+        type: req.type,
+        details: req.details,
+        user: req.user,
+        timestamp: new Date(req.timestamp).getTime()
+      })).sort((a: any, b: any) => b.timestamp - a.timestamp);
       setRequests(requestsArray);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    } finally {
       setLoading(false);
-    });
-    return () => unsubscribe();
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+    const interval = setInterval(fetchRequests, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleDelete = async (id: string) => {
     try {
-      await remove(ref(db, `userRequests/${id}`));
+      await requestsApi.delete(id);
+      setRequests(requests.filter(r => r.id !== id));
       toast({ title: 'Petición eliminada' });
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo eliminar la petición.' });

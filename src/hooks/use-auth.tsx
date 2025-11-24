@@ -1,15 +1,12 @@
-
 "use client";
 
 import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { authApi } from '@/lib/api';
 
 interface User {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
+  _id: string;
+  email: string;
+  displayName: string;
   isLoggedIn: boolean;
   isSuperAdmin: boolean;
   role: string;
@@ -18,12 +15,12 @@ interface User {
 }
 
 interface AuthContextType {
-    user: User | null;
-    loading: boolean;
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, displayName: string) => Promise<void>;
+  logout: () => void;
 }
-
-// UIDs de los Super Administradores principales
-const SUPER_ADMIN_UIDS = ["HKWwHx43uuVxGjHeo099cX7im273", "qAu1hP2UKShNGtfDywF7se2D1Ao1"];
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -32,70 +29,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        const isSuperAdmin = SUPER_ADMIN_UIDS.includes(firebaseUser.uid);
-        const userRef = ref(db, `users/${firebaseUser.uid}`);
-        
-        onValue(userRef, (snapshot) => {
-            const dbUser = snapshot.val();
-
-            const baseUser = {
-                uid: firebaseUser.uid,
-                email: firebaseUser.email,
-                displayName: firebaseUser.displayName,
-                isLoggedIn: true,
-                speedPoints: dbUser?.speedPoints || 0,
-            };
-
-            if (isSuperAdmin) {
-                // Si es un super admin, siempre tiene acceso total
-                setUser({
-                    ...baseUser,
-                    isSuperAdmin: true,
-                    role: 'Admin',
-                    approved: true,
-                });
-            } else if (dbUser && dbUser.approved) {
-                // Para usuarios normales, verificar si están aprobados
-                 setUser({
-                    ...baseUser,
-                    isSuperAdmin: dbUser.role === 'Admin',
-                    role: dbUser.role,
-                    approved: dbUser.approved,
-                });
-            } else {
-                // Usuario no aprobado o sin registro en la DB
-                setUser({
-                    ...baseUser,
-                    isSuperAdmin: false,
-                    role: dbUser?.role || 'pending',
-                    approved: dbUser?.approved || false,
-                });
-            }
-             setLoading(false);
-        }, { onlyOnce: true }); // Usamos onlyOnce para evitar re-renders innecesarios en cambios de DB
-
-      } else {
-        setUser(null);
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
+    const token = localStorage.getItem('token');
+    if (token) {
+      authApi.getMe()
+        .then((userData: any) => {
+          setUser({
+            _id: userData._id,
+            email: userData.email,
+            displayName: userData.displayName,
+            isLoggedIn: true,
+            isSuperAdmin: userData.role === 'Admin',
+            role: userData.role,
+            approved: userData.approved,
+            speedPoints: userData.speedPoints || 0,
+          });
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
   }, []);
 
+  const login = async (email: string, password: string) => {
+    const response: any = await authApi.login({ email, password });
+    localStorage.setItem('token', response.token);
+    setUser({
+      _id: response._id,
+      email: response.email,
+      displayName: response.displayName,
+      isLoggedIn: true,
+      isSuperAdmin: response.role === 'Admin',
+      role: response.role,
+      approved: response.approved,
+      speedPoints: response.speedPoints || 0,
+    });
+  };
+
+  const register = async (email: string, password: string, displayName: string) => {
+    const response: any = await authApi.register({ email, password, displayName });
+    localStorage.setItem('token', response.token);
+    setUser({
+      _id: response._id,
+      email: response.email,
+      displayName: response.displayName,
+      isLoggedIn: true,
+      isSuperAdmin: response.role === 'Admin',
+      role: response.role,
+      approved: response.approved,
+      speedPoints: response.speedPoints || 0,
+    });
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }

@@ -3,15 +3,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { db } from '@/lib/firebase';
-import { ref, onValue, query, orderByChild } from 'firebase/database';
+import { commentsApi } from '@/lib/api';
 import { Comment as CommentType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LoaderCircle, MessageSquare, Send } from 'lucide-react';
-import { submitComment } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -27,16 +25,30 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
+  const fetchComments = async () => {
+    try {
+      const data: any = await commentsApi.getByArticle(articleId);
+      const commentsArray: CommentType[] = data.map((comment: any) => ({
+        id: comment._id,
+        articleId: comment.articleId,
+        authorUid: comment.authorUid,
+        authorName: comment.authorName,
+        comment: comment.comment,
+        timestamp: new Date(comment.timestamp).getTime()
+      })).reverse();
+      setComments(commentsArray);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    } finally {
+      setDbLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (articleId) {
-      const commentsQuery = query(ref(db, `comments/${articleId}`), orderByChild('timestamp'));
-      const unsubscribe = onValue(commentsQuery, (snapshot) => {
-        const data = snapshot.val();
-        const commentsArray: CommentType[] = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse() : [];
-        setComments(commentsArray);
-        setDbLoading(false);
-      });
-      return () => unsubscribe();
+      fetchComments();
+      const interval = setInterval(fetchComments, 30000);
+      return () => clearInterval(interval);
     }
   }, [articleId]);
 
@@ -46,19 +58,21 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
       return;
     }
     
-    formData.append('authorUid', user.uid);
-    formData.append('authorName', user.displayName || 'Anónimo');
-    formData.append('articleId', articleId);
-    
     setIsSubmitting(true);
-    const result = await submitComment(formData);
-    if (result.success) {
+    try {
+      await commentsApi.create({
+        articleId,
+        authorName: user.displayName || 'Anónimo',
+        comment: formData.get('comment')
+      });
       toast({ title: '¡Éxito!', description: 'Tu comentario ha sido publicado.' });
       formRef.current?.reset();
-    } else {
-      toast({ variant: 'destructive', title: 'Error', description: result.message });
+      await fetchComments();
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error', description: error.message || 'No se pudo publicar el comentario' });
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (

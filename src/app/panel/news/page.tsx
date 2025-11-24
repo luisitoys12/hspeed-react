@@ -3,11 +3,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { ref, onValue, set, remove, push } from "firebase/database";
-import { db } from "@/lib/firebase";
+import { newsApi } from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
 import { NewsArticle, NewsArticleFormValues } from '@/lib/types';
-import { sendWebhook } from '@/lib/actions';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Newspaper, Edit, Trash2, PlusCircle } from 'lucide-react';
@@ -32,33 +30,45 @@ export default function NewsManagementPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (db) {
-      const newsRef = ref(db, 'news');
-      const unsubscribe = onValue(newsRef, (snapshot) => {
-        const data = snapshot.val();
-        const articlesArray = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-        articlesArray.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        setArticles(articlesArray);
-        setDbLoading(false);
-      });
-      return () => unsubscribe();
+  const fetchArticles = async () => {
+    try {
+      const data: any = await newsApi.getAll();
+      const articlesArray = data.map((article: any) => ({
+        id: article._id,
+        title: article.title,
+        summary: article.summary,
+        content: article.content,
+        imageUrl: article.imageUrl,
+        imageHint: article.imageHint,
+        category: article.category,
+        date: article.date,
+        reactions: article.reactions || {}
+      }));
+      articlesArray.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setArticles(articlesArray);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      toast({ title: "Error", description: "No se pudieron cargar las noticias", variant: "destructive" });
+    } finally {
+      setDbLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchArticles();
   }, []);
   
   const handleSave = async (values: NewsArticleFormValues, id?: string) => {
     setIsSubmitting(true);
     try {
       if (id) {
-        const articleRef = ref(db, `news/${id}`);
-        await set(articleRef, values);
+        await newsApi.update(id, values);
         toast({ title: "¡Éxito!", description: "El artículo ha sido actualizado." });
       } else {
-        const articlesRef = ref(db, 'news');
-        const newArticleRef = await push(articlesRef, values);
+        await newsApi.create(values);
         toast({ title: "¡Éxito!", description: "El nuevo artículo ha sido publicado." });
-        await sendWebhook('news', { ...values, id: newArticleRef.key });
       }
+      await fetchArticles();
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Error saving article:", error);
@@ -70,15 +80,9 @@ export default function NewsManagementPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      // First, remove the article itself
-      const articleRef = ref(db, `news/${id}`);
-      await remove(articleRef);
-      
-      // Then, remove the associated comments
-      const commentsRef = ref(db, `comments/${id}`);
-      await remove(commentsRef);
-
-      toast({ title: "Artículo eliminado", description: `La noticia y sus comentarios han sido eliminados.` });
+      await newsApi.delete(id);
+      await fetchArticles();
+      toast({ title: "Artículo eliminado", description: `La noticia ha sido eliminada.` });
     } catch (error) {
       console.error("Error deleting article:", error);
       toast({ variant: "destructive", title: "Error", description: "No se pudo eliminar el artículo y sus comentarios." });

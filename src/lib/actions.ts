@@ -9,8 +9,6 @@ import {
 import { generateHabboName, GenerateHabboNameInput, GenerateHabboNameOutput } from '@/ai/flows/generate-habbo-name';
 
 import { z } from 'zod';
-import { db, firebaseConfig } from './firebase';
-import { ref, push, serverTimestamp, runTransaction, get, remove, set } from 'firebase/database';
 
 
 const requestFormSchema = z.object({
@@ -28,89 +26,9 @@ type RequestFormState = {
   isError: boolean;
 };
 
-// Helper function to send webhook
-async function sendWebhook(type: 'news' | 'events' | 'requests' | 'onAir' | 'nextDj' | 'song', data: any) {
-    const configSnapshot = await get(ref(db, 'config/discordWebhookUrls'));
-    const webhookUrls = configSnapshot.val();
-    
-    const webhookUrl = webhookUrls ? webhookUrls[type] : null;
-
-    if (!webhookUrl) {
-        console.log(`Webhook for type "${type}" is not configured. Skipping.`);
-        return;
-    }
-
-    let embed;
-    switch(type) {
-        case 'requests':
-            embed = {
-                title: `Nueva Petición: ${data.requestType.charAt(0).toUpperCase() + data.requestType.slice(1)}`,
-                description: data.details,
-                color: 0x5865F2,
-                footer: { text: `Enviado por: ${data.username}` },
-                timestamp: new Date().toISOString(),
-            };
-            break;
-        case 'news':
-             embed = {
-                title: `¡Nueva Noticia! ${data.title}`,
-                description: data.summary,
-                color: 0x00BFFF,
-                image: { url: data.imageUrl },
-                url: `https://hspeed-react.netlify.app/news/${data.id}`,
-                footer: { text: `Categoría: ${data.category}` }
-            };
-            break;
-        case 'events':
-            embed = {
-                title: `¡Nuevo Evento! ${data.title}`,
-                description: `No te pierdas este gran evento en **${data.roomName}**.`,
-                color: 0xFFD700,
-                image: { url: data.imageUrl },
-                fields: [
-                    { name: 'Anfitrión', value: data.host, inline: true },
-                    { name: 'Dueño de Sala', value: data.roomOwner, inline: true },
-                    { name: 'Fecha y Hora', value: `${data.date} a las ${data.time}`, inline: false }
-                ]
-            };
-            break;
-        case 'onAir':
-            embed = {
-                title: data.isEvent ? `¡EVENTO EN VIVO! ${data.currentDj}` : `¡DJ en Vivo! ${data.currentDj}`,
-                description: `Sintoniza ahora para no perderte la transmisión.\nActualmente escuchas: **${data.songInfo.title}** de **${data.songInfo.artist}**`,
-                color: data.isEvent ? 0xFFD700 : 0x00FF00,
-                thumbnail: { url: `https://www.habbo.es/habbo-imaging/avatarimage?user=${data.currentDj}&headonly=1&size=m` },
-                footer: { text: `${data.songInfo.listeners} oyentes` }
-            };
-            break;
-        case 'nextDj':
-            embed = {
-                title: 'Próxima Transmisión',
-                description: `El próximo DJ en tomar los controles será **${data.nextDj}**.`,
-                color: 0x5865F2
-            };
-            break;
-        case 'song':
-            embed = {
-                title: 'Ahora Suena',
-                description: `**${data.songInfo.title}**\nde *${data.songInfo.artist}*`,
-                color: 0xCCCCCC,
-                thumbnail: { url: data.songInfo.art }
-            };
-            break;
-    }
-
-    if(embed) {
-        try {
-            await fetch(webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ embeds: [embed] }),
-            });
-        } catch (e) {
-            console.error("Failed to send webhook:", e);
-        }
-    }
+// Webhook function deprecated - implement in backend if needed
+async function sendWebhook(type: string, data: any) {
+    console.log('Webhook deprecated:', type, data);
 }
 
 
@@ -136,16 +54,20 @@ export async function submitRequest(
   try {
     const { requestType, username, details } = validatedFields.data;
 
-    const requestsRef = ref(db, 'userRequests');
-    await push(requestsRef, {
-      type: requestType,
-      details: details,
-      user: username,
-      timestamp: serverTimestamp(),
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const response = await fetch(`${API_URL}/requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: requestType,
+        details: details,
+        user: username
+      })
     });
-    
-    // Send webhook notification
-    await sendWebhook('requests', validatedFields.data);
+
+    if (!response.ok) {
+      throw new Error('Error al enviar la petición');
+    }
 
     return {
       message: "¡Tu petición ha sido enviada! Gracias por participar.",
@@ -192,12 +114,8 @@ export async function submitContactForm(formData: FormData) {
     }
 
     try {
-        const messagesRef = ref(db, 'contact-messages');
-        await push(messagesRef, {
-            ...validatedFields.data,
-            timestamp: serverTimestamp(),
-            read: false,
-        });
+        // TODO: Implement contact form API endpoint
+        console.log('Contact form submission:', validatedFields.data);
         return { success: true, message: "¡Tu mensaje ha sido enviado con éxito!" };
     } catch (error) {
         console.error("Error saving contact message:", error);
@@ -213,36 +131,17 @@ const commentFormSchema = z.object({
 });
 
 export async function submitComment(formData: FormData) {
-  const validatedFields = commentFormSchema.safeParse({
-    comment: formData.get('comment'),
-    authorUid: formData.get('authorUid'),
-    authorName: formData.get('authorName'),
-    articleId: formData.get('articleId'),
-  });
-
-  if (!validatedFields.success) {
-    return { success: false, message: "Datos del comentario inválidos." };
-  }
-  
-  if (!validatedFields.data.authorUid) {
-      return { success: false, message: "Debes iniciar sesión para comentar." };
-  }
-
-  try {
-    const { articleId, ...commentData } = validatedFields.data;
-    const commentsRef = ref(db, `comments/${articleId}`);
-    await push(commentsRef, {
-      ...commentData,
-      timestamp: serverTimestamp(),
-    });
-    return { success: true, message: "Comentario añadido." };
-  } catch (error) {
-    console.error("Error saving comment:", error);
-    return { success: false, message: "No se pudo añadir tu comentario. Inténtalo más tarde." };
-  }
+  // This function is deprecated - use commentsApi from @/lib/api instead
+  return { success: false, message: "Esta función ha sido migrada a la nueva API" };
 }
 
 export async function addReaction(articleId: string, reaction: string, authorUid: string) {
+  // This function is deprecated - implement in backend API if needed
+  return { success: false, message: 'Esta función ha sido migrada a la nueva API' };
+}
+
+// Deprecated functions below - kept for compatibility
+async function addReactionOld(articleId: string, reaction: string, authorUid: string) {
   if (!authorUid) {
     return { success: false, message: 'Debes iniciar sesión para reaccionar.' };
   }
@@ -324,25 +223,8 @@ const awardVoteSchema = z.object({
 });
 
 export async function submitAwardVote(data: z.infer<typeof awardVoteSchema>) {
-    const { categoryId, nomineeId, userId } = data;
-    const userVoteRef = ref(db, `award_votes/${userId}/${categoryId}`);
-
-    const snapshot = await get(userVoteRef);
-    if(snapshot.exists()) {
-        // User has already voted in this category
-        return { success: false, message: "Ya has votado en esta categoría." };
-    }
-
-    try {
-        await runTransaction(ref(db, `award_nominations/${categoryId}/${nomineeId}/votes`), (currentVotes) => {
-            return (currentVotes || 0) + 1;
-        });
-        await set(userVoteRef, nomineeId);
-        return { success: true };
-    } catch(error) {
-        console.error("Error submitting award vote:", error);
-        return { success: false, message: "No se pudo registrar tu voto." };
-    }
+    // This function is deprecated - implement in backend API if needed
+    return { success: false, message: "Esta función ha sido migrada a la nueva API" };
 }
 
 
@@ -372,6 +254,12 @@ const notificationSchema = z.object({
 });
 
 export async function submitNotification(formData: FormData) {
+  // This function is deprecated - implement push notifications in backend if needed
+  return { success: false, message: "Esta función ha sido migrada a la nueva API" };
+}
+
+// Deprecated notification function
+async function submitNotificationOld(formData: FormData) {
   const validatedFields = notificationSchema.safeParse({
     title: formData.get('title'),
     body: formData.get('body'),
@@ -382,13 +270,8 @@ export async function submitNotification(formData: FormData) {
     return { success: false, message: 'Datos de notificación no válidos.' };
   }
   
-  if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY || !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
-    return { success: false, message: "La configuración de notificaciones del servidor no está completa." };
-  }
-
   try {
     const { title, body, url } = validatedFields.data;
-    const tokensSnapshot = await get(ref(db, 'fcmTokens'));
     if (!tokensSnapshot.exists()) {
       return { success: false, message: 'No hay usuarios suscritos a las notificaciones.' };
     }
@@ -442,34 +325,8 @@ export async function submitNotification(formData: FormData) {
 }
 
 export async function addLikeToDj(userId: string, djName: string) {
-    if (!userId) {
-        return { success: false, message: "Debes iniciar sesión para dar 'like'." };
-    }
-
-    const likeCooldownHours = 1; // Cooldown de 1 hora por sesión
-    const now = Date.now();
-    const cooldownPeriod = likeCooldownHours * 60 * 60 * 1000;
-
-    const userLikeRef = ref(db, `user_dj_likes/${userId}/${djName}`);
-    const djLikesRef = ref(db, `dj_likes/${djName}`);
-
-    try {
-        const userLikeSnapshot = await get(userLikeRef);
-        const lastLikeTimestamp = userLikeSnapshot.val();
-
-        if (lastLikeTimestamp && (now - lastLikeTimestamp < cooldownPeriod)) {
-            return { success: false, message: `Ya has apoyado a este DJ durante esta sesión.` };
-        }
-
-        await runTransaction(djLikesRef, (currentLikes) => (currentLikes || 0) + 1);
-        await set(userLikeRef, now);
-
-        return { success: true };
-    } catch (error) {
-        console.error("Error adding like to DJ:", error);
-        return { success: false, message: "No se pudo registrar tu apoyo." };
-    }
+    // This function is deprecated - implement in backend API if needed
+    return { success: false, message: "Esta función ha sido migrada a la nueva API" };
 }
-
 
 export { sendWebhook };

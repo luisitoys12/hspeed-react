@@ -2,8 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { newsApi } from '@/lib/api';
 import { NewsArticle } from '@/lib/types';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
@@ -33,23 +32,31 @@ export default function ArticleDetailPage() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (id) {
-      const articleRef = ref(db, `news/${id}`);
-      const unsubscribe = onValue(articleRef, (snapshot) => {
-        if (snapshot.exists()) {
-          setArticle({ id, ...snapshot.val() });
-        } else {
+    const fetchArticle = async () => {
+      if (id) {
+        try {
+          const data: any = await newsApi.getById(id);
+          setArticle({
+            id: data._id,
+            title: data.title,
+            summary: data.summary,
+            content: data.content,
+            imageUrl: data.imageUrl,
+            imageHint: data.imageHint,
+            category: data.category,
+            date: data.date,
+            reactions: data.reactions || {}
+          });
+        } catch (err) {
+          console.error(err);
           setError("El artículo que buscas no existe o ha sido movido.");
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
-      }, (err) => {
-        console.error(err);
-        setError("No se pudo cargar el artículo.");
-        setLoading(false);
-      });
+      }
+    };
 
-      return () => unsubscribe();
-    }
+    fetchArticle();
   }, [id]);
 
   if (loading) {
@@ -109,7 +116,7 @@ export default function ArticleDetailPage() {
         </div>
         <Markdown content={article.content} />
         
-        <ReactionButtons articleId={id} reactions={article.reactions || {}} userId={user?.uid} />
+        <ReactionButtons articleId={id} reactions={article.reactions || {}} userId={user?._id} />
 
       </article>
 

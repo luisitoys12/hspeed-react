@@ -4,8 +4,7 @@
 import { Newspaper } from 'lucide-react';
 import NewsCard from '@/components/habbospeed/news-card';
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { newsApi } from '@/lib/api';
 import { NewsArticle } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -14,16 +13,30 @@ export default function NewsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const newsRef = ref(db, 'news');
-    const unsubscribe = onValue(newsRef, (snapshot) => {
-      const data = snapshot.val();
-      const articlesArray = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-      articlesArray.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      setNewsArticles(articlesArray);
-      setLoading(false);
-    });
+    const fetchNews = async () => {
+      try {
+        const data: any = await newsApi.getAll();
+        const articlesArray = data.map((article: any) => ({
+          id: article._id,
+          title: article.title,
+          summary: article.summary,
+          content: article.content,
+          imageUrl: article.imageUrl,
+          imageHint: article.imageHint,
+          category: article.category,
+          date: article.date,
+          reactions: article.reactions || {}
+        }));
+        articlesArray.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setNewsArticles(articlesArray);
+      } catch (error) {
+        console.error('Error fetching news:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchNews();
   }, []);
   
   return (
@@ -54,7 +67,7 @@ export default function NewsPage() {
           ))
         )}
       </div>
-       <p className="text-xs text-muted-foreground mt-4 text-center">Datos de noticias obtenidos desde Firebase Realtime Database.</p>
+       <p className="text-xs text-muted-foreground mt-4 text-center">Datos de noticias obtenidos desde MongoDB API.</p>
     </div>
   );
 }

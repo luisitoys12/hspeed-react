@@ -10,8 +10,7 @@ import {
 import { Calendar } from 'lucide-react';
 import ScheduleDisplay from '@/components/habbospeed/schedule-display';
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { scheduleApi } from '@/lib/api';
 import { ScheduleItem } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -21,15 +20,26 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const scheduleRef = ref(db, 'schedule');
-    const unsubscribe = onValue(scheduleRef, (snapshot) => {
-      const data = snapshot.val();
-      const scheduleArray = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-      setScheduleData(scheduleArray);
-      setLoading(false);
-    });
+    const fetchSchedule = async () => {
+      try {
+        const data: any = await scheduleApi.getAll();
+        const scheduleArray = data.map((item: any) => ({
+          id: item._id,
+          day: item.day,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          show: item.show,
+          dj: item.dj
+        }));
+        setScheduleData(scheduleArray);
+      } catch (error) {
+        console.error('Error fetching schedule:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchSchedule();
   }, []);
 
 

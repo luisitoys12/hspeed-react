@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, db } from "@/lib/firebase";
-import { ref, set } from "firebase/database";
+import { useAuth } from "@/hooks/use-auth";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +36,7 @@ const formSchema = z.object({
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register: registerUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -57,37 +56,10 @@ export default function RegisterPage() {
     setIsSuccess(false);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      const user = userCredential.user;
-      
-      // Update Firebase Auth profile
-      await updateProfile(user, {
-        displayName: values.username,
-      });
-
-      // Create a user profile entry in Realtime Database for role management
-      const userRef = ref(db, `users/${user.uid}`);
-      await set(userRef, {
-        uid: user.uid,
-        email: user.email,
-        displayName: values.username,
-        role: 'pending', // A 'pending' role until approved
-        approved: false,
-        speedPoints: 0, // Initialize speed points
-        createdAt: new Date().toISOString(),
-      });
-      
-      // Log the user out immediately after registration
-      await auth.signOut();
-
+      await registerUser(values.email, values.password, values.username);
       setIsSuccess(true);
-
     } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
-        setError("Este correo electrónico ya está en uso. Por favor, intenta con otro.");
-      } else {
-        setError("Ocurrió un error durante el registro. Por favor, inténtalo de nuevo.");
-      }
+      setError(error.message || "Ocurrió un error durante el registro. Por favor, inténtalo de nuevo.");
       console.error(error);
     } finally {
       setIsSubmitting(false);
