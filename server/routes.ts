@@ -34,6 +34,18 @@ function adminMiddleware(req: any, res: any, next: any) {
   });
 }
 
+// DJ or Admin middleware
+function djMiddleware(req: any, res: any, next: any) {
+  authMiddleware(req, res, async () => {
+    const user = await storage.getUser(req.userId);
+    if (!user || (user.role !== "admin" && user.role !== "dj")) {
+      return res.status(403).json({ message: "Acceso denegado - solo DJs y admins" });
+    }
+    req.user = user;
+    next();
+  });
+}
+
 export async function registerRoutes(server: Server, app: Express) {
   // ============ AUTH ============
   app.post("/api/auth/register", async (req, res) => {
@@ -161,9 +173,11 @@ export async function registerRoutes(server: Server, app: Express) {
   app.post("/api/comments", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
     if (!user) return res.status(401).json({ message: "No autorizado" });
-    res.status(201).json(await storage.createComment({
+    const comment = await storage.createComment({
       ...req.body, authorId: user.id, authorName: user.displayName
-    }));
+    });
+    // Attach habboUsername for avatar display
+    res.status(201).json({ ...comment, habboUsername: user.habboUsername || null });
   });
 
   app.delete("/api/comments/:id", adminMiddleware, async (req, res) => {
@@ -393,7 +407,7 @@ export async function registerRoutes(server: Server, app: Express) {
     }
   });
 
-  app.put("/api/dj-panel", adminMiddleware, async (req, res) => {
+  app.put("/api/dj-panel", djMiddleware, async (req, res) => {
     try {
       const panel = await storage.updateDjPanel(req.body);
       if (!panel) return res.status(404).json({ message: "Panel no encontrado" });
@@ -421,7 +435,7 @@ export async function registerRoutes(server: Server, app: Express) {
         userId: user.id,
         userName: user.displayName,
         habboUsername: user.habboUsername || null,
-        message: req.body.message,
+        message: req.body.content || req.body.message,
       });
       res.status(201).json(msg);
     } catch (e: any) {

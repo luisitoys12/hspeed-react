@@ -154,13 +154,22 @@ export default function NewsDetailPage() {
 
         {/* Comments list */}
         <div className="space-y-3">
-          {(comments || []).map((c) => (
+          {(comments || []).map((c: any) => (
             <Card key={c.id} className="bg-card border-border" data-testid={`card-comment-${c.id}`}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold">
-                    {c.authorName.charAt(0).toUpperCase()}
-                  </div>
+                  {c.habboUsername ? (
+                    <img
+                      src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${c.habboUsername}&size=s&headonly=1`}
+                      alt={c.authorName}
+                      className="w-7 h-7 rounded bg-secondary flex-shrink-0"
+                      onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold flex-shrink-0">
+                      {c.authorName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <span className="text-xs font-medium">{c.authorName}</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">
                     {c.createdAt ? new Date(c.createdAt).toLocaleDateString("es-ES") : ""}

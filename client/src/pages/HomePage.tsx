@@ -285,7 +285,7 @@ function HomeChat() {
               />
               <div className="min-w-0">
                 <span className="text-[10px] font-semibold text-primary mr-1">{msg.displayName || msg.userName || 'Anon'}</span>
-                <span className="text-[10px] text-foreground/80 break-words">{msg.content}</span>
+                <span className="text-[10px] text-foreground/80 break-words">{msg.message || msg.content}</span>
               </div>
             </div>
           ))}

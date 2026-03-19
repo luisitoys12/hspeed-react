@@ -18,6 +18,7 @@ import {
   LogOut,
   ChevronDown,
   Mail,
+  Headphones,
 } from "lucide-react";
 
 const navItems = [
@@ -57,6 +58,7 @@ export default function TopNavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, logout, isAdmin, token } = useAuth();
+  const isDjOrAdmin = user && (user.role === "admin" || user.role === "dj");
   const { decorations } = useTheme();
   const [location] = useLocation();
 
@@ -280,6 +282,18 @@ export default function TopNavBar() {
                           Mensajes
                         </a>
                       </Link>
+                      {isDjOrAdmin && (
+                        <Link href="/djpanel">
+                          <a
+                            className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                            onClick={() => setUserMenuOpen(false)}
+                            data-testid="link-dj-panel"
+                          >
+                            <Headphones className="w-3.5 h-3.5" />
+                            Panel DJ
+                          </a>
+                        </Link>
+                      )}
                       {isAdmin && (
                         <Link href="/panel">
                           <a
@@ -394,6 +408,20 @@ export default function TopNavBar() {
                   {unreadCount > 0 && (
                     <Badge className="bg-primary text-white text-[9px] py-0 px-1.5">{unreadCount > 9 ? "9+" : unreadCount}</Badge>
                   )}
+                </a>
+              </Link>
+            )}
+
+            {/* DJ Panel link in mobile */}
+            {isDjOrAdmin && (
+              <Link href="/djpanel">
+                <a
+                  className="block px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  onClick={() => setMobileMenuOpen(false)}
+                  data-testid="mobile-nav-djpanel"
+                >
+                  <Headphones className="w-4 h-4 inline mr-2" />
+                  PANEL DJ
                 </a>
               </Link>
             )}

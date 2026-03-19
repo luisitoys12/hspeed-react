@@ -390,8 +390,16 @@ export class SupabaseStorage implements IStorage {
 
   // Comments
   async getCommentsByArticle(articleId: number) {
-    const r = await this.query("SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at ASC", [articleId]);
-    return r.rows.map(mapComment);
+    const r = await this.query(
+      `SELECT c.*, u.habbo_username FROM comments c 
+       LEFT JOIN users u ON c.author_id = u.id 
+       WHERE c.article_id = $1 ORDER BY c.created_at ASC`,
+      [articleId]
+    );
+    return r.rows.map((row: any) => ({
+      ...mapComment(row),
+      habboUsername: row.habbo_username || null,
+    }));
   }
   async createComment(comment: InsertComment) {
     const r = await this.query(
