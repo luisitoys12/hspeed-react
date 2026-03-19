@@ -1,0 +1,79 @@
+import { Link } from "wouter";
+import { useTheme } from "@/hooks/useTheme";
+import PerplexityAttribution from "@/components/PerplexityAttribution";
+
+const quickLinks = [
+  { href: "/news", label: "Noticias" },
+  { href: "/events", label: "Eventos" },
+  { href: "/forum", label: "Foro" },
+  { href: "/contact", label: "Contacto" },
+];
+
+export default function Footer() {
+  const { decorations } = useTheme();
+  const emoji = decorations?.emoji || "";
+
+  return (
+    <footer className="relative bg-card border-t border-border mt-auto" data-testid="footer">
+      {/* Top gradient line */}
+      <div className="h-[2px] w-full bg-theme-gradient" />
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+          {/* Left: Logo + tagline */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              {emoji && (
+                <span className="text-lg" aria-hidden="true">
+                  {emoji}
+                </span>
+              )}
+              <span className="font-pixel text-[10px] text-theme-gradient leading-tight">
+                HABBOSPEED
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Tu fansite de Habbo favorita
+            </p>
+          </div>
+
+          {/* Center: Quick links */}
+          <div className="flex flex-col items-start md:items-center gap-3">
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              Enlaces
+            </p>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {quickLinks.map((link) => (
+                <Link key={link.href} href={link.href}>
+                  <a
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid={`footer-link-${link.label.toLowerCase()}`}
+                  >
+                    {link.label}
+                  </a>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Disclaimer */}
+          <div className="flex flex-col items-start md:items-end gap-2">
+            <p className="text-[10px] text-muted-foreground/60 leading-relaxed md:text-right">
+              No estamos afiliados con Sulake Corporation Oy. Habbo es una marca registrada de Sulake.
+            </p>
+            {emoji && (
+              <span className="text-xs opacity-20" aria-hidden="true">
+                {emoji} {emoji} {emoji}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Perplexity Attribution */}
+      <div className="border-t border-border">
+        <PerplexityAttribution />
+      </div>
+    </footer>
+  );
+}

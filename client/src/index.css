@@ -1,0 +1,298 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Default: Circo theme (red/yellow) — overridden dynamically by ThemeProvider */
+    --background: 0 0% 6%;
+    --foreground: 213 31% 91%;
+    --card: 0 20% 10%;
+    --card-foreground: 213 31% 91%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 0 85% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 100% 50%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 15% 14%;
+    --muted-foreground: 218 11% 55%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 30% 18%;
+    --input: 0 30% 18%;
+    --ring: 0 85% 50%;
+    --chart-1: 0 85% 50%;
+    --chart-2: 45 100% 50%;
+    --chart-3: 190 80% 45%;
+    --chart-4: 340 75% 55%;
+    --chart-5: 120 60% 45%;
+    --radius: 0.625rem;
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 0 85% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 20% 10%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 0 30% 18%;
+    --sidebar-ring: 0 85% 50%;
+    /* Theme glow/gradient custom vars */
+    --theme-glow: 220, 38, 38;
+    --theme-gradient-from: #dc2626;
+    --theme-gradient-to: #eab308;
+  }
+
+  .dark {
+    --background: 0 0% 6%;
+    --foreground: 213 31% 91%;
+    --card: 0 20% 10%;
+    --card-foreground: 213 31% 91%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 0 85% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 100% 50%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 15% 14%;
+    --muted-foreground: 218 11% 55%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 30% 18%;
+    --input: 0 30% 18%;
+    --ring: 0 85% 50%;
+    --chart-1: 0 85% 50%;
+    --chart-2: 45 100% 50%;
+    --chart-3: 190 80% 45%;
+    --chart-4: 340 75% 55%;
+    --chart-5: 120 60% 45%;
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 0 85% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 20% 10%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 0 30% 18%;
+    --sidebar-ring: 0 85% 50%;
+    --theme-glow: 220, 38, 38;
+    --theme-gradient-from: #dc2626;
+    --theme-gradient-to: #eab308;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Pixel font for special elements */
+.font-pixel {
+  font-family: 'Press Start 2P', cursive;
+}
+
+/* ===== THEME-AWARE GLOW EFFECTS ===== */
+.glow-themed {
+  box-shadow: 0 0 15px rgba(var(--theme-glow), 0.3), 0 0 30px rgba(var(--theme-glow), 0.1);
+}
+
+.glow-text-themed {
+  text-shadow: 0 0 10px rgba(var(--theme-glow), 0.5);
+}
+
+.glow-border-themed {
+  border-color: rgba(var(--theme-glow), 0.3);
+}
+
+/* ===== THEMED GRADIENT ===== */
+.bg-theme-gradient {
+  background: linear-gradient(135deg, var(--theme-gradient-from), var(--theme-gradient-to));
+}
+
+.text-theme-gradient {
+  background: linear-gradient(135deg, var(--theme-gradient-from), var(--theme-gradient-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== THEMED PATTERNS ===== */
+/* Grid pattern (default) */
+.bg-pattern-grid {
+  background-image:
+    linear-gradient(rgba(var(--theme-glow), 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--theme-glow), 0.04) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Circus stripes */
+.bg-pattern-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 20px,
+    rgba(var(--theme-glow), 0.03) 20px,
+    rgba(var(--theme-glow), 0.03) 40px
+  );
+}
+
+/* Bats pattern for halloween */
+.bg-pattern-bats {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(var(--theme-glow), 0.05) 2px, transparent 2px),
+    radial-gradient(circle at 80% 70%, rgba(var(--theme-glow), 0.04) 3px, transparent 3px),
+    radial-gradient(circle at 50% 50%, rgba(var(--theme-glow), 0.03) 1px, transparent 1px);
+  background-size: 60px 60px, 80px 80px, 40px 40px;
+}
+
+/* Snowflakes pattern */
+.bg-pattern-snowflakes {
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(255,255,255,0.05) 2px, transparent 2px),
+    radial-gradient(circle at 75% 75%, rgba(255,255,255,0.03) 3px, transparent 3px);
+  background-size: 50px 50px, 70px 70px;
+}
+
+/* Waves pattern for beach */
+.bg-pattern-waves {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 30px,
+      rgba(var(--theme-glow), 0.02) 30px,
+      rgba(var(--theme-glow), 0.02) 32px
+    );
+}
+
+/* ===== THEMED CARD STYLES ===== */
+.card-themed {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  transition: all 0.2s ease;
+}
+.card-themed:hover {
+  border-color: rgba(var(--theme-glow), 0.4);
+  box-shadow: 0 0 20px rgba(var(--theme-glow), 0.15);
+}
+
+/* ===== THEMED NAVIGATION ===== */
+.nav-link-themed {
+  position: relative;
+  transition: color 0.2s ease;
+}
+.nav-link-themed.active::after,
+.nav-link-themed:hover::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--theme-gradient-from), var(--theme-gradient-to));
+  border-radius: 1px;
+}
+
+/* ===== ANIMATIONS ===== */
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8);
+}
+
+/* Marquee animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+/* Badge hover */
+@keyframes badge-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.badge-hover:hover {
+  animation: badge-bounce 0.4s ease;
+}
+
+/* Live pulse */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 5px rgba(var(--theme-glow), 0.5); }
+  50% { opacity: 0.7; box-shadow: 0 0 15px rgba(var(--theme-glow), 0.8); }
+}
+.live-indicator {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Floating particle animation */
+@keyframes float-up {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+}
+
+.particle-float {
+  animation: float-up linear infinite;
+  pointer-events: none;
+}
+
+/* Confetti specific */
+@keyframes confetti-fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+.particle-confetti {
+  animation: confetti-fall linear infinite;
+  pointer-events: none;
+}
+
+/* Hero shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer-bg {
+  background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Fade in */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+/* Stripe animation for circus */
+@keyframes stripe-move {
+  0% { background-position: 0 0; }
+  100% { background-position: 56px 0; }
+}
+.animate-stripes {
+  animation: stripe-move 1.5s linear infinite;
+}
