@@ -7,3 +7,5 @@ vite.config.ts.*
 dist/
 node_modules/
 _build_specs.md
+.env
+.env.local

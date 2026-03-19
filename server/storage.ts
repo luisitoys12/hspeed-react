@@ -1,7 +1,4 @@
 import {
-  users, news, events, schedule, comments, polls, config, themes,
-  forumCategories, forumThreads, forumPosts, marketplaceItems, 
-  badgeCollection, requests, teamMembers,
   type User, type InsertUser,
   type News, type InsertNews,
   type Event, type InsertEvent,
@@ -102,429 +99,523 @@ export interface IStorage {
   setActiveTheme(slug: string): Promise<Config | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User> = new Map();
-  private newsItems: Map<number, News> = new Map();
-  private eventItems: Map<number, Event> = new Map();
-  private scheduleItems: Map<number, Schedule> = new Map();
-  private commentItems: Map<number, Comment> = new Map();
-  private pollItems: Map<number, Poll> = new Map();
-  private configItem: Config | undefined;
-  private forumCats: Map<number, ForumCategory> = new Map();
-  private threads: Map<number, ForumThread> = new Map();
-  private posts: Map<number, ForumPost> = new Map();
-  private marketItems: Map<number, MarketplaceItem> = new Map();
-  private badges: Map<number, Badge> = new Map();
-  private requestItems: Map<number, Request> = new Map();
-  private teamItems: Map<number, TeamMember> = new Map();
-  private themeItems: Map<number, Theme> = new Map();
-  private nextId = 1;
+// Helper to map snake_case DB rows to camelCase TypeScript objects
+function mapUser(row: any): User {
+  return {
+    id: row.id, email: row.email, passwordHash: row.password_hash,
+    displayName: row.display_name, habboUsername: row.habbo_username,
+    avatarUrl: row.avatar_url, role: row.role, approved: row.approved,
+    speedPoints: row.speed_points, createdAt: row.created_at,
+  };
+}
+function mapNews(row: any): News {
+  return {
+    id: row.id, title: row.title, summary: row.summary, content: row.content,
+    imageUrl: row.image_url, imageHint: row.image_hint, category: row.category,
+    date: row.date, reactions: row.reactions, authorId: row.author_id,
+    createdAt: row.created_at,
+  };
+}
+function mapEvent(row: any): Event {
+  return {
+    id: row.id, title: row.title, server: row.server, date: row.date,
+    time: row.time, roomName: row.room_name, roomOwner: row.room_owner,
+    host: row.host, imageUrl: row.image_url, imageHint: row.image_hint,
+    createdAt: row.created_at,
+  };
+}
+function mapSchedule(row: any): Schedule {
+  return {
+    id: row.id, day: row.day, startTime: row.start_time,
+    endTime: row.end_time, showName: row.show_name, djName: row.dj_name,
+  };
+}
+function mapComment(row: any): Comment {
+  return {
+    id: row.id, articleId: row.article_id, authorId: row.author_id,
+    authorName: row.author_name, content: row.content, createdAt: row.created_at,
+  };
+}
+function mapPoll(row: any): Poll {
+  return {
+    id: row.id, title: row.title, options: row.options,
+    isActive: row.is_active, createdAt: row.created_at,
+  };
+}
+function mapConfig(row: any): Config {
+  return {
+    id: row.id, radioService: row.radio_service, apiUrl: row.api_url,
+    listenUrl: row.listen_url, homePlayerBgUrl: row.home_player_bg_url,
+    slideshow: row.slideshow, discordWebhooks: row.discord_webhooks,
+    activeTheme: row.active_theme,
+  };
+}
+function mapTheme(row: any): Theme {
+  return {
+    id: row.id, slug: row.slug, name: row.name, description: row.description,
+    colors: row.colors, bannerUrl: row.banner_url, logoUrl: row.logo_url,
+    decorations: row.decorations, isDefault: row.is_default,
+  };
+}
+function mapForumCategory(row: any): ForumCategory {
+  return { id: row.id, name: row.name, description: row.description, sortOrder: row.sort_order };
+}
+function mapForumThread(row: any): ForumThread {
+  return {
+    id: row.id, categoryId: row.category_id, title: row.title,
+    authorId: row.author_id, authorName: row.author_name,
+    isPinned: row.is_pinned, isLocked: row.is_locked,
+    views: row.views, createdAt: row.created_at,
+  };
+}
+function mapForumPost(row: any): ForumPost {
+  return {
+    id: row.id, threadId: row.thread_id, authorId: row.author_id,
+    authorName: row.author_name, content: row.content, createdAt: row.created_at,
+  };
+}
+function mapMarketplaceItem(row: any): MarketplaceItem {
+  return {
+    id: row.id, itemName: row.item_name, className: row.class_name,
+    hotel: row.hotel, currentPrice: row.current_price, avgPrice: row.avg_price,
+    priceHistory: row.price_history, imageUrl: row.image_url,
+    lastUpdated: row.last_updated,
+  };
+}
+function mapBadge(row: any): Badge {
+  return {
+    id: row.id, code: row.code, name: row.name, description: row.description,
+    hotel: row.hotel, category: row.category, imageUrl: row.image_url,
+    discoveredAt: row.discovered_at,
+  };
+}
+function mapRequest(row: any): Request {
+  return {
+    id: row.id, type: row.type, details: row.details,
+    userName: row.user_name, createdAt: row.created_at,
+  };
+}
+function mapTeamMember(row: any): TeamMember {
+  return {
+    id: row.id, displayName: row.display_name,
+    habboUsername: row.habbo_username, role: row.role,
+    motto: row.motto, joinedAt: row.joined_at,
+  };
+}
 
-  private getId() { return this.nextId++; }
+export class SupabaseStorage implements IStorage {
+  private pool: any;
 
-  constructor() {
-    this.seed();
+  constructor(pool: any) {
+    this.pool = pool;
   }
 
-  private seed() {
-    // Seed admin user
-    const adminId = this.getId();
-    this.users.set(adminId, {
-      id: adminId, email: "admin@habbospeed.com", passwordHash: "$2b$10$demo",
-      displayName: "HabboSpeed", habboUsername: "HabboSpeed", avatarUrl: null,
-      role: "admin", approved: true, speedPoints: 1000, createdAt: new Date()
-    });
-
-    // Seed config
-    const configId = this.getId();
-    this.configItem = {
-      id: configId, radioService: "azuracast",
-      apiUrl: "https://radio.example.com/api/nowplaying/1",
-      listenUrl: "https://radio.example.com/listen/habbospeed/radio.mp3",
-      homePlayerBgUrl: null,
-      activeTheme: "circo",
-      slideshow: [
-        { title: "Bienvenido a HabboSpeed", subtitle: "Tu fansite de Habbo favorita", imageUrl: "https://images.habbo.com/web_images/habbo-web-articles/lpromo_hween24_bg.png", cta: { text: "Explorar", href: "/community" } },
-        { title: "Nuevos Eventos", subtitle: "No te pierdas los eventos de la semana", imageUrl: "https://images.habbo.com/web_images/habbo-web-articles/lpromo_snowstorm24.png", cta: { text: "Ver Eventos", href: "/events" } },
-        { title: "Radio en Vivo", subtitle: "Escucha a nuestros DJs las 24/7", imageUrl: "https://images.habbo.com/web_images/habbo-web-articles/lpromo_xmas24_bg.png", cta: { text: "Escuchar", href: "/" } },
-      ],
-      discordWebhooks: {}
-    };
-
-    // Seed news
-    const newsData = [
-      { title: "Habboween 2025: The Last of the Pixels", summary: "El evento de Halloween más grande llega a Habbo con nuevas misiones y premios.", content: "Este año, Habbo nos sorprende con un evento de Halloween temático inspirado en los clásicos de supervivencia. Completa misiones, consigue placas exclusivas y decora tu sala con los nuevos muebles de temporada.", imageUrl: "https://images.habbo.com/web_images/habbo-web-articles/lpromo_hween24_bg.png", imageHint: "Halloween Habbo event", category: "Eventos", date: "2025-10-15" },
-      { title: "Nuevos muebles de Navidad disponibles", summary: "La colección navideña 2025 ya está en el catálogo con sorpresas.", content: "La temporada navideña trae consigo una nueva línea de muebles exclusivos. Desde chimeneas con animaciones hasta un árbol de navidad interactivo.", imageUrl: "https://images.habbo.com/web_images/habbo-web-articles/lpromo_xmas24_bg.png", imageHint: "Christmas furniture", category: "Catálogo", date: "2025-12-01" },
-      { title: "Habbo cumple 25 años", summary: "Celebramos un cuarto de siglo de la comunidad más icónica de internet.", content: "Habbo Hotel celebra su 25 aniversario con eventos especiales, placas conmemorativas y un vistazo al futuro del hotel.", imageUrl: "https://images.habbo.com/web_images/habbo-web-articles/lpromo_snowstorm24.png", imageHint: "Habbo 25th anniversary", category: "Comunidad", date: "2025-08-05" },
-    ];
-    newsData.forEach(n => {
-      const id = this.getId();
-      this.newsItems.set(id, { id, ...n, reactions: {}, authorId: adminId, createdAt: new Date() });
-    });
-
-    // Seed events
-    const eventData = [
-      { title: "Noche de Trivia Habbo", server: "Habbo.es", date: "2026-03-25", time: "20:00", roomName: "HabboSpeed Arena", roomOwner: "HabboSpeed", host: "DJ_Luna", imageUrl: "https://images.habbo.com/web_images/habbo-web-articles/lpromo_hween24_bg.png", imageHint: "Trivia night" },
-      { title: "Concurso de Salas", server: "Habbo.es", date: "2026-03-28", time: "18:00", roomName: "Speed Design Contest", roomOwner: "HabboSpeed", host: "Pixelarte", imageUrl: "https://images.habbo.com/web_images/habbo-web-articles/lpromo_snowstorm24.png", imageHint: "Room contest" },
-    ];
-    eventData.forEach(e => {
-      const id = this.getId();
-      this.eventItems.set(id, { id, ...e, createdAt: new Date() });
-    });
-
-    // Seed schedule
-    const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-    days.forEach(day => {
-      const id1 = this.getId();
-      this.scheduleItems.set(id1, { id: id1, day, startTime: "10:00", endTime: "14:00", showName: "Morning Vibes", djName: "AutoDJ" });
-      const id2 = this.getId();
-      this.scheduleItems.set(id2, { id: id2, day, startTime: "18:00", endTime: "22:00", showName: "Speed Mix", djName: day === "Sábado" ? "DJ_Luna" : "AutoDJ" });
-    });
-
-    // Seed team
-    const teamData = [
-      { displayName: "HabboSpeed", habboUsername: "HabboSpeed", role: "Fundador", motto: "Velocidad y diversión" },
-      { displayName: "DJ Luna", habboUsername: "DJ_Luna", role: "DJ Principal", motto: "La música nos une" },
-      { displayName: "Pixelarte", habboUsername: "Pixelarte", role: "Diseñador", motto: "Cada pixel cuenta" },
-      { displayName: "Eventera", habboUsername: "Eventera", role: "Eventos", motto: "Creando momentos" },
-    ];
-    teamData.forEach(t => {
-      const id = this.getId();
-      this.teamItems.set(id, { id, ...t, joinedAt: new Date() });
-    });
-
-    // Seed forum categories
-    const catData = [
-      { name: "General", description: "Discusiones generales sobre Habbo y la comunidad", sortOrder: 1 },
-      { name: "Eventos", description: "Propuestas y discusiones sobre eventos", sortOrder: 2 },
-      { name: "Guías y Tutoriales", description: "Comparte tus guías con la comunidad", sortOrder: 3 },
-      { name: "Trading", description: "Intercambios y valores de muebles", sortOrder: 4 },
-      { name: "Off-Topic", description: "Todo lo que no encaje en otras categorías", sortOrder: 5 },
-    ];
-    catData.forEach(c => {
-      const id = this.getId();
-      this.forumCats.set(id, { id, ...c });
-    });
-
-    // Seed themes
-    const themeData: Array<Omit<Theme, 'id'>> = [
-      {
-        slug: "default", name: "HabboSpeed Classic", description: "Tema clásico púrpura de HabboSpeed",
-        isDefault: true, bannerUrl: null, logoUrl: null,
-        colors: {
-          primary: "262 84% 58%", primaryForeground: "0 0% 100%",
-          accent: "262 40% 18%", accentForeground: "262 84% 78%",
-          background: "224 71% 4%", card: "222 47% 8%",
-          border: "215 28% 16%", muted: "215 28% 14%",
-          glowColor: "139, 92, 246", gradientFrom: "#7c3aed", gradientTo: "#3b82f6"
-        },
-        decorations: { emoji: "⚡", pattern: "grid", particleType: "none" }
-      },
-      {
-        slug: "circo", name: "HabboSpeed Circo", description: "Bienvenidos al circo más loco de Habbo",
-        isDefault: false, bannerUrl: null, logoUrl: null,
-        colors: {
-          primary: "0 85% 50%", primaryForeground: "0 0% 100%",
-          accent: "45 100% 50%", accentForeground: "0 0% 10%",
-          background: "0 0% 6%", card: "0 20% 10%",
-          border: "0 30% 18%", muted: "0 15% 14%",
-          glowColor: "220, 38, 38", gradientFrom: "#dc2626", gradientTo: "#eab308",
-          secondary: "45 100% 50%"
-        },
-        decorations: { emoji: "🎪", pattern: "stripes", particleType: "confetti", accentEmojis: ["🤡", "🎭", "🎪", "🎨", "🎫"] }
-      },
-      {
-        slug: "habboween", name: "Habboween", description: "Noche de terror en el hotel",
-        isDefault: false, bannerUrl: null, logoUrl: null,
-        colors: {
-          primary: "25 95% 53%", primaryForeground: "0 0% 100%",
-          accent: "270 60% 40%", accentForeground: "270 80% 80%",
-          background: "270 30% 5%", card: "270 25% 9%",
-          border: "270 25% 16%", muted: "270 20% 13%",
-          glowColor: "249, 115, 22", gradientFrom: "#f97316", gradientTo: "#7c3aed"
-        },
-        decorations: { emoji: "🎃", pattern: "bats", particleType: "ghosts", accentEmojis: ["👻", "🦇", "💀", "🕷️", "🎃"] }
-      },
-      {
-        slug: "navidad", name: "Navidad Habbo", description: "Felices fiestas en el hotel",
-        isDefault: false, bannerUrl: null, logoUrl: null,
-        colors: {
-          primary: "0 72% 45%", primaryForeground: "0 0% 100%",
-          accent: "142 70% 35%", accentForeground: "0 0% 100%",
-          background: "210 30% 5%", card: "210 25% 9%",
-          border: "210 20% 16%", muted: "210 20% 13%",
-          glowColor: "185, 28, 28", gradientFrom: "#b91c1c", gradientTo: "#15803d"
-        },
-        decorations: { emoji: "🎄", pattern: "snowflakes", particleType: "snow", accentEmojis: ["⛄", "🎅", "🎁", "❄️", "🎄"] }
-      },
-      {
-        slug: "playa", name: "Playa Habbo", description: "Verano y sol en el hotel",
-        isDefault: false, bannerUrl: null, logoUrl: null,
-        colors: {
-          primary: "187 85% 43%", primaryForeground: "0 0% 100%",
-          accent: "45 100% 50%", accentForeground: "0 0% 10%",
-          background: "200 40% 6%", card: "200 30% 10%",
-          border: "200 25% 17%", muted: "200 20% 14%",
-          glowColor: "6, 182, 212", gradientFrom: "#06b6d4", gradientTo: "#eab308"
-        },
-        decorations: { emoji: "🏖️", pattern: "waves", particleType: "bubbles", accentEmojis: ["🌊", "🐚", "☀️", "🏄", "🏖️"] }
-      }
-    ];
-    themeData.forEach(t => {
-      const id = this.getId();
-      this.themeItems.set(id, { id, ...t } as Theme);
-    });
-
-    // Seed polls
-    const pollId = this.getId();
-    this.pollItems.set(pollId, {
-      id: pollId, title: "¿Cuál es tu evento favorito de Habbo?",
-      options: [
-        { name: "Habboween", votes: 45 },
-        { name: "Navidad", votes: 38 },
-        { name: "San Valentín", votes: 22 },
-        { name: "Aniversario", votes: 31 },
-      ],
-      isActive: true, createdAt: new Date()
-    });
+  private async query(text: string, params?: any[]) {
+    const client = await this.pool.connect();
+    try {
+      return await client.query(text, params);
+    } finally {
+      client.release();
+    }
   }
 
   // Users
-  async getUser(id: number) { return this.users.get(id); }
-  async getUserByEmail(email: string) { return [...this.users.values()].find(u => u.email === email); }
+  async getUser(id: number) {
+    const r = await this.query("SELECT * FROM users WHERE id = $1", [id]);
+    return r.rows[0] ? mapUser(r.rows[0]) : undefined;
+  }
+  async getUserByEmail(email: string) {
+    const r = await this.query("SELECT * FROM users WHERE email = $1", [email]);
+    return r.rows[0] ? mapUser(r.rows[0]) : undefined;
+  }
   async createUser(user: InsertUser) {
-    const id = this.getId();
-    const newUser: User = { id, ...user, createdAt: new Date() } as User;
-    this.users.set(id, newUser);
-    return newUser;
+    const r = await this.query(
+      `INSERT INTO users (email, password_hash, display_name, habbo_username, avatar_url, role, approved, speed_points)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [user.email, user.passwordHash, user.displayName, user.habboUsername || null, user.avatarUrl || null, user.role || "pending", user.approved ?? false, user.speedPoints ?? 0]
+    );
+    return mapUser(r.rows[0]);
   }
   async updateUser(id: number, data: Partial<InsertUser>) {
-    const user = this.users.get(id);
-    if (!user) return undefined;
-    const updated = { ...user, ...data };
-    this.users.set(id, updated);
-    return updated;
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.email !== undefined) { fields.push(`email = $${i++}`); values.push(data.email); }
+    if (data.displayName !== undefined) { fields.push(`display_name = $${i++}`); values.push(data.displayName); }
+    if (data.habboUsername !== undefined) { fields.push(`habbo_username = $${i++}`); values.push(data.habboUsername); }
+    if (data.avatarUrl !== undefined) { fields.push(`avatar_url = $${i++}`); values.push(data.avatarUrl); }
+    if (data.role !== undefined) { fields.push(`role = $${i++}`); values.push(data.role); }
+    if (data.approved !== undefined) { fields.push(`approved = $${i++}`); values.push(data.approved); }
+    if (data.speedPoints !== undefined) { fields.push(`speed_points = $${i++}`); values.push(data.speedPoints); }
+    if (data.passwordHash !== undefined) { fields.push(`password_hash = $${i++}`); values.push(data.passwordHash); }
+    if (fields.length === 0) return this.getUser(id);
+    values.push(id);
+    const r = await this.query(`UPDATE users SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    return r.rows[0] ? mapUser(r.rows[0]) : undefined;
   }
-  async getAllUsers() { return [...this.users.values()]; }
+  async getAllUsers() {
+    const r = await this.query("SELECT * FROM users ORDER BY id");
+    return r.rows.map(mapUser);
+  }
 
   // News
-  async getAllNews() { return [...this.newsItems.values()].sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)); }
-  async getNewsById(id: number) { return this.newsItems.get(id); }
+  async getAllNews() {
+    const r = await this.query("SELECT * FROM news ORDER BY created_at DESC");
+    return r.rows.map(mapNews);
+  }
+  async getNewsById(id: number) {
+    const r = await this.query("SELECT * FROM news WHERE id = $1", [id]);
+    return r.rows[0] ? mapNews(r.rows[0]) : undefined;
+  }
   async createNews(article: InsertNews) {
-    const id = this.getId();
-    const item: News = { id, ...article, createdAt: new Date() } as News;
-    this.newsItems.set(id, item);
-    return item;
+    const r = await this.query(
+      `INSERT INTO news (title, summary, content, image_url, image_hint, category, date, reactions, author_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [article.title, article.summary, article.content, article.imageUrl, article.imageHint || "", article.category, article.date, JSON.stringify(article.reactions || {}), article.authorId || null]
+    );
+    return mapNews(r.rows[0]);
   }
   async updateNews(id: number, data: Partial<InsertNews>) {
-    const item = this.newsItems.get(id);
-    if (!item) return undefined;
-    const updated = { ...item, ...data };
-    this.newsItems.set(id, updated);
-    return updated;
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.title !== undefined) { fields.push(`title = $${i++}`); values.push(data.title); }
+    if (data.summary !== undefined) { fields.push(`summary = $${i++}`); values.push(data.summary); }
+    if (data.content !== undefined) { fields.push(`content = $${i++}`); values.push(data.content); }
+    if (data.imageUrl !== undefined) { fields.push(`image_url = $${i++}`); values.push(data.imageUrl); }
+    if (data.imageHint !== undefined) { fields.push(`image_hint = $${i++}`); values.push(data.imageHint); }
+    if (data.category !== undefined) { fields.push(`category = $${i++}`); values.push(data.category); }
+    if (data.date !== undefined) { fields.push(`date = $${i++}`); values.push(data.date); }
+    if (data.reactions !== undefined) { fields.push(`reactions = $${i++}`); values.push(JSON.stringify(data.reactions)); }
+    if (fields.length === 0) return this.getNewsById(id);
+    values.push(id);
+    const r = await this.query(`UPDATE news SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    return r.rows[0] ? mapNews(r.rows[0]) : undefined;
   }
-  async deleteNews(id: number) { return this.newsItems.delete(id); }
+  async deleteNews(id: number) {
+    const r = await this.query("DELETE FROM news WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
 
   // Events
-  async getAllEvents() { return [...this.eventItems.values()]; }
-  async getEventById(id: number) { return this.eventItems.get(id); }
+  async getAllEvents() {
+    const r = await this.query("SELECT * FROM events ORDER BY date DESC, time DESC");
+    return r.rows.map(mapEvent);
+  }
+  async getEventById(id: number) {
+    const r = await this.query("SELECT * FROM events WHERE id = $1", [id]);
+    return r.rows[0] ? mapEvent(r.rows[0]) : undefined;
+  }
   async createEvent(event: InsertEvent) {
-    const id = this.getId();
-    const item: Event = { id, ...event, createdAt: new Date() } as Event;
-    this.eventItems.set(id, item);
-    return item;
+    const r = await this.query(
+      `INSERT INTO events (title, server, date, time, room_name, room_owner, host, image_url, image_hint)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [event.title, event.server, event.date, event.time, event.roomName, event.roomOwner, event.host, event.imageUrl, event.imageHint || ""]
+    );
+    return mapEvent(r.rows[0]);
   }
   async updateEvent(id: number, data: Partial<InsertEvent>) {
-    const item = this.eventItems.get(id);
-    if (!item) return undefined;
-    const updated = { ...item, ...data };
-    this.eventItems.set(id, updated);
-    return updated;
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.title !== undefined) { fields.push(`title = $${i++}`); values.push(data.title); }
+    if (data.server !== undefined) { fields.push(`server = $${i++}`); values.push(data.server); }
+    if (data.date !== undefined) { fields.push(`date = $${i++}`); values.push(data.date); }
+    if (data.time !== undefined) { fields.push(`time = $${i++}`); values.push(data.time); }
+    if (data.roomName !== undefined) { fields.push(`room_name = $${i++}`); values.push(data.roomName); }
+    if (data.roomOwner !== undefined) { fields.push(`room_owner = $${i++}`); values.push(data.roomOwner); }
+    if (data.host !== undefined) { fields.push(`host = $${i++}`); values.push(data.host); }
+    if (data.imageUrl !== undefined) { fields.push(`image_url = $${i++}`); values.push(data.imageUrl); }
+    if (fields.length === 0) return this.getEventById(id);
+    values.push(id);
+    const r = await this.query(`UPDATE events SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    return r.rows[0] ? mapEvent(r.rows[0]) : undefined;
   }
-  async deleteEvent(id: number) { return this.eventItems.delete(id); }
+  async deleteEvent(id: number) {
+    const r = await this.query("DELETE FROM events WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
 
   // Schedule
-  async getAllSchedule() { return [...this.scheduleItems.values()]; }
+  async getAllSchedule() {
+    const r = await this.query("SELECT * FROM schedule ORDER BY id");
+    return r.rows.map(mapSchedule);
+  }
   async createScheduleItem(item: InsertSchedule) {
-    const id = this.getId();
-    const sched: Schedule = { id, ...item } as Schedule;
-    this.scheduleItems.set(id, sched);
-    return sched;
+    const r = await this.query(
+      `INSERT INTO schedule (day, start_time, end_time, show_name, dj_name) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [item.day, item.startTime, item.endTime, item.showName, item.djName]
+    );
+    return mapSchedule(r.rows[0]);
   }
   async updateScheduleItem(id: number, data: Partial<InsertSchedule>) {
-    const item = this.scheduleItems.get(id);
-    if (!item) return undefined;
-    const updated = { ...item, ...data };
-    this.scheduleItems.set(id, updated);
-    return updated;
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.day !== undefined) { fields.push(`day = $${i++}`); values.push(data.day); }
+    if (data.startTime !== undefined) { fields.push(`start_time = $${i++}`); values.push(data.startTime); }
+    if (data.endTime !== undefined) { fields.push(`end_time = $${i++}`); values.push(data.endTime); }
+    if (data.showName !== undefined) { fields.push(`show_name = $${i++}`); values.push(data.showName); }
+    if (data.djName !== undefined) { fields.push(`dj_name = $${i++}`); values.push(data.djName); }
+    if (fields.length === 0) return undefined;
+    values.push(id);
+    const r = await this.query(`UPDATE schedule SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    return r.rows[0] ? mapSchedule(r.rows[0]) : undefined;
   }
-  async deleteScheduleItem(id: number) { return this.scheduleItems.delete(id); }
+  async deleteScheduleItem(id: number) {
+    const r = await this.query("DELETE FROM schedule WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
 
   // Comments
   async getCommentsByArticle(articleId: number) {
-    return [...this.commentItems.values()].filter(c => c.articleId === articleId);
+    const r = await this.query("SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at ASC", [articleId]);
+    return r.rows.map(mapComment);
   }
   async createComment(comment: InsertComment) {
-    const id = this.getId();
-    const item: Comment = { id, ...comment, createdAt: new Date() } as Comment;
-    this.commentItems.set(id, item);
-    return item;
+    const r = await this.query(
+      `INSERT INTO comments (article_id, author_id, author_name, content) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [comment.articleId || null, comment.authorId || null, comment.authorName, comment.content]
+    );
+    return mapComment(r.rows[0]);
   }
-  async deleteComment(id: number) { return this.commentItems.delete(id); }
+  async deleteComment(id: number) {
+    const r = await this.query("DELETE FROM comments WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
 
   // Polls
-  async getAllPolls() { return [...this.pollItems.values()]; }
+  async getAllPolls() {
+    const r = await this.query("SELECT * FROM polls ORDER BY created_at DESC");
+    return r.rows.map(mapPoll);
+  }
   async createPoll(poll: InsertPoll) {
-    const id = this.getId();
-    const item: Poll = { id, ...poll, createdAt: new Date() } as Poll;
-    this.pollItems.set(id, item);
-    return item;
+    const r = await this.query(
+      `INSERT INTO polls (title, options, is_active) VALUES ($1, $2, $3) RETURNING *`,
+      [poll.title, JSON.stringify(poll.options || []), poll.isActive ?? true]
+    );
+    return mapPoll(r.rows[0]);
   }
   async updatePoll(id: number, data: Partial<InsertPoll>) {
-    const item = this.pollItems.get(id);
-    if (!item) return undefined;
-    const updated = { ...item, ...data };
-    this.pollItems.set(id, updated);
-    return updated;
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.title !== undefined) { fields.push(`title = $${i++}`); values.push(data.title); }
+    if (data.options !== undefined) { fields.push(`options = $${i++}`); values.push(JSON.stringify(data.options)); }
+    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
+    if (fields.length === 0) return undefined;
+    values.push(id);
+    const r = await this.query(`UPDATE polls SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    return r.rows[0] ? mapPoll(r.rows[0]) : undefined;
   }
 
   // Config
-  async getConfig() { return this.configItem; }
+  async getConfig() {
+    const r = await this.query("SELECT * FROM config ORDER BY id LIMIT 1");
+    return r.rows[0] ? mapConfig(r.rows[0]) : undefined;
+  }
   async updateConfig(data: Partial<InsertConfig>) {
-    if (this.configItem) {
-      this.configItem = { ...this.configItem, ...data };
-    }
-    return this.configItem;
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.radioService !== undefined) { fields.push(`radio_service = $${i++}`); values.push(data.radioService); }
+    if (data.apiUrl !== undefined) { fields.push(`api_url = $${i++}`); values.push(data.apiUrl); }
+    if (data.listenUrl !== undefined) { fields.push(`listen_url = $${i++}`); values.push(data.listenUrl); }
+    if (data.homePlayerBgUrl !== undefined) { fields.push(`home_player_bg_url = $${i++}`); values.push(data.homePlayerBgUrl); }
+    if (data.slideshow !== undefined) { fields.push(`slideshow = $${i++}`); values.push(JSON.stringify(data.slideshow)); }
+    if (data.discordWebhooks !== undefined) { fields.push(`discord_webhooks = $${i++}`); values.push(JSON.stringify(data.discordWebhooks)); }
+    if (data.activeTheme !== undefined) { fields.push(`active_theme = $${i++}`); values.push(data.activeTheme); }
+    if (fields.length === 0) return this.getConfig();
+    const r = await this.query(`UPDATE config SET ${fields.join(", ")} WHERE id = (SELECT id FROM config ORDER BY id LIMIT 1) RETURNING *`, values);
+    return r.rows[0] ? mapConfig(r.rows[0]) : undefined;
   }
 
   // Forum
-  async getAllForumCategories() { return [...this.forumCats.values()].sort((a, b) => a.sortOrder - b.sortOrder); }
+  async getAllForumCategories() {
+    const r = await this.query("SELECT * FROM forum_categories ORDER BY sort_order ASC");
+    return r.rows.map(mapForumCategory);
+  }
   async createForumCategory(cat: InsertForumCategory) {
-    const id = this.getId();
-    const item: ForumCategory = { id, ...cat } as ForumCategory;
-    this.forumCats.set(id, item);
-    return item;
+    const r = await this.query(
+      `INSERT INTO forum_categories (name, description, sort_order) VALUES ($1, $2, $3) RETURNING *`,
+      [cat.name, cat.description || null, cat.sortOrder ?? 0]
+    );
+    return mapForumCategory(r.rows[0]);
   }
   async getThreadsByCategory(categoryId: number) {
-    return [...this.threads.values()].filter(t => t.categoryId === categoryId).sort((a, b) => {
-      if (a.isPinned && !b.isPinned) return -1;
-      if (!a.isPinned && b.isPinned) return 1;
-      return (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0);
-    });
+    const r = await this.query(
+      "SELECT * FROM forum_threads WHERE category_id = $1 ORDER BY is_pinned DESC, created_at DESC", [categoryId]
+    );
+    return r.rows.map(mapForumThread);
   }
-  async getThreadById(id: number) { return this.threads.get(id); }
+  async getThreadById(id: number) {
+    const r = await this.query("SELECT * FROM forum_threads WHERE id = $1", [id]);
+    return r.rows[0] ? mapForumThread(r.rows[0]) : undefined;
+  }
   async createThread(thread: InsertForumThread) {
-    const id = this.getId();
-    const item: ForumThread = { id, ...thread, createdAt: new Date() } as ForumThread;
-    this.threads.set(id, item);
-    return item;
+    const r = await this.query(
+      `INSERT INTO forum_threads (category_id, title, author_id, author_name, is_pinned, is_locked, views)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [thread.categoryId || null, thread.title, thread.authorId || null, thread.authorName, thread.isPinned ?? false, thread.isLocked ?? false, thread.views ?? 0]
+    );
+    return mapForumThread(r.rows[0]);
   }
   async incrementThreadViews(id: number) {
-    const t = this.threads.get(id);
-    if (t) this.threads.set(id, { ...t, views: t.views + 1 });
+    await this.query("UPDATE forum_threads SET views = views + 1 WHERE id = $1", [id]);
   }
   async getPostsByThread(threadId: number) {
-    return [...this.posts.values()].filter(p => p.threadId === threadId).sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));
+    const r = await this.query("SELECT * FROM forum_posts WHERE thread_id = $1 ORDER BY created_at ASC", [threadId]);
+    return r.rows.map(mapForumPost);
   }
   async createPost(post: InsertForumPost) {
-    const id = this.getId();
-    const item: ForumPost = { id, ...post, createdAt: new Date() } as ForumPost;
-    this.posts.set(id, item);
-    return item;
+    const r = await this.query(
+      `INSERT INTO forum_posts (thread_id, author_id, author_name, content) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [post.threadId || null, post.authorId || null, post.authorName, post.content]
+    );
+    return mapForumPost(r.rows[0]);
   }
-  async deletePost(id: number) { return this.posts.delete(id); }
+  async deletePost(id: number) {
+    const r = await this.query("DELETE FROM forum_posts WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
 
   // Marketplace
-  async getAllMarketplaceItems() { return [...this.marketItems.values()]; }
-  async getMarketplaceItemByClass(className: string) { return [...this.marketItems.values()].find(i => i.className === className); }
+  async getAllMarketplaceItems() {
+    const r = await this.query("SELECT * FROM marketplace_items ORDER BY last_updated DESC");
+    return r.rows.map(mapMarketplaceItem);
+  }
+  async getMarketplaceItemByClass(className: string) {
+    const r = await this.query("SELECT * FROM marketplace_items WHERE class_name = $1", [className]);
+    return r.rows[0] ? mapMarketplaceItem(r.rows[0]) : undefined;
+  }
   async upsertMarketplaceItem(item: InsertMarketplaceItem) {
-    const existing = [...this.marketItems.values()].find(i => i.className === item.className);
-    if (existing) {
-      const updated = { ...existing, ...item, lastUpdated: new Date() };
-      this.marketItems.set(existing.id, updated);
-      return updated;
-    }
-    const id = this.getId();
-    const newItem: MarketplaceItem = { id, ...item, lastUpdated: new Date() } as MarketplaceItem;
-    this.marketItems.set(id, newItem);
-    return newItem;
+    const r = await this.query(
+      `INSERT INTO marketplace_items (item_name, class_name, hotel, current_price, avg_price, price_history, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (class_name) DO UPDATE SET
+         item_name = EXCLUDED.item_name, current_price = EXCLUDED.current_price,
+         avg_price = EXCLUDED.avg_price, price_history = EXCLUDED.price_history,
+         image_url = EXCLUDED.image_url, last_updated = NOW()
+       RETURNING *`,
+      [item.itemName, item.className, item.hotel || "es", item.currentPrice ?? null, item.avgPrice ?? null, JSON.stringify(item.priceHistory || []), item.imageUrl || null]
+    );
+    return mapMarketplaceItem(r.rows[0]);
   }
 
   // Badges
-  async getAllBadges() { return [...this.badges.values()]; }
+  async getAllBadges() {
+    const r = await this.query("SELECT * FROM badge_collection ORDER BY discovered_at DESC");
+    return r.rows.map(mapBadge);
+  }
   async searchBadges(query: string) {
-    const q = query.toLowerCase();
-    return [...this.badges.values()].filter(b => b.name.toLowerCase().includes(q) || b.code.toLowerCase().includes(q));
+    const r = await this.query(
+      "SELECT * FROM badge_collection WHERE LOWER(name) LIKE $1 OR LOWER(code) LIKE $1 ORDER BY name",
+      [`%${query.toLowerCase()}%`]
+    );
+    return r.rows.map(mapBadge);
   }
   async upsertBadge(badge: InsertBadge) {
-    const existing = [...this.badges.values()].find(b => b.code === badge.code);
-    if (existing) {
-      const updated = { ...existing, ...badge };
-      this.badges.set(existing.id, updated);
-      return updated;
-    }
-    const id = this.getId();
-    const newBadge: Badge = { id, ...badge, discoveredAt: new Date() } as Badge;
-    this.badges.set(id, newBadge);
-    return newBadge;
+    const r = await this.query(
+      `INSERT INTO badge_collection (code, name, description, hotel, category, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (code) DO UPDATE SET
+         name = EXCLUDED.name, description = EXCLUDED.description,
+         category = EXCLUDED.category, image_url = EXCLUDED.image_url
+       RETURNING *`,
+      [badge.code, badge.name, badge.description || null, badge.hotel || "es", badge.category || null, badge.imageUrl || null]
+    );
+    return mapBadge(r.rows[0]);
   }
 
   // Requests
-  async getAllRequests() { return [...this.requestItems.values()]; }
-  async createRequest(req: InsertRequest) {
-    const id = this.getId();
-    const item: Request = { id, ...req, createdAt: new Date() } as Request;
-    this.requestItems.set(id, item);
-    return item;
+  async getAllRequests() {
+    const r = await this.query("SELECT * FROM requests ORDER BY created_at DESC");
+    return r.rows.map(mapRequest);
   }
-  async deleteRequest(id: number) { return this.requestItems.delete(id); }
+  async createRequest(req: InsertRequest) {
+    const r = await this.query(
+      `INSERT INTO requests (type, details, user_name) VALUES ($1, $2, $3) RETURNING *`,
+      [req.type, req.details, req.userName]
+    );
+    return mapRequest(r.rows[0]);
+  }
+  async deleteRequest(id: number) {
+    const r = await this.query("DELETE FROM requests WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
 
   // Team
-  async getAllTeamMembers() { return [...this.teamItems.values()]; }
+  async getAllTeamMembers() {
+    const r = await this.query("SELECT * FROM team_members ORDER BY id");
+    return r.rows.map(mapTeamMember);
+  }
   async createTeamMember(member: InsertTeamMember) {
-    const id = this.getId();
-    const item: TeamMember = { id, ...member, joinedAt: new Date() } as TeamMember;
-    this.teamItems.set(id, item);
-    return item;
+    const r = await this.query(
+      `INSERT INTO team_members (display_name, habbo_username, role, motto) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [member.displayName, member.habboUsername, member.role, member.motto || null]
+    );
+    return mapTeamMember(r.rows[0]);
   }
   async updateTeamMember(id: number, data: Partial<InsertTeamMember>) {
-    const item = this.teamItems.get(id);
-    if (!item) return undefined;
-    const updated = { ...item, ...data };
-    this.teamItems.set(id, updated);
-    return updated;
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.displayName !== undefined) { fields.push(`display_name = $${i++}`); values.push(data.displayName); }
+    if (data.habboUsername !== undefined) { fields.push(`habbo_username = $${i++}`); values.push(data.habboUsername); }
+    if (data.role !== undefined) { fields.push(`role = $${i++}`); values.push(data.role); }
+    if (data.motto !== undefined) { fields.push(`motto = $${i++}`); values.push(data.motto); }
+    if (fields.length === 0) return undefined;
+    values.push(id);
+    const r = await this.query(`UPDATE team_members SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    return r.rows[0] ? mapTeamMember(r.rows[0]) : undefined;
   }
-  async deleteTeamMember(id: number) { return this.teamItems.delete(id); }
+  async deleteTeamMember(id: number) {
+    const r = await this.query("DELETE FROM team_members WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
 
   // Themes
-  async getAllThemes() { return [...this.themeItems.values()]; }
-  async getThemeBySlug(slug: string) { return [...this.themeItems.values()].find(t => t.slug === slug); }
+  async getAllThemes() {
+    const r = await this.query("SELECT * FROM themes ORDER BY id");
+    return r.rows.map(mapTheme);
+  }
+  async getThemeBySlug(slug: string) {
+    const r = await this.query("SELECT * FROM themes WHERE slug = $1", [slug]);
+    return r.rows[0] ? mapTheme(r.rows[0]) : undefined;
+  }
   async getActiveTheme() {
     const cfg = await this.getConfig();
     const slug = cfg?.activeTheme || "circo";
     return this.getThemeBySlug(slug);
   }
   async createTheme(theme: InsertTheme) {
-    const id = this.getId();
-    const item: Theme = { id, ...theme } as Theme;
-    this.themeItems.set(id, item);
-    return item;
+    const r = await this.query(
+      `INSERT INTO themes (slug, name, description, colors, banner_url, logo_url, decorations, is_default)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [theme.slug, theme.name, theme.description || null, JSON.stringify(theme.colors || {}), theme.bannerUrl || null, theme.logoUrl || null, JSON.stringify(theme.decorations || {}), theme.isDefault ?? false]
+    );
+    return mapTheme(r.rows[0]);
   }
   async updateTheme(id: number, data: Partial<InsertTheme>) {
-    const item = this.themeItems.get(id);
-    if (!item) return undefined;
-    const updated = { ...item, ...data };
-    this.themeItems.set(id, updated);
-    return updated;
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.slug !== undefined) { fields.push(`slug = $${i++}`); values.push(data.slug); }
+    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
+    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
+    if (data.colors !== undefined) { fields.push(`colors = $${i++}`); values.push(JSON.stringify(data.colors)); }
+    if (data.bannerUrl !== undefined) { fields.push(`banner_url = $${i++}`); values.push(data.bannerUrl); }
+    if (data.logoUrl !== undefined) { fields.push(`logo_url = $${i++}`); values.push(data.logoUrl); }
+    if (data.decorations !== undefined) { fields.push(`decorations = $${i++}`); values.push(JSON.stringify(data.decorations)); }
+    if (data.isDefault !== undefined) { fields.push(`is_default = $${i++}`); values.push(data.isDefault); }
+    if (fields.length === 0) return undefined;
+    values.push(id);
+    const r = await this.query(`UPDATE themes SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    return r.rows[0] ? mapTheme(r.rows[0]) : undefined;
   }
   async setActiveTheme(slug: string) {
     const theme = await this.getThemeBySlug(slug);
     if (!theme) return undefined;
-    if (this.configItem) {
-      this.configItem = { ...this.configItem, activeTheme: slug };
-    }
-    return this.configItem;
+    return this.updateConfig({ activeTheme: slug });
   }
 }
-
-export const storage = new MemStorage();

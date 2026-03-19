@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage-instance";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
