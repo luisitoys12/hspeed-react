@@ -27,6 +27,8 @@ import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AdminPanel from "@/pages/AdminPanel";
+import MessagesPage from "@/pages/MessagesPage";
+import LegalPage from "@/pages/LegalPage";
 import NotFound from "@/pages/not-found";
 
 function Layout() {
@@ -55,6 +57,9 @@ function Layout() {
           <Route path="/profile/:username" component={ProfilePage} />
           <Route path="/panel" component={AdminPanel} />
           <Route path="/panel/:section" component={AdminPanel} />
+          <Route path="/messages" component={MessagesPage} />
+          <Route path="/legal" component={LegalPage} />
+          <Route path="/privacy" component={LegalPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Star } from "lucide-react";
-import type { TeamMember } from "@shared/schema";
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   admin: { label: "Administrador", color: "bg-red-500/10 text-red-400 border-red-500/30" },
@@ -13,7 +13,10 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function TeamPage() {
-  const { data: team, isLoading } = useQuery<TeamMember[]>({ queryKey: ["/api/team"] });
+  const { data: team, isLoading } = useQuery<any[]>({
+    queryKey: ["/api/team-users"],
+    retry: false,
+  });
 
   return (
     <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-5">
@@ -34,46 +37,46 @@ export default function TeamPage() {
               </div>
             ))
           : (team || []).map((member) => (
-              <Card
-                key={member.id}
-                className="bg-card border-border hover:border-primary/30 hover:glow-purple transition-all text-center overflow-hidden group"
-                data-testid={`card-team-${member.id}`}
-              >
-                <CardContent className="p-4 flex flex-col items-center gap-2">
-                  {/* Habbo Avatar */}
-                  <div className="relative">
-                    <div className="w-20 h-24 bg-secondary/50 rounded-lg overflow-hidden flex items-center justify-end group-hover:bg-secondary/70 transition-colors">
-                      <img
-                        src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${member.habboUsername}&size=l`}
-                        alt={member.displayName}
-                        className="h-full w-auto object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = `https://www.habbo.es/habbo-imaging/avatarimage?user=${member.habboUsername}&size=m`;
-                        }}
-                      />
-                    </div>
-                    {(member.role === "admin" || member.role === "dj") && (
-                      <Star className="absolute -top-1 -right-1 w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    )}
-                  </div>
+              <Link key={member.id} href={`/profile/${member.habboUsername || member.displayName}`}>
+                <a className="block" data-testid={`card-team-${member.id}`}>
+                  <Card className="bg-card border-border hover:border-primary/30 hover:glow-purple transition-all text-center overflow-hidden group cursor-pointer">
+                    <CardContent className="p-4 flex flex-col items-center gap-2">
+                      {/* Habbo Avatar */}
+                      <div className="relative">
+                        <div className="w-20 h-24 bg-secondary/50 rounded-lg overflow-hidden flex items-center justify-end group-hover:bg-secondary/70 transition-colors">
+                          <img
+                            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${member.habboUsername}&size=l&direction=2&head_direction=2`}
+                            alt={member.displayName}
+                            className="h-full w-auto object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://www.habbo.es/habbo-imaging/avatarimage?user=${member.habboUsername}&size=m&direction=2&head_direction=2`;
+                            }}
+                          />
+                        </div>
+                        {(member.role === "admin" || member.role === "dj") && (
+                          <Star className="absolute -top-1 -right-1 w-4 h-4 text-yellow-400 fill-yellow-400" />
+                        )}
+                      </div>
 
-                  <div>
-                    <p className="text-sm font-semibold truncate w-full">{member.displayName}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">@{member.habboUsername}</p>
-                  </div>
+                      <div>
+                        <p className="text-sm font-semibold truncate w-full">{member.displayName}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">@{member.habboUsername}</p>
+                      </div>
 
-                  <Badge
-                    variant="outline"
-                    className={`text-[9px] ${ROLE_LABELS[member.role]?.color || "border-border text-muted-foreground"}`}
-                  >
-                    {ROLE_LABELS[member.role]?.label || member.role}
-                  </Badge>
+                      <Badge
+                        variant="outline"
+                        className={`text-[9px] ${ROLE_LABELS[member.role]?.color || "border-border text-muted-foreground"}`}
+                      >
+                        {ROLE_LABELS[member.role]?.label || member.role}
+                      </Badge>
 
-                  {member.motto && (
-                    <p className="text-[10px] text-muted-foreground italic line-clamp-2">"{member.motto}"</p>
-                  )}
-                </CardContent>
-              </Card>
+                      {member.motto && (
+                        <p className="text-[10px] text-muted-foreground italic line-clamp-2">"{member.motto}"</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </a>
+              </Link>
             ))}
       </div>
 

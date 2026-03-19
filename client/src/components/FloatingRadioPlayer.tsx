@@ -39,6 +39,12 @@ export default function FloatingRadioPlayer() {
     retry: false,
   });
 
+  const { data: djPanelData } = useQuery<any>({
+    queryKey: ["/api/dj-panel"],
+    refetchInterval: 15000,
+    retry: false,
+  });
+
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume / 100;
@@ -83,8 +89,8 @@ export default function FloatingRadioPlayer() {
 
   const song = nowPlaying?.now_playing?.song;
   const listeners = nowPlaying?.listeners?.current ?? 0;
-  const isLive = nowPlaying?.live?.is_live;
-  const djName = nowPlaying?.live?.streamer_name;
+  const djName = nowPlaying?.live?.streamer_name || djPanelData?.currentDj || "AutoDJ";
+  const isLive = nowPlaying?.live?.is_live || false;
 
   return (
     <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -92,28 +98,22 @@ export default function FloatingRadioPlayer() {
 
       {/* DJ Avatar + Info */}
       <div className="flex items-center gap-2 min-w-0 flex-1">
-        {djName && (
-          <div className="relative flex-shrink-0">
-            <img
-              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djName}&size=s&headonly=1`}
-              alt={djName}
-              className="w-8 h-8 rounded object-cover bg-secondary"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-            {isLive && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full live-indicator" />
-            )}
-          </div>
-        )}
+        <div className="relative flex-shrink-0">
+          <img
+            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djName}&size=s&headonly=1`}
+            alt={djName}
+            className="w-8 h-8 rounded object-cover bg-secondary"
+            onError={(e) => { (e.target as HTMLImageElement).src = "https://www.habbo.es/habbo-imaging/avatarimage?user=AutoDJ&size=s&headonly=1"; }}
+          />
+          {isLive && (
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full live-indicator" />
+          )}
+        </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <Radio className="w-3 h-3 text-primary flex-shrink-0" />
-            {isLive && djName ? (
-              <span className="text-xs text-primary font-medium truncate">{djName}</span>
-            ) : (
-              <span className="text-xs text-muted-foreground">HabboSpeed Radio</span>
-            )}
+            <span className="text-xs text-primary font-medium truncate">{djName}</span>
           </div>
           <p className="text-xs text-foreground truncate font-medium">
             {song?.artist && song?.title

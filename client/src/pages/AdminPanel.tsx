@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Newspaper, Calendar, Clock, Users, Shield, Plus, Trash2, Edit, Palette, Check } from "lucide-react";
+import { Settings, Newspaper, Calendar, Clock, Users, Shield, Plus, Trash2, Edit, Palette, Check, Radio, Headphones } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/hooks/useTheme";
 import type { Theme } from "@shared/schema";
@@ -24,6 +24,7 @@ const SECTIONS = [
   { id: "events", label: "Eventos", icon: Calendar },
   { id: "schedule", label: "Horarios", icon: Clock },
   { id: "users", label: "Usuarios", icon: Users },
+  { id: "dj", label: "Panel DJ", icon: Radio },
   { id: "config", label: "Configuración", icon: Settings },
 ];
 
@@ -434,6 +435,202 @@ function UsersAdmin() {
   );
 }
 
+// ============ DJ PANEL ADMIN ============
+function DjPanelAdmin() {
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const [djForm, setDjForm] = useState({ currentDj: "", nextDj: "", djMessage: "" });
+  const [loaded, setLoaded] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [pointsAmount, setPointsAmount] = useState("");
+
+  const { data: djPanel } = useQuery<any>({
+    queryKey: ["/api/dj-panel"],
+    retry: false,
+  });
+
+  const { data: requests } = useQuery<any[]>({
+    queryKey: ["/api/requests"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/requests", undefined, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    retry: false,
+  });
+
+  const { data: users } = useQuery<any[]>({
+    queryKey: ["/api/users"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/users", undefined, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+  });
+
+  if (djPanel && !loaded) {
+    setDjForm({
+      currentDj: djPanel.currentDj || "",
+      nextDj: djPanel.nextDj || "",
+      djMessage: djPanel.djMessage || "",
+    });
+    setLoaded(true);
+  }
+
+  const saveDjPanelMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("PUT", "/api/dj-panel", data, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/dj-panel"] });
+      toast({ title: "Panel DJ actualizado" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const givePointsMutation = useMutation({
+    mutationFn: async ({ id, amount }: { id: string; amount: number }) => {
+      const res = await apiRequest("PUT", `/api/users/${id}/points`, { amount }, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setPointsAmount("");
+      toast({ title: "SpeedPoints asignados" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteRequestMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await apiRequest("DELETE", `/api/requests/${id}`, undefined, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/requests"] });
+      toast({ title: "Solicitud eliminada" });
+    },
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* DJ Panel Header */}
+      <div className="flex items-center gap-2">
+        <Headphones className="w-5 h-5 text-primary" />
+        <h2 className="text-sm font-semibold">Panel DJ</h2>
+      </div>
+
+      {/* DJ Info Card */}
+      <div className="space-y-3 max-w-lg">
+        <div>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">DJ en antena ahora</Label>
+          <Input
+            placeholder="Nombre del DJ actual..."
+            value={djForm.currentDj}
+            onChange={(e) => setDjForm((p) => ({ ...p, currentDj: e.target.value }))}
+            data-testid="input-dj-current"
+          />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">Próximo DJ</Label>
+          <Input
+            placeholder="Nombre del próximo DJ..."
+            value={djForm.nextDj}
+            onChange={(e) => setDjForm((p) => ({ ...p, nextDj: e.target.value }))}
+            data-testid="input-dj-next"
+          />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">Mensaje del DJ</Label>
+          <Textarea
+            placeholder="Mensaje para los oyentes..."
+            rows={3}
+            value={djForm.djMessage}
+            onChange={(e) => setDjForm((p) => ({ ...p, djMessage: e.target.value }))}
+            data-testid="input-dj-message"
+          />
+        </div>
+        <Button
+          className="bg-primary hover:bg-primary/80 text-white text-xs"
+          onClick={() => saveDjPanelMutation.mutate(djForm)}
+          disabled={saveDjPanelMutation.isPending}
+          data-testid="button-save-dj-panel"
+        >
+          Guardar Panel DJ
+        </Button>
+      </div>
+
+      {/* Give SpeedPoints */}
+      <div className="space-y-3 max-w-lg border-t border-border pt-5">
+        <h3 className="text-xs font-semibold">Dar SpeedPoints</h3>
+        <div className="flex gap-2">
+          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+            <SelectTrigger className="flex-1 text-xs" data-testid="select-points-user">
+              <SelectValue placeholder="Selecciona usuario..." />
+            </SelectTrigger>
+            <SelectContent>
+              {(users || []).map((u: any) => (
+                <SelectItem key={u.id} value={String(u.id)} className="text-xs">
+                  {u.displayName} ({u.speedPoints || 0} pts)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            type="number"
+            placeholder="Puntos"
+            className="w-28"
+            value={pointsAmount}
+            onChange={(e) => setPointsAmount(e.target.value)}
+            data-testid="input-points-amount"
+          />
+          <Button
+            className="bg-primary hover:bg-primary/80 text-white text-xs"
+            onClick={() => {
+              if (selectedUserId && pointsAmount) {
+                givePointsMutation.mutate({ id: selectedUserId, amount: parseInt(pointsAmount) });
+              }
+            }}
+            disabled={givePointsMutation.isPending || !selectedUserId || !pointsAmount}
+            data-testid="button-give-points"
+          >
+            Dar Puntos
+          </Button>
+        </div>
+      </div>
+
+      {/* Song Requests */}
+      <div className="space-y-3 border-t border-border pt-5">
+        <h3 className="text-xs font-semibold">Solicitudes ({requests?.length || 0})</h3>
+        <div className="space-y-2">
+          {(requests || []).length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-4">No hay solicitudes pendientes</p>
+          )}
+          {(requests || []).map((req: any) => (
+            <div key={req.id} className="flex items-center justify-between bg-secondary/30 rounded-lg px-3 py-2 border border-border">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-[9px] border-primary/30 text-primary/80">{req.type}</Badge>
+                  <span className="text-xs font-medium">{req.userName}</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{req.details}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
+                onClick={() => deleteRequestMutation.mutate(req.id)}
+                data-testid={`button-delete-request-${req.id}`}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============ CONFIG ADMIN ============
 function ConfigAdmin() {
   const { token } = useAuth();
@@ -547,6 +744,11 @@ export default function AdminPanel() {
         <TabsContent value="users">
           <Card className="bg-card border-border">
             <CardContent className="p-5"><UsersAdmin /></CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="dj">
+          <Card className="bg-card border-border">
+            <CardContent className="p-5"><DjPanelAdmin /></CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="config">

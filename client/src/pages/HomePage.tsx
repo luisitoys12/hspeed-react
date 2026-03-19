@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight, Calendar, Zap, Star, TrendingUp, Users, Radio, Newspaper } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, Calendar, Zap, Star, TrendingUp, Users, Radio, Newspaper, Send, MessageSquare } from "lucide-react";
 import type { News, Event, Poll } from "@shared/schema";
 
 function HeroBanner({ slides }: { slides: any[] }) {
@@ -115,7 +118,7 @@ function BadgesMarquee() {
     queryFn: async () => {
       const res = await apiRequest("GET", "/api/habbo/badges/es?limit=30");
       const d = await res.json();
-      return Array.isArray(d) ? d : (d.data || []);
+      return Array.isArray(d) ? d : (d.badges || d.data || []);
     },
     retry: false,
     staleTime: 60000,
@@ -131,7 +134,7 @@ function BadgesMarquee() {
         {doubled.map((badge: any, i) => (
           <div key={i} className="flex-shrink-0 badge-hover">
             <img
-              src={`https://images.habbo.com/c_images/album1584/${badge.code || badge.badge_code}.gif`}
+              src={badge.url_habbo || badge.url_habboassets || `https://images.habbo.com/c_images/album1584/${badge.code || badge.badge_code}.gif`}
               alt={badge.name || badge.badge_name || badge.code}
               className="w-8 h-8 object-contain"
               onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}
@@ -224,6 +227,102 @@ function QuickStatsBar() {
         </div>
       ))}
     </div>
+  );
+}
+
+function HomeChat() {
+  const { user, token } = useAuth();
+  const [message, setMessage] = useState("");
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const { data: chatMessages } = useQuery<any[]>({
+    queryKey: ["/api/chat"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/chat?limit=50");
+      return res.json();
+    },
+    refetchInterval: 5000,
+    retry: false,
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: async (content: string) => {
+      const res = await apiRequest("POST", "/api/chat", { content }, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    onSuccess: () => {
+      setMessage("");
+      queryClient.invalidateQueries({ queryKey: ["/api/chat"] });
+    },
+  });
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  const handleSend = () => {
+    if (!message.trim()) return;
+    sendMutation.mutate(message.trim());
+  };
+
+  return (
+    <Card className="card-themed">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xs flex items-center gap-2">
+          <MessageSquare className="w-3.5 h-3.5 text-primary" />
+          Chat en Vivo
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-3 space-y-2">
+        <div className="h-48 overflow-y-auto space-y-1.5 pr-1" data-testid="chat-messages">
+          {(chatMessages || []).map((msg: any, i: number) => (
+            <div key={msg.id || i} className="flex items-start gap-1.5">
+              <img
+                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${msg.habboUsername || msg.userName || 'AutoDJ'}&size=s&headonly=1`}
+                alt={msg.displayName || msg.userName || ''}
+                className="w-5 h-5 rounded flex-shrink-0 bg-secondary"
+                onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+              />
+              <div className="min-w-0">
+                <span className="text-[10px] font-semibold text-primary mr-1">{msg.displayName || msg.userName || 'Anon'}</span>
+                <span className="text-[10px] text-foreground/80 break-words">{msg.content}</span>
+              </div>
+            </div>
+          ))}
+          {(!chatMessages || chatMessages.length === 0) && (
+            <p className="text-xs text-muted-foreground text-center py-6">Sin mensajes aún</p>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {user ? (
+          <div className="flex gap-2">
+            <Input
+              placeholder="Escribe un mensaje..."
+              className="text-xs h-8"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              data-testid="input-chat-message"
+              maxLength={200}
+            />
+            <Button
+              size="icon"
+              className="h-8 w-8 bg-primary hover:bg-primary/80 flex-shrink-0"
+              onClick={handleSend}
+              disabled={sendMutation.isPending || !message.trim()}
+              data-testid="button-chat-send"
+            >
+              <Send className="w-3 h-3" />
+            </Button>
+          </div>
+        ) : (
+          <p className="text-[10px] text-muted-foreground text-center">
+            <Link href="/login"><a className="text-primary hover:underline">Inicia sesión</a></Link> para chatear
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -378,6 +477,9 @@ export default function HomePage() {
                 ))}
               </CardContent>
             </Card>
+
+            {/* Home Chat */}
+            <HomeChat />
           </div>
         </div>
       </div>

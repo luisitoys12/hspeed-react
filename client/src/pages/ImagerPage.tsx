@@ -17,11 +17,29 @@ const SIZES = [
 ];
 
 const DIRECTIONS = [
-  { value: "2", label: "↗ Noreste" },
-  { value: "3", label: "→ Este" },
-  { value: "4", label: "↘ Sureste" },
-  { value: "6", label: "↙ Suroeste" },
-  { value: "7", label: "← Oeste" },
+  { value: "0", label: "0 ↑ Norte" },
+  { value: "1", label: "1 ↗ Noreste-N" },
+  { value: "2", label: "2 ↗ Noreste" },
+  { value: "3", label: "3 → Este" },
+  { value: "4", label: "4 ↘ Sureste" },
+  { value: "5", label: "5 ↓ Sur" },
+  { value: "6", label: "6 ↙ Suroeste" },
+  { value: "7", label: "7 ← Oeste" },
+];
+
+const GESTURES = [
+  { value: "", label: "Por defecto" },
+  { value: "std", label: "Estándar" },
+  { value: "wav", label: "Saludar (wav)" },
+  { value: "blw", label: "Soplar (blw)" },
+  { value: "agr", label: "Agredir (agr)" },
+  { value: "crr", label: "Correr (crr)" },
+  { value: "sad", label: "Triste (sad)" },
+  { value: "eyb", label: "Guiñar (eyb)" },
+  { value: "spk", label: "Hablar (spk)" },
+  { value: "snf", label: "Oler (snf)" },
+  { value: "drk", label: "Beber (drk)" },
+  { value: "eat", label: "Comer (eat)" },
 ];
 
 const HOTELS = [
@@ -37,6 +55,8 @@ export default function ImagerPage() {
   const [size, setSize] = useState("l");
   const [headOnly, setHeadOnly] = useState(false);
   const [direction, setDirection] = useState("3");
+  const [headDirection, setHeadDirection] = useState("3");
+  const [gesture, setGesture] = useState("");
   const [hotel, setHotel] = useState("es");
   const [generated, setGenerated] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -44,9 +64,15 @@ export default function ImagerPage() {
 
   const hotelDomain = hotel === "es" ? "habbo.es" : hotel === "com" ? "habbo.com" : hotel === "com.br" ? "habbo.com.br" : hotel === "de" ? "habbo.de" : "habbo.fr";
 
-  const imageUrl = username
-    ? `https://www.${hotelDomain}/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=${size}&headonly=${headOnly ? 1 : 0}&direction=${direction}`
-    : "";
+  const buildUrl = (s: string, hOnly: boolean = headOnly) => {
+    if (!username) return "";
+    let url = `https://www.${hotelDomain}/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=${s}&direction=${direction}&head_direction=${headDirection}`;
+    if (hOnly) url += "&headonly=1";
+    if (gesture) url += `&gesture=${gesture}`;
+    return url;
+  };
+
+  const imageUrl = username ? buildUrl(size) : "";
 
   const handleGenerate = () => {
     if (!username.trim()) return;
@@ -78,7 +104,7 @@ export default function ImagerPage() {
   // Preview all sizes
   const allSizePreviews = ["s", "m", "l", "b"].map((s) => ({
     size: s,
-    url: username ? `https://www.${hotelDomain}/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=${s}&headonly=${headOnly ? 1 : 0}&direction=${direction}` : "",
+    url: username ? buildUrl(s) : "",
   }));
 
   return (
@@ -88,6 +114,7 @@ export default function ImagerPage() {
         <h1 className="text-xl font-bold">Habbo Imager</h1>
       </div>
       <p className="text-sm text-muted-foreground">Genera imágenes de avatares de Habbo con diferentes opciones.</p>
+      <p className="text-xs text-yellow-400/80">⚠ Requiere que el perfil de Habbo sea público en el hotel seleccionado.</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Controls */}
@@ -135,7 +162,7 @@ export default function ImagerPage() {
               </div>
 
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Dirección</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Dirección del cuerpo</Label>
                 <Select value={direction} onValueChange={setDirection}>
                   <SelectTrigger data-testid="select-direction">
                     <SelectValue />
@@ -143,6 +170,34 @@ export default function ImagerPage() {
                   <SelectContent>
                     {DIRECTIONS.map((d) => (
                       <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Dirección de la cabeza</Label>
+                <Select value={headDirection} onValueChange={setHeadDirection}>
+                  <SelectTrigger data-testid="select-head-direction">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DIRECTIONS.map((d) => (
+                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Gesto / Acción</Label>
+                <Select value={gesture} onValueChange={setGesture}>
+                  <SelectTrigger data-testid="select-gesture">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GESTURES.map((g) => (
+                      <SelectItem key={g.value || "default"} value={g.value}>{g.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

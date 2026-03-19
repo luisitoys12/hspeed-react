@@ -1,12 +1,16 @@
 import { Link } from "wouter";
 import { useTheme } from "@/hooks/useTheme";
-import PerplexityAttribution from "@/components/PerplexityAttribution";
 
 const quickLinks = [
   { href: "/news", label: "Noticias" },
   { href: "/events", label: "Eventos" },
   { href: "/forum", label: "Foro" },
   { href: "/contact", label: "Contacto" },
+];
+
+const legalLinks = [
+  { href: "/legal", label: "Aviso Legal" },
+  { href: "/legal", label: "Privacidad" },
 ];
 
 export default function Footer() {
@@ -35,6 +39,9 @@ export default function Footer() {
             <p className="text-xs text-muted-foreground leading-relaxed">
               Tu fansite de Habbo favorita
             </p>
+            <p className="text-[10px] text-muted-foreground/70 leading-relaxed mt-1">
+              HabboSpeed es un fansite no oficial. No está afiliado, respaldado ni conectado con Sulake Corporation Oy. Habbo® es una marca registrada de Sulake Corporation Oy.
+            </p>
           </div>
 
           {/* Center: Quick links */}
@@ -44,7 +51,7 @@ export default function Footer() {
             </p>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {quickLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
+                <Link key={link.href + link.label} href={link.href}>
                   <a
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                     data-testid={`footer-link-${link.label.toLowerCase()}`}
@@ -56,11 +63,28 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Right: Disclaimer */}
-          <div className="flex flex-col items-start md:items-end gap-2">
-            <p className="text-[10px] text-muted-foreground/60 leading-relaxed md:text-right">
-              No estamos afiliados con Sulake Corporation Oy. Habbo es una marca registrada de Sulake.
+          {/* Right: Legal Links */}
+          <div className="flex flex-col items-start md:items-end gap-3">
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              Legal
             </p>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              <Link href="/legal">
+                <a className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  Aviso Legal
+                </a>
+              </Link>
+              <Link href="/legal">
+                <a className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  Política de Privacidad
+                </a>
+              </Link>
+              <Link href="/legal">
+                <a className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  Términos de Uso
+                </a>
+              </Link>
+            </div>
             {emoji && (
               <span className="text-xs opacity-20" aria-hidden="true">
                 {emoji} {emoji} {emoji}
@@ -68,11 +92,13 @@ export default function Footer() {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Perplexity Attribution */}
-      <div className="border-t border-border">
-        <PerplexityAttribution />
+        {/* Bottom copyright */}
+        <div className="border-t border-border mt-6 pt-4 text-center">
+          <p className="text-[10px] text-muted-foreground/60">
+            © 2026 HabboSpeed. Todos los derechos reservados.
+          </p>
+        </div>
       </div>
     </footer>
   );

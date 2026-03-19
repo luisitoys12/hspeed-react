@@ -383,4 +383,150 @@ export async function registerRoutes(server: Server, app: Express) {
       res.json(await r.json());
     } catch { res.status(500).json({ message: "Error al consultar radio" }); }
   });
+
+  // ============ DJ PANEL ============
+  app.get("/api/dj-panel", async (_req, res) => {
+    try {
+      res.json(await storage.getDjPanel());
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/dj-panel", adminMiddleware, async (req, res) => {
+    try {
+      const panel = await storage.updateDjPanel(req.body);
+      if (!panel) return res.status(404).json({ message: "Panel no encontrado" });
+      res.json(panel);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ CHAT ============
+  app.get("/api/chat", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      res.json(await storage.getChatMessages(limit));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/chat", authMiddleware, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.userId);
+      if (!user) return res.status(401).json({ message: "No autorizado" });
+      const msg = await storage.createChatMessage({
+        userId: user.id,
+        userName: user.displayName,
+        habboUsername: user.habboUsername || null,
+        message: req.body.message,
+      });
+      res.status(201).json(msg);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ PRIVATE MESSAGES ============
+  app.get("/api/messages", authMiddleware, async (req: any, res) => {
+    try {
+      res.json(await storage.getMessagesByUser(req.userId));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/messages/unread", authMiddleware, async (req: any, res) => {
+    try {
+      const count = await storage.getUnreadCount(req.userId);
+      res.json({ count });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/messages", authMiddleware, async (req: any, res) => {
+    try {
+      const msg = await storage.createPrivateMessage({
+        ...req.body,
+        fromUserId: req.userId,
+      });
+      res.status(201).json(msg);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/messages/:id/read", authMiddleware, async (req: any, res) => {
+    try {
+      const msg = await storage.markMessageRead(parseInt(req.params.id));
+      if (!msg) return res.status(404).json({ message: "Mensaje no encontrado" });
+      res.json(msg);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ VERIFIED BADGES ============
+  app.get("/api/verified-badges/:userId", async (req, res) => {
+    try {
+      res.json(await storage.getVerifiedBadges(parseInt(req.params.userId)));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/verified-badges/verify", authMiddleware, async (req: any, res) => {
+    try {
+      const { habboUsername, badgeCode } = req.body;
+      if (!habboUsername || !badgeCode) {
+        return res.status(400).json({ message: "habboUsername y badgeCode son requeridos" });
+      }
+      // Fetch from Habbo API to verify badge in selectedBadges
+      const r = await fetch(`https://www.habbo.es/api/public/users?name=${encodeURIComponent(habboUsername)}`);
+      if (!r.ok) return res.status(404).json({ message: "Usuario de Habbo no encontrado" });
+      const habboData = await r.json() as any;
+      const selectedBadges: any[] = habboData.selectedBadges || [];
+      const hasBadge = selectedBadges.some((b: any) => b.code === badgeCode || b.badgeIndex === badgeCode);
+      if (!hasBadge) {
+        return res.status(400).json({ message: "Badge no encontrado en el perfil de Habbo", verified: false });
+      }
+      const badge = await storage.createVerifiedBadge({ userId: req.userId, badgeCode });
+      res.status(201).json({ verified: true, badge });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ TEAM USERS (from registered users) ============
+  app.get("/api/team-users", async (_req, res) => {
+    try {
+      const users = await storage.getTeamUsers();
+      res.json(users.map((u: any) => ({ ...u, passwordHash: undefined })));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ SPEED POINTS (Admin) ============
+  app.put("/api/users/:id/points", adminMiddleware, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { points } = req.body;
+      if (points === undefined || isNaN(Number(points))) {
+        return res.status(400).json({ message: "Campo 'points' requerido" });
+      }
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+      const updated = await storage.updateUser(userId, {
+        speedPoints: (user.speedPoints ?? 0) + Number(points),
+      });
+      if (!updated) return res.status(404).json({ message: "Usuario no encontrado" });
+      res.json({ ...updated, passwordHash: undefined });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
 }

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +17,7 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  Mail,
 } from "lucide-react";
 
 const navItems = [
@@ -53,11 +56,23 @@ function NavLink({ href, label }: { href: string; label: string }) {
 export default function TopNavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, token } = useAuth();
   const { decorations } = useTheme();
   const [location] = useLocation();
 
   const emoji = decorations?.emoji || "";
+
+  const { data: unreadData } = useQuery<{ count: number }>({
+    queryKey: ["/api/messages/unread"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/messages/unread", undefined, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    enabled: !!user,
+    refetchInterval: 30000,
+    retry: false,
+  });
+  const unreadCount = unreadData?.count || 0;
 
   return (
     <nav
@@ -152,6 +167,26 @@ export default function TopNavBar() {
             {navItems.map((item) => (
               <NavLink key={item.href} {...item} />
             ))}
+            {user && (
+              <Link href="/messages">
+                <a
+                  className={cn(
+                    "nav-link-themed relative px-2.5 py-1.5 text-[11px] font-semibold tracking-wide transition-colors whitespace-nowrap",
+                    location.startsWith("/messages")
+                      ? "active text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  data-testid="nav-link-mensajes"
+                >
+                  MENSAJES
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-primary text-white text-[9px] rounded-full flex items-center justify-center px-1">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </a>
+              </Link>
+            )}
           </div>
 
           {/* Right section: Radio + User */}
@@ -167,6 +202,16 @@ export default function TopNavBar() {
             {/* User area */}
             {user ? (
               <div className="relative">
+                {unreadCount > 0 && (
+                  <Link href="/messages">
+                    <a className="relative flex-shrink-0 mr-1" data-testid="button-messages-badge">
+                      <Mail className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 bg-primary text-white text-[8px] rounded-full flex items-center justify-center px-0.5">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    </a>
+                  </Link>
+                )}
                 <button
                   className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-muted/50 transition-colors"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -223,6 +268,16 @@ export default function TopNavBar() {
                         >
                           <User className="w-3.5 h-3.5" />
                           Mi Perfil
+                        </a>
+                      </Link>
+                      <Link href="/messages">
+                        <a
+                          className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                          onClick={() => setUserMenuOpen(false)}
+                          data-testid="link-messages"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          Mensajes
                         </a>
                       </Link>
                       {isAdmin && (
@@ -326,6 +381,22 @@ export default function TopNavBar() {
                 </Link>
               );
             })}
+
+            {/* Messages link in mobile */}
+            {user && (
+              <Link href="/messages">
+                <a
+                  className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  onClick={() => setMobileMenuOpen(false)}
+                  data-testid="mobile-nav-mensajes"
+                >
+                  <span><Mail className="w-4 h-4 inline mr-2" />MENSAJES</span>
+                  {unreadCount > 0 && (
+                    <Badge className="bg-primary text-white text-[9px] py-0 px-1.5">{unreadCount > 9 ? "9+" : unreadCount}</Badge>
+                  )}
+                </a>
+              </Link>
+            )}
 
             {/* Admin link in mobile */}
             {isAdmin && (

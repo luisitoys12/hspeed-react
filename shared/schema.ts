@@ -232,3 +232,57 @@ export const teamMembers = pgTable("team_members", {
 export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({ id: true, joinedAt: true });
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
 export type TeamMember = typeof teamMembers.$inferSelect;
+
+// ============ DJ PANEL ============
+export const djPanel = pgTable("dj_panel", {
+  id: serial("id").primaryKey(),
+  currentDj: text("current_dj").default("AutoDJ"),
+  nextDj: text("next_dj").default(""),
+  djMessage: text("dj_message").default(""),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertDjPanelSchema = createInsertSchema(djPanel).omit({ id: true, updatedAt: true });
+export type InsertDjPanel = z.infer<typeof insertDjPanelSchema>;
+export type DjPanel = typeof djPanel.$inferSelect;
+
+// ============ CHAT MESSAGES ============
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  userName: text("user_name").notNull(),
+  habboUsername: text("habbo_username"),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ id: true, createdAt: true });
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+
+// ============ PRIVATE MESSAGES ============
+export const privateMessages = pgTable("private_messages", {
+  id: serial("id").primaryKey(),
+  fromUserId: integer("from_user_id").references(() => users.id).notNull(),
+  toUserId: integer("to_user_id").references(() => users.id).notNull(),
+  subject: text("subject").notNull().default(""),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrivateMessageSchema = createInsertSchema(privateMessages).omit({ id: true, createdAt: true });
+export type InsertPrivateMessage = z.infer<typeof insertPrivateMessageSchema>;
+export type PrivateMessage = typeof privateMessages.$inferSelect;
+
+// ============ VERIFIED BADGES ============
+export const verifiedBadges = pgTable("verified_badges", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  badgeCode: text("badge_code").notNull(),
+  verifiedAt: timestamp("verified_at").defaultNow(),
+});
+
+export const insertVerifiedBadgeSchema = createInsertSchema(verifiedBadges).omit({ id: true, verifiedAt: true });
+export type InsertVerifiedBadge = z.infer<typeof insertVerifiedBadgeSchema>;
+export type VerifiedBadge = typeof verifiedBadges.$inferSelect;

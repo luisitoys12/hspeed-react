@@ -32,12 +32,23 @@ export default function MarketplacePage() {
     if (search.trim()) setQuery(search.trim());
   };
 
-  const priceHistory = Array.isArray(data) ? data : (data?.history || data?.price_history || []);
-  const currentPrice = data?.currentPrice || data?.current_price || (priceHistory[priceHistory.length - 1]?.price);
-  const avgPrice = data?.avgPrice || data?.avg_price;
+  const item = Array.isArray(data) ? data[0] : data;
+  const furniName = item?.FurniName || item?.itemName || query;
+  const className = item?.ClassName || item?.className || query;
+  const avgPrice = item?.marketData?.averagePrice || item?.avgPrice || item?.avg_price;
+  const rawHistory = item?.marketData?.history || [];
+  const priceHistory = rawHistory.map((h: any) => ({
+    price: Array.isArray(h) ? h[0] : h.price,
+    amount: Array.isArray(h) ? h[1] : h.amount,
+    total: Array.isArray(h) ? h[2] : h.total,
+    offers: Array.isArray(h) ? h[3] : h.offers,
+    date: Array.isArray(h) ? new Date((h[4] || 0) * 1000).toLocaleDateString('es-MX') : (h.date || h.timestamp || '—'),
+  }));
+  const currentPrice = priceHistory.length > 0 ? priceHistory[priceHistory.length - 1]?.price : null;
+  const furniImageUrl = item?.Revision ? `https://images.habbo.com/dcr/hof_furni/${item.Revision}/${item.ClassName}_icon.png` : null;
 
   const trend = priceHistory.length >= 2
-    ? priceHistory[priceHistory.length - 1]?.price > priceHistory[0]?.price ? "up" : "down"
+    ? (priceHistory[priceHistory.length - 1]?.price || 0) > (priceHistory[0]?.price || 0) ? "up" : "down"
     : null;
 
   return (
@@ -107,17 +118,17 @@ export default function MarketplacePage() {
           <Card className="bg-card border-border">
             <CardContent className="p-5">
               <div className="flex items-start gap-4">
-                {data.imageUrl && (
+                {furniImageUrl && (
                   <img
-                    src={data.imageUrl}
-                    alt={data.itemName || query}
+                    src={furniImageUrl}
+                    alt={furniName}
                     className="w-16 h-16 object-contain bg-secondary/50 rounded-lg p-2"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                   />
                 )}
                 <div className="flex-1">
-                  <h2 className="text-lg font-bold">{data.itemName || query}</h2>
-                  <p className="text-xs text-muted-foreground font-mono">{data.className || query}</p>
+                  <h2 className="text-lg font-bold">{furniName}</h2>
+                  <p className="text-xs text-muted-foreground font-mono">{className}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge variant="outline" className="border-primary/30 text-primary/80 text-xs">
                       Hotel: .{hotel}
@@ -179,7 +190,7 @@ export default function MarketplacePage() {
                     <tbody>
                       {priceHistory.slice(-20).reverse().map((entry: any, i: number) => (
                         <tr key={i} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
-                          <td className="py-2 text-muted-foreground">{entry.date || entry.timestamp || "—"}</td>
+                          <td className="py-2 text-muted-foreground">{entry.date || "—"}</td>
                           <td className="py-2 text-right font-mono text-yellow-400">
                             {entry.price?.toLocaleString() || "—"} 🪙
                           </td>

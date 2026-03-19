@@ -30,7 +30,7 @@ export default function BadgesPage() {
     queryFn: async () => {
       const res = await apiRequest("GET", `/api/habbo/badges/${hotel}?limit=100`);
       const d = await res.json();
-      return Array.isArray(d) ? d : (d.data || d.items || []);
+      return Array.isArray(d) ? d : (d.badges || d.data || d.items || []);
     },
     staleTime: 120000,
     retry: false,
@@ -112,7 +112,7 @@ export default function BadgesPage() {
               const code = badge.code || badge.badge_code || "";
               const name = badge.name || badge.badge_name || code;
               const description = badge.description || badge.badge_description || "";
-              const imgUrl = badge.imageUrl || badge.image_url || `https://images.habbo.com/c_images/album1584/${code}.gif`;
+              const imgUrl = badge.url_habbo || badge.url_habboassets || badge.imageUrl || badge.image_url || `https://images.habbo.com/c_images/album1584/${code}.gif`;
 
               return (
                 <Tooltip key={`${code}-${i}`}>

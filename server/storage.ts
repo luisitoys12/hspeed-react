@@ -97,6 +97,27 @@ export interface IStorage {
   createTheme(theme: InsertTheme): Promise<Theme>;
   updateTheme(id: number, data: Partial<InsertTheme>): Promise<Theme | undefined>;
   setActiveTheme(slug: string): Promise<Config | undefined>;
+
+  // DJ Panel
+  getDjPanel(): Promise<any>;
+  updateDjPanel(data: any): Promise<any>;
+
+  // Chat Messages
+  getChatMessages(limit?: number): Promise<any[]>;
+  createChatMessage(data: any): Promise<any>;
+
+  // Private Messages
+  getMessagesByUser(userId: number): Promise<any[]>;
+  getUnreadCount(userId: number): Promise<number>;
+  createPrivateMessage(data: any): Promise<any>;
+  markMessageRead(id: number): Promise<any>;
+
+  // Verified Badges
+  getVerifiedBadges(userId: number): Promise<any[]>;
+  createVerifiedBadge(data: any): Promise<any>;
+
+  // Team from Users
+  getTeamUsers(): Promise<any[]>;
 }
 
 // Helper to map snake_case DB rows to camelCase TypeScript objects
@@ -617,5 +638,168 @@ export class SupabaseStorage implements IStorage {
     const theme = await this.getThemeBySlug(slug);
     if (!theme) return undefined;
     return this.updateConfig({ activeTheme: slug });
+  }
+
+  // DJ Panel
+  async getDjPanel() {
+    const r = await this.query('SELECT * FROM dj_panel ORDER BY id LIMIT 1');
+    if (!r.rows[0]) return null;
+    const row = r.rows[0];
+    return {
+      id: row.id,
+      currentDj: row.current_dj,
+      nextDj: row.next_dj,
+      djMessage: row.dj_message,
+      updatedAt: row.updated_at,
+    };
+  }
+  async updateDjPanel(data: any) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.currentDj !== undefined) { fields.push(`current_dj = $${i++}`); values.push(data.currentDj); }
+    if (data.nextDj !== undefined) { fields.push(`next_dj = $${i++}`); values.push(data.nextDj); }
+    if (data.djMessage !== undefined) { fields.push(`dj_message = $${i++}`); values.push(data.djMessage); }
+    fields.push(`updated_at = NOW()`);
+    if (values.length === 0) return this.getDjPanel();
+    const r = await this.query(
+      `UPDATE dj_panel SET ${fields.join(', ')} WHERE id = (SELECT id FROM dj_panel ORDER BY id LIMIT 1) RETURNING *`,
+      values
+    );
+    if (!r.rows[0]) return null;
+    const row = r.rows[0];
+    return {
+      id: row.id,
+      currentDj: row.current_dj,
+      nextDj: row.next_dj,
+      djMessage: row.dj_message,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  // Chat Messages
+  async getChatMessages(limit: number = 50) {
+    const r = await this.query(
+      'SELECT * FROM chat_messages ORDER BY created_at DESC LIMIT $1',
+      [limit]
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      userName: row.user_name,
+      habboUsername: row.habbo_username,
+      message: row.message,
+      createdAt: row.created_at,
+    })).reverse();
+  }
+  async createChatMessage(data: any) {
+    const r = await this.query(
+      `INSERT INTO chat_messages (user_id, user_name, habbo_username, message)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [data.userId || null, data.userName, data.habboUsername || null, data.message]
+    );
+    const row = r.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      userName: row.user_name,
+      habboUsername: row.habbo_username,
+      message: row.message,
+      createdAt: row.created_at,
+    };
+  }
+
+  // Private Messages
+  async getMessagesByUser(userId: number) {
+    const r = await this.query(
+      'SELECT * FROM private_messages WHERE to_user_id = $1 OR from_user_id = $1 ORDER BY created_at DESC',
+      [userId]
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      fromUserId: row.from_user_id,
+      toUserId: row.to_user_id,
+      subject: row.subject,
+      content: row.content,
+      isRead: row.is_read,
+      createdAt: row.created_at,
+    }));
+  }
+  async getUnreadCount(userId: number) {
+    const r = await this.query(
+      'SELECT COUNT(*) AS count FROM private_messages WHERE to_user_id = $1 AND is_read = false',
+      [userId]
+    );
+    return parseInt(r.rows[0]?.count ?? '0', 10);
+  }
+  async createPrivateMessage(data: any) {
+    const r = await this.query(
+      `INSERT INTO private_messages (from_user_id, to_user_id, subject, content, is_read)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [data.fromUserId, data.toUserId, data.subject || '', data.content, false]
+    );
+    const row = r.rows[0];
+    return {
+      id: row.id,
+      fromUserId: row.from_user_id,
+      toUserId: row.to_user_id,
+      subject: row.subject,
+      content: row.content,
+      isRead: row.is_read,
+      createdAt: row.created_at,
+    };
+  }
+  async markMessageRead(id: number) {
+    const r = await this.query(
+      'UPDATE private_messages SET is_read = true WHERE id = $1 RETURNING *',
+      [id]
+    );
+    if (!r.rows[0]) return null;
+    const row = r.rows[0];
+    return {
+      id: row.id,
+      fromUserId: row.from_user_id,
+      toUserId: row.to_user_id,
+      subject: row.subject,
+      content: row.content,
+      isRead: row.is_read,
+      createdAt: row.created_at,
+    };
+  }
+
+  // Verified Badges
+  async getVerifiedBadges(userId: number) {
+    const r = await this.query(
+      'SELECT * FROM verified_badges WHERE user_id = $1 ORDER BY verified_at DESC',
+      [userId]
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      badgeCode: row.badge_code,
+      verifiedAt: row.verified_at,
+    }));
+  }
+  async createVerifiedBadge(data: any) {
+    const r = await this.query(
+      `INSERT INTO verified_badges (user_id, badge_code)
+       VALUES ($1, $2) RETURNING *`,
+      [data.userId, data.badgeCode]
+    );
+    const row = r.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      badgeCode: row.badge_code,
+      verifiedAt: row.verified_at,
+    };
+  }
+
+  // Team from Users
+  async getTeamUsers() {
+    const r = await this.query(
+      "SELECT * FROM users WHERE role IN ('admin', 'dj') AND approved = true ORDER BY role, display_name"
+    );
+    return r.rows.map(mapUser);
   }
 }
