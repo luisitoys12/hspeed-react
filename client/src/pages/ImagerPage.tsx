@@ -28,7 +28,7 @@ const DIRECTIONS = [
 ];
 
 const GESTURES = [
-  { value: "", label: "Por defecto" },
+  { value: "none", label: "Por defecto" },
   { value: "std", label: "Estándar" },
   { value: "wav", label: "Saludar (wav)" },
   { value: "blw", label: "Soplar (blw)" },
@@ -56,7 +56,7 @@ export default function ImagerPage() {
   const [headOnly, setHeadOnly] = useState(false);
   const [direction, setDirection] = useState("3");
   const [headDirection, setHeadDirection] = useState("3");
-  const [gesture, setGesture] = useState("");
+  const [gesture, setGesture] = useState("none");
   const [hotel, setHotel] = useState("es");
   const [generated, setGenerated] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ export default function ImagerPage() {
     if (!username) return "";
     let url = `https://www.${hotelDomain}/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=${s}&direction=${direction}&head_direction=${headDirection}`;
     if (hOnly) url += "&headonly=1";
-    if (gesture) url += `&gesture=${gesture}`;
+    if (gesture && gesture !== "none") url += `&gesture=${gesture}`;
     return url;
   };
 

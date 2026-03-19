@@ -1,10 +1,11 @@
-import { Router, Route, Switch } from "wouter";
+import { Router, Route, Switch, useLocation } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import TopNavBar from "@/components/TopNavBar";
 import ThemeDecoBar from "@/components/ThemeDecoBar";
 import ThemeParticles from "@/components/ThemeParticles";
@@ -33,6 +34,9 @@ import LegalPage from "@/pages/LegalPage";
 import NotFound from "@/pages/not-found";
 
 function Layout() {
+  const [location] = useLocation();
+  usePageTitle(location);
+
   return (
     <div className="dark min-h-screen flex flex-col bg-background">
       <TopNavBar />

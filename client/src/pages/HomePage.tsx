@@ -2,151 +2,466 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Calendar, Zap, Star, TrendingUp, Users, Radio, Newspaper, Send, MessageSquare } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Zap,
+  Star,
+  TrendingUp,
+  Users,
+  Radio,
+  Newspaper,
+  Send,
+  MessageSquare,
+  Headphones,
+  Music,
+  Award,
+  ExternalLink,
+  Clock,
+  ArrowRight,
+} from "lucide-react";
 import type { News, Event, Poll } from "@shared/schema";
 
+/* ======================================
+   DJ INFO BAR — inspired by HabboRadio top bar
+   Shows current DJ, next DJ, listeners
+   ====================================== */
+function DJInfoBar() {
+  const { data: djPanel } = useQuery<any>({
+    queryKey: ["/api/dj-panel"],
+    refetchInterval: 15000,
+    retry: false,
+  });
+
+  const currentDj = djPanel?.currentDj || "AutoDJ";
+  const nextDj = djPanel?.nextDj || "";
+  const djMessage = djPanel?.djMessage || "";
+
+  return (
+    <div className="bg-gradient-to-r from-primary/20 via-card to-primary/20 border border-border rounded-xl overflow-hidden" data-testid="dj-info-bar">
+      <div className="flex items-center gap-4 px-4 py-3">
+        {/* Current DJ */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="relative">
+            <img
+              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDj}&size=b&headonly=1`}
+              alt={currentDj}
+              className="w-11 h-11 rounded-lg bg-secondary/50"
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+            />
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full border-2 border-card animate-pulse" />
+          </div>
+          <div>
+            <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">DJ Actual</p>
+            <p className="text-sm font-bold text-foreground">{currentDj}</p>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-8 w-px bg-border hidden sm:block" />
+
+        {/* Next DJ */}
+        {nextDj && (
+          <>
+            <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+              <div>
+                <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">Siguiente</p>
+                <p className="text-xs font-semibold text-foreground">{nextDj}</p>
+              </div>
+            </div>
+            <div className="h-8 w-px bg-border hidden md:block" />
+          </>
+        )}
+
+        {/* DJ Message — scrolling marquee style */}
+        {djMessage && (
+          <div className="flex-1 min-w-0 overflow-hidden hidden md:block">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-3 h-3 text-primary flex-shrink-0" />
+              <p className="text-xs text-muted-foreground truncate italic">"{djMessage}"</p>
+            </div>
+          </div>
+        )}
+
+        {/* Live indicator */}
+        <div className="ml-auto flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/15 border border-red-500/30">
+            <Radio className="w-3 h-3 text-red-400" />
+            <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">En Vivo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ======================================
+   HERO BANNER — Large visual banner
+   ====================================== */
 function HeroBanner({ slides }: { slides: any[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { theme, decorations, colors } = useTheme();
 
   const defaultSlides = [
     { title: "Bienvenido a HabboSpeed", subtitle: "La radio y fansite #1 de la comunidad Habbo en español", cta: { text: "Explorar", href: "/news" } },
     { title: "Eventos en vivo", subtitle: "Participa en nuestros eventos semanales y gana premios increíbles", cta: { text: "Ver Eventos", href: "/events" } },
-    { title: "Comunidad activa", subtitle: "Únete a miles de jugadores en nuestro foro", cta: { text: "Ir al Foro", href: "/forum" } },
+    { title: "Únete al equipo", subtitle: "¿Eres DJ, periodista o diseñador? Tenemos un lugar para ti", cta: { text: "Ver Equipo", href: "/team" } },
   ];
 
-  const displaySlides = (slides && slides.length > 0) ? slides : defaultSlides;
+  const displaySlides = slides?.length > 0 ? slides : defaultSlides;
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % displaySlides.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [displaySlides.length]);
 
   const slide = displaySlides[currentSlide];
-  const emoji = decorations?.emoji || "⚡";
-  const themeName = theme?.name || "HabboSpeed";
 
   return (
-    <div className="relative h-64 sm:h-72 rounded-2xl overflow-hidden glow-themed" data-testid="hero-banner">
-      {/* Gradient background */}
-      <div className="absolute inset-0 bg-theme-gradient opacity-90" />
-      
-      {/* Pattern overlay */}
-      <div className={`absolute inset-0 bg-pattern-${decorations?.pattern || 'grid'} opacity-40`} />
-      
-      {/* Shimmer */}
-      <div className="absolute inset-0 shimmer-bg" />
+    <div className="relative h-48 sm:h-56 rounded-xl overflow-hidden group" data-testid="hero-banner">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/80 to-violet-600" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M0%200h4v4H0zM20%200h4v4h-4zM0%2020h4v4H0zM20%2020h4v4h-4z%22%20fill%3D%22rgba(255%2C255%2C255%2C0.04)%22%2F%3E%3C%2Fsvg%3E')] opacity-60" />
 
-      {/* Image if available */}
       {slide.imageUrl && (
-        <img src={slide.imageUrl} alt={slide.title} className="absolute inset-0 w-full h-full object-cover opacity-20" />
+        <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay" />
       )}
 
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center px-6 sm:px-10">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-2xl">{emoji}</span>
-          <span className="font-pixel text-[8px] text-white/70 uppercase tracking-wider">{themeName}</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 drop-shadow-lg max-w-lg">
-          {slide.title}
-        </h1>
-        <p className="text-sm sm:text-base text-white/80 max-w-md leading-relaxed">
-          {slide.subtitle}
-        </p>
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1.5 max-w-lg drop-shadow-md">{slide.title}</h1>
+        <p className="text-sm text-white/75 max-w-md leading-relaxed">{slide.subtitle}</p>
         {slide.cta && (
-          <Link href={slide.cta.href || slide.href || "/"}>
-            <a className="mt-4 inline-flex items-center gap-2 text-xs font-semibold bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-5 py-2.5 rounded-lg transition-all border border-white/20" data-testid="button-hero-cta">
-              {slide.cta.text || "Ver más"} <ChevronRight className="w-3.5 h-3.5" />
+          <Link href={slide.cta.href || "/"}>
+            <a className="mt-4 inline-flex items-center gap-2 text-xs font-semibold bg-white/15 hover:bg-white/25 backdrop-blur text-white px-4 py-2 rounded-lg transition-all border border-white/20" data-testid="button-hero-cta">
+              {slide.cta.text || "Ver más"} <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </Link>
         )}
       </div>
 
-      {/* Decorative emojis */}
-      {decorations?.accentEmojis && (
-        <div className="absolute right-6 top-6 hidden sm:flex flex-col gap-2 opacity-30">
-          {decorations.accentEmojis.slice(0, 3).map((e, i) => (
-            <span key={i} className="text-2xl" style={{ animationDelay: `${i * 0.3}s` }}>{e}</span>
-          ))}
-        </div>
-      )}
-
-      {/* Navigation dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-        {displaySlides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentSlide(i)}
-            className={`h-1.5 rounded-full transition-all ${i === currentSlide ? "bg-white w-6" : "bg-white/30 w-1.5"}`}
-            data-testid={`button-slide-${i}`}
-          />
+      {/* Dots */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+        {displaySlides.map((_: any, i: number) => (
+          <button key={i} onClick={() => setCurrentSlide(i)} className={`h-1 rounded-full transition-all ${i === currentSlide ? "bg-white w-5" : "bg-white/30 w-1.5"}`} data-testid={`button-slide-${i}`} />
         ))}
       </div>
 
-      {/* Arrow controls */}
-      <button
-        onClick={() => setCurrentSlide((prev) => (prev - 1 + displaySlides.length) % displaySlides.length)}
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white transition-colors"
-        data-testid="button-slide-prev"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
-      <button
-        onClick={() => setCurrentSlide((prev) => (prev + 1) % displaySlides.length)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white transition-colors"
-        data-testid="button-slide-next"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
+      {/* Arrows */}
+      <button onClick={() => setCurrentSlide((prev) => (prev - 1 + displaySlides.length) % displaySlides.length)} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity" data-testid="button-slide-prev"><ChevronLeft className="w-4 h-4" /></button>
+      <button onClick={() => setCurrentSlide((prev) => (prev + 1) % displaySlides.length)} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity" data-testid="button-slide-next"><ChevronRight className="w-4 h-4" /></button>
     </div>
   );
 }
 
-function BadgesMarquee() {
+/* ======================================
+   MESSAGE BOARD — HabboRadio-style rolling messages
+   This IS the chat - prominent and visible
+   ====================================== */
+function MessageBoard() {
+  const { user, token } = useAuth();
+  const { toast } = useToast();
+  const [message, setMessage] = useState("");
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const { data: chatMessages, isError } = useQuery<any[]>({
+    queryKey: ["/api/chat"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/chat?limit=30");
+      return res.json();
+    },
+    refetchInterval: 4000,
+    retry: 2,
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: async (content: string) => {
+      const res = await apiRequest("POST", "/api/chat", { content }, token ? `Bearer ${token}` : undefined);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Error al enviar" }));
+        throw new Error(err.message || "Error al enviar mensaje");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      setMessage("");
+      queryClient.invalidateQueries({ queryKey: ["/api/chat"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  const handleSend = () => {
+    if (!message.trim()) return;
+    sendMutation.mutate(message.trim());
+  };
+
+  return (
+    <div className="bg-card border border-border rounded-xl overflow-hidden" data-testid="message-board">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/30">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          <span className="text-xs font-bold uppercase tracking-wider">Chat en Vivo</span>
+          <span className="text-[10px] text-muted-foreground">({(chatMessages || []).length} mensajes)</span>
+        </div>
+        {user && (
+          <div className="flex items-center gap-1.5">
+            {user.habboUsername && (
+              <img
+                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`}
+                alt=""
+                className="w-5 h-5 rounded"
+              />
+            )}
+            <span className="text-[10px] text-muted-foreground">{user.displayName}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Messages */}
+      <div className="h-44 overflow-y-auto px-3 py-2 space-y-1" data-testid="chat-messages">
+        {(chatMessages || []).map((msg: any, i: number) => (
+          <div key={msg.id || i} className="flex items-start gap-2 py-1 hover:bg-secondary/20 rounded px-1 transition-colors">
+            <img
+              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${msg.habboUsername || msg.userName || 'AutoDJ'}&size=s&headonly=1`}
+              alt=""
+              className="w-6 h-6 rounded flex-shrink-0 bg-secondary/50 mt-0.5"
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+            />
+            <div className="min-w-0">
+              <span className="text-[11px] font-bold text-primary mr-1.5">{msg.userName || 'Anon'}:</span>
+              <span className="text-[11px] text-foreground/85 break-words">{msg.message || msg.content}</span>
+            </div>
+            {msg.createdAt && (
+              <span className="text-[8px] text-muted-foreground/50 ml-auto flex-shrink-0 mt-1">
+                {new Date(msg.createdAt).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+          </div>
+        ))}
+        {(!chatMessages || chatMessages.length === 0) && !isError && (
+          <div className="flex items-center justify-center h-full text-muted-foreground">
+            <p className="text-xs">Sé el primero en escribir</p>
+          </div>
+        )}
+        {isError && (
+          <div className="flex items-center justify-center h-full text-muted-foreground">
+            <p className="text-xs text-red-400">Error al cargar mensajes</p>
+          </div>
+        )}
+        <div ref={chatEndRef} />
+      </div>
+
+      {/* Input */}
+      <div className="border-t border-border px-3 py-2.5 bg-secondary/20">
+        {user ? (
+          <div className="flex gap-2">
+            <Input
+              placeholder="Escribe un mensaje..."
+              className="text-xs h-8 bg-background/50 border-border/50 focus:border-primary/50"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              maxLength={200}
+              data-testid="input-chat-message"
+            />
+            <Button
+              size="icon"
+              className="h-8 w-8 bg-primary hover:bg-primary/80 flex-shrink-0"
+              onClick={handleSend}
+              disabled={sendMutation.isPending || !message.trim()}
+              data-testid="button-chat-send"
+            >
+              <Send className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground text-center py-0.5">
+            <Link href="/login"><a className="text-primary hover:underline font-medium">Inicia sesión</a></Link> para chatear
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ======================================
+   NEWS GRID — card-based news display
+   ====================================== */
+function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="bg-card border border-border rounded-xl overflow-hidden">
+            <Skeleton className="h-32" />
+            <div className="p-3 space-y-2">
+              <Skeleton className="h-3 w-3/4" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (news.length === 0) {
+    return <p className="text-sm text-muted-foreground text-center py-8">No hay noticias aún</p>;
+  }
+
+  // First news item is featured (large), rest are normal
+  const featured = news[0];
+  const rest = news.slice(1, 5);
+
+  return (
+    <div className="space-y-3">
+      {/* Featured news */}
+      <Link href={`/news/${featured.id}`}>
+        <a className="block group" data-testid={`card-news-featured-${featured.id}`}>
+          <div className="relative bg-card border border-border rounded-xl overflow-hidden">
+            {featured.imageUrl && (
+              <div className="h-44 sm:h-52 overflow-hidden">
+                <img src={featured.imageUrl} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <Badge className="bg-primary/90 text-white border-0 text-[9px] mb-2">{featured.category}</Badge>
+              <h3 className="text-base sm:text-lg font-bold text-white leading-tight group-hover:text-primary/90 transition-colors">{featured.title}</h3>
+              <p className="text-xs text-white/60 mt-1 line-clamp-1">{featured.summary}</p>
+              <div className="flex items-center gap-3 mt-2">
+                <span className="text-[10px] text-white/40">{featured.date}</span>
+                <span className="text-[10px] text-primary font-medium">Leer más →</span>
+              </div>
+            </div>
+          </div>
+        </a>
+      </Link>
+
+      {/* Rest as grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {rest.map((article) => (
+          <Link href={`/news/${article.id}`} key={article.id}>
+            <a className="block group" data-testid={`card-news-${article.id}`}>
+              <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/30 transition-colors h-full">
+                {article.imageUrl && (
+                  <div className="h-28 overflow-hidden">
+                    <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }} />
+                  </div>
+                )}
+                <div className="p-3">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Badge variant="outline" className="text-[8px] border-primary/20 text-primary/70 py-0 px-1.5">{article.category}</Badge>
+                    <span className="text-[9px] text-muted-foreground">{article.date}</span>
+                  </div>
+                  <h3 className="text-xs font-semibold leading-snug group-hover:text-primary transition-colors line-clamp-2">{article.title}</h3>
+                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">{article.summary}</p>
+                </div>
+              </div>
+            </a>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================================
+   BADGES STRIP — scrolling badges display
+   ====================================== */
+function BadgesStrip() {
   const { data: badges } = useQuery<any[]>({
     queryKey: ["/api/habbo/badges/es"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/habbo/badges/es?limit=30");
+      const res = await apiRequest("GET", "/api/habbo/badges/es?limit=24");
       const d = await res.json();
       return Array.isArray(d) ? d : (d.badges || d.data || []);
     },
     retry: false,
-    staleTime: 60000,
+    staleTime: 120000,
   });
 
   if (!badges || badges.length === 0) return null;
 
-  const doubled = [...badges, ...badges];
-
   return (
-    <div className="overflow-hidden relative">
-      <div className="flex gap-3 animate-marquee" style={{ width: "max-content" }}>
-        {doubled.map((badge: any, i) => (
-          <div key={i} className="flex-shrink-0 badge-hover">
+    <div className="bg-card border border-border rounded-xl overflow-hidden" data-testid="badges-strip">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-secondary/20">
+        <Star className="w-3.5 h-3.5 text-yellow-400" />
+        <span className="text-xs font-bold uppercase tracking-wider">Últimas Placas</span>
+        <Link href="/badges"><a className="text-[10px] text-primary ml-auto hover:underline">Ver todas →</a></Link>
+      </div>
+      <div className="px-3 py-3 overflow-hidden">
+        <div className="flex gap-2 animate-marquee" style={{ width: "max-content" }}>
+          {[...badges, ...badges].map((badge: any, i: number) => (
             <img
+              key={i}
               src={badge.url_habbo || badge.url_habboassets || `https://images.habbo.com/c_images/album1584/${badge.code || badge.badge_code}.gif`}
-              alt={badge.name || badge.badge_name || badge.code}
-              className="w-8 h-8 object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}
+              alt={badge.name || badge.code || ""}
+              className="w-9 h-9 object-contain flex-shrink-0 hover:scale-110 transition-transform cursor-pointer"
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.15"; }}
             />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-function PollCard({ poll }: { poll: Poll }) {
+/* ======================================
+   EVENTS SIDEBAR
+   ====================================== */
+function EventsSidebar({ events, loading }: { events: Event[]; loading: boolean }) {
+  return (
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
+        <Calendar className="w-3.5 h-3.5 text-primary" />
+        <span className="text-xs font-bold uppercase tracking-wider">Próximos Eventos</span>
+        <Link href="/events"><a className="text-[10px] text-primary ml-auto hover:underline">Ver más →</a></Link>
+      </div>
+      <div className="p-3 space-y-2">
+        {loading ? (
+          Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />)
+        ) : events.length > 0 ? (
+          events.slice(0, 3).map((event) => (
+            <div key={event.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/20 border border-border/40 hover:border-primary/20 transition-colors" data-testid={`card-event-${event.id}`}>
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex flex-col items-center justify-center flex-shrink-0">
+                <Calendar className="w-3.5 h-3.5 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold truncate">{event.title}</p>
+                <p className="text-[10px] text-primary">{event.date} · {event.time}</p>
+                <p className="text-[9px] text-muted-foreground truncate">{event.roomName}</p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-xs text-muted-foreground text-center py-4">No hay eventos próximos</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ======================================
+   POLL WIDGET
+   ====================================== */
+function PollWidget({ poll }: { poll: Poll }) {
   const [voted, setVoted] = useState<number | null>(null);
   const options = (poll.options as any[]) || [];
   const totalVotes = options.reduce((sum: number, opt: any) => sum + (opt.votes || 0), 0);
@@ -165,64 +480,89 @@ function PollCard({ poll }: { poll: Poll }) {
   });
 
   return (
-    <Card className="card-themed">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Zap className="w-4 h-4 text-yellow-400" />
-          {poll.title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
+        <Zap className="w-3.5 h-3.5 text-yellow-400" />
+        <span className="text-xs font-bold uppercase tracking-wider">Encuesta</span>
+      </div>
+      <div className="p-3 space-y-2">
+        <p className="text-xs font-semibold mb-2">{poll.title}</p>
         {options.map((opt: any, i: number) => {
           const pct = totalVotes > 0 ? Math.round((opt.votes || 0) / totalVotes * 100) : 0;
-          const isVoted = voted === i;
           return (
             <button
               key={i}
-              className={`w-full text-left px-3 py-2 rounded-lg text-xs border transition-all ${
-                voted !== null
-                  ? "cursor-default"
-                  : "hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
-              } ${isVoted ? "border-primary bg-primary/10" : "border-border bg-secondary/10"}`}
+              className={`w-full text-left px-3 py-2 rounded-lg text-xs border transition-all ${voted !== null ? "cursor-default" : "hover:border-primary/40 hover:bg-primary/5 cursor-pointer"} ${voted === i ? "border-primary bg-primary/10" : "border-border/50 bg-secondary/10"}`}
               onClick={() => voted === null && voteMutation.mutate(i)}
               disabled={voted !== null}
               data-testid={`button-poll-option-${i}`}
             >
-              <div className="flex justify-between mb-1">
+              <div className="flex justify-between mb-0.5">
                 <span>{opt.name || opt.text || opt.label}</span>
-                {voted !== null && <span className="text-muted-foreground">{pct}%</span>}
+                {voted !== null && <span className="text-muted-foreground text-[10px]">{pct}%</span>}
               </div>
               {voted !== null && (
-                <div className="h-1 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
-                </div>
+                <div className="h-1 bg-muted rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} /></div>
               )}
             </button>
           );
         })}
-        <p className="text-xs text-muted-foreground">{totalVotes} votos en total</p>
-      </CardContent>
-    </Card>
+        <p className="text-[10px] text-muted-foreground text-center">{totalVotes} votos</p>
+      </div>
+    </div>
   );
 }
 
-function QuickStatsBar() {
-  const { decorations } = useTheme();
-  const emoji = decorations?.emoji || "⚡";
+/* ======================================
+   QUICK TOOLS — HabboFans-style tools grid
+   ====================================== */
+function QuickTools() {
+  const tools = [
+    { href: "/imager", label: "Habbo Imager", icon: <Users className="w-4 h-4" />, color: "text-cyan-400" },
+    { href: "/badges", label: "Buscador Placas", icon: <Award className="w-4 h-4" />, color: "text-yellow-400" },
+    { href: "/marketplace", label: "Marketplace", icon: <TrendingUp className="w-4 h-4" />, color: "text-green-400" },
+    { href: "/schedule", label: "Programación", icon: <Radio className="w-4 h-4" />, color: "text-red-400" },
+    { href: "/forum", label: "Foro", icon: <MessageSquare className="w-4 h-4" />, color: "text-violet-400" },
+    { href: "/djpanel", label: "Panel DJ", icon: <Headphones className="w-4 h-4" />, color: "text-primary" },
+  ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
+        <Zap className="w-3.5 h-3.5 text-primary" />
+        <span className="text-xs font-bold uppercase tracking-wider">Herramientas</span>
+      </div>
+      <div className="grid grid-cols-2 gap-1.5 p-3">
+        {tools.map((tool) => (
+          <Link key={tool.href} href={tool.href}>
+            <a className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-all border border-transparent hover:border-border/50" data-testid={`link-tool-${tool.label.toLowerCase().replace(/\s/g, '-')}`}>
+              <span className={tool.color}>{tool.icon}</span>
+              <span className="truncate">{tool.label}</span>
+            </a>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================================
+   STATS BAR — Site statistics
+   ====================================== */
+function StatsBar() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       {[
-        { icon: <Radio className="w-4 h-4" />, label: "Radio 24/7", value: "En Vivo", color: "text-red-400" },
-        { icon: <Users className="w-4 h-4" />, label: "Comunidad", value: "Activa", color: "text-green-400" },
-        { icon: <Newspaper className="w-4 h-4" />, label: "Noticias", value: "Diarias", color: "text-blue-400" },
-        { icon: <span className="text-sm">{emoji}</span>, label: "Temática", value: decorations?.emoji ? "Activa" : "Clásico", color: "text-yellow-400" },
+        { icon: <Radio className="w-4 h-4" />, label: "Radio", value: "24/7", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
+        { icon: <Users className="w-4 h-4" />, label: "Comunidad", value: "Activa", color: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
+        { icon: <Newspaper className="w-4 h-4" />, label: "Noticias", value: "Diarias", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+        { icon: <Music className="w-4 h-4" />, label: "Peticiones", value: "Abiertas", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
       ].map((stat, i) => (
-        <div key={i} className="card-themed rounded-xl p-3 flex items-center gap-3">
-          <div className={`${stat.color}`}>{stat.icon}</div>
+        <div key={i} className={`rounded-xl p-3 flex items-center gap-2.5 border ${stat.bg}`}>
+          <span className={stat.color}>{stat.icon}</span>
           <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
-            <p className={`text-xs font-semibold ${stat.color}`}>{stat.value}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+            <p className={`text-xs font-bold ${stat.color}`}>{stat.value}</p>
           </div>
         </div>
       ))}
@@ -230,256 +570,65 @@ function QuickStatsBar() {
   );
 }
 
-function HomeChat() {
-  const { user, token } = useAuth();
-  const [message, setMessage] = useState("");
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
-  const { data: chatMessages } = useQuery<any[]>({
-    queryKey: ["/api/chat"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/chat?limit=50");
-      return res.json();
-    },
-    refetchInterval: 5000,
-    retry: false,
-  });
-
-  const sendMutation = useMutation({
-    mutationFn: async (content: string) => {
-      const res = await apiRequest("POST", "/api/chat", { content }, token ? `Bearer ${token}` : undefined);
-      return res.json();
-    },
-    onSuccess: () => {
-      setMessage("");
-      queryClient.invalidateQueries({ queryKey: ["/api/chat"] });
-    },
-  });
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
-
-  const handleSend = () => {
-    if (!message.trim()) return;
-    sendMutation.mutate(message.trim());
-  };
-
-  return (
-    <Card className="card-themed">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xs flex items-center gap-2">
-          <MessageSquare className="w-3.5 h-3.5 text-primary" />
-          Chat en Vivo
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-3 space-y-2">
-        <div className="h-48 overflow-y-auto space-y-1.5 pr-1" data-testid="chat-messages">
-          {(chatMessages || []).map((msg: any, i: number) => (
-            <div key={msg.id || i} className="flex items-start gap-1.5">
-              <img
-                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${msg.habboUsername || msg.userName || 'AutoDJ'}&size=s&headonly=1`}
-                alt={msg.displayName || msg.userName || ''}
-                className="w-5 h-5 rounded flex-shrink-0 bg-secondary"
-                onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
-              />
-              <div className="min-w-0">
-                <span className="text-[10px] font-semibold text-primary mr-1">{msg.displayName || msg.userName || 'Anon'}</span>
-                <span className="text-[10px] text-foreground/80 break-words">{msg.message || msg.content}</span>
-              </div>
-            </div>
-          ))}
-          {(!chatMessages || chatMessages.length === 0) && (
-            <p className="text-xs text-muted-foreground text-center py-6">Sin mensajes aún</p>
-          )}
-          <div ref={chatEndRef} />
-        </div>
-
-        {user ? (
-          <div className="flex gap-2">
-            <Input
-              placeholder="Escribe un mensaje..."
-              className="text-xs h-8"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              data-testid="input-chat-message"
-              maxLength={200}
-            />
-            <Button
-              size="icon"
-              className="h-8 w-8 bg-primary hover:bg-primary/80 flex-shrink-0"
-              onClick={handleSend}
-              disabled={sendMutation.isPending || !message.trim()}
-              data-testid="button-chat-send"
-            >
-              <Send className="w-3 h-3" />
-            </Button>
-          </div>
-        ) : (
-          <p className="text-[10px] text-muted-foreground text-center">
-            <Link href="/login"><a className="text-primary hover:underline">Inicia sesión</a></Link> para chatear
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
+/* ======================================
+   MAIN HOMEPAGE
+   ====================================== */
 export default function HomePage() {
   const { data: config } = useQuery<any>({ queryKey: ["/api/config"], retry: false });
   const { data: news, isLoading: newsLoading } = useQuery<News[]>({ queryKey: ["/api/news"] });
   const { data: events, isLoading: eventsLoading } = useQuery<Event[]>({ queryKey: ["/api/events"] });
   const { data: polls } = useQuery<Poll[]>({ queryKey: ["/api/polls"] });
-  const { decorations } = useTheme();
 
-  const latestNews = (news || []).slice(0, 4);
-  const upcomingEvents = (events || []).slice(0, 3);
-  const activePolls = (polls || []).filter(p => p.isActive).slice(0, 2);
+  const latestNews = (news || []).slice(0, 5);
+  const activePolls = (polls || []).filter((p) => p.isActive).slice(0, 1);
   const slides = Array.isArray(config?.slideshow) ? config.slideshow : [];
 
   return (
-    <div className={`bg-pattern-${decorations?.pattern || 'grid'} min-h-screen`}>
-      <div className="p-4 lg:p-6 space-y-6 max-w-7xl mx-auto">
-        {/* Hero Banner */}
-        <HeroBanner slides={slides} />
+    <div className="min-h-screen">
+      <div className="p-4 lg:p-6 space-y-4 max-w-7xl mx-auto">
+        {/* DJ Info Bar */}
+        <DJInfoBar />
 
-        {/* Quick Stats */}
-        <QuickStatsBar />
-
-        {/* Badges Marquee */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Star className="w-4 h-4 text-yellow-400" />
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Últimas Placas</h2>
+        {/* Hero + Message Board (chat) — side by side on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <div className="lg:col-span-3">
+            <HeroBanner slides={slides} />
           </div>
-          <div className="card-themed rounded-xl p-3 overflow-hidden">
-            <BadgesMarquee />
+          <div className="lg:col-span-2">
+            <MessageBoard />
           </div>
         </div>
 
+        {/* Stats Bar */}
+        <StatsBar />
+
+        {/* Badges Strip */}
+        <BadgesStrip />
+
         {/* Main Grid: News + Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Latest News - 2 columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* News — 2 columns */}
           <div className="lg:col-span-2 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold flex items-center gap-2">
+              <h2 className="text-sm font-bold flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
                 Últimas Noticias
               </h2>
-              <Link href="/news">
-                <a className="text-xs text-primary hover:text-primary/80 transition-colors">Ver todas →</a>
-              </Link>
+              <Link href="/news"><a className="text-xs text-primary hover:underline">Ver todas →</a></Link>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {newsLoading
-                ? Array.from({ length: 4 }).map((_, i) => (
-                    <Card key={i} className="card-themed">
-                      <Skeleton className="h-36 rounded-t-lg" />
-                      <CardContent className="p-3 space-y-2">
-                        <Skeleton className="h-3 w-3/4" />
-                        <Skeleton className="h-3 w-full" />
-                        <Skeleton className="h-3 w-1/2" />
-                      </CardContent>
-                    </Card>
-                  ))
-                : latestNews.map((article) => (
-                    <Link href={`/news/${article.id}`} key={article.id}>
-                      <a className="block group" data-testid={`card-news-${article.id}`}>
-                        <Card className="card-themed overflow-hidden h-full">
-                          {article.imageUrl && (
-                            <div className="h-36 overflow-hidden">
-                              <img
-                                src={article.imageUrl}
-                                alt={article.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
-                              />
-                            </div>
-                          )}
-                          <CardContent className="p-3">
-                            <Badge variant="outline" className="text-[9px] border-primary/30 text-primary/80 mb-1.5">{article.category}</Badge>
-                            <h3 className="text-sm font-semibold leading-tight group-hover:text-primary transition-colors line-clamp-2">{article.title}</h3>
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{article.summary}</p>
-                            <p className="text-[10px] text-muted-foreground/60 mt-2">{article.date}</p>
-                          </CardContent>
-                        </Card>
-                      </a>
-                    </Link>
-                  ))}
-              {!newsLoading && latestNews.length === 0 && (
-                <div className="col-span-2 text-center py-8 text-muted-foreground text-sm">No hay noticias aún</div>
-              )}
-            </div>
+            <NewsGrid news={latestNews} loading={newsLoading} />
           </div>
 
-          {/* Right Column: Events + Polls */}
+          {/* Sidebar */}
           <div className="space-y-4">
-            {/* Upcoming Events */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  Próximos Eventos
-                </h2>
-                <Link href="/events">
-                  <a className="text-xs text-primary hover:text-primary/80">Ver más →</a>
-                </Link>
-              </div>
-              <div className="space-y-2">
-                {eventsLoading
-                  ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-lg" />)
-                  : upcomingEvents.length > 0
-                    ? upcomingEvents.map((event) => (
-                        <Card key={event.id} className="card-themed p-3" data-testid={`card-event-${event.id}`}>
-                          <p className="text-xs font-semibold truncate">{event.title}</p>
-                          <p className="text-[10px] text-primary mt-0.5">{event.date} · {event.time}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">🏠 {event.roomName}</p>
-                        </Card>
-                      ))
-                    : <p className="text-xs text-muted-foreground text-center py-4">No hay eventos próximos</p>
-                }
-              </div>
-            </div>
+            {/* Events */}
+            <EventsSidebar events={(events || []).slice(0, 3)} loading={eventsLoading} />
 
-            {/* Active Polls */}
-            {activePolls.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold flex items-center gap-2 mb-3">
-                  <Zap className="w-4 h-4 text-yellow-400" />
-                  Encuestas
-                </h2>
-                <div className="space-y-3">
-                  {activePolls.map((poll) => <PollCard key={poll.id} poll={poll} />)}
-                </div>
-              </div>
-            )}
+            {/* Polls */}
+            {activePolls.length > 0 && <PollWidget poll={activePolls[0]} />}
 
-            {/* Quick Links */}
-            <Card className="card-themed">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs text-muted-foreground uppercase tracking-wider">Herramientas</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-2">
-                {[
-                  { href: "/imager", label: "Habbo Imager", emoji: "👤" },
-                  { href: "/badges", label: "Buscador Placas", emoji: "🏅" },
-                  { href: "/marketplace", label: "Marketplace", emoji: "💰" },
-                  { href: "/schedule", label: "Programación", emoji: "📻" },
-                ].map((tool) => (
-                  <Link key={tool.href} href={tool.href}>
-                    <a className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors border border-border/50" data-testid={`link-tool-${tool.label.toLowerCase().replace(/\s/g,'-')}`}>
-                      <span>{tool.emoji}</span>
-                      {tool.label}
-                    </a>
-                  </Link>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Home Chat */}
-            <HomeChat />
+            {/* Quick Tools */}
+            <QuickTools />
           </div>
         </div>
       </div>
