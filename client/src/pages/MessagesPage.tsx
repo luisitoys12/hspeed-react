@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Mail, Send, Plus, ChevronDown, ChevronUp, User } from "lucide-react";
+import { Mail, Send, Plus, ChevronDown, ChevronUp, User, Flag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
@@ -47,6 +47,16 @@ export default function MessagesPage() {
       return res.json();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/messages"] }),
+  });
+
+  const reportMutation = useMutation({
+    mutationFn: async ({ messageId, reason }: { messageId: number; reason: string }) => {
+      const res = await apiRequest("POST", "/api/reported-messages", { messageId, reason }, token ? `Bearer ${token}` : undefined);
+      if (!res.ok) throw new Error("Error al reportar");
+      return res.json();
+    },
+    onSuccess: () => toast({ title: "Mensaje reportado", description: "Un administrador revisará este mensaje." }),
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const sendMutation = useMutation({
@@ -224,6 +234,21 @@ export default function MessagesPage() {
                 {expandedId === msg.id && (
                   <div className="mt-3 pt-3 border-t border-border">
                     <p className="text-sm text-foreground/85 whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-[10px] h-6 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        onClick={() => {
+                          const reason = window.prompt("¿Por qué reportas este mensaje?");
+                          if (reason) reportMutation.mutate({ messageId: msg.id, reason });
+                        }}
+                        data-testid={`button-report-message-${msg.id}`}
+                      >
+                        <Flag className="w-3 h-3 mr-1" />
+                        Reportar
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>

@@ -1,9 +1,9 @@
-import { Router, Route, Switch, useLocation } from "wouter";
+import { Router, Route, Switch, useLocation, Redirect } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import TopNavBar from "@/components/TopNavBar";
@@ -32,12 +32,33 @@ import DJPanelPage from "@/pages/DJPanelPage";
 import MessagesPage from "@/pages/MessagesPage";
 import ArmarioPage from "@/pages/ArmarioPage";
 import MaintenancePage from "@/pages/MaintenancePage";
+import HerramientasPage from "@/pages/HerramientasPage";
 import LegalPage from "@/pages/LegalPage";
 import NotFound from "@/pages/not-found";
 
 function Layout() {
   const [location] = useLocation();
+  const { user } = useAuth();
   usePageTitle(location);
+
+  // Check maintenance mode from config
+  const { data: config } = useQuery<any>({
+    queryKey: ["/api/config"],
+    retry: false,
+    staleTime: 30000,
+  });
+
+  const isMaintenanceMode = config?.maintenanceMode === true;
+  const isStaff = user && (user.role === "admin" || user.role === "dj");
+
+  // If maintenance mode is ON and user is NOT staff → show maintenance page
+  if (isMaintenanceMode && !isStaff) {
+    return (
+      <div className="dark min-h-screen bg-background">
+        <MaintenancePage />
+      </div>
+    );
+  }
 
   return (
     <div className="dark min-h-screen flex flex-col bg-background">
@@ -56,6 +77,7 @@ function Layout() {
           <Route path="/badges" component={BadgesPage} />
           <Route path="/marketplace" component={MarketplacePage} />
           <Route path="/imager" component={ImagerPage} />
+          <Route path="/herramientas" component={HerramientasPage} />
           <Route path="/forum" component={ForumPage} />
           <Route path="/forum/:threadId" component={ForumThreadPage} />
           <Route path="/contact" component={ContactPage} />

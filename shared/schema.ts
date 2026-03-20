@@ -109,6 +109,7 @@ export const config = pgTable("config", {
   slideshow: jsonb("slideshow").default([]),
   discordWebhooks: jsonb("discord_webhooks").default({}),
   activeTheme: text("active_theme").notNull().default("circo"),
+  maintenanceMode: boolean("maintenance_mode").notNull().default(true),
 });
 
 export const insertConfigSchema = createInsertSchema(config).omit({ id: true });
@@ -286,3 +287,78 @@ export const verifiedBadges = pgTable("verified_badges", {
 export const insertVerifiedBadgeSchema = createInsertSchema(verifiedBadges).omit({ id: true, verifiedAt: true });
 export type InsertVerifiedBadge = z.infer<typeof insertVerifiedBadgeSchema>;
 export type VerifiedBadge = typeof verifiedBadges.$inferSelect;
+
+// ============ DOWNLOADS ============
+export const downloads = pgTable("downloads", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  fileUrl: text("file_url").notNull(),
+  category: text("category").notNull().default("general"), // general, software, recurso, otro
+  addedBy: text("added_by").notNull(),
+  downloadCount: integer("download_count").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertDownloadSchema = createInsertSchema(downloads).omit({ id: true, createdAt: true, downloadCount: true });
+export type InsertDownload = z.infer<typeof insertDownloadSchema>;
+export type Download = typeof downloads.$inferSelect;
+
+// ============ BANNED SONGS ============
+export const bannedSongs = pgTable("banned_songs", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  artist: text("artist"),
+  reason: text("reason"),
+  bannedBy: text("banned_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertBannedSongSchema = createInsertSchema(bannedSongs).omit({ id: true, createdAt: true });
+export type InsertBannedSong = z.infer<typeof insertBannedSongSchema>;
+export type BannedSong = typeof bannedSongs.$inferSelect;
+
+// ============ CONTACT MESSAGES ============
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  ip: text("ip"),
+  status: text("status").notNull().default("pending"), // pending, read, replied, archived
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({ id: true, createdAt: true });
+export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+export type ContactMessage = typeof contactMessages.$inferSelect;
+
+// ============ PANEL LOGS ============
+export const panelLogs = pgTable("panel_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"),
+  userName: text("user_name").notNull(),
+  action: text("action").notNull(),
+  details: text("details"),
+  ip: text("ip"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPanelLogSchema = createInsertSchema(panelLogs).omit({ id: true, createdAt: true });
+export type InsertPanelLog = z.infer<typeof insertPanelLogSchema>;
+export type PanelLog = typeof panelLogs.$inferSelect;
+
+// ============ REPORTED MESSAGES ============
+export const reportedMessages = pgTable("reported_messages", {
+  id: serial("id").primaryKey(),
+  messageId: integer("message_id").references(() => privateMessages.id),
+  reportedBy: integer("reported_by").references(() => users.id),
+  reason: text("reason").notNull(),
+  status: text("status").notNull().default("pending"), // pending, warned, banned, dismissed
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertReportedMessageSchema = createInsertSchema(reportedMessages).omit({ id: true, createdAt: true });
+export type InsertReportedMessage = z.infer<typeof insertReportedMessageSchema>;
+export type ReportedMessage = typeof reportedMessages.$inferSelect;

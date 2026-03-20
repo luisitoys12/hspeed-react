@@ -14,6 +14,11 @@ import {
   type Badge, type InsertBadge,
   type Request, type InsertRequest,
   type TeamMember, type InsertTeamMember,
+  type Download, type InsertDownload,
+  type BannedSong, type InsertBannedSong,
+  type ContactMessage, type InsertContactMessage,
+  type PanelLog, type InsertPanelLog,
+  type ReportedMessage, type InsertReportedMessage,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -119,6 +124,33 @@ export interface IStorage {
 
   // Team from Users
   getTeamUsers(): Promise<any[]>;
+
+  // Downloads
+  getAllDownloads(): Promise<Download[]>;
+  createDownload(d: InsertDownload): Promise<Download>;
+  deleteDownload(id: number): Promise<boolean>;
+  incrementDownloadCount(id: number): Promise<void>;
+
+  // Banned Songs
+  getAllBannedSongs(): Promise<BannedSong[]>;
+  createBannedSong(s: InsertBannedSong): Promise<BannedSong>;
+  deleteBannedSong(id: number): Promise<boolean>;
+
+  // Contact Messages
+  getAllContactMessages(): Promise<ContactMessage[]>;
+  createContactMessage(msg: InsertContactMessage): Promise<ContactMessage>;
+  updateContactMessageStatus(id: number, status: string): Promise<ContactMessage | undefined>;
+  deleteContactMessage(id: number): Promise<boolean>;
+
+  // Panel Logs
+  getPanelLogs(limit?: number): Promise<PanelLog[]>;
+  createPanelLog(log: InsertPanelLog): Promise<PanelLog>;
+
+  // Reported Messages
+  getAllReportedMessages(): Promise<any[]>;
+  createReport(report: InsertReportedMessage): Promise<ReportedMessage>;
+  updateReportStatus(id: number, status: string): Promise<ReportedMessage | undefined>;
+  deleteReport(id: number): Promise<boolean>;
 }
 
 // Helper to map snake_case DB rows to camelCase TypeScript objects
@@ -170,6 +202,7 @@ function mapConfig(row: any): Config {
     listenUrl: row.listen_url, homePlayerBgUrl: row.home_player_bg_url,
     slideshow: row.slideshow, discordWebhooks: row.discord_webhooks,
     activeTheme: row.active_theme,
+    maintenanceMode: row.maintenance_mode ?? true,
   };
 }
 function mapTheme(row: any): Theme {
@@ -223,6 +256,21 @@ function mapTeamMember(row: any): TeamMember {
     habboUsername: row.habbo_username, role: row.role,
     motto: row.motto, joinedAt: row.joined_at,
   };
+}
+function mapDownload(row: any): Download {
+  return { id: row.id, title: row.title, description: row.description, fileUrl: row.file_url, category: row.category, addedBy: row.added_by, downloadCount: row.download_count, createdAt: row.created_at };
+}
+function mapBannedSong(row: any): BannedSong {
+  return { id: row.id, title: row.title, artist: row.artist, reason: row.reason, bannedBy: row.banned_by, createdAt: row.created_at };
+}
+function mapContactMessage(row: any): ContactMessage {
+  return { id: row.id, name: row.name, email: row.email, subject: row.subject, message: row.message, ip: row.ip, status: row.status, createdAt: row.created_at };
+}
+function mapPanelLog(row: any): PanelLog {
+  return { id: row.id, userId: row.user_id, userName: row.user_name, action: row.action, details: row.details, ip: row.ip, createdAt: row.created_at };
+}
+function mapReportedMessage(row: any): ReportedMessage {
+  return { id: row.id, messageId: row.message_id, reportedBy: row.reported_by, reason: row.reason, status: row.status, createdAt: row.created_at };
 }
 
 export class SupabaseStorage implements IStorage {
@@ -455,6 +503,7 @@ export class SupabaseStorage implements IStorage {
     if (data.slideshow !== undefined) { fields.push(`slideshow = $${i++}`); values.push(JSON.stringify(data.slideshow)); }
     if (data.discordWebhooks !== undefined) { fields.push(`discord_webhooks = $${i++}`); values.push(JSON.stringify(data.discordWebhooks)); }
     if (data.activeTheme !== undefined) { fields.push(`active_theme = $${i++}`); values.push(data.activeTheme); }
+    if (data.maintenanceMode !== undefined) { fields.push(`maintenance_mode = $${i++}`); values.push(data.maintenanceMode); }
     if (fields.length === 0) return this.getConfig();
     const r = await this.query(`UPDATE config SET ${fields.join(", ")} WHERE id = (SELECT id FROM config ORDER BY id LIMIT 1) RETURNING *`, values);
     return r.rows[0] ? mapConfig(r.rows[0]) : undefined;
@@ -814,5 +863,98 @@ export class SupabaseStorage implements IStorage {
       "SELECT * FROM users WHERE role IN ('admin', 'dj') AND approved = true ORDER BY role, display_name"
     );
     return r.rows.map(mapUser);
+  }
+
+  // Downloads
+  async getAllDownloads() {
+    const r = await this.query("SELECT * FROM downloads ORDER BY created_at DESC");
+    return r.rows.map(mapDownload);
+  }
+  async createDownload(d: InsertDownload) {
+    const r = await this.query("INSERT INTO downloads (title, description, file_url, category, added_by) VALUES ($1, $2, $3, $4, $5) RETURNING *", [d.title, d.description || null, d.fileUrl, d.category || "general", d.addedBy]);
+    return mapDownload(r.rows[0]);
+  }
+  async deleteDownload(id: number) {
+    const r = await this.query("DELETE FROM downloads WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
+  async incrementDownloadCount(id: number) {
+    await this.query("UPDATE downloads SET download_count = download_count + 1 WHERE id = $1", [id]);
+  }
+
+  // Banned Songs
+  async getAllBannedSongs() {
+    const r = await this.query("SELECT * FROM banned_songs ORDER BY created_at DESC");
+    return r.rows.map(mapBannedSong);
+  }
+  async createBannedSong(s: InsertBannedSong) {
+    const r = await this.query("INSERT INTO banned_songs (title, artist, reason, banned_by) VALUES ($1, $2, $3, $4) RETURNING *", [s.title, s.artist || null, s.reason || null, s.bannedBy]);
+    return mapBannedSong(r.rows[0]);
+  }
+  async deleteBannedSong(id: number) {
+    const r = await this.query("DELETE FROM banned_songs WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  // Contact Messages
+  async getAllContactMessages() {
+    const r = await this.query("SELECT * FROM contact_messages ORDER BY created_at DESC");
+    return r.rows.map(mapContactMessage);
+  }
+  async createContactMessage(msg: InsertContactMessage) {
+    const r = await this.query("INSERT INTO contact_messages (name, email, subject, message, ip, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *", [msg.name, msg.email, msg.subject, msg.message, msg.ip || null, msg.status || "pending"]);
+    return mapContactMessage(r.rows[0]);
+  }
+  async updateContactMessageStatus(id: number, status: string) {
+    const r = await this.query("UPDATE contact_messages SET status = $1 WHERE id = $2 RETURNING *", [status, id]);
+    return r.rows[0] ? mapContactMessage(r.rows[0]) : undefined;
+  }
+  async deleteContactMessage(id: number) {
+    const r = await this.query("DELETE FROM contact_messages WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  // Panel Logs
+  async getPanelLogs(limit = 200) {
+    const r = await this.query("SELECT * FROM panel_logs ORDER BY created_at DESC LIMIT $1", [limit]);
+    return r.rows.map(mapPanelLog);
+  }
+  async createPanelLog(log: InsertPanelLog) {
+    const r = await this.query("INSERT INTO panel_logs (user_id, user_name, action, details, ip) VALUES ($1, $2, $3, $4, $5) RETURNING *", [log.userId || null, log.userName, log.action, log.details || null, log.ip || null]);
+    return mapPanelLog(r.rows[0]);
+  }
+
+  // Reported Messages
+  async getAllReportedMessages() {
+    const r = await this.query(`
+      SELECT rm.*, pm.content as message_content, pm.subject as message_subject,
+             sender.display_name as sender_name, sender.habbo_username as sender_habbo,
+             reporter.display_name as reporter_name
+      FROM reported_messages rm
+      LEFT JOIN private_messages pm ON rm.message_id = pm.id
+      LEFT JOIN users sender ON pm.from_user_id = sender.id
+      LEFT JOIN users reporter ON rm.reported_by = reporter.id
+      ORDER BY rm.created_at DESC
+    `);
+    return r.rows.map(row => ({
+      ...mapReportedMessage(row),
+      messageContent: row.message_content,
+      messageSubject: row.message_subject,
+      senderName: row.sender_name,
+      senderHabbo: row.sender_habbo,
+      reporterName: row.reporter_name,
+    }));
+  }
+  async createReport(report: InsertReportedMessage) {
+    const r = await this.query("INSERT INTO reported_messages (message_id, reported_by, reason, status) VALUES ($1, $2, $3, $4) RETURNING *", [report.messageId, report.reportedBy, report.reason, report.status || "pending"]);
+    return mapReportedMessage(r.rows[0]);
+  }
+  async updateReportStatus(id: number, status: string) {
+    const r = await this.query("UPDATE reported_messages SET status = $1 WHERE id = $2 RETURNING *", [status, id]);
+    return r.rows[0] ? mapReportedMessage(r.rows[0]) : undefined;
+  }
+  async deleteReport(id: number) {
+    const r = await this.query("DELETE FROM reported_messages WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
   }
 }

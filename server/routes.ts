@@ -584,4 +584,209 @@ export async function registerRoutes(server: Server, app: Express) {
       res.status(500).json({ message: e.message });
     }
   });
+
+  // ============ HABBO PUBLIC API PROXY (new tools) ============
+  async function resolveHabboUserId(username: string): Promise<string | null> {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/users?name=${encodeURIComponent(username)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return null;
+      const data = await r.json() as any;
+      return data.uniqueId || null;
+    } catch { return null; }
+  }
+
+  // 1. GET /api/habbo/room/:roomId
+  app.get("/api/habbo/room/:roomId", async (req, res) => {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/rooms/${encodeURIComponent(req.params.roomId)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 2. GET /api/habbo/user/:username/profile
+  app.get("/api/habbo/user/:username/profile", async (req, res) => {
+    try {
+      const uniqueId = await resolveHabboUserId(req.params.username);
+      if (!uniqueId) return res.status(404).json({ message: "Error" });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/profile`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      const profile = await r.json() as any;
+      res.json({ uniqueId, ...profile });
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 3. GET /api/habbo/user/:username/friends
+  app.get("/api/habbo/user/:username/friends", async (req, res) => {
+    try {
+      const uniqueId = await resolveHabboUserId(req.params.username);
+      if (!uniqueId) return res.status(404).json({ message: "Error" });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/friends`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 4. GET /api/habbo/user/:username/rooms
+  app.get("/api/habbo/user/:username/rooms", async (req, res) => {
+    try {
+      const uniqueId = await resolveHabboUserId(req.params.username);
+      if (!uniqueId) return res.status(404).json({ message: "Error" });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/rooms`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 5. GET /api/habbo/user/:username/badges
+  app.get("/api/habbo/user/:username/badges", async (req, res) => {
+    try {
+      const uniqueId = await resolveHabboUserId(req.params.username);
+      if (!uniqueId) return res.status(404).json({ message: "Error" });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/badges`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 6. GET /api/habbo/user/:username/groups
+  app.get("/api/habbo/user/:username/groups", async (req, res) => {
+    try {
+      const uniqueId = await resolveHabboUserId(req.params.username);
+      if (!uniqueId) return res.status(404).json({ message: "Error" });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/groups`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 7. GET /api/habbo/group/:id
+  app.get("/api/habbo/group/:id", async (req, res) => {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 8. GET /api/habbo/group/:id/members
+  app.get("/api/habbo/group/:id/members", async (req, res) => {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}/members`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 9. GET /api/habbo/hotlooks
+  app.get("/api/habbo/hotlooks", async (_req, res) => {
+    try {
+      const r = await fetch("https://www.habbo.es/api/public/lists/hotlooks", { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 10. GET /api/habbo/badge-owners/:badgeCode
+  app.get("/api/habbo/badge-owners/:badgeCode", async (req, res) => {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/badge/owners/${encodeURIComponent(req.params.badgeCode)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // 11. GET /api/habbo/achievements
+  app.get("/api/habbo/achievements", async (_req, res) => {
+    try {
+      const r = await fetch("https://www.habbo.es/api/public/achievements", { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  // ============ DOWNLOADS ============
+  app.get("/api/downloads", async (_req, res) => {
+    res.json(await storage.getAllDownloads());
+  });
+  app.post("/api/downloads", adminMiddleware, async (req: any, res) => {
+    try {
+      const item = await storage.createDownload({ ...req.body, addedBy: req.user?.displayName || "Admin" });
+      await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Descarga creada", details: req.body.title });
+      res.status(201).json(item);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+  app.delete("/api/downloads/:id", adminMiddleware, async (req: any, res) => {
+    await storage.deleteDownload(parseInt(req.params.id));
+    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Descarga eliminada", details: `ID: ${req.params.id}` });
+    res.json({ message: "Eliminada" });
+  });
+  app.put("/api/downloads/:id/count", async (req, res) => {
+    await storage.incrementDownloadCount(parseInt(req.params.id));
+    res.json({ message: "OK" });
+  });
+
+  // ============ BANNED SONGS ============
+  app.get("/api/banned-songs", djMiddleware, async (_req, res) => {
+    res.json(await storage.getAllBannedSongs());
+  });
+  app.post("/api/banned-songs", djMiddleware, async (req: any, res) => {
+    try {
+      const song = await storage.createBannedSong({ ...req.body, bannedBy: req.user?.displayName || "Staff" });
+      await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Canción baneada", details: `${req.body.title} - ${req.body.artist || ""}` });
+      res.status(201).json(song);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+  app.delete("/api/banned-songs/:id", djMiddleware, async (req: any, res) => {
+    await storage.deleteBannedSong(parseInt(req.params.id));
+    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Canción desbaneada", details: `ID: ${req.params.id}` });
+    res.json({ message: "Desbaneada" });
+  });
+
+  // ============ CONTACT MESSAGES ============
+  app.get("/api/contact-messages", adminMiddleware, async (_req, res) => {
+    res.json(await storage.getAllContactMessages());
+  });
+  app.post("/api/contact-messages", async (req, res) => {
+    try {
+      const msg = await storage.createContactMessage({ ...req.body, ip: req.ip });
+      res.status(201).json(msg);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+  app.put("/api/contact-messages/:id/status", adminMiddleware, async (req: any, res) => {
+    const updated = await storage.updateContactMessageStatus(parseInt(req.params.id), req.body.status);
+    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Contacto actualizado", details: `ID: ${req.params.id} → ${req.body.status}` });
+    res.json(updated);
+  });
+  app.delete("/api/contact-messages/:id", adminMiddleware, async (req: any, res) => {
+    await storage.deleteContactMessage(parseInt(req.params.id));
+    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Contacto eliminado", details: `ID: ${req.params.id}` });
+    res.json({ message: "Eliminado" });
+  });
+
+  // ============ PANEL LOGS ============
+  app.get("/api/panel-logs", adminMiddleware, async (req, res) => {
+    const limit = parseInt(req.query.limit as string) || 200;
+    res.json(await storage.getPanelLogs(limit));
+  });
+
+  // ============ REPORTED MESSAGES ============
+  app.get("/api/reported-messages", adminMiddleware, async (_req, res) => {
+    res.json(await storage.getAllReportedMessages());
+  });
+  app.post("/api/reported-messages", authMiddleware, async (req: any, res) => {
+    try {
+      const report = await storage.createReport({ ...req.body, reportedBy: req.userId });
+      res.status(201).json(report);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+  app.put("/api/reported-messages/:id/status", adminMiddleware, async (req: any, res) => {
+    const updated = await storage.updateReportStatus(parseInt(req.params.id), req.body.status);
+    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Reporte actualizado", details: `ID: ${req.params.id} → ${req.body.status}` });
+    res.json(updated);
+  });
+  app.delete("/api/reported-messages/:id", adminMiddleware, async (req: any, res) => {
+    await storage.deleteReport(parseInt(req.params.id));
+    res.json({ message: "Eliminado" });
+  });
 }

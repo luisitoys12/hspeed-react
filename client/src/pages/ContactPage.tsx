@@ -25,10 +25,19 @@ export default function ContactPage() {
     e.preventDefault();
     if (!form.name || !form.email || !form.subject || !form.message) return;
     setLoading(true);
-    // Simulate sending (no backend endpoint for contact yet)
-    await new Promise(r => setTimeout(r, 1000));
-    setLoading(false);
-    setSent(true);
+    try {
+      const res = await fetch("/api/contact-messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Error al enviar");
+      setSent(true);
+    } catch (err) {
+      alert("Error al enviar el mensaje. Inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (sent) {

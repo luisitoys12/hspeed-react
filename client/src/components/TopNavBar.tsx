@@ -19,21 +19,32 @@ import {
   ChevronDown,
   Mail,
   Headphones,
+  Home,
+  Newspaper,
+  Calendar,
+  MessageSquare,
+  Award,
+  TrendingUp,
+  Users,
+  Shirt,
+  Wrench,
+  type LucideIcon,
 } from "lucide-react";
 
-const navItems = [
-  { href: "/", label: "INICIO" },
-  { href: "/news", label: "NOTICIAS" },
-  { href: "/events", label: "EVENTOS" },
-  { href: "/forum", label: "FORO" },
-  { href: "/badges", label: "PLACAS" },
-  { href: "/marketplace", label: "MARKETPLACE" },
-  { href: "/imager", label: "IMAGER" },
-  { href: "/armario", label: "ARMARIO" },
-  { href: "/team", label: "EQUIPO" },
+const navItems: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/", label: "INICIO", icon: Home },
+  { href: "/news", label: "NOTICIAS", icon: Newspaper },
+  { href: "/events", label: "EVENTOS", icon: Calendar },
+  { href: "/forum", label: "FORO", icon: MessageSquare },
+  { href: "/badges", label: "PLACAS", icon: Award },
+  { href: "/marketplace", label: "MARKETPLACE", icon: TrendingUp },
+  { href: "/imager", label: "IMAGER", icon: Users },
+  { href: "/armario", label: "ARMARIO", icon: Shirt },
+  { href: "/herramientas", label: "HERRAMIENTAS", icon: Wrench },
+  { href: "/team", label: "EQUIPO", icon: Users },
 ];
 
-function NavLink({ href, label }: { href: string; label: string }) {
+function NavLink({ href, label, icon: Icon }: { href: string; label: string; icon: LucideIcon }) {
   const [location] = useLocation();
   const isActive =
     href === "/" ? location === "/" : location.startsWith(href);
@@ -43,13 +54,15 @@ function NavLink({ href, label }: { href: string; label: string }) {
       <a
         data-testid={`nav-link-${label.toLowerCase()}`}
         className={cn(
-          "nav-link-themed px-2.5 py-1.5 text-[11px] font-semibold tracking-wide transition-colors whitespace-nowrap",
+          "nav-link-themed flex items-center gap-1 px-2 py-1.5 text-[10px] font-semibold tracking-wide transition-colors whitespace-nowrap rounded-md",
           isActive
-            ? "active text-foreground"
-            : "text-muted-foreground hover:text-foreground"
+            ? "active text-foreground bg-primary/10"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
         )}
+        title={label}
       >
-        {label}
+        <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", isActive ? "text-primary" : "")} />
+        <span className="hidden xl:inline">{label}</span>
       </a>
     </Link>
   );
@@ -378,12 +391,13 @@ export default function TopNavBar() {
                 item.href === "/"
                   ? location === "/"
                   : location.startsWith(item.href);
+              const MobileIcon = item.icon;
 
               return (
                 <Link key={item.href} href={item.href}>
                   <a
                     className={cn(
-                      "block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                       isActive
                         ? "bg-primary/15 text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -391,6 +405,7 @@ export default function TopNavBar() {
                     onClick={() => setMobileMenuOpen(false)}
                     data-testid={`mobile-nav-${item.label.toLowerCase()}`}
                   >
+                    <MobileIcon className={cn("w-4 h-4", isActive ? "text-primary" : "")} />
                     {item.label}
                   </a>
                 </Link>
