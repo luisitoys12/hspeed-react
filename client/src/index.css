@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Default: Circo theme (red/yellow) — overridden dynamically by ThemeProvider */
+    /* Default: Circo theme (red/yellow) â€” overridden dynamically by ThemeProvider */
     --background: 0 0% 6%;
     --foreground: 213 31% 91%;
     --card: 0 20% 10%;
@@ -295,4 +295,34 @@
 }
 .animate-stripes {
   animation: stripe-move 1.5s linear infinite;
+}
+
+/* ===== RADIO PLAYER BAR (HabboRadio-style) ===== */
+.radio-player-bar {
+  background: hsl(var(--card) / 0.97);
+  border-top: 1px solid hsl(var(--border) / 0.4);
+  border-bottom: 1px solid hsl(var(--border) / 0.4);
+}
+
+.radio-play-btn {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 0 8px rgba(var(--theme-glow), 0.4);
+  transition: all 0.2s ease;
+}
+.radio-play-btn:hover {
+  box-shadow: 0 0 14px rgba(var(--theme-glow), 0.6);
+  transform: scale(1.05);
+}
+.radio-play-btn:active {
+  transform: scale(0.95);
+}
+
+/* Hide scrollbar for nav overflow */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
