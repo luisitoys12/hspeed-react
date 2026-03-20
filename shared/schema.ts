@@ -236,7 +236,7 @@ export type TeamMember = typeof teamMembers.$inferSelect;
 // ============ DJ PANEL ============
 export const djPanel = pgTable("dj_panel", {
   id: serial("id").primaryKey(),
-  currentDj: text("current_dj").default("AutoDJ"),
+  currentDj: text("current_dj").default("HabboSpeed"),
   nextDj: text("next_dj").default(""),
   djMessage: text("dj_message").default(""),
   updatedAt: timestamp("updated_at").defaultNow(),

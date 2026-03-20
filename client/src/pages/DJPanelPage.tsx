@@ -57,7 +57,7 @@ function DjStatusSection() {
   });
 
   if (djPanel && !initialized) {
-    setCurrentDj(djPanel.currentDj || "AutoDJ");
+    setCurrentDj(djPanel.currentDj || "HabboSpeed");
     setNextDj(djPanel.nextDj || "");
     setDjMessage(djPanel.djMessage || "");
     setInitialized(true);
@@ -79,7 +79,7 @@ function DjStatusSection() {
 
   const handleSave = () => {
     updatePanelMutation.mutate({
-      currentDj: currentDj.trim() || "AutoDJ",
+      currentDj: currentDj.trim() || "HabboSpeed",
       nextDj: nextDj.trim(),
       djMessage: djMessage.trim(),
     });
@@ -106,14 +106,14 @@ function DjStatusSection() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="text-center p-3 rounded-xl bg-primary/10 border border-primary/20">
           <div className="flex items-center justify-center gap-2 mb-1">
-            {djPanel?.currentDj && djPanel.currentDj !== "AutoDJ" && (
+            {djPanel?.currentDj && djPanel.currentDj !== "HabboSpeed" && (
               <img
                 src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${djPanel.currentDj}&size=s&headonly=1`}
                 alt={djPanel.currentDj}
                 className="w-8 h-8 rounded bg-secondary"
               />
             )}
-            <p className="text-sm font-bold text-primary">{djPanel?.currentDj || "AutoDJ"}</p>
+            <p className="text-sm font-bold text-primary">{djPanel?.currentDj || "HabboSpeed"}</p>
           </div>
           <p className="text-[10px] text-muted-foreground">DJ Actual</p>
         </div>
@@ -144,12 +144,12 @@ function DjStatusSection() {
           <Label className="text-xs text-muted-foreground mb-1.5 block">DJ en antena ahora</Label>
           <div className="flex gap-2">
             <Input
-              placeholder="AutoDJ"
+              placeholder="HabboSpeed"
               value={currentDj}
               onChange={(e) => setCurrentDj(e.target.value)}
               data-testid="input-current-dj"
             />
-            {currentDj && currentDj !== "AutoDJ" && (
+            {currentDj && currentDj !== "HabboSpeed" && (
               <img
                 src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDj}&size=s&headonly=1`}
                 alt={currentDj}
@@ -866,7 +866,7 @@ function MensajesSection() {
   });
 
   if (djPanel && !initialized) {
-    setCurrentDj(djPanel.currentDj || "AutoDJ");
+    setCurrentDj(djPanel.currentDj || "HabboSpeed");
     setNextDj(djPanel.nextDj || "");
     setAnnouncement(djPanel.djMessage || "");
     setInitialized(true);
@@ -877,7 +877,7 @@ function MensajesSection() {
       const res = await apiRequest(
         "PUT",
         "/api/dj-panel",
-        { currentDj: currentDj || "AutoDJ", nextDj, djMessage: announcement },
+        { currentDj: currentDj || "HabboSpeed", nextDj, djMessage: announcement },
         token ? `Bearer ${token}` : undefined
       );
       return res.json();
@@ -920,7 +920,7 @@ function MensajesSection() {
         <div>
           <Label className="text-xs text-muted-foreground mb-1.5 block">DJ en antena</Label>
           <Input
-            placeholder="AutoDJ"
+            placeholder="HabboSpeed"
             value={currentDj}
             onChange={e => setCurrentDj(e.target.value)}
             data-testid="input-msg-current-dj"

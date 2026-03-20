@@ -27,12 +27,13 @@ import {
   ExternalLink,
   Clock,
   ArrowRight,
+  Package,
 } from "lucide-react";
 import type { News, Event, Poll } from "@shared/schema";
 
 /* ======================================
    DJ INFO BAR — inspired by HabboRadio top bar
-   Shows current DJ, next DJ, listeners
+   When no DJ is on air → show "HabboSpeed" with fansite avatar
    ====================================== */
 function DJInfoBar() {
   const { data: djPanel } = useQuery<any>({
@@ -41,7 +42,9 @@ function DJInfoBar() {
     retry: false,
   });
 
-  const currentDj = djPanel?.currentDj || "AutoDJ";
+  const rawDj = djPanel?.currentDj || "";
+  const isAutoDJ = !rawDj || rawDj.toLowerCase() === "autodj" || rawDj.toLowerCase() === "auto dj" || rawDj.toLowerCase() === "habbospeed";
+  const currentDj = isAutoDJ ? "HabboSpeed" : rawDj;
   const nextDj = djPanel?.nextDj || "";
   const djMessage = djPanel?.djMessage || "";
 
@@ -51,16 +54,27 @@ function DJInfoBar() {
         {/* Current DJ */}
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="relative">
-            <img
-              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDj}&size=b&headonly=1`}
-              alt={currentDj}
-              className="w-11 h-11 rounded-lg bg-secondary/50"
-              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
-            />
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full border-2 border-card animate-pulse" />
+            {isAutoDJ ? (
+              <img
+                src="https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=b&headonly=1"
+                alt="HabboSpeed"
+                className="w-11 h-11 rounded-lg bg-secondary/50"
+                onError={(e) => { (e.target as HTMLImageElement).src = "https://images.habbo.com/c_images/web_promo_small/feature_avatar_chat.png"; }}
+              />
+            ) : (
+              <img
+                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${currentDj}&size=b&headonly=1`}
+                alt={currentDj}
+                className="w-11 h-11 rounded-lg bg-secondary/50"
+                onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+              />
+            )}
+            <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${isAutoDJ ? "bg-yellow-500" : "bg-red-500 animate-pulse"}`} />
           </div>
           <div>
-            <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">DJ Actual</p>
+            <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">
+              {isAutoDJ ? "Radio" : "DJ Actual"}
+            </p>
             <p className="text-sm font-bold text-foreground">{currentDj}</p>
           </div>
         </div>
@@ -94,9 +108,11 @@ function DJInfoBar() {
 
         {/* Live indicator */}
         <div className="ml-auto flex items-center gap-2 flex-shrink-0">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/15 border border-red-500/30">
-            <Radio className="w-3 h-3 text-red-400" />
-            <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">En Vivo</span>
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${isAutoDJ ? "bg-yellow-500/15 border border-yellow-500/30" : "bg-red-500/15 border border-red-500/30"}`}>
+            <Radio className={`w-3 h-3 ${isAutoDJ ? "text-yellow-400" : "text-red-400"}`} />
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${isAutoDJ ? "text-yellow-400" : "text-red-400"}`}>
+              {isAutoDJ ? "AutoRadio" : "En Vivo"}
+            </span>
           </div>
         </div>
       </div>
@@ -105,15 +121,30 @@ function DJInfoBar() {
 }
 
 /* ======================================
-   HERO BANNER — Large visual banner
+   HERO BANNER — Large visual banner with real images
    ====================================== */
 function HeroBanner({ slides }: { slides: any[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const defaultSlides = [
-    { title: "Bienvenido a HabboSpeed", subtitle: "La radio y fansite #1 de la comunidad Habbo en español", cta: { text: "Explorar", href: "/news" } },
-    { title: "Eventos en vivo", subtitle: "Participa en nuestros eventos semanales y gana premios increíbles", cta: { text: "Ver Eventos", href: "/events" } },
-    { title: "Únete al equipo", subtitle: "¿Eres DJ, periodista o diseñador? Tenemos un lugar para ti", cta: { text: "Ver Equipo", href: "/team" } },
+    {
+      title: "Bienvenido a HabboSpeed",
+      subtitle: "La radio y fansite #1 de la comunidad Habbo en español",
+      cta: { text: "Explorar", href: "/news" },
+      imageUrl: "/slides/slide-welcome.png",
+    },
+    {
+      title: "Eventos en vivo",
+      subtitle: "Participa en nuestros eventos semanales y gana premios increíbles",
+      cta: { text: "Ver Eventos", href: "/events" },
+      imageUrl: "/slides/slide-events.png",
+    },
+    {
+      title: "Únete al equipo",
+      subtitle: "¿Eres DJ, periodista o diseñador? Tenemos un lugar para ti",
+      cta: { text: "Ver Equipo", href: "/team" },
+      imageUrl: "/slides/slide-team.png",
+    },
   ];
 
   const displaySlides = slides?.length > 0 ? slides : defaultSlides;
@@ -129,21 +160,22 @@ function HeroBanner({ slides }: { slides: any[] }) {
 
   return (
     <div className="relative h-48 sm:h-56 rounded-xl overflow-hidden group" data-testid="hero-banner">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/80 to-violet-600" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M0%200h4v4H0zM20%200h4v4h-4zM0%2020h4v4H0zM20%2020h4v4h-4z%22%20fill%3D%22rgba(255%2C255%2C255%2C0.04)%22%2F%3E%3C%2Fsvg%3E')] opacity-60" />
-
+      {/* Background — dark base + image */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
       {slide.imageUrl && (
-        <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay" />
+        <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-70 transition-opacity duration-700" />
       )}
+      {/* Overlay gradient for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-center px-6 sm:px-10">
-        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1.5 max-w-lg drop-shadow-md">{slide.title}</h1>
-        <p className="text-sm text-white/75 max-w-md leading-relaxed">{slide.subtitle}</p>
+      <div className="relative z-10 h-full flex flex-col justify-end px-6 sm:px-10 pb-10">
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1.5 max-w-lg drop-shadow-lg">{slide.title}</h1>
+        <p className="text-sm text-white/80 max-w-md leading-relaxed drop-shadow">{slide.subtitle}</p>
         {slide.cta && (
           <Link href={slide.cta.href || "/"}>
-            <a className="mt-4 inline-flex items-center gap-2 text-xs font-semibold bg-white/15 hover:bg-white/25 backdrop-blur text-white px-4 py-2 rounded-lg transition-all border border-white/20" data-testid="button-hero-cta">
+            <a className="mt-3 inline-flex items-center gap-2 text-xs font-semibold bg-primary/90 hover:bg-primary backdrop-blur text-white px-4 py-2 rounded-lg transition-all shadow-lg" data-testid="button-hero-cta">
               {slide.cta.text || "Ver más"} <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </Link>
@@ -153,13 +185,13 @@ function HeroBanner({ slides }: { slides: any[] }) {
       {/* Dots */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
         {displaySlides.map((_: any, i: number) => (
-          <button key={i} onClick={() => setCurrentSlide(i)} className={`h-1 rounded-full transition-all ${i === currentSlide ? "bg-white w-5" : "bg-white/30 w-1.5"}`} data-testid={`button-slide-${i}`} />
+          <button key={i} onClick={() => setCurrentSlide(i)} className={`h-1.5 rounded-full transition-all ${i === currentSlide ? "bg-white w-6" : "bg-white/40 w-2"}`} data-testid={`button-slide-${i}`} />
         ))}
       </div>
 
       {/* Arrows */}
-      <button onClick={() => setCurrentSlide((prev) => (prev - 1 + displaySlides.length) % displaySlides.length)} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity" data-testid="button-slide-prev"><ChevronLeft className="w-4 h-4" /></button>
-      <button onClick={() => setCurrentSlide((prev) => (prev + 1) % displaySlides.length)} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity" data-testid="button-slide-next"><ChevronRight className="w-4 h-4" /></button>
+      <button onClick={() => setCurrentSlide((prev) => (prev - 1 + displaySlides.length) % displaySlides.length)} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity" data-testid="button-slide-prev"><ChevronLeft className="w-4 h-4" /></button>
+      <button onClick={() => setCurrentSlide((prev) => (prev + 1) % displaySlides.length)} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity" data-testid="button-slide-next"><ChevronRight className="w-4 h-4" /></button>
     </div>
   );
 }
@@ -186,7 +218,15 @@ function MessageBoard() {
 
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
-      const res = await apiRequest("POST", "/api/chat", { content }, token ? `Bearer ${token}` : undefined);
+      if (!token) throw new Error("Debes iniciar sesión para chatear");
+      const res = await fetch(`/api/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }),
+      });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: "Error al enviar" }));
         throw new Error(err.message || "Error al enviar mensaje");
@@ -239,7 +279,7 @@ function MessageBoard() {
         {(chatMessages || []).map((msg: any, i: number) => (
           <div key={msg.id || i} className="flex items-start gap-2 py-1 hover:bg-secondary/20 rounded px-1 transition-colors">
             <img
-              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${msg.habboUsername || msg.userName || 'AutoDJ'}&size=s&headonly=1`}
+              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${msg.habboUsername || msg.userName || 'HabboSpeed'}&size=s&headonly=1`}
               alt=""
               className="w-6 h-6 rounded flex-shrink-0 bg-secondary/50 mt-0.5"
               onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
@@ -377,6 +417,59 @@ function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
             </a>
           </Link>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================================
+   FURNI STRIP — Últimos Furnis Agregados
+   ====================================== */
+function FurniStrip() {
+  // Fetch latest furni via backend proxy (avoids CORS)
+  const { data: furnis } = useQuery<any[]>({
+    queryKey: ["/api/habbo/furni"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/habbo/furni?limit=24");
+      return res.json();
+    },
+    retry: false,
+    staleTime: 300000,
+  });
+
+  const items = furnis && furnis.length > 0 ? furnis : [];
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="bg-card border border-border rounded-xl overflow-hidden" data-testid="furni-strip">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-secondary/20">
+        <Package className="w-3.5 h-3.5 text-orange-400" />
+        <span className="text-xs font-bold uppercase tracking-wider">Últimos Furnis Agregados</span>
+        <Link href="/marketplace"><a className="text-[10px] text-primary ml-auto hover:underline">Ver todos →</a></Link>
+      </div>
+      <div className="px-3 py-3 overflow-hidden">
+        <div className="flex gap-3 animate-marquee" style={{ width: "max-content" }}>
+          {[...items, ...items].map((item: any, i: number) => {
+            const iconUrl = item.iconUrl || `https://images.habbo.com/dcr/hof_furni/${item.revision}/${item.classname}_icon.png`;
+            const name = item.name || item.classname || "Furni";
+            return (
+              <div key={i} className="flex-shrink-0 w-12 h-12 rounded-lg bg-secondary/30 border border-border/30 flex items-center justify-center hover:scale-110 hover:border-primary/40 transition-all cursor-pointer group relative">
+                <img
+                  src={iconUrl}
+                  alt={name}
+                  className="w-10 h-10 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-card border border-border text-[8px] text-muted-foreground px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none max-w-[100px] truncate">
+                  {name}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -601,6 +694,9 @@ export default function HomePage() {
 
         {/* Stats Bar */}
         <StatsBar />
+
+        {/* Furni Strip — Últimos Furnis Agregados */}
+        <FurniStrip />
 
         {/* Badges Strip */}
         <BadgesStrip />

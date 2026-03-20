@@ -315,6 +315,29 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch { res.status(500).json({ message: "Error al consultar marketplace API" }); }
   });
 
+  // ============ HABBO FURNI (latest from furnidata) ============
+  app.get("/api/habbo/furni", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 24;
+      const r = await fetch("https://www.habbo.es/gamedata/furnidata_json/0", {
+        headers: { "User-Agent": "HabboSpeed/1.0" },
+      });
+      if (!r.ok) return res.json([]);
+      const data = await r.json() as any;
+      const items = data?.roomitemtypes?.furnitype || [];
+      // Return last N items (newest) with icon URL info
+      const latest = items.slice(-limit).reverse().map((f: any) => ({
+        name: (f.name || f.classname || "").replace(/_/g, " ").replace(/ name$/i, ""),
+        classname: f.classname,
+        revision: f.revision,
+        iconUrl: `https://images.habbo.com/dcr/hof_furni/${f.revision}/${f.classname}_icon.png`,
+      }));
+      res.json(latest);
+    } catch {
+      res.json([]);
+    }
+  });
+
   // ============ REQUESTS ============
   app.get("/api/requests", async (_req, res) => {
     res.json(await storage.getAllRequests());
