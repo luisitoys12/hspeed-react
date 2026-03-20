@@ -105,6 +105,7 @@ export interface IStorage {
   // Chat Messages
   getChatMessages(limit?: number): Promise<any[]>;
   createChatMessage(data: any): Promise<any>;
+  deleteChatMessage(id: number): Promise<boolean>;
 
   // Private Messages
   getMessagesByUser(userId: number): Promise<any[]>;
@@ -715,6 +716,10 @@ export class SupabaseStorage implements IStorage {
       message: row.message,
       createdAt: row.created_at,
     };
+  }
+  async deleteChatMessage(id: number) {
+    await this.query('DELETE FROM chat_messages WHERE id = $1', [id]);
+    return true;
   }
 
   // Private Messages

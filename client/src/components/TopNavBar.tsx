@@ -29,6 +29,7 @@ const navItems = [
   { href: "/badges", label: "PLACAS" },
   { href: "/marketplace", label: "MARKETPLACE" },
   { href: "/imager", label: "IMAGER" },
+  { href: "/armario", label: "ARMARIO" },
   { href: "/team", label: "EQUIPO" },
 ];
 

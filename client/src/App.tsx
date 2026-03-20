@@ -30,6 +30,8 @@ import ProfilePage from "@/pages/ProfilePage";
 import AdminPanel from "@/pages/AdminPanel";
 import DJPanelPage from "@/pages/DJPanelPage";
 import MessagesPage from "@/pages/MessagesPage";
+import ArmarioPage from "@/pages/ArmarioPage";
+import MaintenancePage from "@/pages/MaintenancePage";
 import LegalPage from "@/pages/LegalPage";
 import NotFound from "@/pages/not-found";
 
@@ -64,6 +66,8 @@ function Layout() {
           <Route path="/panel/:section" component={AdminPanel} />
           <Route path="/djpanel" component={DJPanelPage} />
           <Route path="/messages" component={MessagesPage} />
+          <Route path="/armario" component={ArmarioPage} />
+          <Route path="/maintenance" component={MaintenancePage} />
           <Route path="/legal" component={LegalPage} />
           <Route path="/privacy" component={LegalPage} />
           <Route component={NotFound} />

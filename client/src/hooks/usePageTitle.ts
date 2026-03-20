@@ -16,6 +16,8 @@ const ROUTE_TITLES: Record<string, string> = {
   "/panel": "HabboSpeed - Panel de Administración",
   "/djpanel": "HabboSpeed - Panel DJ",
   "/messages": "HabboSpeed - Mensajes",
+  "/armario": "HabboSpeed - Armario",
+  "/maintenance": "HabboSpeed - Mantenimiento",
   "/legal": "HabboSpeed - Legal",
   "/privacy": "HabboSpeed - Privacidad",
 };

@@ -287,6 +287,15 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch { res.status(500).json({ message: "Error al consultar Habbo API" }); }
   });
 
+  // Habbo Origins API proxy
+  app.get("/api/habbo/origins/user/:username", async (req, res) => {
+    try {
+      const r = await fetch(`https://origins.habbo.es/api/public/users?name=${req.params.username}`);
+      if (!r.ok) return res.status(404).json({ message: "Usuario no encontrado en Origins" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error al consultar Habbo Origins API" }); }
+  });
+
   app.get("/api/habbo/badges/:hotel", async (req, res) => {
     try {
       const hotel = req.params.hotel || "es";
@@ -422,6 +431,15 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       res.json(await storage.getChatMessages(limit));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.delete("/api/chat/:id", djMiddleware, async (req: any, res) => {
+    try {
+      await storage.deleteChatMessage(parseInt(req.params.id));
+      res.json({ message: "Mensaje eliminado" });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
