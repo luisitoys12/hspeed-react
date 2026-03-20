@@ -54,15 +54,17 @@ function NavLink({ href, label, icon: Icon }: { href: string; label: string; ico
       <a
         data-testid={`nav-link-${label.toLowerCase()}`}
         className={cn(
-          "nav-link-themed flex items-center gap-1 px-2 py-1.5 text-[10px] font-semibold tracking-wide transition-colors whitespace-nowrap rounded-md",
+          "flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold tracking-wide transition-all whitespace-nowrap rounded-md relative group",
           isActive
-            ? "active text-foreground bg-primary/10"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+            ? "text-primary bg-primary/10"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
         )}
         title={label}
       >
-        <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", isActive ? "text-primary" : "")} />
-        <span className="hidden xl:inline">{label}</span>
+        {isActive && (
+          <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full" />
+        )}
+        {label}
       </a>
     </Link>
   );
@@ -92,21 +94,22 @@ export default function TopNavBar() {
 
   return (
     <nav
-      className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-md border-b border-border"
+      className="sticky top-0 z-50 w-full bg-card/98 backdrop-blur-md border-b border-border shadow-sm"
       data-testid="top-nav-bar"
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-4">
-        <div className="flex items-center h-14 gap-2">
+      {/* ── ROW 1: Logo | Radio + Auth ─────────────────────────────── */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
+        <div className="flex items-center h-14 gap-3">
           {/* Left: Logo */}
           <Link href="/">
             <a
-              className="flex items-center gap-2 flex-shrink-0 group"
+              className="flex items-center gap-2.5 flex-shrink-0 group"
               data-testid="nav-logo"
             >
               {/* SVG logo mark */}
               <svg
-                width="28"
-                height="28"
+                width="30"
+                height="30"
                 viewBox="0 0 32 32"
                 fill="none"
                 aria-label="HabboSpeed Logo"
@@ -178,49 +181,24 @@ export default function TopNavBar() {
             </a>
           </Link>
 
-          {/* Center: Desktop Nav Links */}
-          <div className="hidden lg:flex items-center gap-0.5 mx-auto">
-            {navItems.map((item) => (
-              <NavLink key={item.href} {...item} />
-            ))}
-            {user && (
-              <Link href="/messages">
-                <a
-                  className={cn(
-                    "nav-link-themed relative px-2.5 py-1.5 text-[11px] font-semibold tracking-wide transition-colors whitespace-nowrap",
-                    location.startsWith("/messages")
-                      ? "active text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                  data-testid="nav-link-mensajes"
-                >
-                  MENSAJES
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-primary text-white text-[9px] rounded-full flex items-center justify-center px-1">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </a>
-              </Link>
-            )}
-          </div>
+          {/* Spacer */}
+          <div className="flex-1" />
 
-          {/* Right section: Radio + User */}
-          <div className="flex items-center gap-2 ml-auto lg:ml-0 flex-shrink-0">
-            {/* Compact radio player - desktop only */}
-            <div className="hidden xl:flex items-center max-w-[280px]">
+          {/* Right: Radio player (desktop) + auth area */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Compact radio player — desktop only */}
+            <div className="hidden xl:flex items-center max-w-[260px]">
               <FloatingRadioPlayer />
             </div>
+            <div className="hidden xl:block h-6 w-px bg-border/60" />
 
-            {/* Separator */}
-            <div className="hidden xl:block h-6 w-px bg-border" />
-
-            {/* User area */}
+            {/* Auth area */}
             {user ? (
-              <div className="relative">
+              <div className="relative flex items-center gap-2">
+                {/* Unread messages badge icon */}
                 {unreadCount > 0 && (
                   <Link href="/messages">
-                    <a className="relative flex-shrink-0 mr-1" data-testid="button-messages-badge">
+                    <a className="relative flex-shrink-0" data-testid="button-messages-badge">
                       <Mail className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
                       <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 bg-primary text-white text-[8px] rounded-full flex items-center justify-center px-0.5">
                         {unreadCount > 9 ? "9+" : unreadCount}
@@ -229,7 +207,7 @@ export default function TopNavBar() {
                   </Link>
                 )}
                 <button
-                  className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 transition-colors"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   data-testid="button-user-menu"
                 >
@@ -248,10 +226,10 @@ export default function TopNavBar() {
                       <User className="w-3.5 h-3.5 text-muted-foreground" />
                     </div>
                   )}
-                  <span className="hidden sm:inline text-xs font-medium text-foreground truncate max-w-[100px]" data-testid="text-username">
+                  <span className="hidden sm:inline text-xs font-medium text-foreground truncate max-w-[120px]" data-testid="text-username">
                     {user.displayName}
                   </span>
-                  <ChevronDown className="w-3 h-3 text-muted-foreground hidden sm:block" />
+                  <ChevronDown className="w-3 h-3 text-muted-foreground hidden sm:block flex-shrink-0" />
                 </button>
 
                 {/* Dropdown menu */}
@@ -338,16 +316,16 @@ export default function TopNavBar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <Link href="/login">
                   <a data-testid="link-login">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-primary/30 text-primary hover:bg-primary/10 text-[11px] h-8 px-3"
+                      className="border-primary/40 text-primary hover:bg-primary/10 hover:border-primary/60 text-[11px] h-8 px-4 font-semibold"
                     >
-                      <LogIn className="w-3 h-3 mr-1.5" />
-                      <span className="hidden sm:inline">Entrar</span>
+                      <LogIn className="w-3 h-3 mr-1.5 flex-shrink-0" />
+                      Entrar
                     </Button>
                   </a>
                 </Link>
@@ -355,10 +333,10 @@ export default function TopNavBar() {
                   <a data-testid="link-register">
                     <Button
                       size="sm"
-                      className="bg-primary hover:bg-primary/80 text-primary-foreground text-[11px] h-8 px-3"
+                      className="bg-primary hover:bg-primary/85 text-primary-foreground text-[11px] h-8 px-4 font-semibold"
                     >
-                      <UserPlus className="w-3 h-3 sm:mr-1.5" />
-                      <span className="hidden sm:inline">Registro</span>
+                      <UserPlus className="w-3 h-3 mr-1.5 flex-shrink-0" />
+                      Registro
                     </Button>
                   </a>
                 </Link>
@@ -367,7 +345,7 @@ export default function TopNavBar() {
 
             {/* Mobile hamburger */}
             <button
-              className="lg:hidden text-muted-foreground hover:text-foreground p-1.5 ml-1"
+              className="lg:hidden text-muted-foreground hover:text-foreground p-1.5 ml-1 rounded-md hover:bg-muted/50 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="button-mobile-menu"
               aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
@@ -382,10 +360,44 @@ export default function TopNavBar() {
         </div>
       </div>
 
-      {/* Mobile slide-down panel */}
+      {/* ── ROW 2: Navigation bar (desktop only) ───────────────────── */}
+      <div className="hidden lg:block border-t border-border/50 bg-card/80">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
+            {navItems.map((item) => (
+              <NavLink key={item.href} {...item} />
+            ))}
+            {user && (
+              <Link href="/messages">
+                <a
+                  className={cn(
+                    "relative flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold tracking-wide transition-all whitespace-nowrap rounded-md",
+                    location.startsWith("/messages")
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  )}
+                  data-testid="nav-link-mensajes"
+                >
+                  {location.startsWith("/messages") && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full" />
+                  )}
+                  MENSAJES
+                  {unreadCount > 0 && (
+                    <span className="ml-0.5 min-w-[16px] h-4 bg-primary text-white text-[9px] rounded-full flex items-center justify-center px-1">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </a>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Mobile slide-down panel ─────────────────────────────────── */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-border bg-card/98 backdrop-blur-md animate-fade-in-up">
-          <div className="max-w-7xl mx-auto px-4 py-3 space-y-1">
+        <div className="lg:hidden border-t border-border bg-card/99 backdrop-blur-md animate-fade-in-up">
+          <div className="max-w-[1600px] mx-auto px-4 py-3 space-y-1">
             {navItems.map((item) => {
               const isActive =
                 item.href === "/"
@@ -405,7 +417,7 @@ export default function TopNavBar() {
                     onClick={() => setMobileMenuOpen(false)}
                     data-testid={`mobile-nav-${item.label.toLowerCase()}`}
                   >
-                    <MobileIcon className={cn("w-4 h-4", isActive ? "text-primary" : "")} />
+                    <MobileIcon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-primary" : "")} />
                     {item.label}
                   </a>
                 </Link>
@@ -420,7 +432,10 @@ export default function TopNavBar() {
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-nav-mensajes"
                 >
-                  <span><Mail className="w-4 h-4 inline mr-2" />MENSAJES</span>
+                  <span className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 flex-shrink-0" />
+                    MENSAJES
+                  </span>
                   {unreadCount > 0 && (
                     <Badge className="bg-primary text-white text-[9px] py-0 px-1.5">{unreadCount > 9 ? "9+" : unreadCount}</Badge>
                   )}
@@ -432,11 +447,11 @@ export default function TopNavBar() {
             {isDjOrAdmin && (
               <Link href="/djpanel">
                 <a
-                  className="block px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-nav-djpanel"
                 >
-                  <Headphones className="w-4 h-4 inline mr-2" />
+                  <Headphones className="w-4 h-4 flex-shrink-0" />
                   PANEL DJ
                 </a>
               </Link>
@@ -446,11 +461,11 @@ export default function TopNavBar() {
             {isAdmin && (
               <Link href="/panel">
                 <a
-                  className="block px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-nav-admin"
                 >
-                  <Settings className="w-4 h-4 inline mr-2" />
+                  <Settings className="w-4 h-4 flex-shrink-0" />
                   PANEL ADMIN
                 </a>
               </Link>

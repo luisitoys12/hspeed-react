@@ -159,7 +159,7 @@ function HeroBanner({ slides }: { slides: any[] }) {
   const slide = displaySlides[currentSlide];
 
   return (
-    <div className="relative h-48 sm:h-56 rounded-xl overflow-hidden group" data-testid="hero-banner">
+    <div className="relative h-48 sm:h-56 lg:h-full lg:min-h-[14rem] rounded-xl overflow-hidden group" data-testid="hero-banner">
       {/* Background — dark base + image */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
       {slide.imageUrl && (
@@ -212,21 +212,14 @@ function MessageBoard() {
       const res = await apiRequest("GET", "/api/chat?limit=30");
       return res.json();
     },
-    refetchInterval: 4000,
+    refetchInterval: 3000,
     retry: 2,
   });
 
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!token) throw new Error("Debes iniciar sesión para chatear");
-      const res = await fetch(`/api/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content }),
-      });
+      const res = await apiRequest("POST", "/api/chat", { content }, token ? `Bearer ${token}` : undefined);
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: "Error al enviar" }));
         throw new Error(err.message || "Error al enviar mensaje");
@@ -252,9 +245,9 @@ function MessageBoard() {
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden" data-testid="message-board">
+    <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-full" data-testid="message-board">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/30">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/30 flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
           <span className="text-xs font-bold uppercase tracking-wider">Chat en Vivo</span>
@@ -275,41 +268,44 @@ function MessageBoard() {
       </div>
 
       {/* Messages */}
-      <div className="h-44 overflow-y-auto px-3 py-2 space-y-1" data-testid="chat-messages">
-        {(chatMessages || []).map((msg: any, i: number) => (
-          <div key={msg.id || i} className="flex items-start gap-2 py-1 hover:bg-secondary/20 rounded px-1 transition-colors">
-            <img
-              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${msg.habboUsername || msg.userName || 'HabboSpeed'}&size=s&headonly=1`}
-              alt=""
-              className="w-6 h-6 rounded flex-shrink-0 bg-secondary/50 mt-0.5"
-              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
-            />
-            <div className="min-w-0">
-              <span className="text-[11px] font-bold text-primary mr-1.5">{msg.userName || 'Anon'}:</span>
-              <span className="text-[11px] text-foreground/85 break-words">{msg.message || msg.content}</span>
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 min-h-0" style={{ maxHeight: "240px" }} data-testid="chat-messages">
+        {(chatMessages || []).length > 0 ? (
+          (chatMessages || []).map((msg: any, i: number) => (
+            <div key={msg.id || i} className="flex items-start gap-2 py-1 hover:bg-secondary/20 rounded px-1 transition-colors">
+              <img
+                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${msg.habboUsername || msg.userName || 'HabboSpeed'}&size=s&headonly=1`}
+                alt=""
+                className="w-6 h-6 rounded flex-shrink-0 bg-secondary/50 mt-0.5"
+                onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+              />
+              <div className="min-w-0 flex-1">
+                <span className="text-[11px] font-bold text-primary mr-1.5">{msg.userName || 'Anon'}:</span>
+                <span className="text-[11px] text-foreground/85 break-words">{msg.message || msg.content}</span>
+              </div>
+              {msg.createdAt && (
+                <span className="text-[8px] text-muted-foreground/50 ml-auto flex-shrink-0 mt-1">
+                  {new Date(msg.createdAt).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              )}
             </div>
-            {msg.createdAt && (
-              <span className="text-[8px] text-muted-foreground/50 ml-auto flex-shrink-0 mt-1">
-                {new Date(msg.createdAt).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}
-              </span>
-            )}
+          ))
+        ) : !isError ? (
+          <div className="flex flex-col items-center justify-center h-full py-8 text-muted-foreground gap-2">
+            <MessageSquare className="w-8 h-8 opacity-25" />
+            <p className="text-xs font-medium">¡Sé el primero en escribir!</p>
+            <p className="text-[10px] opacity-60">El chat está esperando tu mensaje</p>
           </div>
-        ))}
-        {(!chatMessages || chatMessages.length === 0) && !isError && (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            <p className="text-xs">Sé el primero en escribir</p>
-          </div>
-        )}
-        {isError && (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            <p className="text-xs text-red-400">Error al cargar mensajes</p>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full py-8 text-muted-foreground gap-2">
+            <p className="text-xs text-red-400">No se pudo cargar el chat</p>
+            <p className="text-[10px] opacity-60">Intenta recargar la página</p>
           </div>
         )}
         <div ref={chatEndRef} />
       </div>
 
       {/* Input */}
-      <div className="border-t border-border px-3 py-2.5 bg-secondary/20">
+      <div className="border-t border-border px-3 py-2.5 bg-secondary/20 flex-shrink-0">
         {user ? (
           <div className="flex gap-2">
             <Input
@@ -644,14 +640,14 @@ function QuickTools() {
    ====================================== */
 function StatsBar() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {[
         { icon: <Radio className="w-4 h-4" />, label: "Radio", value: "24/7", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
         { icon: <Users className="w-4 h-4" />, label: "Comunidad", value: "Activa", color: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
         { icon: <Newspaper className="w-4 h-4" />, label: "Noticias", value: "Diarias", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
         { icon: <Music className="w-4 h-4" />, label: "Peticiones", value: "Abiertas", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
       ].map((stat, i) => (
-        <div key={i} className={`rounded-xl p-3 flex items-center gap-2.5 border ${stat.bg}`}>
+        <div key={i} className={`rounded-xl p-3.5 flex items-center gap-3 border ${stat.bg}`}>
           <span className={stat.color}>{stat.icon}</span>
           <div>
             <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
@@ -678,21 +674,23 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <div className="p-4 lg:p-6 space-y-4 max-w-7xl mx-auto">
-        {/* DJ Info Bar */}
+      <div className="p-4 lg:p-6 space-y-5 max-w-7xl mx-auto">
+        {/* DJ Info Bar — full width */}
         <DJInfoBar />
 
-        {/* Hero + Message Board (chat) — side by side on desktop */}
+        {/* Hero + Message Board (chat) — 60/40 split on desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          {/* Hero: 60% → 3 of 5 cols */}
           <div className="lg:col-span-3">
             <HeroBanner slides={slides} />
           </div>
+          {/* Chat: 40% → 2 of 5 cols */}
           <div className="lg:col-span-2">
             <MessageBoard />
           </div>
         </div>
 
-        {/* Stats Bar */}
+        {/* Stats Bar — consistent padding + rounded corners */}
         <StatsBar />
 
         {/* Furni Strip — Últimos Furnis Agregados */}
@@ -702,7 +700,7 @@ export default function HomePage() {
         <BadgesStrip />
 
         {/* Main Grid: News + Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* News — 2 columns */}
           <div className="lg:col-span-2 space-y-3">
             <div className="flex items-center justify-between">
