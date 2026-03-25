@@ -1,8 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +10,38 @@ import { ArrowLeft, MessageSquare, Send, User } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import type { News, Comment } from "@shared/schema";
+
+function HabboHeadAvatar({ username, displayName }: { username?: string | null; displayName: string }) {
+  const initial = displayName.charAt(0).toUpperCase();
+  if (!username) {
+    return (
+      <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-sm font-bold flex-shrink-0">
+        {initial}
+      </div>
+    );
+  }
+  return (
+    <div className="relative flex-shrink-0">
+      <img
+        src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`}
+        alt={displayName}
+        className="w-9 h-9 rounded-xl bg-secondary object-contain"
+        onError={(e) => {
+          const el = e.target as HTMLImageElement;
+          el.style.display = "none";
+          const fb = el.nextSibling as HTMLElement;
+          if (fb) fb.style.display = "flex";
+        }}
+      />
+      <div
+        className="w-9 h-9 rounded-xl bg-primary/20 items-center justify-center text-primary text-sm font-bold absolute inset-0"
+        style={{ display: "none" }}
+      >
+        {initial}
+      </div>
+    </div>
+  );
+}
 
 export default function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -36,25 +67,28 @@ export default function NewsDetailPage() {
 
   const commentMutation = useMutation({
     mutationFn: async (content: string) => {
-      const res = await apiRequest("POST", "/api/comments", { articleId: parseInt(id!), content }, token ? `Bearer ${token}` : undefined);
-      return res.json();
+      const res = await apiRequest(
+        "POST", "/api/comments",
+        { articleId: parseInt(id!), content },
+        token ? `Bearer ${token}` : undefined
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Error al comentar");
+      return data;
     },
     onSuccess: () => {
       setComment("");
       queryClient.invalidateQueries({ queryKey: ["/api/comments/article", id] });
-      toast({ title: "Comentario publicado" });
+      toast({ title: "Comentario publicado ✓" });
     },
-    onError: (err: any) => {
-      toast({ title: "Error", description: err.message || "No se pudo publicar el comentario.", variant: "destructive" });
-    },
+    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   if (isLoading) {
     return (
       <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-4">
-        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-64 rounded-2xl" />
         <Skeleton className="h-6 w-3/4" />
-        <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-2/3" />
       </div>
@@ -72,62 +106,49 @@ export default function NewsDetailPage() {
 
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-6">
-      {/* Back link */}
+      {/* Back */}
       <Link href="/news">
         <a className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors" data-testid="link-back-news">
-          <ArrowLeft className="w-4 h-4" />
-          Volver a Noticias
+          <ArrowLeft className="w-4 h-4" />Volver a Noticias
         </a>
       </Link>
 
       {/* Article */}
-      <article>
+      <article className="space-y-5">
         {article.imageUrl && (
-          <div className="h-64 rounded-xl overflow-hidden mb-6">
+          <div className="h-64 rounded-2xl overflow-hidden">
             <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" />
           </div>
         )}
-
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-[9px] border-primary/30 text-primary/80">{article.category}</Badge>
           <span className="text-xs text-muted-foreground">{article.date}</span>
         </div>
-
-        <h1 className="text-xl font-bold mb-3" data-testid="text-news-title">{article.title}</h1>
-        <p className="text-sm text-muted-foreground italic mb-6 border-l-2 border-primary/30 pl-4">{article.summary}</p>
-
-        <div className="prose prose-invert prose-sm max-w-none text-foreground/90 leading-relaxed whitespace-pre-wrap">
-          {article.content}
-        </div>
+        <h1 className="text-2xl font-bold leading-tight" data-testid="text-news-title">{article.title}</h1>
+        <p className="text-sm text-muted-foreground italic border-l-2 border-primary/40 pl-4 leading-relaxed">{article.summary}</p>
+        <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{article.content}</div>
       </article>
 
       {/* Comments Section */}
-      <div className="border-t border-border pt-6">
-        <h2 className="text-sm font-semibold flex items-center gap-2 mb-4">
+      <div className="border-t border-border pt-6 space-y-4">
+        <h2 className="text-sm font-semibold flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-primary" />
           Comentarios ({comments?.length || 0})
         </h2>
 
-        {/* Comment form */}
+        {/* Comment box */}
         {user ? (
-          <div className="bg-card/50 rounded-lg p-4 border border-border mb-4 space-y-3">
-            <div className="flex items-center gap-2">
-              {user.habboUsername ? (
-                <img
-                  src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`}
-                  alt={user.displayName}
-                  className="w-7 h-7 rounded bg-secondary"
-                />
-              ) : (
-                <div className="w-7 h-7 rounded bg-secondary flex items-center justify-center">
-                  <User className="w-3.5 h-3.5 text-muted-foreground" />
-                </div>
-              )}
-              <span className="text-xs font-medium">{user.displayName}</span>
+          <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+            <div className="flex items-center gap-2.5">
+              <HabboHeadAvatar username={user.habboUsername} displayName={user.displayName} />
+              <div>
+                <p className="text-xs font-semibold">{user.displayName}</p>
+                {user.habboUsername && <p className="text-[10px] text-muted-foreground">@{user.habboUsername}</p>}
+              </div>
             </div>
             <Textarea
               placeholder="Escribe tu comentario..."
-              className="text-sm resize-none"
+              className="resize-none text-sm"
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -135,17 +156,16 @@ export default function NewsDetailPage() {
             />
             <Button
               size="sm"
-              className="bg-primary hover:bg-primary/80 text-white text-xs"
+              className="bg-primary hover:bg-primary/80 text-white text-xs gap-1.5"
               onClick={() => comment.trim() && commentMutation.mutate(comment)}
               disabled={commentMutation.isPending || !comment.trim()}
               data-testid="button-submit-comment"
             >
-              <Send className="w-3 h-3 mr-1.5" />
-              Comentar
+              <Send className="w-3 h-3" />Comentar
             </Button>
           </div>
         ) : (
-          <div className="bg-card/50 rounded-lg p-4 border border-border mb-4 text-center">
+          <div className="rounded-2xl border border-border bg-card/50 p-5 text-center">
             <p className="text-sm text-muted-foreground">
               <Link href="/login"><a className="text-primary hover:underline">Inicia sesión</a></Link> para comentar
             </p>
@@ -155,32 +175,35 @@ export default function NewsDetailPage() {
         {/* Comments list */}
         <div className="space-y-3">
           {(comments || []).map((c: any) => (
-            <Card key={c.id} className="bg-card border-border" data-testid={`card-comment-${c.id}`}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  {c.habboUsername ? (
-                    <img
-                      src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${c.habboUsername}&size=s&headonly=1`}
-                      alt={c.authorName}
-                      className="w-7 h-7 rounded bg-secondary flex-shrink-0"
-                      onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
-                    />
-                  ) : (
-                    <div className="w-7 h-7 rounded bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold flex-shrink-0">
-                      {c.authorName.charAt(0).toUpperCase()}
+            <div
+              key={c.id}
+              className="rounded-2xl border border-border bg-card p-4"
+              data-testid={`card-comment-${c.id}`}
+            >
+              <div className="flex items-start gap-3">
+                <HabboHeadAvatar username={c.habboUsername} displayName={c.authorName} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div>
+                      <span className="text-xs font-semibold">{c.authorName}</span>
+                      {c.habboUsername && (
+                        <span className="text-[10px] text-muted-foreground ml-1.5">@{c.habboUsername}</span>
+                      )}
                     </div>
-                  )}
-                  <span className="text-xs font-medium">{c.authorName}</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">
-                    {c.createdAt ? new Date(c.createdAt).toLocaleDateString("es-ES") : ""}
-                  </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {c.createdAt ? new Date(c.createdAt).toLocaleDateString("es-ES") : ""}
+                    </span>
+                  </div>
+                  <p className="text-sm text-foreground/80 leading-relaxed">{c.content}</p>
                 </div>
-                <p className="text-sm text-foreground/80">{c.content}</p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
           {(!comments || comments.length === 0) && (
-            <p className="text-sm text-muted-foreground text-center py-4">Sé el primero en comentar</p>
+            <div className="text-center py-8 text-muted-foreground">
+              <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-20" />
+              <p className="text-sm">Sé el primero en comentar</p>
+            </div>
           )}
         </div>
       </div>
