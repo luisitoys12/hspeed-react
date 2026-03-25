@@ -4,13 +4,18 @@ import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Star, Wifi, WifiOff, Crown, Shield, Music } from "lucide-react";
+import { Users, Star, Crown, Shield, Music, Zap } from "lucide-react";
 
 const ROLE_LABELS: Record<string, { label: string; color: string; Icon: any }> = {
   admin:       { label: "Administrador", color: "bg-red-500/10 text-red-400 border-red-500/30",         Icon: Crown },
   dj:          { label: "DJ",            color: "bg-primary/10 text-primary border-primary/30",          Icon: Music },
   moderador:   { label: "Moderador",     color: "bg-orange-500/10 text-orange-400 border-orange-500/30", Icon: Shield },
   colaborador: { label: "Colaborador",   color: "bg-green-500/10 text-green-400 border-green-500/30",   Icon: Star },
+  periodista:  { label: "Periodista",    color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30", Icon: Star },
+  diseñador:   { label: "Diseñador",     color: "bg-pink-500/10 text-pink-400 border-pink-500/30",      Icon: Star },
+  builder:     { label: "Builder",       color: "bg-orange-500/10 text-orange-400 border-orange-500/30", Icon: Star },
+  mentor:      { label: "Mentor",        color: "bg-purple-500/10 text-purple-400 border-purple-500/30", Icon: Star },
+  eventos:     { label: "Eventos",       color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",      Icon: Star },
 };
 
 function HabboOnlineBadge({ username }: { username: string }) {
@@ -26,21 +31,27 @@ function HabboOnlineBadge({ username }: { username: string }) {
   });
   const isOnline = data?.online === true;
   return (
-    <span className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-card ${
-      isOnline ? "bg-green-400" : "bg-muted-foreground/40"
-    }`} title={isOnline ? "En línea en Habbo" : "Desconectado"} />
+    <span
+      className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-card ${
+        isOnline ? "bg-green-400" : "bg-muted-foreground/40"
+      }`}
+      title={isOnline ? "En línea en Habbo" : "Desconectado"}
+    />
   );
 }
 
 export default function TeamPage() {
+  // Fuente principal: /api/team (tabla team_members — configurada desde el panel admin)
   const { data: team, isLoading } = useQuery<any[]>({
-    queryKey: ["/api/team-users"],
+    queryKey: ["/api/team"],
     retry: false,
   });
 
-  const admins  = (team || []).filter((m) => m.role === "admin");
-  const djs     = (team || []).filter((m) => m.role === "dj");
-  const mods    = (team || []).filter((m) => m.role === "moderador" || m.role === "colaborador");
+  const admins = (team || []).filter((m) => m.role === "admin");
+  const djs    = (team || []).filter((m) => m.role === "dj");
+  const staff  = (team || []).filter(
+    (m) => m.role !== "admin" && m.role !== "dj"
+  );
 
   const renderGroup = (title: string, icon: any, members: any[]) => {
     if (!members.length) return null;
@@ -49,17 +60,22 @@ export default function TeamPage() {
       <div className="space-y-3">
         <div className="flex items-center gap-2 border-b border-border/40 pb-2">
           <Icon className="w-4 h-4 text-primary" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{title}</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            {title}
+          </h2>
           <span className="ml-auto text-xs text-muted-foreground">{members.length}</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {members.map((member) => (
-            <Link key={member.id} href={`/profile/${member.habboUsername || member.displayName}`}>
+            <Link
+              key={member.id}
+              href={`/profile/${member.habboUsername || member.displayName}`}
+            >
               <a className="block" data-testid={`card-team-${member.id}`}>
                 <Card className="bg-card border-border hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all text-center overflow-hidden group cursor-pointer">
                   <CardContent className="p-4 flex flex-col items-center gap-2">
 
-                    {/* Avatar con estado online */}
+                    {/* Avatar + online indicator */}
                     <div className="relative">
                       <div className="w-20 h-24 bg-secondary/50 rounded-xl overflow-hidden flex items-end justify-center group-hover:bg-secondary/80 transition-colors">
                         <img
@@ -72,11 +88,9 @@ export default function TeamPage() {
                           }}
                         />
                       </div>
-                      {/* Star para admins / DJs */}
                       {(member.role === "admin" || member.role === "dj") && (
                         <Star className="absolute -top-1 -right-1 w-4 h-4 text-yellow-400 fill-yellow-400" />
                       )}
-                      {/* Online indicator desde Habbo API */}
                       {member.habboUsername && (
                         <HabboOnlineBadge username={member.habboUsername} />
                       )}
@@ -84,13 +98,16 @@ export default function TeamPage() {
 
                     <div className="w-full">
                       <p className="text-sm font-bold truncate">{member.displayName}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">@{member.habboUsername}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        @{member.habboUsername}
+                      </p>
                     </div>
 
                     <Badge
                       variant="outline"
                       className={`text-[9px] ${
-                        ROLE_LABELS[member.role]?.color || "border-border text-muted-foreground"
+                        ROLE_LABELS[member.role]?.color ||
+                        "border-border text-muted-foreground"
                       }`}
                     >
                       {ROLE_LABELS[member.role]?.label || member.role}
@@ -102,7 +119,7 @@ export default function TeamPage() {
                       </p>
                     )}
 
-                    {member.speedPoints !== undefined && (
+                    {member.speedPoints !== undefined && member.speedPoints > 0 && (
                       <div className="flex items-center gap-1 text-[10px] text-yellow-400 font-semibold">
                         <Zap className="w-3 h-3" />
                         {member.speedPoints.toLocaleString()} SP
@@ -156,7 +173,7 @@ export default function TeamPage() {
         <div className="space-y-8">
           {renderGroup("Administración", Crown, admins)}
           {renderGroup("DJs", Music, djs)}
-          {renderGroup("Staff", Shield, mods)}
+          {renderGroup("Staff", Shield, staff)}
         </div>
       )}
 
