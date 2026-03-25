@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,34 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle, Plus, Pin, Lock, Eye, ArrowRight, ChevronDown, ChevronRight, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ForumCategory, ForumThread } from "@shared/schema";
-
-function HabboAvatar({ username, size = "s" }: { username?: string | null; size?: "s" | "m" }) {
-  if (!username) {
-    return (
-      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-        <User className="w-4 h-4 text-muted-foreground" />
-      </div>
-    );
-  }
-  return (
-    <img
-      src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=${size}&headonly=1`}
-      alt={username}
-      className="w-8 h-8 rounded-full bg-secondary flex-shrink-0 object-contain"
-      onError={(e) => {
-        const el = e.target as HTMLImageElement;
-        el.style.display = "none";
-        const parent = el.parentElement;
-        if (parent) {
-          const fb = document.createElement("div");
-          fb.className = "w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-xs font-bold text-primary";
-          fb.textContent = username.charAt(0).toUpperCase();
-          parent.appendChild(fb);
-        }
-      }}
-    />
-  );
-}
 
 function ThreadList({ categoryId, categoryName }: { categoryId: number; categoryName: string }) {
   const { user, token } = useAuth();
@@ -65,7 +37,7 @@ function ThreadList({ categoryId, categoryName }: { categoryId: number; category
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/forum/categories", categoryId, "threads"] });
-      toast({ title: "Hilo creado ✓" });
+      toast({ title: "Hilo creado \u2713" });
       setOpen(false);
       setForm({ title: "", content: "" });
     },
@@ -75,7 +47,7 @@ function ThreadList({ categoryId, categoryName }: { categoryId: number; category
   return (
     <div className="space-y-2 pt-1">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-muted-foreground">{threads?.length || 0} hilos en esta categoría</p>
+        <p className="text-xs text-muted-foreground">{threads?.length || 0} hilos en esta categor\u00eda</p>
         {user && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -89,8 +61,8 @@ function ThreadList({ categoryId, categoryName }: { categoryId: number; category
               </DialogHeader>
               <div className="space-y-3">
                 <div>
-                  <Label className="text-xs">Título</Label>
-                  <Input className="mt-1" placeholder="Título del hilo..." value={form.title} onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} data-testid="input-thread-title" />
+                  <Label className="text-xs">T\u00edtulo</Label>
+                  <Input className="mt-1" placeholder="T\u00edtulo del hilo..." value={form.title} onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} data-testid="input-thread-title" />
                 </div>
                 <div>
                   <Label className="text-xs">Contenido</Label>
@@ -111,7 +83,7 @@ function ThreadList({ categoryId, categoryName }: { categoryId: number; category
           ? (
             <div className="text-center py-6 text-muted-foreground">
               <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-20" />
-              <p className="text-xs">No hay hilos aún. ¡Sé el primero!</p>
+              <p className="text-xs">No hay hilos a\u00fan. \u00a1S\u00e9 el primero!</p>
             </div>
           )
           : (threads || []).map((thread) => (
@@ -146,7 +118,6 @@ export default function ForumPage() {
 
   return (
     <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
           <MessageCircle className="w-5 h-5 text-primary" />
@@ -157,7 +128,6 @@ export default function ForumPage() {
         </div>
       </div>
 
-      {/* Categories */}
       <div className="space-y-3">
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => (
@@ -176,7 +146,6 @@ export default function ForumPage() {
                 }`}
                 data-testid={`card-category-${cat.id}`}
               >
-                {/* Category header */}
                 <button
                   className="w-full flex items-center gap-4 px-5 py-4 text-left group"
                   onClick={() => setExpandedCategory(isOpen ? null : cat.id)}
@@ -201,8 +170,6 @@ export default function ForumPage() {
                     }
                   </div>
                 </button>
-
-                {/* Threads accordion */}
                 {isOpen && (
                   <div className="px-5 pb-5 border-t border-border/40 pt-4">
                     <ThreadList categoryId={cat.id} categoryName={cat.name} />
@@ -216,7 +183,7 @@ export default function ForumPage() {
       {!isLoading && (!categories || categories.length === 0) && (
         <div className="text-center py-20 text-muted-foreground">
           <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="text-sm">El foro aún no tiene categorías</p>
+          <p className="text-sm">El foro a\u00fan no tiene categor\u00edas</p>
           <p className="text-xs mt-1">Un administrador debe crearlas desde el panel</p>
         </div>
       )}

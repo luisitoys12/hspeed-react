@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,25 +21,19 @@ function HabboHeadAvatar({ username, displayName }: { username?: string | null; 
     );
   }
   return (
-    <div className="relative flex-shrink-0">
-      <img
-        src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`}
-        alt={displayName}
-        className="w-9 h-9 rounded-xl bg-secondary object-contain"
-        onError={(e) => {
-          const el = e.target as HTMLImageElement;
-          el.style.display = "none";
-          const fb = el.nextSibling as HTMLElement;
-          if (fb) fb.style.display = "flex";
-        }}
-      />
-      <div
-        className="w-9 h-9 rounded-xl bg-primary/20 items-center justify-center text-primary text-sm font-bold absolute inset-0"
-        style={{ display: "none" }}
-      >
-        {initial}
-      </div>
-    </div>
+    <img
+      src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`}
+      alt={displayName}
+      className="w-9 h-9 rounded-xl bg-secondary object-contain flex-shrink-0"
+      onError={(e) => {
+        const el = e.target as HTMLImageElement;
+        el.style.display = "none";
+        const fb = document.createElement("div");
+        fb.className = "w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-sm font-bold flex-shrink-0";
+        fb.textContent = initial;
+        el.parentNode?.replaceChild(fb, el);
+      }}
+    />
   );
 }
 
@@ -79,7 +73,7 @@ export default function NewsDetailPage() {
     onSuccess: () => {
       setComment("");
       queryClient.invalidateQueries({ queryKey: ["/api/comments/article", id] });
-      toast({ title: "Comentario publicado ✓" });
+      toast({ title: "Comentario publicado \u2713" });
     },
     onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
@@ -99,21 +93,19 @@ export default function NewsDetailPage() {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">Noticia no encontrada</p>
-        <Link href="/news"><a className="text-primary text-sm mt-2 inline-block">← Volver a Noticias</a></Link>
+        <Link href="/news"><a className="text-primary text-sm mt-2 inline-block">\u2190 Volver a Noticias</a></Link>
       </div>
     );
   }
 
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-6">
-      {/* Back */}
       <Link href="/news">
         <a className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors" data-testid="link-back-news">
           <ArrowLeft className="w-4 h-4" />Volver a Noticias
         </a>
       </Link>
 
-      {/* Article */}
       <article className="space-y-5">
         {article.imageUrl && (
           <div className="h-64 rounded-2xl overflow-hidden">
@@ -129,14 +121,12 @@ export default function NewsDetailPage() {
         <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{article.content}</div>
       </article>
 
-      {/* Comments Section */}
       <div className="border-t border-border pt-6 space-y-4">
         <h2 className="text-sm font-semibold flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-primary" />
           Comentarios ({comments?.length || 0})
         </h2>
 
-        {/* Comment box */}
         {user ? (
           <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
             <div className="flex items-center gap-2.5">
@@ -167,19 +157,14 @@ export default function NewsDetailPage() {
         ) : (
           <div className="rounded-2xl border border-border bg-card/50 p-5 text-center">
             <p className="text-sm text-muted-foreground">
-              <Link href="/login"><a className="text-primary hover:underline">Inicia sesión</a></Link> para comentar
+              <Link href="/login"><a className="text-primary hover:underline">Inicia sesi\u00f3n</a></Link> para comentar
             </p>
           </div>
         )}
 
-        {/* Comments list */}
         <div className="space-y-3">
           {(comments || []).map((c: any) => (
-            <div
-              key={c.id}
-              className="rounded-2xl border border-border bg-card p-4"
-              data-testid={`card-comment-${c.id}`}
-            >
+            <div key={c.id} className="rounded-2xl border border-border bg-card p-4" data-testid={`card-comment-${c.id}`}>
               <div className="flex items-start gap-3">
                 <HabboHeadAvatar username={c.habboUsername} displayName={c.authorName} />
                 <div className="flex-1 min-w-0">
@@ -202,7 +187,7 @@ export default function NewsDetailPage() {
           {(!comments || comments.length === 0) && (
             <div className="text-center py-8 text-muted-foreground">
               <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-20" />
-              <p className="text-sm">Sé el primero en comentar</p>
+              <p className="text-sm">S\u00e9 el primero en comentar</p>
             </div>
           )}
         </div>
