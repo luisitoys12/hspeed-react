@@ -10,7 +10,6 @@ function generateToken(id: number): string {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: "7d" });
 }
 
-// Middleware to verify JWT
 function authMiddleware(req: any, res: any, next: any) {
   const token = req.headers.authorization?.replace("Bearer ", "");
   if (!token) return res.status(401).json({ message: "No autorizado" });
@@ -26,15 +25,12 @@ function authMiddleware(req: any, res: any, next: any) {
 function adminMiddleware(req: any, res: any, next: any) {
   authMiddleware(req, res, async () => {
     const user = await storage.getUser(req.userId);
-    if (!user || user.role !== "admin") {
-      return res.status(403).json({ message: "Acceso denegado" });
-    }
+    if (!user || user.role !== "admin") return res.status(403).json({ message: "Acceso denegado" });
     req.user = user;
     next();
   });
 }
 
-// DJ or Admin middleware
 function djMiddleware(req: any, res: any, next: any) {
   authMiddleware(req, res, async () => {
     const user = await storage.getUser(req.userId);
@@ -53,7 +49,6 @@ export async function registerRoutes(server: Server, app: Express) {
       const { email, password, displayName, habboUsername } = req.body;
       const existing = await storage.getUserByEmail(email);
       if (existing) return res.status(400).json({ message: "El email ya está registrado" });
-
       const passwordHash = await bcrypt.hash(password, 10);
       const user = await storage.createUser({
         email, passwordHash, displayName,
@@ -61,12 +56,9 @@ export async function registerRoutes(server: Server, app: Express) {
         avatarUrl: habboUsername ? `https://www.habbo.es/habbo-imaging/avatarimage?user=${habboUsername}&size=b` : null,
         role: "pending", approved: false, speedPoints: 0,
       });
-
       const token = generateToken(user.id);
       res.status(201).json({ ...user, passwordHash: undefined, token });
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
   app.post("/api/auth/login", async (req, res) => {
@@ -74,15 +66,11 @@ export async function registerRoutes(server: Server, app: Express) {
       const { email, password } = req.body;
       const user = await storage.getUserByEmail(email);
       if (!user) return res.status(401).json({ message: "Credenciales inválidas" });
-
       const match = await bcrypt.compare(password, user.passwordHash);
       if (!match) return res.status(401).json({ message: "Credenciales inválidas" });
-
       const token = generateToken(user.id);
       res.json({ ...user, passwordHash: undefined, token });
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
   app.get("/api/auth/me", authMiddleware, async (req: any, res) => {
@@ -92,74 +80,51 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ NEWS ============
-  app.get("/api/news", async (_req, res) => {
-    const items = await storage.getAllNews();
-    res.json(items);
-  });
-
+  app.get("/api/news", async (_req, res) => { res.json(await storage.getAllNews()); });
   app.get("/api/news/:id", async (req, res) => {
     const item = await storage.getNewsById(parseInt(req.params.id));
     if (!item) return res.status(404).json({ message: "Noticia no encontrada" });
     res.json(item);
   });
-
   app.post("/api/news", adminMiddleware, async (req: any, res) => {
-    const item = await storage.createNews({ ...req.body, authorId: req.user.id });
-    res.status(201).json(item);
+    res.status(201).json(await storage.createNews({ ...req.body, authorId: req.user.id }));
   });
-
   app.put("/api/news/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateNews(parseInt(req.params.id), req.body);
     if (!item) return res.status(404).json({ message: "Noticia no encontrada" });
     res.json(item);
   });
-
   app.delete("/api/news/:id", adminMiddleware, async (req, res) => {
     await storage.deleteNews(parseInt(req.params.id));
     res.json({ message: "Eliminada" });
   });
 
   // ============ EVENTS ============
-  app.get("/api/events", async (_req, res) => {
-    res.json(await storage.getAllEvents());
-  });
-
+  app.get("/api/events", async (_req, res) => { res.json(await storage.getAllEvents()); });
   app.get("/api/events/:id", async (req, res) => {
     const item = await storage.getEventById(parseInt(req.params.id));
     if (!item) return res.status(404).json({ message: "Evento no encontrado" });
     res.json(item);
   });
-
-  app.post("/api/events", adminMiddleware, async (req, res) => {
-    res.status(201).json(await storage.createEvent(req.body));
-  });
-
+  app.post("/api/events", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createEvent(req.body)); });
   app.put("/api/events/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateEvent(parseInt(req.params.id), req.body);
     if (!item) return res.status(404).json({ message: "Evento no encontrado" });
     res.json(item);
   });
-
   app.delete("/api/events/:id", adminMiddleware, async (req, res) => {
     await storage.deleteEvent(parseInt(req.params.id));
     res.json({ message: "Eliminado" });
   });
 
   // ============ SCHEDULE ============
-  app.get("/api/schedule", async (_req, res) => {
-    res.json(await storage.getAllSchedule());
-  });
-
-  app.post("/api/schedule", adminMiddleware, async (req, res) => {
-    res.status(201).json(await storage.createScheduleItem(req.body));
-  });
-
+  app.get("/api/schedule", async (_req, res) => { res.json(await storage.getAllSchedule()); });
+  app.post("/api/schedule", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createScheduleItem(req.body)); });
   app.put("/api/schedule/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateScheduleItem(parseInt(req.params.id), req.body);
     if (!item) return res.status(404).json({ message: "Horario no encontrado" });
     res.json(item);
   });
-
   app.delete("/api/schedule/:id", adminMiddleware, async (req, res) => {
     await storage.deleteScheduleItem(parseInt(req.params.id));
     res.json({ message: "Eliminado" });
@@ -169,31 +134,20 @@ export async function registerRoutes(server: Server, app: Express) {
   app.get("/api/comments/article/:articleId", async (req, res) => {
     res.json(await storage.getCommentsByArticle(parseInt(req.params.articleId)));
   });
-
   app.post("/api/comments", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
     if (!user) return res.status(401).json({ message: "No autorizado" });
-    const comment = await storage.createComment({
-      ...req.body, authorId: user.id, authorName: user.displayName
-    });
-    // Attach habboUsername for avatar display
+    const comment = await storage.createComment({ ...req.body, authorId: user.id, authorName: user.displayName });
     res.status(201).json({ ...comment, habboUsername: user.habboUsername || null });
   });
-
   app.delete("/api/comments/:id", adminMiddleware, async (req, res) => {
     await storage.deleteComment(parseInt(req.params.id));
     res.json({ message: "Eliminado" });
   });
 
   // ============ POLLS ============
-  app.get("/api/polls", async (_req, res) => {
-    res.json(await storage.getAllPolls());
-  });
-
-  app.post("/api/polls", adminMiddleware, async (req, res) => {
-    res.status(201).json(await storage.createPoll(req.body));
-  });
-
+  app.get("/api/polls", async (_req, res) => { res.json(await storage.getAllPolls()); });
+  app.post("/api/polls", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createPoll(req.body)); });
   app.put("/api/polls/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updatePoll(parseInt(req.params.id), req.body);
     if (!item) return res.status(404).json({ message: "Encuesta no encontrada" });
@@ -201,67 +155,41 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ CONFIG ============
-  app.get("/api/config", async (_req, res) => {
-    res.json(await storage.getConfig());
-  });
-
-  app.put("/api/config", adminMiddleware, async (req, res) => {
-    res.json(await storage.updateConfig(req.body));
-  });
+  app.get("/api/config", async (_req, res) => { res.json(await storage.getConfig()); });
+  app.put("/api/config", adminMiddleware, async (req, res) => { res.json(await storage.updateConfig(req.body)); });
 
   // ============ FORUM ============
-  app.get("/api/forum/categories", async (_req, res) => {
-    res.json(await storage.getAllForumCategories());
-  });
-
+  app.get("/api/forum/categories", async (_req, res) => { res.json(await storage.getAllForumCategories()); });
   app.post("/api/forum/categories", adminMiddleware, async (req, res) => {
     res.status(201).json(await storage.createForumCategory(req.body));
   });
-
   app.get("/api/forum/categories/:id/threads", async (req, res) => {
     res.json(await storage.getThreadsByCategory(parseInt(req.params.id)));
   });
-
   app.get("/api/forum/threads/:id", async (req, res) => {
     const thread = await storage.getThreadById(parseInt(req.params.id));
     if (!thread) return res.status(404).json({ message: "Hilo no encontrado" });
     await storage.incrementThreadViews(thread.id);
     res.json(thread);
   });
-
   app.post("/api/forum/threads", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
     if (!user) return res.status(401).json({ message: "No autorizado" });
-    const thread = await storage.createThread({
-      ...req.body, authorId: user.id, authorName: user.displayName,
-      isPinned: false, isLocked: false, views: 0
-    });
-    // Auto-create first post
-    if (req.body.content) {
-      await storage.createPost({
-        threadId: thread.id, authorId: user.id, authorName: user.displayName, content: req.body.content
-      });
-    }
+    const thread = await storage.createThread({ ...req.body, authorId: user.id, authorName: user.displayName, isPinned: false, isLocked: false, views: 0 });
+    if (req.body.content) await storage.createPost({ threadId: thread.id, authorId: user.id, authorName: user.displayName, content: req.body.content });
     res.status(201).json(thread);
   });
-
   app.get("/api/forum/threads/:id/posts", async (req, res) => {
     res.json(await storage.getPostsByThread(parseInt(req.params.id)));
   });
-
   app.post("/api/forum/posts", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
     if (!user) return res.status(401).json({ message: "No autorizado" });
-    res.status(201).json(await storage.createPost({
-      ...req.body, authorId: user.id, authorName: user.displayName
-    }));
+    res.status(201).json(await storage.createPost({ ...req.body, authorId: user.id, authorName: user.displayName }));
   });
 
   // ============ MARKETPLACE ============
-  app.get("/api/marketplace", async (_req, res) => {
-    res.json(await storage.getAllMarketplaceItems());
-  });
-
+  app.get("/api/marketplace", async (_req, res) => { res.json(await storage.getAllMarketplaceItems()); });
   app.get("/api/marketplace/:className", async (req, res) => {
     const item = await storage.getMarketplaceItemByClass(req.params.className);
     if (!item) return res.status(404).json({ message: "Item no encontrado" });
@@ -271,26 +199,54 @@ export async function registerRoutes(server: Server, app: Express) {
   // ============ BADGES ============
   app.get("/api/badges", async (req, res) => {
     const query = req.query.q as string;
-    if (query) {
-      res.json(await storage.searchBadges(query));
-    } else {
-      res.json(await storage.getAllBadges());
-    }
+    res.json(query ? await storage.searchBadges(query) : await storage.getAllBadges());
   });
 
   // ============ HABBO API PROXY ============
+  async function resolveHabboUserId(username: string): Promise<string | null> {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/users?name=${encodeURIComponent(username)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return null;
+      const data = await r.json() as any;
+      return data.uniqueId || null;
+    } catch { return null; }
+  }
+
+  // User by name (básico: online, motto, level, etc.)
   app.get("/api/habbo/user/:username", async (req, res) => {
     try {
-      const r = await fetch(`https://www.habbo.es/api/public/users?name=${req.params.username}`);
+      const r = await fetch(`https://www.habbo.es/api/public/users?name=${encodeURIComponent(req.params.username)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
       if (!r.ok) return res.status(404).json({ message: "Usuario no encontrado" });
       res.json(await r.json());
     } catch { res.status(500).json({ message: "Error al consultar Habbo API" }); }
   });
 
-  // Habbo Origins API proxy
+  // Rooms del usuario (para ProfilePage)
+  app.get("/api/habbo/rooms/:username", async (req, res) => {
+    try {
+      const uniqueId = await resolveHabboUserId(req.params.username);
+      if (!uniqueId) return res.json([]);
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/rooms`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.json([]);
+      res.json(await r.json());
+    } catch { res.json([]); }
+  });
+
+  // Grupos del usuario (para ProfilePage)
+  app.get("/api/habbo/groups/:username", async (req, res) => {
+    try {
+      const uniqueId = await resolveHabboUserId(req.params.username);
+      if (!uniqueId) return res.json([]);
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/groups`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.json([]);
+      res.json(await r.json());
+    } catch { res.json([]); }
+  });
+
+  // Origins
   app.get("/api/habbo/origins/user/:username", async (req, res) => {
     try {
-      const r = await fetch(`https://origins.habbo.es/api/public/users?name=${req.params.username}`);
+      const r = await fetch(`https://origins.habbo.es/api/public/users?name=${encodeURIComponent(req.params.username)}`);
       if (!r.ok) return res.status(404).json({ message: "Usuario no encontrado en Origins" });
       res.json(await r.json());
     } catch { res.status(500).json({ message: "Error al consultar Habbo Origins API" }); }
@@ -298,109 +254,203 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/badges/:hotel", async (req, res) => {
     try {
-      const hotel = req.params.hotel || "es";
-      const limit = req.query.limit || "20";
-      const r = await fetch(`https://www.habboassets.com/api/v1/badges?hotel=${hotel}&limit=${limit}`);
-      if (!r.ok) return res.status(500).json({ message: "Error al consultar badges" });
+      const r = await fetch(`https://www.habboassets.com/api/v1/badges?hotel=${req.params.hotel || "es"}&limit=${req.query.limit || "20"}`);
+      if (!r.ok) return res.status(500).json({ message: "Error" });
       res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error al consultar badges API" }); }
+    } catch { res.status(500).json({ message: "Error" }); }
   });
 
   app.get("/api/habbo/marketplace/:item", async (req, res) => {
     try {
-      const hotel = req.query.hotel || "es";
-      const r = await fetch(`https://habboapi.site/api/market/history?classname=${req.params.item}&hotel=${hotel}`);
-      if (!r.ok) return res.status(500).json({ message: "Error al consultar marketplace" });
+      const r = await fetch(`https://habboapi.site/api/market/history?classname=${req.params.item}&hotel=${req.query.hotel || "es"}`);
+      if (!r.ok) return res.status(500).json({ message: "Error" });
       res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error al consultar marketplace API" }); }
+    } catch { res.status(500).json({ message: "Error" }); }
   });
 
-  // ============ HABBO FURNI (latest from furnidata) ============
   app.get("/api/habbo/furni", async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 24;
-      const r = await fetch("https://www.habbo.es/gamedata/furnidata_json/0", {
-        headers: { "User-Agent": "HabboSpeed/1.0" },
-      });
+      const r = await fetch("https://www.habbo.es/gamedata/furnidata_json/0", { headers: { "User-Agent": "HabboSpeed/1.0" } });
       if (!r.ok) return res.json([]);
       const data = await r.json() as any;
       const items = data?.roomitemtypes?.furnitype || [];
-      // Return last N items (newest) with icon URL info
-      const latest = items.slice(-limit).reverse().map((f: any) => ({
+      res.json(items.slice(-limit).reverse().map((f: any) => ({
         name: (f.name || f.classname || "").replace(/_/g, " ").replace(/ name$/i, ""),
-        classname: f.classname,
-        revision: f.revision,
+        classname: f.classname, revision: f.revision,
         iconUrl: `https://images.habbo.com/dcr/hof_furni/${f.revision}/${f.classname}_icon.png`,
-      }));
-      res.json(latest);
-    } catch {
-      res.json([]);
-    }
+      })));
+    } catch { res.json([]); }
+  });
+
+  // Extended Habbo API routes
+  app.get("/api/habbo/room/:roomId", async (req, res) => {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/rooms/${encodeURIComponent(req.params.roomId)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  app.get("/api/habbo/user/:username/profile", async (req, res) => {
+    try {
+      const uid = await resolveHabboUserId(req.params.username);
+      if (!uid) return res.status(404).json({ message: "Error" });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/profile`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json({ uniqueId: uid, ...(await r.json() as any) });
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  app.get("/api/habbo/user/:username/friends", async (req, res) => {
+    try {
+      const uid = await resolveHabboUserId(req.params.username);
+      if (!uid) return res.status(404).json({ message: "Error" });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/friends`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      res.json(r.ok ? await r.json() : []);
+    } catch { res.json([]); }
+  });
+
+  app.get("/api/habbo/user/:username/rooms", async (req, res) => {
+    try {
+      const uid = await resolveHabboUserId(req.params.username);
+      if (!uid) return res.json([]);
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/rooms`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      res.json(r.ok ? await r.json() : []);
+    } catch { res.json([]); }
+  });
+
+  app.get("/api/habbo/user/:username/badges", async (req, res) => {
+    try {
+      const uid = await resolveHabboUserId(req.params.username);
+      if (!uid) return res.json([]);
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/badges`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      res.json(r.ok ? await r.json() : []);
+    } catch { res.json([]); }
+  });
+
+  app.get("/api/habbo/user/:username/groups", async (req, res) => {
+    try {
+      const uid = await resolveHabboUserId(req.params.username);
+      if (!uid) return res.json([]);
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/groups`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      res.json(r.ok ? await r.json() : []);
+    } catch { res.json([]); }
+  });
+
+  app.get("/api/habbo/group/:id", async (req, res) => {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  app.get("/api/habbo/group/:id/members", async (req, res) => {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}/members`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  app.get("/api/habbo/hotlooks", async (_req, res) => {
+    try {
+      const r = await fetch("https://www.habbo.es/api/public/lists/hotlooks", { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      res.json(r.ok ? await r.json() : []);
+    } catch { res.json([]); }
+  });
+
+  app.get("/api/habbo/badge-owners/:badgeCode", async (req, res) => {
+    try {
+      const r = await fetch(`https://www.habbo.es/api/public/badge/owners/${encodeURIComponent(req.params.badgeCode)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(r.status).json({ message: "Error" });
+      res.json(await r.json());
+    } catch { res.status(500).json({ message: "Error" }); }
+  });
+
+  app.get("/api/habbo/achievements", async (_req, res) => {
+    try {
+      const r = await fetch("https://www.habbo.es/api/public/achievements", { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      res.json(r.ok ? await r.json() : []);
+    } catch { res.json([]); }
   });
 
   // ============ REQUESTS ============
-  app.get("/api/requests", async (_req, res) => {
-    res.json(await storage.getAllRequests());
-  });
-
-  app.post("/api/requests", async (req, res) => {
-    res.status(201).json(await storage.createRequest(req.body));
-  });
-
+  app.get("/api/requests", async (_req, res) => { res.json(await storage.getAllRequests()); });
+  app.post("/api/requests", async (req, res) => { res.status(201).json(await storage.createRequest(req.body)); });
   app.delete("/api/requests/:id", adminMiddleware, async (req, res) => {
     await storage.deleteRequest(parseInt(req.params.id));
     res.json({ message: "Eliminado" });
   });
 
   // ============ TEAM ============
-  app.get("/api/team", async (_req, res) => {
-    res.json(await storage.getAllTeamMembers());
-  });
-
-  app.post("/api/team", adminMiddleware, async (req, res) => {
-    res.status(201).json(await storage.createTeamMember(req.body));
-  });
-
+  app.get("/api/team", async (_req, res) => { res.json(await storage.getAllTeamMembers()); });
+  app.post("/api/team", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createTeamMember(req.body)); });
   app.put("/api/team/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateTeamMember(parseInt(req.params.id), req.body);
     if (!item) return res.status(404).json({ message: "Miembro no encontrado" });
     res.json(item);
   });
-
   app.delete("/api/team/:id", adminMiddleware, async (req, res) => {
     await storage.deleteTeamMember(parseInt(req.params.id));
     res.json({ message: "Eliminado" });
   });
 
-  // ============ USERS (Admin) ============
+  // ============ USERS (Admin + self-update) ============
   app.get("/api/users", adminMiddleware, async (_req, res) => {
     const users = await storage.getAllUsers();
     res.json(users.map(u => ({ ...u, passwordHash: undefined })));
   });
 
+  // Self-update (PATCH — propio perfil)
+  app.patch("/api/users/:id", authMiddleware, async (req: any, res) => {
+    const targetId = parseInt(req.params.id);
+    // Solo puede editarse a sí mismo (a menos que sea admin)
+    const caller = await storage.getUser(req.userId);
+    if (!caller) return res.status(401).json({ message: "No autorizado" });
+    if (caller.id !== targetId && caller.role !== "admin") {
+      return res.status(403).json({ message: "No puedes editar otro perfil" });
+    }
+    const allowed: any = {};
+    if (req.body.displayName !== undefined) allowed.displayName = req.body.displayName;
+    if (req.body.habboUsername !== undefined) allowed.habboUsername = req.body.habboUsername;
+    const item = await storage.updateUser(targetId, allowed);
+    if (!item) return res.status(404).json({ message: "Usuario no encontrado" });
+    res.json({ ...item, passwordHash: undefined });
+  });
+
+  // Admin full update
   app.put("/api/users/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateUser(parseInt(req.params.id), req.body);
     if (!item) return res.status(404).json({ message: "Usuario no encontrado" });
     res.json({ ...item, passwordHash: undefined });
   });
 
-  // ============ THEMES ============
-  app.get("/api/themes", async (_req, res) => {
-    res.json(await storage.getAllThemes());
+  // Buscar usuario por habboUsername (para ProfilePage)
+  app.get("/api/users/by-habbo/:username", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const user = users.find(
+        (u: any) => u.habboUsername?.toLowerCase() === req.params.username.toLowerCase()
+      );
+      if (!user) return res.status(404).json({ message: "No encontrado" });
+      res.json({ ...user, passwordHash: undefined });
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
+  // ============ THEMES ============
+  app.get("/api/themes", async (_req, res) => { res.json(await storage.getAllThemes()); });
   app.get("/api/themes/active", async (_req, res) => {
     const theme = await storage.getActiveTheme();
     if (!theme) return res.status(404).json({ message: "Tema no encontrado" });
     res.json(theme);
   });
-
   app.get("/api/themes/:slug", async (req, res) => {
     const theme = await storage.getThemeBySlug(req.params.slug);
     if (!theme) return res.status(404).json({ message: "Tema no encontrado" });
     res.json(theme);
   });
-
   app.put("/api/themes/active", adminMiddleware, async (req, res) => {
     const { slug } = req.body;
     if (!slug) return res.status(400).json({ message: "Slug requerido" });
@@ -408,18 +458,14 @@ export async function registerRoutes(server: Server, app: Express) {
     if (!config) return res.status(404).json({ message: "Tema no encontrado" });
     res.json(config);
   });
-
   app.put("/api/themes/:id", adminMiddleware, async (req, res) => {
     const theme = await storage.updateTheme(parseInt(req.params.id), req.body);
     if (!theme) return res.status(404).json({ message: "Tema no encontrado" });
     res.json(theme);
   });
+  app.post("/api/themes", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createTheme(req.body)); });
 
-  app.post("/api/themes", adminMiddleware, async (req, res) => {
-    res.status(201).json(await storage.createTheme(req.body));
-  });
-
-  // ============ NOW PLAYING (Radio proxy) ============
+  // ============ NOW PLAYING ============
   app.get("/api/nowplaying", async (_req, res) => {
     try {
       const cfg = await storage.getConfig();
@@ -432,21 +478,15 @@ export async function registerRoutes(server: Server, app: Express) {
 
   // ============ DJ PANEL ============
   app.get("/api/dj-panel", async (_req, res) => {
-    try {
-      res.json(await storage.getDjPanel());
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    try { res.json(await storage.getDjPanel()); }
+    catch (e: any) { res.status(500).json({ message: e.message }); }
   });
-
   app.put("/api/dj-panel", djMiddleware, async (req, res) => {
     try {
       const panel = await storage.updateDjPanel(req.body);
       if (!panel) return res.status(404).json({ message: "Panel no encontrado" });
       res.json(panel);
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
   // ============ CHAT ============
@@ -454,20 +494,14 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       res.json(await storage.getChatMessages(limit));
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
-
   app.delete("/api/chat/:id", djMiddleware, async (req: any, res) => {
     try {
       await storage.deleteChatMessage(parseInt(req.params.id));
       res.json({ message: "Mensaje eliminado" });
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
-
   app.post("/api/chat", authMiddleware, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.userId);
@@ -479,236 +513,73 @@ export async function registerRoutes(server: Server, app: Express) {
         message: req.body.content || req.body.message,
       });
       res.status(201).json(msg);
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
   // ============ PRIVATE MESSAGES ============
   app.get("/api/messages", authMiddleware, async (req: any, res) => {
-    try {
-      res.json(await storage.getMessagesByUser(req.userId));
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    try { res.json(await storage.getMessagesByUser(req.userId)); }
+    catch (e: any) { res.status(500).json({ message: e.message }); }
   });
-
   app.get("/api/messages/unread", authMiddleware, async (req: any, res) => {
-    try {
-      const count = await storage.getUnreadCount(req.userId);
-      res.json({ count });
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    try { res.json({ count: await storage.getUnreadCount(req.userId) }); }
+    catch (e: any) { res.status(500).json({ message: e.message }); }
   });
-
   app.post("/api/messages", authMiddleware, async (req: any, res) => {
-    try {
-      const msg = await storage.createPrivateMessage({
-        ...req.body,
-        fromUserId: req.userId,
-      });
-      res.status(201).json(msg);
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    try { res.status(201).json(await storage.createPrivateMessage({ ...req.body, fromUserId: req.userId })); }
+    catch (e: any) { res.status(500).json({ message: e.message }); }
   });
-
   app.put("/api/messages/:id/read", authMiddleware, async (req: any, res) => {
     try {
       const msg = await storage.markMessageRead(parseInt(req.params.id));
       if (!msg) return res.status(404).json({ message: "Mensaje no encontrado" });
       res.json(msg);
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
   // ============ VERIFIED BADGES ============
   app.get("/api/verified-badges/:userId", async (req, res) => {
-    try {
-      res.json(await storage.getVerifiedBadges(parseInt(req.params.userId)));
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    try { res.json(await storage.getVerifiedBadges(parseInt(req.params.userId))); }
+    catch (e: any) { res.status(500).json({ message: e.message }); }
   });
-
   app.post("/api/verified-badges/verify", authMiddleware, async (req: any, res) => {
     try {
       const { habboUsername, badgeCode } = req.body;
-      if (!habboUsername || !badgeCode) {
-        return res.status(400).json({ message: "habboUsername y badgeCode son requeridos" });
-      }
-      // Fetch from Habbo API to verify badge in selectedBadges
+      if (!habboUsername || !badgeCode) return res.status(400).json({ message: "habboUsername y badgeCode son requeridos" });
       const r = await fetch(`https://www.habbo.es/api/public/users?name=${encodeURIComponent(habboUsername)}`);
       if (!r.ok) return res.status(404).json({ message: "Usuario de Habbo no encontrado" });
       const habboData = await r.json() as any;
-      const selectedBadges: any[] = habboData.selectedBadges || [];
-      const hasBadge = selectedBadges.some((b: any) => b.code === badgeCode || b.badgeIndex === badgeCode);
-      if (!hasBadge) {
-        return res.status(400).json({ message: "Badge no encontrado en el perfil de Habbo", verified: false });
-      }
+      const hasBadge = (habboData.selectedBadges || []).some((b: any) => b.code === badgeCode || b.badgeIndex === badgeCode);
+      if (!hasBadge) return res.status(400).json({ message: "Badge no encontrado en el perfil de Habbo", verified: false });
       const badge = await storage.createVerifiedBadge({ userId: req.userId, badgeCode });
       res.status(201).json({ verified: true, badge });
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
-  // ============ TEAM USERS (from registered users) ============
+  // ============ TEAM USERS ============
   app.get("/api/team-users", async (_req, res) => {
     try {
       const users = await storage.getTeamUsers();
       res.json(users.map((u: any) => ({ ...u, passwordHash: undefined })));
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
-  // ============ SPEED POINTS (Admin) ============
+  // ============ SPEED POINTS ============
   app.put("/api/users/:id/points", adminMiddleware, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const { points } = req.body;
-      if (points === undefined || isNaN(Number(points))) {
-        return res.status(400).json({ message: "Campo 'points' requerido" });
-      }
+      if (points === undefined || isNaN(Number(points))) return res.status(400).json({ message: "Campo 'points' requerido" });
       const user = await storage.getUser(userId);
       if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      const updated = await storage.updateUser(userId, {
-        speedPoints: (user.speedPoints ?? 0) + Number(points),
-      });
+      const updated = await storage.updateUser(userId, { speedPoints: (user.speedPoints ?? 0) + Number(points) });
       if (!updated) return res.status(404).json({ message: "Usuario no encontrado" });
       res.json({ ...updated, passwordHash: undefined });
-    } catch (e: any) {
-      res.status(500).json({ message: e.message });
-    }
-  });
-
-  // ============ HABBO PUBLIC API PROXY (new tools) ============
-  async function resolveHabboUserId(username: string): Promise<string | null> {
-    try {
-      const r = await fetch(`https://www.habbo.es/api/public/users?name=${encodeURIComponent(username)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return null;
-      const data = await r.json() as any;
-      return data.uniqueId || null;
-    } catch { return null; }
-  }
-
-  // 1. GET /api/habbo/room/:roomId
-  app.get("/api/habbo/room/:roomId", async (req, res) => {
-    try {
-      const r = await fetch(`https://www.habbo.es/api/public/rooms/${encodeURIComponent(req.params.roomId)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 2. GET /api/habbo/user/:username/profile
-  app.get("/api/habbo/user/:username/profile", async (req, res) => {
-    try {
-      const uniqueId = await resolveHabboUserId(req.params.username);
-      if (!uniqueId) return res.status(404).json({ message: "Error" });
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/profile`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      const profile = await r.json() as any;
-      res.json({ uniqueId, ...profile });
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 3. GET /api/habbo/user/:username/friends
-  app.get("/api/habbo/user/:username/friends", async (req, res) => {
-    try {
-      const uniqueId = await resolveHabboUserId(req.params.username);
-      if (!uniqueId) return res.status(404).json({ message: "Error" });
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/friends`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 4. GET /api/habbo/user/:username/rooms
-  app.get("/api/habbo/user/:username/rooms", async (req, res) => {
-    try {
-      const uniqueId = await resolveHabboUserId(req.params.username);
-      if (!uniqueId) return res.status(404).json({ message: "Error" });
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/rooms`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 5. GET /api/habbo/user/:username/badges
-  app.get("/api/habbo/user/:username/badges", async (req, res) => {
-    try {
-      const uniqueId = await resolveHabboUserId(req.params.username);
-      if (!uniqueId) return res.status(404).json({ message: "Error" });
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/badges`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 6. GET /api/habbo/user/:username/groups
-  app.get("/api/habbo/user/:username/groups", async (req, res) => {
-    try {
-      const uniqueId = await resolveHabboUserId(req.params.username);
-      if (!uniqueId) return res.status(404).json({ message: "Error" });
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uniqueId)}/groups`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 7. GET /api/habbo/group/:id
-  app.get("/api/habbo/group/:id", async (req, res) => {
-    try {
-      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 8. GET /api/habbo/group/:id/members
-  app.get("/api/habbo/group/:id/members", async (req, res) => {
-    try {
-      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}/members`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 9. GET /api/habbo/hotlooks
-  app.get("/api/habbo/hotlooks", async (_req, res) => {
-    try {
-      const r = await fetch("https://www.habbo.es/api/public/lists/hotlooks", { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 10. GET /api/habbo/badge-owners/:badgeCode
-  app.get("/api/habbo/badge-owners/:badgeCode", async (req, res) => {
-    try {
-      const r = await fetch(`https://www.habbo.es/api/public/badge/owners/${encodeURIComponent(req.params.badgeCode)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
-  });
-
-  // 11. GET /api/habbo/achievements
-  app.get("/api/habbo/achievements", async (_req, res) => {
-    try {
-      const r = await fetch("https://www.habbo.es/api/public/achievements", { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
   // ============ DOWNLOADS ============
-  app.get("/api/downloads", async (_req, res) => {
-    res.json(await storage.getAllDownloads());
-  });
+  app.get("/api/downloads", async (_req, res) => { res.json(await storage.getAllDownloads()); });
   app.post("/api/downloads", adminMiddleware, async (req: any, res) => {
     try {
       const item = await storage.createDownload({ ...req.body, addedBy: req.user?.displayName || "Admin" });
@@ -727,9 +598,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ BANNED SONGS ============
-  app.get("/api/banned-songs", djMiddleware, async (_req, res) => {
-    res.json(await storage.getAllBannedSongs());
-  });
+  app.get("/api/banned-songs", djMiddleware, async (_req, res) => { res.json(await storage.getAllBannedSongs()); });
   app.post("/api/banned-songs", djMiddleware, async (req: any, res) => {
     try {
       const song = await storage.createBannedSong({ ...req.body, bannedBy: req.user?.displayName || "Staff" });
@@ -744,14 +613,10 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ CONTACT MESSAGES ============
-  app.get("/api/contact-messages", adminMiddleware, async (_req, res) => {
-    res.json(await storage.getAllContactMessages());
-  });
+  app.get("/api/contact-messages", adminMiddleware, async (_req, res) => { res.json(await storage.getAllContactMessages()); });
   app.post("/api/contact-messages", async (req, res) => {
-    try {
-      const msg = await storage.createContactMessage({ ...req.body, ip: req.ip });
-      res.status(201).json(msg);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    try { res.status(201).json(await storage.createContactMessage({ ...req.body, ip: req.ip })); }
+    catch (e: any) { res.status(500).json({ message: e.message }); }
   });
   app.put("/api/contact-messages/:id/status", adminMiddleware, async (req: any, res) => {
     const updated = await storage.updateContactMessageStatus(parseInt(req.params.id), req.body.status);
@@ -771,14 +636,10 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ REPORTED MESSAGES ============
-  app.get("/api/reported-messages", adminMiddleware, async (_req, res) => {
-    res.json(await storage.getAllReportedMessages());
-  });
+  app.get("/api/reported-messages", adminMiddleware, async (_req, res) => { res.json(await storage.getAllReportedMessages()); });
   app.post("/api/reported-messages", authMiddleware, async (req: any, res) => {
-    try {
-      const report = await storage.createReport({ ...req.body, reportedBy: req.userId });
-      res.status(201).json(report);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    try { res.status(201).json(await storage.createReport({ ...req.body, reportedBy: req.userId })); }
+    catch (e: any) { res.status(500).json({ message: e.message }); }
   });
   app.put("/api/reported-messages/:id/status", adminMiddleware, async (req: any, res) => {
     const updated = await storage.updateReportStatus(parseInt(req.params.id), req.body.status);
