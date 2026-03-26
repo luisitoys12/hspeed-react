@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MessageSquare, Send, User } from "lucide-react";
+import { ArrowLeft, MessageSquare, Send, Star } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import type { News, Comment } from "@shared/schema";
@@ -73,7 +73,7 @@ export default function NewsDetailPage() {
     onSuccess: () => {
       setComment("");
       queryClient.invalidateQueries({ queryKey: ["/api/comments/article", id] });
-      toast({ title: "Comentario publicado \u2713" });
+      toast({ title: "Comentario publicado ✓" });
     },
     onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
@@ -93,10 +93,12 @@ export default function NewsDetailPage() {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">Noticia no encontrada</p>
-        <Link href="/news"><a className="text-primary text-sm mt-2 inline-block">\u2190 Volver a Noticias</a></Link>
+        <Link href="/news"><a className="text-primary text-sm mt-2 inline-block">← Volver a Noticias</a></Link>
       </div>
     );
   }
+
+  const isFeatured = (article as any).featured;
 
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-6">
@@ -107,20 +109,55 @@ export default function NewsDetailPage() {
       </Link>
 
       <article className="space-y-5">
+        {/* Hero image */}
         {article.imageUrl && (
-          <div className="h-64 rounded-2xl overflow-hidden">
+          <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden shadow-xl">
             <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            {isFeatured && (
+              <div className="absolute top-3 left-3 flex items-center gap-1 bg-yellow-500/90 text-black text-[10px] font-bold px-2.5 py-1 rounded-full">
+                <Star className="w-3 h-3" /> Destacada
+              </div>
+            )}
           </div>
         )}
-        <div className="flex items-center gap-2">
+
+        {/* Meta */}
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className="text-[9px] border-primary/30 text-primary/80">{article.category}</Badge>
           <span className="text-xs text-muted-foreground">{article.date}</span>
+          {isFeatured && !article.imageUrl && (
+            <span className="flex items-center gap-1 text-[10px] font-bold text-yellow-400">
+              <Star className="w-3 h-3" /> Destacada
+            </span>
+          )}
         </div>
-        <h1 className="text-2xl font-bold leading-tight" data-testid="text-news-title">{article.title}</h1>
+
+        <h1 className="text-2xl sm:text-3xl font-bold leading-tight" data-testid="text-news-title">{article.title}</h1>
         <p className="text-sm text-muted-foreground italic border-l-2 border-primary/40 pl-4 leading-relaxed">{article.summary}</p>
-        <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{article.content}</div>
+
+        {/* Rich content: render HTML if it looks like HTML, else plain text */}
+        {article.content && (
+          (article.content as string).includes("<") ? (
+            <div
+              className="prose prose-sm prose-invert max-w-none text-foreground/90 leading-relaxed
+                [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-2
+                [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1.5
+                [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3
+                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3
+                [&_li]:mb-1 [&_strong]:text-foreground
+                [&_em]:text-foreground/80 [&_hr]:border-border [&_hr]:my-4
+                [&_img]:rounded-xl [&_img]:my-4 [&_img]:max-w-full
+                [&_blockquote]:border-l-2 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: article.content as string }}
+            />
+          ) : (
+            <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{article.content}</div>
+          )
+        )}
       </article>
 
+      {/* Comments */}
       <div className="border-t border-border pt-6 space-y-4">
         <h2 className="text-sm font-semibold flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-primary" />
@@ -157,7 +194,7 @@ export default function NewsDetailPage() {
         ) : (
           <div className="rounded-2xl border border-border bg-card/50 p-5 text-center">
             <p className="text-sm text-muted-foreground">
-              <Link href="/login"><a className="text-primary hover:underline">Inicia sesi\u00f3n</a></Link> para comentar
+              <Link href="/login"><a className="text-primary hover:underline">Inicia sesión</a></Link> para comentar
             </p>
           </div>
         )}
@@ -187,7 +224,7 @@ export default function NewsDetailPage() {
           {(!comments || comments.length === 0) && (
             <div className="text-center py-8 text-muted-foreground">
               <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-20" />
-              <p className="text-sm">S\u00e9 el primero en comentar</p>
+              <p className="text-sm">Sé el primero en comentar</p>
             </div>
           )}
         </div>
