@@ -1,13 +1,13 @@
 import pg from "pg";
 const { Pool } = pg;
 
-// Supabase PostgreSQL connection via Supavisor pooler (IPv4 compatible)
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is not set. Add it to your environment variables.");
+}
+
+// Neon PostgreSQL connection via connection string
 const pool = new Pool({
-  host: process.env.SUPABASE_DB_HOST || "aws-0-us-west-2.pooler.supabase.com",
-  port: parseInt(process.env.SUPABASE_DB_PORT || "6543"),
-  database: process.env.SUPABASE_DB_NAME || "postgres",
-  user: process.env.SUPABASE_DB_USER || "postgres.vrfkhluzsqqlhvtvgyos",
-  password: process.env.SUPABASE_DB_PASSWORD || "/Kv+JBz.88Rfi-A",
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 30000,
