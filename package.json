@@ -43,6 +43,7 @@
     "@radix-ui/react-tooltip": "^1.2.0",
     "@supabase/supabase-js": "^2.99.3",
     "@tanstack/react-query": "^5.60.5",
+    "@uiw/react-md-editor": "^4.0.4",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
