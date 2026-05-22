@@ -12,7 +12,7 @@ import {
   Eye, 
   EyeOff, 
   Globe, 
-  CheckCircle2, 
+  CheckCircle, 
   AlertCircle, 
   Lock, 
   Sparkles, 
@@ -273,7 +273,7 @@ export default function RegisterPage() {
                               Verificando misión...
                             </span>
                           ) : (
-                            <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Verificar en Habbo</>
+                            <><CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Verificar en Habbo</>
                           )}
                         </Button>
                       </div>
@@ -289,7 +289,7 @@ export default function RegisterPage() {
                   <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 rounded-xl p-3.5">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center">
-                        <CheckCircle2 className="w-4 h-4 text-green-400" />
+                        <CheckCircle className="w-4 h-4 text-green-400" />
                       </div>
                       <div>
                         <p className="text-[10px] text-green-400 font-bold uppercase tracking-wider">Habbo Verificado</p>

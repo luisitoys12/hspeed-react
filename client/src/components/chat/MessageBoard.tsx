@@ -40,7 +40,7 @@ export function MessageBoard() {
       }
       return res.json();
     },
-    refetchInterval: isError ? false : 5000,
+    refetchInterval: (query: any) => query.state.status === "error" ? false : 5000,
     retry: 2,
     retryDelay: 3000,
     staleTime: 3000,
