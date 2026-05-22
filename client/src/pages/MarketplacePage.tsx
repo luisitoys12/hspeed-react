@@ -44,22 +44,43 @@ function getPrice(item: FurniItem): number {
 }
 
 function getImageUrl(item: FurniItem): string | null {
-  if (item?.Revision && item?.ClassName) {
-    return `https://images.habbo.com/dcr/hof_furni/${item.Revision}/${item.ClassName}_icon.png`;
-  }
-  if (item?.ClassName) {
-    return `https://images.habbo.com/dcr/hof_furni/0/${item.ClassName}_icon.png`;
+  const revision = item?.Revision ?? (item as any)?.revision ?? 0;
+  const classname = item?.ClassName ?? item?.className ?? (item as any)?.classname;
+  if (classname) {
+    return `https://images.habbo.com/dcr/hof_furni/${revision}/${classname}_icon.png`;
   }
   return null;
 }
 
 function getName(item: FurniItem): string {
-  return item?.FurniName || item?.itemName || item?.ClassName || item?.className || "—";
+  return item?.FurniName || item?.itemName || (item as any)?.name || item?.ClassName || item?.className || (item as any)?.classname || "—";
+}
+
+function FurniImage({ item, className = "w-12 h-12" }: { item: FurniItem; className?: string }) {
+  const [error, setError] = useState(false);
+  const imgUrl = getImageUrl(item);
+  const name = getName(item);
+  
+  if (!imgUrl || error) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20 text-primary font-black text-[10px] sm:text-xs shadow-inner shadow-primary/10 select-none`}>
+        {name.slice(0, 2).toUpperCase()}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imgUrl}
+      alt={name}
+      className={`${className} object-contain filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] transition-transform duration-300 group-hover:scale-110`}
+      onError={() => setError(true)}
+    />
+  );
 }
 
 function FurniCard({ item, onClick }: { item: FurniItem; onClick: () => void }) {
   const price = getPrice(item);
-  const imgUrl = getImageUrl(item);
   const name = getName(item);
   const hist = item?.marketData?.history || [];
   const prices = hist.map((h: any) => Array.isArray(h) ? h[0] : h.price).filter(Boolean);
@@ -70,35 +91,28 @@ function FurniCard({ item, onClick }: { item: FurniItem; onClick: () => void }) 
   return (
     <button
       onClick={onClick}
-      className="group bg-card border border-border rounded-xl p-3 flex flex-col items-center gap-2 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all text-left w-full"
+      className="group bg-card/60 backdrop-blur-md border border-border/80 rounded-2xl p-4 flex flex-col items-center gap-3 hover:border-primary/45 hover:shadow-xl hover:shadow-primary/5 transition-all text-left w-full hover:-translate-y-0.5 duration-300"
       data-testid={`card-furni-${item.ClassName || name}`}
     >
-      <div className="w-16 h-16 rounded-lg bg-secondary/40 border border-border/50 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-primary/30 transition-colors">
-        {imgUrl ? (
-          <img
-            src={imgUrl}
-            alt={name}
-            className="w-12 h-12 object-contain"
-            onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}
-          />
-        ) : (
-          <ShoppingBag className="w-6 h-6 text-muted-foreground/30" />
-        )}
+      <div className="w-16 h-16 rounded-xl bg-secondary/50 border border-border/50 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-primary/25 transition-all duration-300 shadow-inner group-hover:shadow-primary/5">
+        <FurniImage item={item} className="w-12 h-12" />
       </div>
-      <div className="w-full text-center space-y-0.5">
-        <p className="text-[11px] font-semibold leading-tight line-clamp-2 text-foreground/90 group-hover:text-primary transition-colors">{name}</p>
-        <p className="text-sm font-black text-yellow-400">
+      <div className="w-full text-center space-y-1">
+        <p className="text-[11px] font-bold leading-tight line-clamp-2 text-foreground/90 group-hover:text-primary transition-colors duration-200">{name}</p>
+        <p className="text-sm font-black text-yellow-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
           {price > 0 ? `${price.toLocaleString()}c` : "—"}
         </p>
         {minP !== null && maxP !== null && minP !== maxP && (
-          <p className="text-[9px] text-muted-foreground">
+          <p className="text-[9px] text-muted-foreground/80 font-medium font-sans">
             mín {minP.toLocaleString()} – máx {maxP.toLocaleString()}
           </p>
         )}
       </div>
       {trend && (
-        <div className={`flex items-center gap-0.5 text-[9px] font-bold ${
-          trend === "up" ? "text-green-400" : "text-red-400"
+        <div className={`flex items-center gap-0.5 text-[9px] font-black px-2 py-0.5 rounded-full ${
+          trend === "up" 
+            ? "bg-green-500/10 text-green-400 border border-green-500/20" 
+            : "bg-red-500/10 text-red-400 border border-red-500/20"
         }`}>
           {trend === "up" ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
           {trend === "up" ? "Subiendo" : "Bajando"}
@@ -110,64 +124,82 @@ function FurniCard({ item, onClick }: { item: FurniItem; onClick: () => void }) 
 
 function FurniModal({ item, hotel, onClose }: { item: FurniItem; hotel: string; onClose: () => void }) {
   const price = getPrice(item);
-  const imgUrl = getImageUrl(item);
   const name = getName(item);
-  const hist = (item?.marketData?.history || []).map((h: any) => ({
-    price: Array.isArray(h) ? h[0] : h.price,
-    amount: Array.isArray(h) ? h[1] : h.amount,
-    date: Array.isArray(h) ? new Date((h[4] || 0) * 1000).toLocaleDateString("es-MX") : (h.date || "—"),
-  }));
+  const hist = (item?.marketData?.history || []).map((h: any) => {
+    let dateStr = "—";
+    if (Array.isArray(h)) {
+      dateStr = new Date((h[4] || 0) * 1000).toLocaleDateString("es-MX");
+    } else if (h.date) {
+      try {
+        const d = new Date(h.date);
+        dateStr = isNaN(d.getTime()) ? h.date : d.toLocaleDateString("es-MX");
+      } catch {
+        dateStr = h.date;
+      }
+    }
+    return {
+      price: Array.isArray(h) ? h[0] : h.price,
+      amount: Array.isArray(h) ? h[1] : h.amount,
+      date: dateStr,
+    };
+  });
   const prices = hist.map((h: any) => h.price).filter(Boolean);
   const minP = prices.length ? Math.min(...prices) : null;
   const maxP = prices.length ? Math.max(...prices) : null;
-  const avgP = prices.length ? Math.round(prices.reduce((a: number, b: number) => a + b, 0) / prices.length) : null;
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg bg-card border-border">
-        <DialogHeader>
-          <DialogTitle className="text-sm flex items-center gap-2">
-            {imgUrl && (
-              <img src={imgUrl} alt={name} className="w-8 h-8 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-            )}
-            {name}
+      <DialogContent className="max-w-md bg-card/95 backdrop-blur-lg border border-border/80 shadow-2xl rounded-3xl p-6">
+        <DialogHeader className="border-b border-border/40 pb-4 mb-4">
+          <DialogTitle className="text-base font-black flex items-center gap-3 text-foreground">
+            <div className="w-10 h-10 rounded-lg bg-secondary/60 flex items-center justify-center border border-border">
+              <FurniImage item={item} className="w-8 h-8" />
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-sm font-black text-foreground">{name}</span>
+              <span className="text-[10px] text-muted-foreground font-mono font-bold uppercase">{item.ClassName || (item as any).classname || "—"}</span>
+            </div>
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-2">
+        <div className="space-y-5">
+          <div className="grid grid-cols-3 gap-3">
             {[
-              { label: "Precio actual", val: price > 0 ? `${price.toLocaleString()}c` : "—", color: "text-yellow-400" },
-              { label: "Mínimo", val: minP ? `${minP.toLocaleString()}c` : "—", color: "text-green-400" },
-              { label: "Máximo", val: maxP ? `${maxP.toLocaleString()}c` : "—", color: "text-red-400" },
+              { label: "Precio Promedio", val: price > 0 ? `${price.toLocaleString()}c` : "—", color: "text-yellow-400" },
+              { label: "Precio Mínimo", val: minP ? `${minP.toLocaleString()}c` : "—", color: "text-green-400" },
+              { label: "Precio Máximo", val: maxP ? `${maxP.toLocaleString()}c` : "—", color: "text-red-400" },
             ].map((s) => (
-              <div key={s.label} className="bg-secondary/40 rounded-lg p-2.5 text-center">
-                <p className="text-[9px] text-muted-foreground">{s.label}</p>
-                <p className={`text-sm font-black ${s.color}`}>{s.val}</p>
+              <div key={s.label} className="bg-secondary/40 hover:bg-secondary/60 border border-border/40 rounded-2xl p-3 text-center transition-colors">
+                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">{s.label}</p>
+                <p className={`text-sm font-black ${s.color} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{s.val}</p>
               </div>
             ))}
           </div>
-          <div className="flex gap-2 text-xs">
-            <Badge variant="outline" className="border-primary/30 text-primary/80">.{hotel}</Badge>
-            {item.ClassName && <Badge variant="outline" className="text-muted-foreground font-mono text-[10px]">{item.ClassName}</Badge>}
+          
+          <div className="flex gap-2">
+            <Badge variant="outline" className="bg-primary/5 border-primary/30 text-primary font-bold text-[10px] px-2.5 py-0.5">Hotel Habbo.{hotel.toUpperCase()}</Badge>
+            {item.Revision && <Badge variant="outline" className="bg-secondary/30 text-muted-foreground border-border/60 font-mono text-[10px] px-2.5 py-0.5">Rev: {item.Revision}</Badge>}
           </div>
+
           {hist.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold mb-2 flex items-center gap-1"><TrendingUp className="w-3.5 h-3.5 text-primary" /> Historial reciente</p>
-              <div className="overflow-x-auto max-h-44 overflow-y-auto">
-                <table className="w-full text-[11px]">
+            <div className="space-y-2">
+              <p className="text-xs font-black text-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                <TrendingUp className="w-4 h-4 text-primary" /> Historial de Mercado (15 Días)
+              </p>
+              <div className="overflow-x-auto border border-border/50 rounded-2xl max-h-48 overflow-y-auto shadow-inner bg-secondary/10 font-sans">
+                <table className="w-full text-[11px] border-collapse">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-1 text-muted-foreground">Fecha</th>
-                      <th className="text-right py-1 text-muted-foreground">Precio</th>
-                      <th className="text-right py-1 text-muted-foreground">Cant.</th>
+                    <tr className="border-b border-border bg-secondary/50 text-[10px] uppercase font-bold tracking-wider">
+                      <th className="text-left py-2 px-3 text-muted-foreground">Fecha de Venta</th>
+                      <th className="text-right py-2 px-3 text-muted-foreground">Precio Promedio</th>
+                      <th className="text-right py-2 px-3 text-muted-foreground">Volumen</th>
                     </tr>
                   </thead>
                   <tbody>
                     {hist.slice(-20).reverse().map((h: any, i: number) => (
-                      <tr key={i} className="border-b border-border/30 hover:bg-secondary/20">
-                        <td className="py-1 text-muted-foreground">{h.date}</td>
-                        <td className="py-1 text-right font-mono text-yellow-400">{h.price?.toLocaleString()}c</td>
-                        <td className="py-1 text-right text-muted-foreground">{h.amount ?? "—"}</td>
+                      <tr key={i} className="border-b border-border/20 hover:bg-primary/5 transition-colors">
+                        <td className="py-2 px-3 text-muted-foreground font-medium">{h.date}</td>
+                        <td className="py-2 px-3 text-right font-mono font-bold text-yellow-400">{h.price?.toLocaleString()}c</td>
+                        <td className="py-2 px-3 text-right text-muted-foreground font-mono">{h.amount ?? "—"} uds.</td>
                       </tr>
                     ))}
                   </tbody>
