@@ -149,17 +149,18 @@ export class MemStorage implements IStorage {
       name: "Circo Clásico",
       description: "Tema circense tradicional con colores rojo y amarillo.",
       colors: {
-        primary: "0 85% 50%",
+        primary: "355 70% 55%",
         primaryForeground: "0 0% 100%",
-        accent: "45 100% 50%",
+        accent: "42 80% 60%",
         accentForeground: "0 0% 10%",
-        background: "0 0% 6%",
-        card: "0 20% 10%",
-        border: "0 30% 18%",
-        muted: "0 15% 14%",
-        glowColor: "220, 38, 38",
-        gradientFrom: "#dc2626",
-        gradientTo: "#eab308"
+        background: "0 10% 12%",
+        card: "0 12% 16%",
+        border: "0 15% 22%",
+        muted: "0 10% 14%",
+        glowColor: "225, 29, 72",
+        gradientFrom: "#e11d48",
+        gradientTo: "#f59e0b",
+        secondary: "42 80% 60%"
       },
       bannerUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png",
       logoUrl: null,
@@ -177,23 +178,81 @@ export class MemStorage implements IStorage {
       name: "HabNubis Premium",
       description: "Estilo elegante y moderno inspirado en HabNubis.es con degradados neón y transparencias premium.",
       colors: {
-        primary: "262 83% 58%",
+        primary: "260 70% 68%",
         primaryForeground: "0 0% 100%",
-        accent: "199 89% 48%",
+        accent: "197 85% 62%",
         accentForeground: "0 0% 10%",
-        background: "222 47% 7%",
-        card: "222 47% 11%",
-        border: "223 30% 20%",
-        muted: "222 25% 16%",
-        glowColor: "139, 92, 246",
-        gradientFrom: "#8b5cf6",
-        gradientTo: "#0ea5e9"
+        background: "222 35% 15%",
+        card: "222 35% 20%",
+        border: "222 25% 28%",
+        muted: "222 30% 18%",
+        glowColor: "167, 139, 250",
+        gradientFrom: "#a78bfa",
+        gradientTo: "#67e8f9"
       },
       bannerUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
       logoUrl: null,
       decorations: {
         emoji: "🔮",
         pattern: "grid",
+        particleType: "float"
+      },
+      isDefault: false
+    });
+
+    this.themes.set("lapis", {
+      id: 3,
+      slug: "lapis",
+      name: "Obsidiana Lapis",
+      description: "Un tema oscuro relajante y suave con tonos azul slate, lavanda y turquesa. Protege tu vista con contrastes balanceados.",
+      colors: {
+        primary: "245 80% 70%",
+        primaryForeground: "0 0% 100%",
+        accent: "174 75% 45%",
+        accentForeground: "0 0% 100%",
+        background: "215 28% 17%",
+        card: "215 28% 22%",
+        border: "215 20% 30%",
+        muted: "215 25% 20%",
+        glowColor: "99, 102, 241",
+        gradientFrom: "#6366f1",
+        gradientTo: "#06b6d4",
+        secondary: "174 75% 45%"
+      },
+      bannerUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+      logoUrl: null,
+      decorations: {
+        emoji: "💎",
+        pattern: "grid",
+        particleType: "float"
+      },
+      isDefault: false
+    });
+
+    this.themes.set("bosque", {
+      id: 4,
+      slug: "bosque",
+      name: "Bosque de Jade",
+      description: "Un tema premium cálido y relajante con tonos verdes esmeralda, musgo y salvia. Diseñado para eliminar la fatiga visual.",
+      colors: {
+        primary: "150 60% 55%",
+        primaryForeground: "160 80% 5%",
+        accent: "45 85% 65%",
+        accentForeground: "160 80% 5%",
+        background: "160 25% 12%",
+        card: "160 20% 17%",
+        border: "160 15% 25%",
+        muted: "160 20% 15%",
+        glowColor: "52, 211, 153",
+        gradientFrom: "#10b981",
+        gradientTo: "#059669",
+        secondary: "45 85% 65%"
+      },
+      bannerUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+      logoUrl: null,
+      decorations: {
+        emoji: "🌿",
+        pattern: "waves",
         particleType: "float"
       },
       isDefault: false

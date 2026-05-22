@@ -1449,6 +1449,120 @@ function LogrosTab() {
 }
 
 // ─────────────────────────────────────────────
+// Tab 7: Calculadora de Tradeo & Impuestos (NEW)
+// ─────────────────────────────────────────────
+
+function CalculadoraTradeoTab() {
+  const [precioCompra, setPrecioCompra] = useState<number>(100);
+  const [precioVenta, setPrecioVenta] = useState<number>(120);
+
+  const adFee = 1;
+  const commission = Math.max(1, Math.floor(precioVenta * 0.01));
+  const totalTax = adFee + commission;
+  const netEarnings = precioVenta - totalTax;
+  const netProfit = netEarnings - precioCompra;
+  const roi = precioCompra > 0 ? (netProfit / precioCompra) * 100 : 0;
+
+  let advice = "Negocio Arriesgado ⚠️";
+  let adviceColor = "text-yellow-400 border-yellow-500/30 bg-yellow-500/10";
+  if (netProfit > 20) {
+    advice = "¡Excelente Margen! 🔥";
+    adviceColor = "text-green-400 border-green-500/30 bg-green-500/10";
+  } else if (netProfit > 0) {
+    advice = "Ganancia Aceptable 👍";
+    adviceColor = "text-emerald-400 border-emerald-500/30 bg-emerald-500/10";
+  } else if (netProfit <= 0) {
+    advice = "Pérdida Asegurada 🛑";
+    adviceColor = "text-rose-400 border-rose-500/30 bg-rose-500/10";
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Activity className="w-4 h-4 text-primary" />
+        <p className="text-sm text-muted-foreground">
+          Calculadora financiera para mercaderes de Habbo. Optimiza tus ganancias deduciendo comisiones e impuestos del Mercadillo.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Inputs */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold">Parámetros de Tradeo</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground font-medium">Precio de Compra (Créditos 🪙)</label>
+              <Input
+                type="number"
+                value={precioCompra || ""}
+                onChange={(e) => setPrecioCompra(Number(e.target.value))}
+                placeholder="Ej: 100"
+                min={0}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground font-medium">Precio de Venta en Mercadillo (Créditos 🪙)</label>
+              <Input
+                type="number"
+                value={precioVenta || ""}
+                onChange={(e) => setPrecioVenta(Number(e.target.value))}
+                placeholder="Ej: 120"
+                min={0}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Results */}
+        <Card className="bg-card border-border relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl -z-10" />
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold flex items-center justify-between">
+              Análisis Económico
+              <span className={`text-[10px] px-2 py-0.5 rounded border ${adviceColor}`}>
+                {advice}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between text-xs py-1 border-b border-border/40">
+              <span className="text-muted-foreground">Tasa de Publicación (Fija):</span>
+              <span className="font-semibold">{adFee} crédito</span>
+            </div>
+            <div className="flex justify-between text-xs py-1 border-b border-border/40">
+              <span className="text-muted-foreground">Comisión de Venta (1%):</span>
+              <span className="font-semibold text-rose-400">-{commission} créditos</span>
+            </div>
+            <div className="flex justify-between text-xs py-1 border-b border-border/40">
+              <span className="text-muted-foreground">Total Impuestos Mercadillo:</span>
+              <span className="font-semibold text-rose-500">-{totalTax} créditos</span>
+            </div>
+            <div className="flex justify-between text-xs py-1 border-b border-border/40">
+              <span className="text-muted-foreground">Ingreso Neto de Venta:</span>
+              <span className="font-semibold text-primary">{netEarnings} créditos</span>
+            </div>
+            <div className="flex justify-between text-sm py-2 font-bold border-b border-border/60 bg-secondary/20 px-2 rounded">
+              <span className="text-foreground">Beneficio Neto:</span>
+              <span className={netProfit >= 0 ? "text-green-400" : "text-rose-400"}>
+                {netProfit} créditos
+              </span>
+            </div>
+            <div className="flex justify-between text-xs pt-1">
+              <span className="text-muted-foreground">Retorno de Inversión (ROI):</span>
+              <span className={`font-semibold ${netProfit >= 0 ? "text-green-400" : "text-rose-400"}`}>
+                {roi.toFixed(1)}%
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // Main page
 // ─────────────────────────────────────────────
 
@@ -1497,6 +1611,10 @@ export default function HerramientasPage() {
             <Award className="w-3.5 h-3.5 mr-1.5" />
             Propietarios de Placa
           </TabsTrigger>
+          <TabsTrigger value="calculadora" className="text-xs" data-testid="tab-calculadora">
+            <Activity className="w-3.5 h-3.5 mr-1.5" />
+            Calculadora Tradeo
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="usuario" className="mt-4">
@@ -1525,6 +1643,10 @@ export default function HerramientasPage() {
 
         <TabsContent value="placa" className="mt-4">
           <PropietariosPlacaTab />
+        </TabsContent>
+
+        <TabsContent value="calculadora" className="mt-4">
+          <CalculadoraTradeoTab />
         </TabsContent>
       </Tabs>
     </div>

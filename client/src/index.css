@@ -6,82 +6,82 @@
 
 @layer base {
   :root {
-    /* Default: Circo theme (red/yellow) â€” overridden dynamically by ThemeProvider */
-    --background: 0 0% 6%;
+    /* Default: Nubis Premium (violet/teal/slate) — overridden dynamically by ThemeProvider */
+    --background: 222 35% 14%;
     --foreground: 213 31% 91%;
-    --card: 0 20% 10%;
+    --card: 222 35% 18%;
     --card-foreground: 213 31% 91%;
-    --popover: 0 0% 6%;
+    --popover: 222 35% 14%;
     --popover-foreground: 213 31% 91%;
-    --primary: 0 85% 50%;
+    --primary: 260 70% 68%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 45 100% 50%;
-    --secondary-foreground: 0 0% 10%;
-    --muted: 0 15% 14%;
-    --muted-foreground: 218 11% 55%;
-    --accent: 45 100% 50%;
-    --accent-foreground: 0 0% 10%;
+    --secondary: 197 85% 62%;
+    --secondary-foreground: 222 35% 10%;
+    --muted: 222 30% 18%;
+    --muted-foreground: 218 11% 65%;
+    --accent: 197 85% 62%;
+    --accent-foreground: 222 35% 10%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 30% 18%;
-    --input: 0 30% 18%;
-    --ring: 0 85% 50%;
-    --chart-1: 0 85% 50%;
-    --chart-2: 45 100% 50%;
-    --chart-3: 190 80% 45%;
+    --border: 222 25% 26%;
+    --input: 222 25% 26%;
+    --ring: 260 70% 68%;
+    --chart-1: 260 70% 68%;
+    --chart-2: 197 85% 62%;
+    --chart-3: 174 75% 45%;
     --chart-4: 340 75% 55%;
     --chart-5: 120 60% 45%;
     --radius: 0.625rem;
-    --sidebar-background: 0 0% 6%;
+    --sidebar-background: 222 35% 14%;
     --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 0 85% 50%;
+    --sidebar-primary: 260 70% 68%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 20% 10%;
+    --sidebar-accent: 222 35% 18%;
     --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 0 30% 18%;
-    --sidebar-ring: 0 85% 50%;
+    --sidebar-border: 222 25% 26%;
+    --sidebar-ring: 260 70% 68%;
     /* Theme glow/gradient custom vars */
-    --theme-glow: 220, 38, 38;
-    --theme-gradient-from: #dc2626;
-    --theme-gradient-to: #eab308;
+    --theme-glow: 167, 139, 250;
+    --theme-gradient-from: #a78bfa;
+    --theme-gradient-to: #67e8f9;
   }
 
   .dark {
-    --background: 0 0% 6%;
+    --background: 222 35% 14%;
     --foreground: 213 31% 91%;
-    --card: 0 20% 10%;
+    --card: 222 35% 18%;
     --card-foreground: 213 31% 91%;
-    --popover: 0 0% 6%;
+    --popover: 222 35% 14%;
     --popover-foreground: 213 31% 91%;
-    --primary: 0 85% 50%;
+    --primary: 260 70% 68%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 45 100% 50%;
-    --secondary-foreground: 0 0% 10%;
-    --muted: 0 15% 14%;
-    --muted-foreground: 218 11% 55%;
-    --accent: 45 100% 50%;
-    --accent-foreground: 0 0% 10%;
+    --secondary: 197 85% 62%;
+    --secondary-foreground: 222 35% 10%;
+    --muted: 222 30% 18%;
+    --muted-foreground: 218 11% 65%;
+    --accent: 197 85% 62%;
+    --accent-foreground: 222 35% 10%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 30% 18%;
-    --input: 0 30% 18%;
-    --ring: 0 85% 50%;
-    --chart-1: 0 85% 50%;
-    --chart-2: 45 100% 50%;
-    --chart-3: 190 80% 45%;
+    --border: 222 25% 26%;
+    --input: 222 25% 26%;
+    --ring: 260 70% 68%;
+    --chart-1: 260 70% 68%;
+    --chart-2: 197 85% 62%;
+    --chart-3: 174 75% 45%;
     --chart-4: 340 75% 55%;
     --chart-5: 120 60% 45%;
-    --sidebar-background: 0 0% 6%;
+    --sidebar-background: 222 35% 14%;
     --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 0 85% 50%;
+    --sidebar-primary: 260 70% 68%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 20% 10%;
+    --sidebar-accent: 222 35% 18%;
     --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 0 30% 18%;
-    --sidebar-ring: 0 85% 50%;
-    --theme-glow: 220, 38, 38;
-    --theme-gradient-from: #dc2626;
-    --theme-gradient-to: #eab308;
+    --sidebar-border: 222 25% 26%;
+    --sidebar-ring: 260 70% 68%;
+    --theme-glow: 167, 139, 250;
+    --theme-gradient-from: #a78bfa;
+    --theme-gradient-to: #67e8f9;
   }
 }
 
