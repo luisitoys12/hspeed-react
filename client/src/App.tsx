@@ -10,6 +10,8 @@ import TopNavBar from "@/components/TopNavBar";
 import ThemeDecoBar from "@/components/ThemeDecoBar";
 import ThemeParticles from "@/components/ThemeParticles";
 import Footer from "@/components/Footer";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 // Pages
 import HomePage from "@/pages/HomePage";
@@ -35,6 +37,36 @@ import MaintenancePage from "@/pages/MaintenancePage";
 import HerramientasPage from "@/pages/HerramientasPage";
 import LegalPage from "@/pages/LegalPage";
 import NotFound from "@/pages/not-found";
+
+function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!user) {
+      toast({
+        title: "Acceso restringido",
+        description: "Inicia sesión para entrar a este panel.",
+        variant: "destructive",
+      });
+      setLocation("/login");
+    } else if (!allowedRoles.includes(user.role)) {
+      toast({
+        title: "Acceso denegado",
+        description: "No tienes permisos para acceder a esta sección.",
+        variant: "destructive",
+      });
+      setLocation("/");
+    }
+  }, [user, allowedRoles, setLocation, toast]);
+
+  if (!user || !allowedRoles.includes(user.role)) {
+    return null;
+  }
+
+  return <>{children}</>;
+}
 
 function Layout() {
   const [location] = useLocation();
@@ -84,9 +116,21 @@ function Layout() {
           <Route path="/login" component={LoginPage} />
           <Route path="/register" component={RegisterPage} />
           <Route path="/profile/:username" component={ProfilePage} />
-          <Route path="/panel" component={AdminPanel} />
-          <Route path="/panel/:section" component={AdminPanel} />
-          <Route path="/djpanel" component={DJPanelPage} />
+          <Route path="/panel">
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminPanel />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/panel/:section">
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminPanel />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/djpanel">
+            <ProtectedRoute allowedRoles={["admin", "dj"]}>
+              <DJPanelPage />
+            </ProtectedRoute>
+          </Route>
           <Route path="/messages" component={MessagesPage} />
           <Route path="/armario" component={ArmarioPage} />
           <Route path="/maintenance" component={MaintenancePage} />

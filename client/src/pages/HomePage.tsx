@@ -33,50 +33,65 @@ function DJInfoBar() {
   const djMessage = djPanel?.djMessage || "";
 
   return (
-    <div className="bg-gradient-to-r from-primary/20 via-card to-primary/20 border border-border rounded-xl overflow-hidden" data-testid="dj-info-bar">
-      <div className="flex items-center gap-4 px-4 py-3">
-        <div className="flex items-center gap-3 flex-shrink-0">
+    <div className="relative bg-card border border-primary/20 glow-border-themed rounded-2xl overflow-hidden shadow-2xl backdrop-blur-lg group" data-testid="dj-info-bar">
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-50 pointer-events-none" />
+      <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 px-5 py-4">
+        
+        {/* DJ Avatar & Name */}
+        <div className="flex items-center gap-4 w-full sm:w-auto flex-shrink-0">
           <div className="relative">
-            <img
-              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${isAutoDJ ? "HabboSpeed" : currentDj}&size=b&headonly=1`}
-              alt={currentDj}
-              className="w-11 h-11 rounded-lg bg-secondary/50"
-              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
-            />
-            <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${isAutoDJ ? "bg-yellow-500" : "bg-red-500 animate-pulse"}`} />
+            <div className="w-14 h-14 rounded-2xl bg-secondary/15 border border-border flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:border-primary/40 shadow-inner">
+              <img
+                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${isAutoDJ ? "HabboSpeed" : currentDj}&size=b&headonly=0&direction=3&head_direction=3&gesture=sml`}
+                alt={currentDj}
+                className="w-12 h-14 object-contain mt-1 select-none transition-transform duration-500 group-hover:scale-110"
+                onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+              />
+            </div>
+            {/* Live Glow Dot */}
+            <span className={`absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full border-3 border-card flex items-center justify-center ${
+              isAutoDJ ? "bg-yellow-500" : "bg-red-500 live-indicator"
+            }`} />
           </div>
           <div>
-            <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">{isAutoDJ ? "Radio" : "DJ Actual"}</p>
-            <p className="text-sm font-bold text-foreground">{currentDj}</p>
+            <p className="text-[9px] uppercase tracking-widest text-primary/80 font-bold glow-text-themed">{isAutoDJ ? "Sistema Radio" : "DJ en Turno"}</p>
+            <p className="text-base font-extrabold text-foreground tracking-tight">{currentDj}</p>
           </div>
         </div>
 
-        <div className="h-8 w-px bg-border hidden sm:block" />
+        <div className="h-10 w-px bg-border/60 hidden sm:block flex-shrink-0" />
 
+        {/* Next DJ */}
         {nextDj && (
-          <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
-            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+          <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center border border-border/50 text-muted-foreground">
+              <Clock className="w-4 h-4" />
+            </div>
             <div>
-              <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">Siguiente</p>
-              <p className="text-xs font-semibold">{nextDj}</p>
+              <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">Siguiente</p>
+              <p className="text-xs font-bold text-foreground/90">{nextDj}</p>
             </div>
           </div>
         )}
 
+        {/* DJ Message / Motto */}
         {djMessage && (
-          <div className="flex-1 min-w-0 overflow-hidden hidden md:flex items-center gap-2">
-            <MessageSquare className="w-3 h-3 text-primary flex-shrink-0" />
-            <p className="text-xs text-muted-foreground truncate italic">"{djMessage}"</p>
+          <div className="flex-1 min-w-0 overflow-hidden hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/5 border border-border/20">
+            <MessageSquare className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+            <p className="text-xs text-muted-foreground/90 truncate italic font-medium">"{djMessage}"</p>
           </div>
         )}
 
-        <div className="ml-auto flex items-center gap-2 flex-shrink-0">
-          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${
-            isAutoDJ ? "bg-yellow-500/15 border-yellow-500/30" : "bg-red-500/15 border-red-500/30"
+        {/* Live status badge */}
+        <div className="sm:ml-auto w-full sm:w-auto flex justify-end flex-shrink-0">
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 font-pixel text-[9px] shadow-sm select-none ${
+            isAutoDJ 
+              ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.15)]" 
+              : "bg-red-500/10 border-red-500/30 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.15)] animate-pulse"
           }`}>
-            <Radio className={`w-3 h-3 ${isAutoDJ ? "text-yellow-400" : "text-red-400"}`} />
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${isAutoDJ ? "text-yellow-400" : "text-red-400"}`}>
-              {isAutoDJ ? "AutoDJ" : "En Vivo"}
+            <Radio className={`w-3.5 h-3.5 ${isAutoDJ ? "text-yellow-400" : "text-red-400"}`} />
+            <span className="font-semibold uppercase tracking-widest">
+              {isAutoDJ ? "AUTODJ" : "EN VIVO"}
             </span>
           </div>
         </div>
@@ -313,16 +328,20 @@ function MessageBoard() {
 }
 
 /* ============================================================
-   NEWS GRID
+   NEWS GRID (RubyXD / HabNubis Style)
    ============================================================ */
 function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-card border border-border rounded-xl overflow-hidden">
-            <Skeleton className="h-32" />
-            <div className="p-3 space-y-2"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-3 w-full" /></div>
+          <div key={i} className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-md">
+            <Skeleton className="h-44" />
+            <div className="p-4 space-y-2.5">
+              <Skeleton className="h-3.5 w-1/4" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3.5 w-full" />
+            </div>
           </div>
         ))}
       </div>
@@ -331,46 +350,80 @@ function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
   if (!news.length) return <p className="text-sm text-muted-foreground text-center py-8">No hay noticias aún</p>;
   const featured = news[0];
   const rest = news.slice(1, 5);
+  
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Featured News - Hero Card */}
       <Link href={`/news/${featured.id}`}>
         <a className="block group" data-testid={`card-news-featured-${featured.id}`}>
-          <div className="relative bg-card border border-border rounded-xl overflow-hidden">
+          <div className="relative bg-card border border-primary/20 glow-border-themed rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 hover:border-primary/40 group">
             {featured.imageUrl && (
-              <div className="h-44 sm:h-52 overflow-hidden">
-                <img src={featured.imageUrl} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div className="h-48 sm:h-64 overflow-hidden relative">
+                <img 
+                  src={featured.imageUrl} 
+                  alt={featured.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
+                <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent z-10" />
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-              <Badge className="bg-primary/90 text-white border-0 text-[9px] mb-2">{featured.category}</Badge>
-              <h3 className="text-base sm:text-lg font-bold text-white leading-tight group-hover:text-primary/90 transition-colors">{featured.title}</h3>
-              <p className="text-xs text-white/60 mt-1 line-clamp-1">{featured.summary}</p>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="text-[10px] text-white/40">{featured.date}</span>
-                <span className="text-[10px] text-primary font-medium">Leer más →</span>
+            <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-pixel bg-theme-gradient text-white border-0 mb-3 shadow-md">
+                {featured.category}
+              </span>
+              <h3 className="text-lg sm:text-xl font-extrabold text-white leading-tight group-hover:text-primary transition-colors duration-300 drop-shadow-md">
+                {featured.title}
+              </h3>
+              <p className="text-xs text-white/80 mt-1.5 line-clamp-2 max-w-xl font-medium leading-relaxed drop-shadow">
+                {featured.summary}
+              </p>
+              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/10">
+                <span className="text-[10px] text-white/50 font-semibold">{featured.date}</span>
+                <span className="text-[10px] text-primary font-bold group-hover:underline flex items-center gap-1 ml-auto">
+                  Leer noticia completa <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </span>
               </div>
             </div>
           </div>
         </a>
       </Link>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+      {/* Secondary News - RubyXD Rectangular Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {rest.map((article) => (
           <Link href={`/news/${article.id}`} key={article.id}>
             <a className="block group" data-testid={`card-news-${article.id}`}>
-              <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/30 transition-colors h-full">
+              <div className="bg-card border border-border/50 hover:border-primary/30 glow-border-themed rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl h-full flex flex-col">
                 {article.imageUrl && (
-                  <div className="h-28 overflow-hidden">
-                    <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }} />
+                  <div className="h-36 overflow-hidden relative">
+                    <img 
+                      src={article.imageUrl} 
+                      alt={article.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
+                      onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }} 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-transparent z-10" />
                   </div>
                 )}
-                <div className="p-3">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Badge variant="outline" className="text-[8px] border-primary/20 text-primary/70 py-0 px-1.5">{article.category}</Badge>
-                    <span className="text-[9px] text-muted-foreground">{article.date}</span>
+                <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-full text-[8px] font-bold border border-primary/20 bg-primary/5 text-primary">
+                        {article.category}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground font-semibold">{article.date}</span>
+                    </div>
+                    <h3 className="text-xs font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2 text-foreground/95">
+                      {article.title}
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+                      {article.summary}
+                    </p>
                   </div>
-                  <h3 className="text-xs font-semibold leading-snug group-hover:text-primary transition-colors line-clamp-2">{article.title}</h3>
-                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">{article.summary}</p>
+                  <div className="text-[9px] text-primary font-bold group-hover:underline mt-3 pt-2.5 border-t border-border/30 flex items-center gap-1">
+                    Leer más <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
                 </div>
               </div>
             </a>
@@ -394,7 +447,7 @@ function FurniStrip() {
   if (!items.length) return null;
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden" data-testid="furni-strip">
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-secondary/20">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
         <Package className="w-3.5 h-3.5 text-orange-400" />
         <span className="text-xs font-bold uppercase tracking-wider">Últimos Furnis Agregados</span>
         <Link href="/marketplace"><a className="text-[10px] text-primary ml-auto hover:underline">Ver todos →</a></Link>
@@ -421,38 +474,73 @@ function FurniStrip() {
 }
 
 /* ============================================================
-   BADGES STRIP
+   RECENT BADGES GRID (Nubis Style: 4x3 Static Grid)
    ============================================================ */
-function BadgesStrip() {
-  const { data: badges } = useQuery<any[]>({
+function RecentBadgesGrid() {
+  const { data: badges, isLoading } = useQuery<any[]>({
     queryKey: ["/api/habbo/badges/es"],
     queryFn: async () => {
-      const r = await apiRequest("GET", "/api/habbo/badges/es?limit=24");
+      const r = await apiRequest("GET", "/api/habbo/badges/es?limit=12");
       const d = await r.json();
-      return Array.isArray(d) ? d : (d.badges || d.data || []);
+      return Array.isArray(d) ? d.slice(0, 12) : (d.badges || d.data || []).slice(0, 12);
     },
-    retry: false, staleTime: 120000,
+    retry: false,
+    staleTime: 120000,
   });
-  if (!badges?.length) return null;
+
+  const displayBadges = badges?.length ? badges : [];
+
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden" data-testid="badges-strip">
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-secondary/20">
-        <Star className="w-3.5 h-3.5 text-yellow-400" />
-        <span className="text-xs font-bold uppercase tracking-wider">Últimas Placas</span>
-        <Link href="/badges"><a className="text-[10px] text-primary ml-auto hover:underline">Ver todas →</a></Link>
+    <div className="bg-card border border-primary/20 glow-border-themed rounded-2xl overflow-hidden shadow-2xl backdrop-blur-lg" data-testid="badges-grid">
+      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border/50 bg-secondary/20 flex-shrink-0">
+        <Star className="w-4 h-4 text-yellow-400" />
+        <span className="text-xs font-bold uppercase tracking-wider">Nuevas Placas Descubiertas</span>
+        <Link href="/badges">
+          <a className="text-[10px] text-primary ml-auto hover:underline font-bold">Ver todas →</a>
+        </Link>
       </div>
-      <div className="px-3 py-3 overflow-hidden">
-        <div className="flex gap-2 animate-marquee" style={{ width: "max-content" }}>
-          {[...badges, ...badges].map((badge: any, i: number) => (
-            <img
-              key={i}
-              src={badge.url_habbo || badge.url_habboassets || `https://images.habbo.com/c_images/album1584/${badge.code || badge.badge_code}.gif`}
-              alt={badge.name || ""}
-              className="w-9 h-9 object-contain flex-shrink-0 hover:scale-110 transition-transform cursor-pointer"
-              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.15"; }}
-            />
-          ))}
-        </div>
+      <div className="p-4 sm:p-5">
+        {isLoading ? (
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-3.5">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <Skeleton key={i} className="w-11 h-11 rounded-xl" />
+            ))}
+          </div>
+        ) : displayBadges.length > 0 ? (
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-3 justify-items-center">
+            {displayBadges.map((badge: any, i: number) => {
+              const code = badge.code || badge.badge_code || "PLA";
+              const title = badge.name || `Placa ${code}`;
+              const desc = badge.description || "Nueva placa descubierta en el hotel";
+              const imgUrl = badge.url_habbo || badge.url_habboassets || `https://images.habbo.com/c_images/album1584/${code}.gif`;
+
+              return (
+                <div
+                  key={badge.id || i}
+                  className="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-secondary/20 border border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 cursor-pointer shadow-md glow-border-themed hover:scale-110"
+                >
+                  <img
+                    src={imgUrl}
+                    alt={title}
+                    className="w-8 h-8 object-contain transition-all duration-300 group-hover:scale-120 filter drop-shadow-[0_2px_4px_rgba(var(--theme-glow),0.2)]"
+                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}
+                  />
+                  {/* Tooltip elegante */}
+                  <div className="absolute bottom-full mb-2.5 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center z-30 pointer-events-none w-36">
+                    <div className="bg-popover text-popover-foreground border border-primary/30 text-[9px] px-2.5 py-1.5 rounded-xl shadow-2xl text-center backdrop-blur-md">
+                      <p className="font-extrabold text-primary truncate">{title}</p>
+                      <p className="text-[8px] text-muted-foreground leading-tight line-clamp-2 mt-0.5">{desc}</p>
+                      <span className="text-[7px] text-yellow-400 font-mono block mt-0.5">{code}</span>
+                    </div>
+                    <div className="w-1.5 h-1.5 bg-popover border-r border-b border-primary/30 rotate-45 -mt-1" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground text-center py-4">No hay placas recientes disponibles</p>
+        )}
       </div>
     </div>
   );
@@ -621,7 +709,7 @@ export default function HomePage() {
 
         <StatsBar />
         <FurniStrip />
-        <BadgesStrip />
+        <RecentBadgesGrid />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-3">

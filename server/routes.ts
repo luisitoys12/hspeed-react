@@ -43,6 +43,32 @@ function djMiddleware(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(server: Server, app: Express) {
+  // ============ SEED DEFAULT ADMIN USER ============
+  (async () => {
+    try {
+      const adminEmail = "admin@habbospeed.com";
+      const existingAdmin = await storage.getUserByEmail(adminEmail);
+      if (!existingAdmin) {
+        const passwordHash = await bcrypt.hash("admin123", 10);
+        await storage.createUser({
+          email: adminEmail,
+          passwordHash,
+          displayName: "Admin Habbospeed",
+          habboUsername: "AdminHS",
+          avatarUrl: "https://www.habbo.es/habbo-imaging/avatarimage?user=AdminHS&size=b",
+          role: "admin",
+          approved: true,
+          speedPoints: 1000,
+        });
+        console.log(`[Init] Default admin user created successfully: ${adminEmail} / admin123`);
+      } else {
+        console.log(`[Init] Default admin user already exists: ${adminEmail}`);
+      }
+    } catch (e: any) {
+      console.error("[Init] Error seeding default admin user:", e.message);
+    }
+  })();
+
   // ============ AUTH ============
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -253,11 +279,28 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   app.get("/api/habbo/badges/:hotel", async (req, res) => {
+    const FALLBACK_BADGES = [
+      { code: "ADM", name: "Administrador", description: "Placa exclusiva de administrador", url_habbo: "https://images.habbo.com/c_images/album1584/ADM.gif" },
+      { code: "COM", name: "Staff HabboSpeed", description: "Staff de HabboSpeed", url_habbo: "https://images.habbo.com/c_images/album1584/COM.gif" },
+      { code: "Z53", name: "Placa de Oro", description: "Placa de oro brillante", url_habbo: "https://images.habbo.com/c_images/album1584/Z53.gif" },
+      { code: "ES992", name: "Micrófono de Oro", description: "DJs y Locutores estrella", url_habbo: "https://images.habbo.com/c_images/album1584/ES992.gif" },
+      { code: "UK084", name: "Radio Activa", description: "Oyente súper activo de la radio", url_habbo: "https://images.habbo.com/c_images/album1584/UK084.gif" },
+      { code: "IT128", name: "Trofeo de Platino", description: "Ganador de torneos y concursos", url_habbo: "https://images.habbo.com/c_images/album1584/IT128.gif" },
+      { code: "FI145", name: "Placa Aqua", description: "Edición especial de Placa Aqua", url_habbo: "https://images.habbo.com/c_images/album1584/FI145.gif" },
+      { code: "FR185", name: "Estrella Neón", description: "Tema Premium Nubis de HabboSpeed", url_habbo: "https://images.habbo.com/c_images/album1584/FR185.gif" },
+      { code: "NL453", name: "Habbo Speed Fan", description: "Miembro verificado de la Fansite", url_habbo: "https://images.habbo.com/c_images/album1584/NL453.gif" },
+      { code: "DE636", name: "Corona de Laureles", description: "Mención honorífica", url_habbo: "https://images.habbo.com/c_images/album1584/DE636.gif" },
+      { code: "HSC01", name: "Copa de Campeones", description: "Speed Cup Winner", url_habbo: "https://images.habbo.com/c_images/album1584/HSC01.gif" },
+      { code: "ES49C", name: "SpeedPoints Collector", description: "Coleccionista de SpeedPoints", url_habbo: "https://images.habbo.com/c_images/album1584/ES49C.gif" }
+    ];
+
     try {
       const r = await fetch(`https://www.habboassets.com/api/v1/badges?hotel=${req.params.hotel || "es"}&limit=${req.query.limit || "20"}`);
-      if (!r.ok) return res.status(500).json({ message: "Error" });
+      if (!r.ok) return res.json(FALLBACK_BADGES);
       res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
+    } catch {
+      res.json(FALLBACK_BADGES);
+    }
   });
 
   app.get("/api/habbo/marketplace/:item", async (req, res) => {
@@ -565,11 +608,11 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ SPEED POINTS ============
-  app.put("/api/users/:id/points", adminMiddleware, async (req, res) => {
+  app.put("/api/users/:id/points", djMiddleware, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const { points } = req.body;
-      if (points === undefined || isNaN(Number(points))) return res.status(400).json({ message: "Campo 'points' requerido" });
+      const points = req.body.points !== undefined ? req.body.points : req.body.amount;
+      if (points === undefined || isNaN(Number(points))) return res.status(400).json({ message: "Campo 'points' o 'amount' requerido" });
       const user = await storage.getUser(userId);
       if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
       const updated = await storage.updateUser(userId, { speedPoints: (user.speedPoints ?? 0) + Number(points) });
