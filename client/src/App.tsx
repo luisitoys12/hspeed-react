@@ -39,11 +39,12 @@ import LegalPage from "@/pages/LegalPage";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
+    if (loading) return;
     if (!user) {
       toast({
         title: "Acceso restringido",
@@ -59,7 +60,15 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode,
       });
       setLocation("/");
     }
-  }, [user, allowedRoles, setLocation, toast]);
+  }, [user, loading, allowedRoles, setLocation, toast]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin shadow-[0_0_15px_rgba(var(--theme-glow),0.5)]" />
+      </div>
+    );
+  }
 
   if (!user || !allowedRoles.includes(user.role)) {
     return null;

@@ -72,7 +72,34 @@ export async function registerRoutes(server: Server, app: Express) {
   // ============ AUTH ============
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { email, password, displayName, habboUsername } = req.body;
+      const { email, password, displayName, habboUsername, verificationCode } = req.body;
+
+      if (!habboUsername || !verificationCode) {
+        return res.status(400).json({ message: "El usuario de Habbo y el código de verificación son obligatorios para evitar robos de identidad." });
+      }
+
+      // Verify the user in Habbo API
+      try {
+        const r = await fetch(`https://www.habbo.es/api/public/users?name=${encodeURIComponent(habboUsername)}`, {
+          headers: { "User-Agent": "HabboSpeed/1.0" }
+        });
+        if (!r.ok) {
+          return res.status(400).json({ message: `El usuario de Habbo '${habboUsername}' no fue encontrado en Habbo.es.` });
+        }
+        const profile = await r.json();
+        
+        const mottoClean = (profile.motto || "").trim().toUpperCase();
+        const codeClean = verificationCode.trim().toUpperCase();
+        
+        if (mottoClean !== codeClean) {
+          return res.status(400).json({ 
+            message: `Verificación fallida. Cambia tu misión en Habbo a '${codeClean}'. Tu misión actual detectada es: '${profile.motto || "[Vacío]"}'` 
+          });
+        }
+      } catch (err: any) {
+        return res.status(400).json({ message: "Error de conexión al verificar tu cuenta con la API oficial de Habbo. Inténtalo de nuevo." });
+      }
+
       const existing = await storage.getUserByEmail(email);
       if (existing) return res.status(400).json({ message: "El email ya está registrado" });
       const passwordHash = await bcrypt.hash(password, 10);
@@ -86,6 +113,7 @@ export async function registerRoutes(server: Server, app: Express) {
       res.status(201).json({ ...user, passwordHash: undefined, token });
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
+
 
   app.post("/api/auth/login", async (req, res) => {
     try {

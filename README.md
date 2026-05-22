@@ -47,14 +47,16 @@ La plataforma cuenta con un robusto conjunto de características:
 - **SpeedPoints**: Dar puntos a usuarios participantes directamente desde el panel.
 
 ### Interactividad para Usuarios
-- **Autenticación**: Sistema de registro e inicio de sesión con JWT.
+- **Autenticación**: Sistema de registro e inicio de sesión con JWT y persistencia de sesión segura mediante `localStorage` (re-autenticación automática en el arranque).
 - **Sistema de Comentarios**: Los usuarios registrados pueden comentar en noticias, mostrando su **cabeza de avatar Habbo**.
-- **Chat en Vivo**: Chat en la página de inicio con avatares Habbo en tiempo real.
+- **Chat en Vivo (Corregido y Operativo)**: Chat en la página de inicio con avatares Habbo en tiempo real, totalmente operativo con sincronización de token de sesión persistente.
 - **Mensajes Privados**: Sistema de mensajería entre usuarios con contador de no leídos.
 - **Verificación de Badges**: Verifica que un badge de Habbo pertenece realmente al usuario consultando la API oficial.
 - **Foro**: Sistema de foro con categorías, hilos y respuestas.
 
-### Integraciones con Habbo
+### Integraciones con Habbo (Actualizado)
+- **Habbo Origins Lookup (Nuevo)**: Consulta avanzada de perfiles de usuario en el nuevo servidor oficial **Habbo Origins** (motto, fecha de registro, estado online).
+- **Base de Datos de Logros (Nuevo)**: Catálogo interactivo de todos los logros oficiales de la API de Habbo agrupados por categorías, mostrando niveles, insignias y puntuaciones.
 - **Habbo Imager**: Generador de avatares con la versión moderna de Habbo Imaging.
 - **Buscador de Placas/Badges**: Búsqueda en tiempo real usando la API de HabboAssets.
 - **Marketplace**: Historial de precios del Marketplace de Habbo con datos reales.

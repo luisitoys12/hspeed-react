@@ -20,6 +20,8 @@ import {
   DoorOpen,
   Flame,
   Shield,
+  Globe,
+  Activity,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────
@@ -1062,6 +1064,391 @@ function PropietariosPlacaTab() {
 }
 
 // ─────────────────────────────────────────────
+// Tab 6: Habbo Origins Lookup
+// ─────────────────────────────────────────────
+
+function OriginsLookupTab() {
+  const [inputValue, setInputValue] = useState("");
+  const [searchedUsername, setSearchedUsername] = useState("");
+
+  const { data: profile, isLoading, error } = useQuery<any>({
+    queryKey: ["/api/habbo/origins/user", searchedUsername],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/habbo/origins/user/${encodeURIComponent(searchedUsername)}`);
+      if (!res.ok) throw new Error("Usuario no encontrado en Habbo Origins");
+      return res.json();
+    },
+    enabled: !!searchedUsername,
+    retry: false,
+  });
+
+  const handleSearch = () => {
+    if (inputValue.trim()) setSearchedUsername(inputValue.trim());
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Search bar */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Nombre de usuario en Habbo Origins..."
+            className="pl-9"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            data-testid="input-origins-search"
+          />
+        </div>
+        <Button
+          onClick={handleSearch}
+          disabled={!inputValue.trim()}
+          className="bg-primary hover:bg-primary/80 text-white"
+          data-testid="button-origins-search"
+        >
+          Buscar en Origins
+        </Button>
+      </div>
+
+      {/* Loading */}
+      {isLoading && (
+        <Card className="bg-card border-border">
+          <CardContent className="p-5 space-y-3">
+            <div className="flex gap-4">
+              <Skeleton className="w-24 h-40 rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-4 w-56" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error */}
+      {error && !isLoading && (
+        <Card className="bg-destructive/10 border-destructive/30">
+          <CardContent className="p-4 text-sm text-destructive">
+            Usuario no encontrado en Habbo Origins o perfil privado.
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Profile result */}
+      {!isLoading && !error && profile && (
+        <div className="space-y-3">
+          <Card className="bg-card border-border overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -z-10" />
+            <CardContent className="p-5">
+              <div className="flex gap-5 items-start flex-col sm:flex-row">
+                {/* Avatar */}
+                <div className="flex-shrink-0 mx-auto sm:mx-0 bg-secondary/25 p-4 rounded-xl border border-border/40 relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-purple-500/30 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300" />
+                  <img
+                    src={figureUrl(profile.figureString || "")}
+                    alt={`Avatar de ${profile.name}`}
+                    className="object-contain drop-shadow-xl relative z-10 mx-auto"
+                    style={{ height: 140 }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(profile.name)}&size=l`;
+                    }}
+                  />
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 space-y-3 w-full">
+                  <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                        profile.online ? "bg-green-400 animate-pulse" : "bg-muted-foreground/40"
+                      }`}
+                      title={profile.online ? "En línea" : "Desconectado"}
+                    />
+                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400">
+                      {profile.name}
+                    </h2>
+                    {profile.online ? (
+                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                        En línea
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="border-border text-muted-foreground text-xs">
+                        Desconectado
+                      </Badge>
+                    )}
+                  </div>
+
+                  {profile.motto && (
+                    <p className="text-sm text-muted-foreground italic text-center sm:text-left bg-secondary/30 py-1.5 px-3 rounded-lg border border-border/20">
+                      "{profile.motto}"
+                    </p>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="bg-secondary/20 p-2.5 rounded-lg border border-border/20 space-y-0.5">
+                      <p className="text-muted-foreground">Miembro desde</p>
+                      <p className="font-semibold text-foreground">{formatDate(profile.memberSince)}</p>
+                    </div>
+                    <div className="bg-secondary/20 p-2.5 rounded-lg border border-border/20 space-y-0.5">
+                      <p className="text-muted-foreground">Último acceso</p>
+                      <p className="font-semibold text-foreground">{formatDate(profile.lastAccessTime)}</p>
+                    </div>
+                    {profile.uniqueId && (
+                      <div className="bg-secondary/20 p-2.5 rounded-lg border border-border/20 space-y-0.5 sm:col-span-2">
+                        <p className="text-muted-foreground">ID Único</p>
+                        <p className="font-mono text-xs text-primary truncate select-all">{profile.uniqueId}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Origins specific stats if available */}
+                  {(profile.starGemCount > 0 || profile.totalExperience > 0 || profile.currentLevel > 0) && (
+                    <div className="flex flex-wrap gap-2 pt-2 justify-center sm:justify-start">
+                      {profile.currentLevel > 0 && (
+                        <Badge className="bg-primary/20 text-primary border-primary/30 py-1 px-2.5">
+                          Nivel {profile.currentLevel}
+                        </Badge>
+                      )}
+                      {profile.starGemCount > 0 && (
+                        <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 py-1 px-2.5">
+                          ⭐ {profile.starGemCount.toLocaleString()} Gemas
+                        </Badge>
+                      )}
+                      {profile.totalExperience > 0 && (
+                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 py-1 px-2.5">
+                          ✨ {profile.totalExperience.toLocaleString()} EXP
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!searchedUsername && (
+        <div className="text-center py-16 text-muted-foreground">
+          <Globe className="w-12 h-12 mx-auto mb-3 opacity-20" />
+          <p className="text-sm">Introduce un nombre de usuario de Origins para buscar</p>
+          <p className="text-xs mt-1 opacity-50">Nota: Origins es la versión clásica oficial de Habbo lanzada recientemente.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Tab 7: Logros Habbo
+// ─────────────────────────────────────────────
+
+function LogrosTab() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const { data: achievements, isLoading, error } = useQuery<any[]>({
+    queryKey: ["/api/habbo/achievements"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/habbo/achievements");
+      if (!res.ok) throw new Error("Error al obtener logros");
+      return res.json();
+    },
+    retry: false,
+  });
+
+  const categories = [
+    { id: "all", name: "Todos", icon: <Award className="w-3.5 h-3.5" /> },
+    { id: "identity", name: "Identidad", icon: <User className="w-3.5 h-3.5" /> },
+    { id: "tutorial", name: "Guía", icon: <Wrench className="w-3.5 h-3.5" /> },
+    { id: "explore", name: "Explorar", icon: <Globe className="w-3.5 h-3.5" /> },
+    { id: "social", name: "Social", icon: <Users className="w-3.5 h-3.5" /> },
+    { id: "pets", name: "Mascotas", icon: <Flame className="w-3.5 h-3.5" /> },
+    { id: "games", name: "Juegos", icon: <Activity className="w-3.5 h-3.5" /> },
+    { id: "room_builder", name: "Constructor", icon: <Home className="w-3.5 h-3.5" /> },
+    { id: "trading", name: "Tradeos", icon: <Star className="w-3.5 h-3.5" /> },
+    { id: "collectibles", name: "Colecciones", icon: <Award className="w-3.5 h-3.5" /> },
+  ];
+
+  // Map category code to human readable name
+  const getCategoryLabel = (cat: string) => {
+    switch (cat) {
+      case "identity": return "Identidad";
+      case "tutorial": return "Guía";
+      case "explore": return "Explorar";
+      case "social": return "Social";
+      case "pets": return "Mascotas";
+      case "games": return "Juegos";
+      case "room_builder": return "Constructor de Salas";
+      case "crackables": return "Crackeables";
+      case "crafting": return "Crafteo";
+      case "trading": return "Tradeo";
+      case "collectibles": return "Coleccionables";
+      default: return cat;
+    }
+  };
+
+  // Humanize camelCase achievement names (e.g. "GamerPaycheck" -> "Gamer Paycheck")
+  const humanizeName = (name: string) => {
+    return name
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (str) => str.toUpperCase())
+      .trim();
+  };
+
+  const filteredAchievements = (achievements || []).filter((item: any) => {
+    const ach = item.achievement || {};
+    const matchesCategory = selectedCategory === "all" || ach.category === selectedCategory;
+    const matchesSearch = ach.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          ach.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  return (
+    <div className="space-y-4">
+      {/* Category selector + Search bar */}
+      <div className="flex flex-col md:flex-row gap-3">
+        {/* Search */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar logro por nombre..."
+            className="pl-9"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            data-testid="input-achievements-search"
+          />
+        </div>
+
+        {/* Horizontal Category Scroller */}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth">
+          {categories.map((cat) => (
+            <Button
+              key={cat.id}
+              variant={selectedCategory === cat.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(cat.id)}
+              className="flex-shrink-0 gap-1.5"
+            >
+              {cat.icon}
+              {cat.name}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Loading state */}
+      {isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="bg-card border-border">
+              <CardContent className="p-4 space-y-3">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-4 w-24" />
+                <div className="flex gap-2">
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <Skeleton key={j} className="w-12 h-12 rounded" />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && !isLoading && (
+        <Card className="bg-destructive/10 border-destructive/30">
+          <CardContent className="p-4 text-sm text-destructive">
+            Error al obtener logros oficiales de Habbo. Inténtalo más tarde.
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Achievements grid */}
+      {!isLoading && !error && filteredAchievements.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="grid-achievements">
+          {filteredAchievements.map((item: any, idx: number) => {
+            const ach = item.achievement || {};
+            const levels = item.levelRequirements || [];
+            const displayTitle = humanizeName(ach.name || "");
+
+            return (
+              <Card 
+                key={`ach-${ach.id}-${idx}`}
+                className="bg-card border-border hover:border-primary/30 transition-all duration-300 relative group overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-16 h-16 bg-primary/2 rounded-full blur-xl -z-10 group-hover:bg-primary/10 transition-colors" />
+                <CardHeader className="pb-2 pt-4 px-4 flex flex-row justify-between items-start">
+                  <div>
+                    <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground group-hover:text-primary transition-colors">
+                      {displayTitle}
+                    </CardTitle>
+                    <Badge variant="outline" className="text-[10px] mt-1 bg-secondary/30 text-muted-foreground border-border">
+                      {getCategoryLabel(ach.category)}
+                    </Badge>
+                  </div>
+                  {ach.creationTime && (
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {ach.creationTime}
+                    </span>
+                  )}
+                </CardHeader>
+                <CardContent className="px-4 pb-4 pt-2">
+                  <div className="space-y-2">
+                    <p className="text-[11px] text-muted-foreground">Niveles y Placas:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {levels.map((lvl: any, lIdx: number) => {
+                        const badgeCode = `${ach.name}${lvl.level}`;
+                        return (
+                          <div 
+                            key={`lvl-${lvl.level}-${lIdx}`}
+                            className="bg-secondary/40 border border-border/60 hover:border-primary/40 rounded-lg p-1.5 flex flex-col items-center gap-1 min-w-[56px] text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                            title={`${displayTitle} - Nivel ${lvl.level}`}
+                          >
+                            <img
+                              src={badgeImageUrl(badgeCode)}
+                              alt={badgeCode}
+                              className="w-8 h-8 object-contain drop-shadow"
+                              onError={(e) => {
+                                // Fallback image if badge isn't uploaded
+                                (e.target as HTMLImageElement).src = "https://images.habbo.com/c_images/album1584/ADM.gif";
+                                (e.target as HTMLImageElement).style.opacity = "0.3";
+                              }}
+                            />
+                            <div className="text-[10px] font-bold text-foreground">
+                              Niv. {lvl.level}
+                            </div>
+                            <div className="text-[8px] text-muted-foreground bg-secondary px-1 rounded font-semibold">
+                              {lvl.requiredScore} pts
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Empty Search Results */}
+      {!isLoading && !error && filteredAchievements.length === 0 && (
+        <div className="text-center py-16 text-muted-foreground">
+          <Award className="w-12 h-12 mx-auto mb-3 opacity-20" />
+          <p className="text-sm">No se encontraron logros que coincidan con la búsqueda</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // Main page
 // ─────────────────────────────────────────────
 
@@ -1086,6 +1473,14 @@ export default function HerramientasPage() {
             <User className="w-3.5 h-3.5 mr-1.5" />
             Buscar Usuario
           </TabsTrigger>
+          <TabsTrigger value="origins" className="text-xs" data-testid="tab-origins">
+            <Globe className="w-3.5 h-3.5 mr-1.5" />
+            Habbo Origins
+          </TabsTrigger>
+          <TabsTrigger value="logros" className="text-xs" data-testid="tab-logros">
+            <Activity className="w-3.5 h-3.5 mr-1.5" />
+            Logros Habbo
+          </TabsTrigger>
           <TabsTrigger value="hotlooks" className="text-xs" data-testid="tab-hotlooks">
             <Flame className="w-3.5 h-3.5 mr-1.5" />
             Hot Looks
@@ -1108,6 +1503,14 @@ export default function HerramientasPage() {
           <BuscarUsuarioTab />
         </TabsContent>
 
+        <TabsContent value="origins" className="mt-4">
+          <OriginsLookupTab />
+        </TabsContent>
+
+        <TabsContent value="logros" className="mt-4">
+          <LogrosTab />
+        </TabsContent>
+
         <TabsContent value="hotlooks" className="mt-4">
           <HotLooksTab />
         </TabsContent>
@@ -1127,3 +1530,4 @@ export default function HerramientasPage() {
     </div>
   );
 }
+
