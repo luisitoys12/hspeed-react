@@ -15,7 +15,7 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false }));
 
-await registerRoutes(httpServer, app);
+registerRoutes(httpServer, app).catch(console.error);
 
 app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
   const status = err.status || err.statusCode || 500;
