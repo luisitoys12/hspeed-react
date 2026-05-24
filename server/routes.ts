@@ -1,6 +1,10 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage-instance";
+import fs from "fs";
+import fsp from "fs/promises";
+import path from "path";
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -590,8 +594,9 @@ export async function registerRoutes(server: Server, app: Express) {
       if (!url) return res.status(400).send("missing url");
       // allowlist hosts
       const allowed = ["images.habbo.com", "www.habbo.es", "origins.habbo.es", "habbo.es"];
+      let parsed: URL;
       try {
-        const parsed = new URL(url);
+        parsed = new URL(url);
         if (!allowed.some((h) => parsed.hostname.includes(h))) {
           return res.status(403).send("forbidden host");
         }
@@ -599,12 +604,37 @@ export async function registerRoutes(server: Server, app: Express) {
         return res.status(400).send("invalid url");
       }
 
+      // Simple disk cache
+      const cacheDir = path.join(process.cwd(), 'server', '.cache', 'images');
+      await fsp.mkdir(cacheDir, { recursive: true });
+      const hash = crypto.createHash('sha1').update(url).digest('hex');
+      const cacheFile = path.join(cacheDir, `${hash}`);
+      const ttlSeconds = 60 * 60 * 24; // 24h
+
+      try {
+        const stat = await fsp.stat(cacheFile).catch(() => null);
+        if (stat && (Date.now() - stat.mtimeMs) / 1000 < ttlSeconds) {
+          const buf = await fsp.readFile(cacheFile);
+          res.setHeader('Content-Type', 'image/png');
+          res.setHeader('Cache-Control', `public, max-age=${ttlSeconds}`);
+          return res.send(buf);
+        }
+      } catch (e) {
+        // ignore
+      }
+
       const r = await fetch(url, { headers: { "User-Agent": "HabboSpeed/1.0" } });
       if (!r.ok) return res.status(502).send("bad upstream");
-      res.setHeader("Content-Type", r.headers.get("content-type") || "image/png");
-      res.setHeader("Cache-Control", "public, max-age=86400");
-      const buffer = await r.arrayBuffer();
-      res.send(Buffer.from(buffer));
+      const contentType = r.headers.get("content-type") || "image/png";
+      const buffer = Buffer.from(await r.arrayBuffer());
+      try {
+        await fsp.writeFile(cacheFile, buffer).catch(() => null);
+      } catch (e) {
+        // ignore
+      }
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Cache-Control", `public, max-age=${ttlSeconds}`);
+      res.send(buffer);
     } catch (e) {
       res.status(500).send("proxy error");
     }
