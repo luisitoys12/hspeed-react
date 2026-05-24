@@ -637,11 +637,9 @@ function QuickTools() {
       </div>
       <div className="grid grid-cols-2 gap-1.5 p-3">
         {tools.map((t) => (
-          <Link key={t.href} href={t.href}>
-            <a className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-all border border-transparent hover:border-border/50">
-              <span className={t.color}>{t.icon}</span>
-              <span className="truncate">{t.label}</span>
-            </a>
+          <Link key={t.href} href={t.href} className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-all border border-transparent hover:border-border/50">
+            <span className={t.color}>{t.icon}</span>
+            <span className="truncate">{t.label}</span>
           </Link>
         ))}
       </div>
