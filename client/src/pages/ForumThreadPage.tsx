@@ -97,17 +97,15 @@ export default function ForumThreadPage() {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">Hilo no encontrado</p>
-        <Link href="/forum"><a className="text-primary text-sm mt-2 inline-block">\u2190 Volver al Foro</a></Link>
+        <Link href="/forum" className="text-primary text-sm mt-2 inline-block">\u2190 Volver al Foro</Link>
       </div>
     );
   }
 
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-5">
-      <Link href="/forum">
-        <a className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors" data-testid="link-back-forum">
-          <ArrowLeft className="w-4 h-4" />Volver al Foro
-        </a>
+      <Link href="/forum" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors" data-testid="link-back-forum">
+        <ArrowLeft className="w-4 h-4" />Volver al Foro
       </Link>
 
       <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
@@ -201,7 +199,7 @@ export default function ForumThreadPage() {
           ) : (
             <div className="rounded-2xl border border-border bg-card/50 p-5 text-center">
               <p className="text-sm text-muted-foreground">
-                <Link href="/login"><a className="text-primary hover:underline">Inicia sesi\u00f3n</a></Link> para responder
+                <Link href="/login" className="text-primary hover:underline">Inicia sesión</Link> para responder
               </p>
             </div>
           )}

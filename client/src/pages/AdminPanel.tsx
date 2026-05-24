@@ -839,7 +839,7 @@ export default function AdminPanel() {
         <Shield className="w-14 h-14 text-muted-foreground/30" />
         <h2 className="text-lg font-bold">Acceso restringido</h2>
         <p className="text-sm text-muted-foreground">Necesitas permisos de administrador</p>
-        <Link href="/login"><a className="text-primary text-sm hover:underline">Iniciar sesión</a></Link>
+        <Link href="/login" className="text-primary text-sm hover:underline">Iniciar sesión</Link>
       </div>
     );
   }

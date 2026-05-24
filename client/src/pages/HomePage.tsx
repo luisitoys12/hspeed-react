@@ -138,24 +138,18 @@ function HeroBanner({ slides }: { slides: any[] }) {
 
         <div className="flex items-center gap-2 mt-3 flex-wrap">
           {slide.cta && (
-            <Link href={slide.cta.href || "/"}>
-              <a className="inline-flex items-center gap-2 text-xs font-semibold bg-primary/90 hover:bg-primary text-white px-4 py-2 rounded-lg transition-all shadow-lg" data-testid="button-hero-cta">
-                {slide.cta.text} <ArrowRight className="w-3.5 h-3.5" />
-              </a>
+            <Link href={slide.cta.href || "/"} className="inline-flex items-center gap-2 text-xs font-semibold bg-primary/90 hover:bg-primary text-white px-4 py-2 rounded-lg transition-all shadow-lg" data-testid="button-hero-cta">
+              {slide.cta.text} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           )}
           {/* Login / Register si no hay sesión */}
           {!user && (
             <>
-              <Link href="/login">
-                <a className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 backdrop-blur text-white border border-white/20 px-3 py-2 rounded-lg transition-all" data-testid="button-hero-login">
-                  <LogIn className="w-3.5 h-3.5" /> Entrar
-                </a>
+              <Link href="/login" className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 backdrop-blur text-white border border-white/20 px-3 py-2 rounded-lg transition-all" data-testid="button-hero-login">
+                <LogIn className="w-3.5 h-3.5" /> Entrar
               </Link>
-              <Link href="/register">
-                <a className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 backdrop-blur text-white border border-white/20 px-3 py-2 rounded-lg transition-all" data-testid="button-hero-register">
-                  <UserPlus className="w-3.5 h-3.5" /> Registro
-                </a>
+              <Link href="/register" className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 backdrop-blur text-white border border-white/20 px-3 py-2 rounded-lg transition-all" data-testid="button-hero-register">
+                <UserPlus className="w-3.5 h-3.5" /> Registro
               </Link>
             </>
           )}
@@ -309,16 +303,12 @@ function MessageBoard() {
           </div>
         ) : (
           <div className="flex items-center justify-center gap-2 py-0.5">
-            <Link href="/login">
-              <a className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
-                <LogIn className="w-3 h-3" /> Inicia sesión
-              </a>
+            <Link href="/login" className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
+              <LogIn className="w-3 h-3" /> Inicia sesión
             </Link>
             <span className="text-muted-foreground text-xs">o</span>
-            <Link href="/register">
-              <a className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
-                <UserPlus className="w-3 h-3" /> Regístrate
-              </a>
+            <Link href="/register" className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
+              <UserPlus className="w-3 h-3" /> Regístrate
             </Link>
             <span className="text-xs text-muted-foreground">para chatear</span>
           </div>

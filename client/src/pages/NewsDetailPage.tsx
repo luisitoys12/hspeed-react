@@ -93,7 +93,7 @@ export default function NewsDetailPage() {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">Noticia no encontrada</p>
-        <Link href="/news"><a className="text-primary text-sm mt-2 inline-block">← Volver a Noticias</a></Link>
+        <Link href="/news" className="text-primary text-sm mt-2 inline-block">← Volver a Noticias</Link>
       </div>
     );
   }
@@ -102,10 +102,8 @@ export default function NewsDetailPage() {
 
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-6">
-      <Link href="/news">
-        <a className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors" data-testid="link-back-news">
-          <ArrowLeft className="w-4 h-4" />Volver a Noticias
-        </a>
+      <Link href="/news" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors" data-testid="link-back-news">
+        <ArrowLeft className="w-4 h-4" />Volver a Noticias
       </Link>
 
       <article className="space-y-5">
@@ -194,7 +192,7 @@ export default function NewsDetailPage() {
         ) : (
           <div className="rounded-2xl border border-border bg-card/50 p-5 text-center">
             <p className="text-sm text-muted-foreground">
-              <Link href="/login"><a className="text-primary hover:underline">Inicia sesión</a></Link> para comentar
+              <Link href="/login" className="text-primary hover:underline">Inicia sesión</Link> para comentar
             </p>
           </div>
         )}

@@ -146,7 +146,7 @@ export default function MessagesPage() {
         </div>
         <h2 className="text-lg font-bold">Buzón de mensajes</h2>
         <p className="text-sm text-muted-foreground max-w-xs">
-          <Link href="/login"><a className="text-primary hover:underline font-semibold">Inicia sesión</a></Link> para ver y enviar mensajes privados.
+          <Link href="/login" className="text-primary hover:underline font-semibold">Inicia sesión</Link> para ver y enviar mensajes privados.
         </p>
       </div>
     );
