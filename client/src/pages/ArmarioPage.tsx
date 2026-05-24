@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
@@ -212,6 +212,7 @@ const CATEGORIES = [
   { key: "lg", label: "Pantalones", icon: Palette, figType: "lg" },
   { key: "sh", label: "Zapatos", icon: Footprints, figType: "sh" },
   { key: "acc", label: "Accesorios", icon: Glasses, figType: "acc" },
+  { key: "catalog", label: "Catálogo", icon: Crown, figType: "acc" },
 ];
 
 // ─── Habbo color display helper ───────────────────────────────────────────────
@@ -522,6 +523,122 @@ export default function ArmarioPage() {
     return part?.color ?? null;
   };
 
+  // --- Catalog + Budget + Variations ---
+  type CatalogEntry = {
+    id: string;
+    name: string;
+    classname?: string;
+    iconUrl?: string;
+    avgPrice?: number | null;
+  };
+
+  const {
+    data: catalogData,
+    isLoading: isLoadingCatalog,
+    refetch: refetchCatalog,
+  } = useQuery<CatalogEntry[]>({
+    queryKey: ["/api/habbo/furni", "catalog"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/habbo/furni?limit=0`);
+      if (!res.ok) throw new Error("No se pudo cargar el catálogo de furni");
+      const json = await res.json();
+      // Map to lightweight catalog entries (furni)
+      return (json || []).map((it: any) => ({
+        id: `${it.classname || it.id}-${it.revision ?? "0"}`,
+        name: it.name || it.classname || it.itemName || it.classname,
+        classname: it.classname,
+        iconUrl: it.thumbnail || it.image || it.icon || `/api/habbo/furni/icon/${encodeURIComponent(it.classname || it.id)}`,
+        avgPrice: it.averagePrice ?? null,
+      }));
+    },
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+  });
+
+  const {
+    data: serverFigureParts,
+    isLoading: isLoadingFigureParts,
+  } = useQuery<Record<string, ClothingItem[]>>({
+    queryKey: ["/api/habbo/figureparts"],
+    queryFn: async () => {
+      const r = await apiRequest("GET", "/api/habbo/figureparts");
+      if (!r.ok) return {};
+      return r.json();
+    },
+    staleTime: 1000 * 60 * 60,
+    retry: false,
+  });
+
+  const [catalogSelections, setCatalogSelections] = useState<CatalogEntry[]>([]);
+
+  const [catalogTargetTypes, setCatalogTargetTypes] = useState<Record<string, string>>({});
+  const [newVariationName, setNewVariationName] = useState("");
+
+  const applyCatalogToAvatar = (entry: CatalogEntry, figType: string) => {
+    // Use a best-effort id mapping: try to extract numeric id from classname, fallback to 0
+    const idMatch = entry.classname ? entry.classname.match(/(\d+)/) : null;
+    const id = idMatch ? parseInt(idMatch[1], 10) : 0;
+    const color = 0;
+    setFigureParts((prev) => replaceFigurePart(prev.length ? prev : parseFigureString(currentFigure || BASE_FIGURE), figType, id, color));
+    toast({ title: `Aplicado ${entry.name} como ${figType}` });
+  };
+
+  const addCatalogSelection = (entry: CatalogEntry) => {
+    setCatalogSelections((prev) => {
+      if (prev.find((p) => p.id === entry.id)) return prev;
+      return [...prev, entry];
+    });
+  };
+
+  const removeCatalogSelection = (id: string) => {
+    setCatalogSelections((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const budgetTotal = useMemo(() => {
+    return catalogSelections.reduce((s, e) => s + (e.avgPrice ?? 0), 0);
+  }, [catalogSelections]);
+
+  // Variations persisted in localStorage
+  type Variation = { name: string; figureParts: FigurePart[]; catalog: CatalogEntry[] };
+  const VAR_KEY = "hspeed_armario_variations_v1";
+  const [variations, setVariations] = useState<Variation[]>(() => {
+    try {
+      const raw = localStorage.getItem(VAR_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw);
+    } catch (e) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(VAR_KEY, JSON.stringify(variations));
+    } catch (e) {
+      // ignore
+    }
+  }, [variations]);
+
+  const saveVariation = (name: string) => {
+    if (!name) return;
+    const v: Variation = { name, figureParts, catalog: catalogSelections };
+    setVariations((prev) => {
+      const others = prev.filter((p) => p.name !== name);
+      return [v, ...others];
+    });
+    toast({ title: `Variación '${name}' guardada` });
+  };
+
+  const applyVariation = (v: Variation) => {
+    setFigureParts(v.figureParts);
+    setCatalogSelections(v.catalog || []);
+    toast({ title: `Variación '${v.name}' aplicada` });
+  };
+
+  const deleteVariation = (name: string) => {
+    setVariations((prev) => prev.filter((p) => p.name !== name));
+  };
+
   const SIZES: { value: "s" | "m" | "l" | "b"; label: string }[] = [
     { value: "s", label: "S" },
     { value: "m", label: "M" },
@@ -768,6 +885,72 @@ export default function ArmarioPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Catalog selections & Variations */}
+            <Card className="bg-card border-border">
+              <CardContent className="p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-muted-foreground font-medium">Selecciones del Catálogo</p>
+                  <div className="text-[10px] text-muted-foreground">Total: <span className="font-mono">{budgetTotal} cr</span></div>
+                </div>
+
+                {catalogSelections.length === 0 ? (
+                  <p className="text-[10px] text-muted-foreground">No hay items añadidos desde el catálogo.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {catalogSelections.map((c) => (
+                      <div key={c.id} className="flex items-center justify-between text-[10px]">
+                        <div className="flex items-center gap-2">
+                          {c.iconUrl && <img src={c.iconUrl} className="w-8 h-8 object-contain" alt={c.name} />}
+                          <div className="truncate max-w-[160px]">{c.name}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={catalogTargetTypes[c.id] ?? "ch"}
+                            onChange={(e) => setCatalogTargetTypes((prev) => ({ ...prev, [c.id]: e.target.value }))}
+                            className="text-xs p-1 bg-secondary/40 rounded"
+                          >
+                            <option value="hr">Cabello</option>
+                            <option value="ha">Sombrero</option>
+                            <option value="ch">Camisa</option>
+                            <option value="lg">Pantalón</option>
+                            <option value="sh">Zapatos</option>
+                            <option value="acc">Accesorio</option>
+                          </select>
+                          {c.avgPrice != null && <div className="text-muted-foreground text-[10px]">{c.avgPrice} cr</div>}
+                          <Button size="xs" variant="ghost" onClick={() => applyCatalogToAvatar(c, catalogTargetTypes[c.id] ?? "ch")}>Aplicar</Button>
+                          <Button size="xs" variant="ghost" onClick={() => removeCatalogSelection(c.id)}>Quitar</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-border/30">
+                  <p className="text-[10px] text-muted-foreground font-medium mb-1">Variaciones</p>
+                  <div className="flex items-center gap-2">
+                    <input value={newVariationName} onChange={(e) => setNewVariationName(e.target.value)} placeholder="Nombre de la variación" className="input input-sm flex-1 p-2 text-xs bg-secondary/40 rounded" />
+                    <Button size="sm" onClick={() => { saveVariation(newVariationName.trim()); setNewVariationName(""); }}>Guardar</Button>
+                  </div>
+
+                  {variations.length === 0 ? (
+                    <p className="text-[10px] text-muted-foreground mt-2">Aún no hay variaciones guardadas.</p>
+                  ) : (
+                    <div className="mt-2 space-y-1">
+                      {variations.map((v) => (
+                        <div key={v.name} className="flex items-center justify-between text-[10px]">
+                          <div className="truncate">{v.name}</div>
+                          <div className="flex items-center gap-1">
+                            <Button size="xs" variant="ghost" onClick={() => applyVariation(v)}>Aplicar</Button>
+                            <Button size="xs" variant="destructive" onClick={() => deleteVariation(v.name)}>Borrar</Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* ── Right: Clothing Browser ── */}
@@ -803,7 +986,31 @@ export default function ArmarioPage() {
                 </TabsList>
 
                 {CATEGORIES.map((cat) => {
-                  const items = CLOTHING_DATA[cat.key] ?? [];
+                  const isCatalog = cat.key === "catalog";
+                  let items: any[] = [];
+                  if (isCatalog) {
+                    // Build clothing entries from CLOTHING_DATA
+                    const sourceClothing = serverFigureParts && Object.keys(serverFigureParts).length ? serverFigureParts : CLOTHING_DATA;
+                    const clothingEntries: CatalogEntry[] = Object.keys(sourceClothing).flatMap((k) => {
+                      const list = (sourceClothing as any)[k] || [];
+                      return list.map((it) => {
+                        const figType = CATEGORIES.find((c) => c.key === k)?.figType || k;
+                        const part: FigurePart = { type: figType, id: it.id, color: it.colors?.[0] ?? 0 };
+                        const fig = buildFigureString([part]);
+                        return {
+                          id: `${figType}-${it.id}`,
+                          name: it.label,
+                          classname: `${figType}_${it.id}`,
+                          iconUrl: buildAvatarUrl({ figure: fig, size: "s", direction: 3, isOrigins }),
+                          avgPrice: null,
+                        } as CatalogEntry;
+                      });
+                    });
+                    // Merge clothing entries with furni catalog if available (furni appended)
+                    items = clothingEntries.concat(catalogData ?? []);
+                  } else {
+                    items = CLOTHING_DATA[cat.key] ?? [];
+                  }
                   return (
                     <TabsContent key={cat.key} value={cat.key} className="mt-0">
                       <div className="flex items-center justify-between mb-3">
@@ -833,6 +1040,26 @@ export default function ArmarioPage() {
                         data-testid={`grid-clothing-${cat.key}`}
                       >
                         {items.map((item) => {
+                          if (isCatalog) {
+                            const entry: CatalogEntry = item;
+                            return (
+                              <div key={entry.id} className="p-1">
+                                <div className="bg-secondary/40 rounded-lg p-2 flex flex-col items-center gap-2 h-full">
+                                  <img src={entry.iconUrl} alt={entry.name} className="w-16 h-16 object-contain" />
+                                  <p className="text-xs text-center truncate w-full">{entry.name}</p>
+                                  <div className="flex items-center gap-2">
+                                    <Button size="sm" variant="ghost" onClick={() => addCatalogSelection(entry)}>
+                                      Añadir
+                                    </Button>
+                                    {entry.avgPrice != null && (
+                                      <span className="text-[10px] text-muted-foreground">{entry.avgPrice} cr</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+
                           const effectiveType = item.type || cat.figType;
                           const isSelected = isItemSelected(item, cat.figType);
                           const selColor = getSelectedColor(item, cat.figType);

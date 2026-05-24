@@ -51,13 +51,13 @@ export default function Footer() {
             </p>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {quickLinks.map((link) => (
-                <Link key={link.href + link.label} href={link.href}>
-                  <a
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    data-testid={`footer-link-${link.label.toLowerCase()}`}
-                  >
-                    {link.label}
-                  </a>
+                <Link
+                  key={link.href + link.label}
+                  href={link.href}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid={`footer-link-${link.label.toLowerCase()}`}
+                >
+                  {link.label}
                 </Link>
               ))}
             </div>
@@ -69,20 +69,14 @@ export default function Footer() {
               Legal
             </p>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
-              <Link href="/legal">
-                <a className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                  Aviso Legal
-                </a>
+              <Link href="/legal" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                Aviso Legal
               </Link>
-              <Link href="/legal">
-                <a className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                  Política de Privacidad
-                </a>
+              <Link href="/legal" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                Política de Privacidad
               </Link>
-              <Link href="/legal">
-                <a className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                  Términos de Uso
-                </a>
+              <Link href="/legal" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                Términos de Uso
               </Link>
             </div>
             {emoji && (

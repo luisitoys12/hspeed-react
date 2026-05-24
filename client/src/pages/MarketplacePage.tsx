@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -227,10 +228,10 @@ export default function MarketplacePage() {
   const { data: catalogRaw, isLoading: catalogLoading } = useQuery<any[]>({
     queryKey: ["/api/habbo/furni", hotel],
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/habbo/furni?hotel=${hotel}&limit=200`);
+      const res = await apiRequest("GET", `/api/habbo/furni?hotel=${hotel}&limit=0`);
       return res.json();
     },
-    staleTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 5,
     retry: false,
   });
 
@@ -268,6 +269,11 @@ export default function MarketplacePage() {
       setSearchQuery(search.trim());
       setTab("search");
     }
+  };
+
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["/api/habbo/furni"] });
+    await queryClient.invalidateQueries({ queryKey: ["/api/habbo/marketplace"] });
   };
 
   const renderGrid = (items: FurniItem[], loading: boolean, emptyMsg: string) => {
@@ -309,6 +315,15 @@ export default function MarketplacePage() {
               {HOTELS.map((h) => <SelectItem key={h} value={h}>.{h}</SelectItem>)}
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            className="h-8 text-xs px-3"
+            data-testid="button-marketplace-refresh"
+          >
+            Actualizar
+          </Button>
         </div>
       </div>
 

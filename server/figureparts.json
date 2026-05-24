@@ -1,0 +1,29 @@
+{
+  "hr": [
+    { "id": 110, "colors": [61, 40, 1, 3, 62], "label": "Clásico" },
+    { "id": 165, "colors": [61, 40, 1, 3], "label": "Largo" },
+    { "id": 170, "colors": [61, 40, 1], "label": "Punk" },
+    { "id": 175, "colors": [61, 40, 1, 3], "label": "Afro" }
+  ],
+  "ch": [
+    { "id": 20, "colors": [1, 3, 40], "label": "Camiseta básica" },
+    { "id": 45, "colors": [1, 3, 40], "label": "Camisa a cuadros" },
+    { "id": 102, "colors": [1, 3, 40], "label": "Chaqueta" }
+  ],
+  "lg": [
+    { "id": 30, "colors": [1, 3, 40], "label": "Pantalones simples" },
+    { "id": 88, "colors": [1, 3], "label": "Jeans" }
+  ],
+  "sh": [
+    { "id": 12, "colors": [1, 3], "label": "Zapatos deportivos" },
+    { "id": 56, "colors": [1, 3], "label": "Botas" }
+  ],
+  "ha": [
+    { "id": 300, "colors": [1, 3], "label": "Gorra" },
+    { "id": 301, "colors": [1, 3], "label": "Sombrero" }
+  ],
+  "acc": [
+    { "id": 400, "colors": [1, 3], "label": "Gafas" },
+    { "id": 401, "colors": [1, 3], "label": "Collar" }
+  ]
+}

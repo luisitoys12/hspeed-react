@@ -450,7 +450,7 @@ function FurniStrip() {
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
         <Package className="w-3.5 h-3.5 text-orange-400" />
         <span className="text-xs font-bold uppercase tracking-wider">Últimos Furnis Agregados</span>
-        <Link href="/marketplace"><a className="text-[10px] text-primary ml-auto hover:underline">Ver todos →</a></Link>
+        <Link href="/marketplace" className="text-[10px] text-primary ml-auto hover:underline">Ver todos →</Link>
       </div>
       <div className="px-3 py-3 overflow-hidden">
         <div className="flex gap-3 animate-marquee" style={{ width: "max-content" }}>
@@ -555,7 +555,7 @@ function EventsSidebar({ events, loading }: { events: Event[]; loading: boolean 
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
         <Calendar className="w-3.5 h-3.5 text-primary" />
         <span className="text-xs font-bold uppercase tracking-wider">Próximos Eventos</span>
-        <Link href="/events"><a className="text-[10px] text-primary ml-auto hover:underline">Ver más →</a></Link>
+        <Link href="/events" className="text-[10px] text-primary ml-auto hover:underline">Ver más →</Link>
       </div>
       <div className="p-3 space-y-2">
         {loading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />) :
@@ -717,7 +717,7 @@ export default function HomePage() {
               <h2 className="text-sm font-bold flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" /> Últimas Noticias
               </h2>
-              <Link href="/news"><a className="text-xs text-primary hover:underline">Ver todas →</a></Link>
+              <Link href="/news" className="text-xs text-primary hover:underline">Ver todas →</Link>
             </div>
             <NewsGrid news={latestNews} loading={newsLoading} />
           </div>

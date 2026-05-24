@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -146,11 +148,11 @@ export default function BadgesPage() {
   const { data: habboApiBadges, isLoading: loadingExternal } = useQuery<any[]>({
     queryKey: ["/api/habbo/badges", hotel],
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/habbo/badges/${hotel}?limit=100`);
+      const res = await apiRequest("GET", `/api/habbo/badges/${hotel}?limit=500`);
       const d = await res.json();
       return Array.isArray(d) ? d : (d.badges || d.data || d.items || []);
     },
-    staleTime: 120000,
+    staleTime: 1000 * 60 * 5,
     retry: false,
   });
 
@@ -188,6 +190,11 @@ export default function BadgesPage() {
     return true;
   });
 
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["/api/habbo/badges"] });
+    await queryClient.invalidateQueries({ queryKey: ["/api/badges"] });
+  };
+
   return (
     <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-6">
       <style>{`
@@ -224,6 +231,14 @@ export default function BadgesPage() {
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
+          className="sm:w-auto w-full"
+          data-testid="button-badges-refresh"
+        >
+          Actualizar
+        </Button>
       </div>
 
       {/* Category Tabs */}

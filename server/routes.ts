@@ -266,6 +266,11 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch { return null; }
   }
 
+  function getHabboHost(hotel: string) {
+    const safeHotel = (hotel || "es").trim().toLowerCase();
+    return `https://www.habbo.${safeHotel}`;
+  }
+
   // User by name (básico: online, motto, level, etc.)
   app.get("/api/habbo/user/:username", async (req, res) => {
     try {
@@ -487,11 +492,13 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/furni", async (req, res) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 200;
+      const limitValue = parseInt(req.query.limit as string, 10);
+      const limit = Number.isFinite(limitValue) ? limitValue : 0;
+      const hotel = (req.query.hotel as string) || "es";
       
       let items: any[] = [];
       try {
-        const r = await fetch("https://www.habbo.es/gamedata/furnidata_json/0", { headers: { "User-Agent": "HabboSpeed/1.0" } });
+        const r = await fetch(`${getHabboHost(hotel)}/gamedata/furnidata_json/0`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
         if (r.ok) {
           const data = await r.json() as any;
           items = data?.roomitemtypes?.furnitype || [];
@@ -539,8 +546,9 @@ export async function registerRoutes(server: Server, app: Express) {
 
       const classicClassnames = new Set(mappedClassic.map(c => c.classname));
       const filteredOfficial = mappedOfficial.filter(o => !classicClassnames.has(o.classname));
-      
-      const combined = [...mappedClassic, ...filteredOfficial.slice(-limit).reverse()];
+
+      const officialToReturn = limit > 0 ? filteredOfficial.slice(-limit).reverse() : [...filteredOfficial].reverse();
+      const combined = [...mappedClassic, ...officialToReturn];
       
       res.json(combined);
     } catch { 
@@ -562,6 +570,16 @@ export async function registerRoutes(server: Server, app: Express) {
         };
       });
       res.json(fallbackList); 
+    }
+  });
+
+  // Figure parts / clothing catalog (local fallback)
+  app.get("/api/habbo/figureparts", async (req, res) => {
+    try {
+      const fp = await import("./figureparts.json");
+      res.json((fp as any).default || fp);
+    } catch (e) {
+      res.status(500).json({ message: "No se pudo cargar el catálogo de prendas" });
     }
   });
 
