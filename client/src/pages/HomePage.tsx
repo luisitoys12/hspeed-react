@@ -486,9 +486,7 @@ function RecentBadgesGrid() {
       <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border/50 bg-secondary/20 flex-shrink-0">
         <Star className="w-4 h-4 text-yellow-400" />
         <span className="text-xs font-bold uppercase tracking-wider">Nuevas Placas Descubiertas</span>
-        <Link href="/badges">
-          <a className="text-[10px] text-primary ml-auto hover:underline font-bold">Ver todas →</a>
-        </Link>
+        <Link href="/badges" className="text-[10px] text-primary ml-auto hover:underline font-bold">Ver todas →</Link>
       </div>
       <div className="p-4 sm:p-5">
         {isLoading ? (
