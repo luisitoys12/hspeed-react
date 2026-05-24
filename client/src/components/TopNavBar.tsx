@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import { proxyImage } from "@/lib/habboProxy";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useQuery } from "@tanstack/react-query";
@@ -207,7 +208,7 @@ export default function TopNavBar() {
                 >
                   {user.habboUsername ? (
                     <img
-                      src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`}
+                      src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`)}
                       alt={user.displayName}
                       className="w-7 h-7 rounded bg-muted object-cover"
                       onError={(e) => {

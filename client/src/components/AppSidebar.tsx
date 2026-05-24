@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { proxyImage } from "@/lib/habboProxy";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Home, Newspaper, Calendar, Clock, Users, MessageCircle,
@@ -131,7 +132,7 @@ export default function AppSidebar({ collapsed }: SidebarProps) {
           <div className="flex items-center gap-2">
             {user.habboUsername ? (
               <img
-                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`}
+                src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`)}
                 alt={user.displayName}
                 className="w-8 h-8 rounded bg-secondary flex-shrink-0 object-cover"
                 onError={(e) => { (e.target as HTMLImageElement).src = ""; }}

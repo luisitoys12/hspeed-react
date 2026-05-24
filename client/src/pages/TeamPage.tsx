@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { proxyImage } from "@/lib/habboProxy";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,12 +80,12 @@ export default function TeamPage() {
                     <div className="relative">
                       <div className="w-20 h-24 bg-secondary/50 rounded-xl overflow-hidden flex items-end justify-center group-hover:bg-secondary/80 transition-colors">
                         <img
-                          src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${member.habboUsername}&size=l&direction=2&head_direction=2`}
+                          src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${member.habboUsername}&size=l&direction=2&head_direction=2`)}
                           alt={member.displayName}
                           className="h-full w-auto object-contain transition-transform group-hover:scale-105"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src =
-                              `https://www.habbo.es/habbo-imaging/avatarimage?user=${member.habboUsername}&size=m&direction=2&head_direction=2`;
+                              proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${member.habboUsername}&size=m&direction=2&head_direction=2`);
                           }}
                         />
                       </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "wouter";
+import { proxyImage } from "@/lib/habboProxy";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -204,7 +205,7 @@ export default function ProfilePage() {
             <div className="relative">
               <div className="bg-secondary/50 rounded-2xl border border-border overflow-hidden w-36 h-52 flex items-end justify-center">
                 <img
-                  src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${username}&size=b`}
+                  src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${username}&size=b`)}
                   alt={username}
                   className="h-full w-auto object-contain"
                   onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}

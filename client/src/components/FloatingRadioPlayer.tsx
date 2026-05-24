@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { proxyImage } from "@/lib/habboProxy";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -58,9 +59,9 @@ interface ScheduleItem {
 
 function getHabboAvatar(username: string, headonly = false) {
   const ho = headonly ? "&headonly=1" : "&headonly=0";
-  return `https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(
-    username
-  )}&gesture=std&action=std&direction=2&head_direction=2${ho}&size=s`;
+    return proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(
+      username
+    )}&gesture=std&action=std&direction=2&head_direction=2${ho}&size=s`);
 }
 
 function getCurrentProgramProgress(startTime: string, endTime: string) {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
+import { proxyImage } from "@/lib/habboProxy";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ function HabboAvatar({ username, displayName, isOP = false }: { username?: strin
       {username ? (
         <img
           src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`}
+            src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`)}
           alt={displayName}
           className="w-10 h-10 rounded-xl bg-secondary object-contain"
           onError={(e) => {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { proxyImage } from "@/lib/habboProxy";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,7 +43,7 @@ function DJInfoBar() {
           <div className="relative">
             <div className="w-14 h-14 rounded-2xl bg-secondary/15 border border-border flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:border-primary/40 shadow-inner">
               <img
-                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${isAutoDJ ? "HabboSpeed" : currentDj}&size=b&headonly=0&direction=3&head_direction=3&gesture=sml`}
+                src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${isAutoDJ ? "HabboSpeed" : currentDj}&size=b&headonly=0&direction=3&head_direction=3&gesture=sml`)}
                 alt={currentDj}
                 className="w-12 h-14 object-contain mt-1 select-none transition-transform duration-500 group-hover:scale-110"
                 onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
@@ -234,7 +235,7 @@ function MessageBoard() {
           <div className="flex items-center gap-1.5">
             {user.habboUsername && (
               <img
-                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`}
+                src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`)}
                 alt=""
                 className="w-5 h-5 rounded"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
