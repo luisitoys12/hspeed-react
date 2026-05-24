@@ -142,6 +142,7 @@ function Layout() {
           </Route>
           <Route path="/messages" component={MessagesPage} />
           <Route path="/armario" component={ArmarioPage} />
+          <Route path="/catalog" component={require('./pages/CatalogPage').default} />
           <Route path="/maintenance" component={MaintenancePage} />
           <Route path="/legal" component={LegalPage} />
           <Route path="/privacy" component={LegalPage} />

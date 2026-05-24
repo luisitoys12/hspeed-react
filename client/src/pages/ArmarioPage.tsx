@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
@@ -212,7 +213,6 @@ const CATEGORIES = [
   { key: "lg", label: "Pantalones", icon: Palette, figType: "lg" },
   { key: "sh", label: "Zapatos", icon: Footprints, figType: "sh" },
   { key: "acc", label: "Accesorios", icon: Glasses, figType: "acc" },
-  { key: "catalog", label: "Catálogo", icon: Crown, figType: "acc" },
 ];
 
 // ─── Habbo color display helper ───────────────────────────────────────────────
@@ -555,19 +555,6 @@ export default function ArmarioPage() {
     retry: false,
   });
 
-  const {
-    data: serverFigureParts,
-    isLoading: isLoadingFigureParts,
-  } = useQuery<Record<string, ClothingItem[]>>({
-    queryKey: ["/api/habbo/figureparts"],
-    queryFn: async () => {
-      const r = await apiRequest("GET", "/api/habbo/figureparts");
-      if (!r.ok) return {};
-      return r.json();
-    },
-    staleTime: 1000 * 60 * 60,
-    retry: false,
-  });
 
   const [catalogSelections, setCatalogSelections] = useState<CatalogEntry[]>([]);
 
@@ -618,6 +605,26 @@ export default function ArmarioPage() {
       // ignore
     }
   }, [variations]);
+
+  // Apply pending catalog apply saved by CatalogPage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("hspeed_pending_apply");
+      if (!raw) return;
+      const { entry, targetType } = JSON.parse(raw) as { entry: any; targetType?: string };
+      if (entry) {
+        const classname = entry.classname || entry.id || "";
+        const m = (classname || "").toString().match(/_(\d+)|-(\d+)|(\d+)/);
+        const id = m ? parseInt(m[1] || m[2] || m[3], 10) : 0;
+        const figType = targetType || "ch";
+        setFigureParts((prev) => replaceFigurePart(prev.length ? prev : parseFigureString(currentFigure || BASE_FIGURE), figType, id, 0));
+        toast({ title: `Aplicado ${entry.name || classname}` });
+      }
+      localStorage.removeItem("hspeed_pending_apply");
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   const saveVariation = (name: string) => {
     if (!name) return;
@@ -986,31 +993,7 @@ export default function ArmarioPage() {
                 </TabsList>
 
                 {CATEGORIES.map((cat) => {
-                  const isCatalog = cat.key === "catalog";
-                  let items: any[] = [];
-                  if (isCatalog) {
-                    // Build clothing entries from CLOTHING_DATA
-                    const sourceClothing = serverFigureParts && Object.keys(serverFigureParts).length ? serverFigureParts : CLOTHING_DATA;
-                    const clothingEntries: CatalogEntry[] = Object.keys(sourceClothing).flatMap((k) => {
-                      const list = (sourceClothing as any)[k] || [];
-                      return list.map((it) => {
-                        const figType = CATEGORIES.find((c) => c.key === k)?.figType || k;
-                        const part: FigurePart = { type: figType, id: it.id, color: it.colors?.[0] ?? 0 };
-                        const fig = buildFigureString([part]);
-                        return {
-                          id: `${figType}-${it.id}`,
-                          name: it.label,
-                          classname: `${figType}_${it.id}`,
-                          iconUrl: buildAvatarUrl({ figure: fig, size: "s", direction: 3, isOrigins }),
-                          avgPrice: null,
-                        } as CatalogEntry;
-                      });
-                    });
-                    // Merge clothing entries with furni catalog if available (furni appended)
-                    items = clothingEntries.concat(catalogData ?? []);
-                  } else {
-                    items = CLOTHING_DATA[cat.key] ?? [];
-                  }
+                  const items: any[] = CLOTHING_DATA[cat.key] ?? [];
                   return (
                     <TabsContent key={cat.key} value={cat.key} className="mt-0">
                       <div className="flex items-center justify-between mb-3">
@@ -1021,6 +1004,13 @@ export default function ArmarioPage() {
                             {items.length} items
                           </Badge>
                         </div>
+                        {cat.key === 'ch' && (
+                          <div>
+                            <Link href="/catalog">
+                              <Button size="sm" variant="outline">Abrir Catálogo</Button>
+                            </Link>
+                          </div>
+                        )}
                         {/* Remove current category part */}
                         {cat.key !== "acc" && figureParts.some((p) => p.type === cat.figType) && (
                           <Button
@@ -1040,26 +1030,6 @@ export default function ArmarioPage() {
                         data-testid={`grid-clothing-${cat.key}`}
                       >
                         {items.map((item) => {
-                          if (isCatalog) {
-                            const entry: CatalogEntry = item;
-                            return (
-                              <div key={entry.id} className="p-1">
-                                <div className="bg-secondary/40 rounded-lg p-2 flex flex-col items-center gap-2 h-full">
-                                  <img src={entry.iconUrl} alt={entry.name} className="w-16 h-16 object-contain" />
-                                  <p className="text-xs text-center truncate w-full">{entry.name}</p>
-                                  <div className="flex items-center gap-2">
-                                    <Button size="sm" variant="ghost" onClick={() => addCatalogSelection(entry)}>
-                                      Añadir
-                                    </Button>
-                                    {entry.avgPrice != null && (
-                                      <span className="text-[10px] text-muted-foreground">{entry.avgPrice} cr</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-
                           const effectiveType = item.type || cat.figType;
                           const isSelected = isItemSelected(item, cat.figType);
                           const selColor = getSelectedColor(item, cat.figType);

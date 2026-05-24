@@ -583,6 +583,33 @@ export async function registerRoutes(server: Server, app: Express) {
     }
   });
 
+  // Proxy image endpoint to avoid CORS/ORB blocking for external images
+  app.get("/api/habbo/proxy-image", async (req, res) => {
+    try {
+      const url = req.query.u as string;
+      if (!url) return res.status(400).send("missing url");
+      // allowlist hosts
+      const allowed = ["images.habbo.com", "www.habbo.es", "origins.habbo.es", "habbo.es"];
+      try {
+        const parsed = new URL(url);
+        if (!allowed.some((h) => parsed.hostname.includes(h))) {
+          return res.status(403).send("forbidden host");
+        }
+      } catch (err) {
+        return res.status(400).send("invalid url");
+      }
+
+      const r = await fetch(url, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!r.ok) return res.status(502).send("bad upstream");
+      res.setHeader("Content-Type", r.headers.get("content-type") || "image/png");
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      const buffer = await r.arrayBuffer();
+      res.send(Buffer.from(buffer));
+    } catch (e) {
+      res.status(500).send("proxy error");
+    }
+  });
+
   // Extended Habbo API routes
   app.get("/api/habbo/room/:roomId", async (req, res) => {
     try {
