@@ -33,6 +33,7 @@ import AdminPanel from "@/pages/AdminPanel";
 import DJPanelPage from "@/pages/DJPanelPage";
 import MessagesPage from "@/pages/MessagesPage";
 import ArmarioPage from "@/pages/ArmarioPage";
+import CatalogPage from "@/pages/CatalogPage";
 import MaintenancePage from "@/pages/MaintenancePage";
 import HerramientasPage from "@/pages/HerramientasPage";
 import LegalPage from "@/pages/LegalPage";
@@ -142,7 +143,7 @@ function Layout() {
           </Route>
           <Route path="/messages" component={MessagesPage} />
           <Route path="/armario" component={ArmarioPage} />
-          <Route path="/catalog" component={require('./pages/CatalogPage').default} />
+          <Route path="/catalog" component={CatalogPage} />
           <Route path="/maintenance" component={MaintenancePage} />
           <Route path="/legal" component={LegalPage} />
           <Route path="/privacy" component={LegalPage} />
