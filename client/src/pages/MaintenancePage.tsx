@@ -16,7 +16,7 @@ function MiniRadioPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
 
-  const streamUrl = "https://stream.zeno.fm/fy0189xhb0hvv"; // Placeholder stream
+  const streamUrl = "https://radio.kusmedios.lat/listen/runa-fm/radio.mp3";
 
   const toggle = () => {
     const audio = audioRef.current;

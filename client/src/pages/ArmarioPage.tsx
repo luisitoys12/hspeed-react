@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { proxyImage } from "@/lib/habboProxy";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -188,7 +189,7 @@ function buildAvatarUrl(opts: {
   params.set("direction", String(direction));
   params.set("head_direction", String(headDirection));
 
-  return `${base}?${params.toString()}`;
+  return proxyImage(`${base}?${params.toString()}`);
 }
 
 // Default base figure for item previews (neutral body)
@@ -925,8 +926,8 @@ export default function ArmarioPage() {
                             <option value="acc">Accesorio</option>
                           </select>
                           {c.avgPrice != null && <div className="text-muted-foreground text-[10px]">{c.avgPrice} cr</div>}
-                          <Button size="xs" variant="ghost" onClick={() => applyCatalogToAvatar(c, catalogTargetTypes[c.id] ?? "ch")}>Aplicar</Button>
-                          <Button size="xs" variant="ghost" onClick={() => removeCatalogSelection(c.id)}>Quitar</Button>
+                          <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px]" onClick={() => applyCatalogToAvatar(c, catalogTargetTypes[c.id] ?? "ch")}>Aplicar</Button>
+                          <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px]" onClick={() => removeCatalogSelection(c.id)}>Quitar</Button>
                         </div>
                       </div>
                     ))}
@@ -948,8 +949,8 @@ export default function ArmarioPage() {
                         <div key={v.name} className="flex items-center justify-between text-[10px]">
                           <div className="truncate">{v.name}</div>
                           <div className="flex items-center gap-1">
-                            <Button size="xs" variant="ghost" onClick={() => applyVariation(v)}>Aplicar</Button>
-                            <Button size="xs" variant="destructive" onClick={() => deleteVariation(v.name)}>Borrar</Button>
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px]" onClick={() => applyVariation(v)}>Aplicar</Button>
+                            <Button size="sm" variant="destructive" className="h-7 px-2 text-[10px]" onClick={() => deleteVariation(v.name)}>Borrar</Button>
                           </div>
                         </div>
                       ))}

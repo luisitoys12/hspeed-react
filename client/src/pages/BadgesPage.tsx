@@ -202,15 +202,24 @@ export default function BadgesPage() {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="flex items-center gap-3">
-        <Award className="w-6 h-6 text-yellow-400 animate-pulse" />
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Explorador de Placas
-        </h1>
+      <div className="site-panel-strong p-5 sm:p-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p className="site-kicker">Colección</p>
+          <h1 className="site-title mt-2 flex items-center gap-3">
+            <Award className="w-6 h-6 text-yellow-400 animate-pulse" />
+            Explorador de Placas
+          </h1>
+          <p className="text-xs text-muted-foreground mt-2 max-w-2xl">
+            Busca, filtra y revisa placas de Habbo con un diseño más limpio y enfocado en la exploración.
+          </p>
+        </div>
+        <Badge variant="outline" className="w-fit border-primary/30 bg-primary/5 text-primary text-[10px]">
+          {displayBadges.length} visibles
+        </Badge>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="site-panel p-3 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input

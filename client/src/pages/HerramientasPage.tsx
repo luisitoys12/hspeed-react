@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { proxyImage } from "@/lib/habboProxy";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,19 +30,19 @@ import {
 // ─────────────────────────────────────────────
 
 function avatarHeadUrl(username: string) {
-  return `https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=b&headonly=1`;
+  return proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=b&headonly=1`);
 }
 
 function avatarBodyUrl(username: string) {
-  return `https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=b&headonly=0`;
+  return proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=b&headonly=0`);
 }
 
 function figureUrl(figureString: string) {
-  return `https://www.habbo.es/habbo-imaging/avatarimage?figure=${encodeURIComponent(figureString)}&size=l&direction=2`;
+  return proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?figure=${encodeURIComponent(figureString)}&size=l&direction=2`);
 }
 
 function badgeImageUrl(badgeCode: string) {
-  return `https://images.habbo.com/c_images/album1584/${badgeCode}.gif`;
+  return proxyImage(`https://images.habbo.com/c_images/album1584/${badgeCode}.gif`);
 }
 
 function formatDate(dateStr?: string) {

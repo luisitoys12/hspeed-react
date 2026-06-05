@@ -1,19 +1,16 @@
-import { Router, Route, Switch, useLocation, Redirect } from "wouter";
-import { useHashLocation } from "wouter/use-hash-location";
+﻿import { Suspense, lazy } from "react";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { Route, Switch, useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
-import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { Toaster } from "@/components/ui/toaster";
 import TopNavBar from "@/components/TopNavBar";
 import ThemeDecoBar from "@/components/ThemeDecoBar";
 import ThemeParticles from "@/components/ThemeParticles";
+import FloatingRadioPlayer from "@/components/FloatingRadioPlayer";
 import Footer from "@/components/Footer";
-import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
-
-// Pages
 import HomePage from "@/pages/HomePage";
 import NewsPage from "@/pages/NewsPage";
 import NewsDetailPage from "@/pages/NewsDetailPage";
@@ -28,145 +25,91 @@ import ForumThreadPage from "@/pages/ForumThreadPage";
 import ContactPage from "@/pages/ContactPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
-import ProfilePage from "@/pages/ProfilePage";
 import AdminPanel from "@/pages/AdminPanel";
 import DJPanelPage from "@/pages/DJPanelPage";
 import MessagesPage from "@/pages/MessagesPage";
 import ArmarioPage from "@/pages/ArmarioPage";
-import CatalogPage from "@/pages/CatalogPage";
-import MaintenancePage from "@/pages/MaintenancePage";
 import HerramientasPage from "@/pages/HerramientasPage";
+import ShopPage from "@/pages/ShopPage";
+import CatalogPage from "@/pages/CatalogPage";
 import LegalPage from "@/pages/LegalPage";
+import MaintenancePage from "@/pages/MaintenancePage";
+import ProfilePage from "@/pages/ProfilePage";
 import NotFound from "@/pages/not-found";
 
-function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) {
-  const { user, loading } = useAuth();
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
+const Habbo3D = lazy(() => import("@/pages/Habbo3D"));
 
-  useEffect(() => {
-    if (loading) return;
-    if (!user) {
-      toast({
-        title: "Acceso restringido",
-        description: "Inicia sesión para entrar a este panel.",
-        variant: "destructive",
-      });
-      setLocation("/login");
-    } else if (!allowedRoles.includes(user.role)) {
-      toast({
-        title: "Acceso denegado",
-        description: "No tienes permisos para acceder a esta sección.",
-        variant: "destructive",
-      });
-      setLocation("/");
-    }
-  }, [user, loading, allowedRoles, setLocation, toast]);
+function AppContent() {
+	const [location] = useLocation();
+	const { user, loading } = useAuth();
+	usePageTitle(location);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin shadow-[0_0_15px_rgba(var(--theme-glow),0.5)]" />
-      </div>
-    );
-  }
+	const { data: config } = useQuery<any>({
+		queryKey: ["/api/config"],
+		retry: false,
+	});
 
-  if (!user || !allowedRoles.includes(user.role)) {
-    return null;
-  }
+	const maintenanceEnabled = config?.maintenanceMode === true;
+	const canBypassMaintenance = user?.role === "admin";
 
-  return <>{children}</>;
-}
+	if (maintenanceEnabled && !loading && !canBypassMaintenance) {
+		return <MaintenancePage />;
+	}
 
-function Layout() {
-  const [location] = useLocation();
-  const { user } = useAuth();
-  usePageTitle(location);
-
-  // Check maintenance mode from config
-  const { data: config } = useQuery<any>({
-    queryKey: ["/api/config"],
-    retry: false,
-    staleTime: 30000,
-  });
-
-  const isMaintenanceMode = config?.maintenanceMode === true;
-  const isStaff = user && (user.role === "admin" || user.role === "dj");
-
-  // If maintenance mode is ON and user is NOT staff → show maintenance page
-  if (isMaintenanceMode && !isStaff) {
-    return (
-      <div className="dark min-h-screen bg-background">
-        <MaintenancePage />
-      </div>
-    );
-  }
-
-  return (
-    <div className="dark min-h-screen flex flex-col bg-background">
-      <TopNavBar />
-      <ThemeDecoBar />
-      <ThemeParticles />
-
-      <main className="flex-1">
-        <Switch>
-          <Route path="/" component={HomePage} />
-          <Route path="/news" component={NewsPage} />
-          <Route path="/news/:id" component={NewsDetailPage} />
-          <Route path="/events" component={EventsPage} />
-          <Route path="/schedule" component={SchedulePage} />
-          <Route path="/team" component={TeamPage} />
-          <Route path="/badges" component={BadgesPage} />
-          <Route path="/marketplace" component={MarketplacePage} />
-          <Route path="/imager" component={ImagerPage} />
-          <Route path="/herramientas" component={HerramientasPage} />
-          <Route path="/forum" component={ForumPage} />
-          <Route path="/forum/:threadId" component={ForumThreadPage} />
-          <Route path="/contact" component={ContactPage} />
-          <Route path="/login" component={LoginPage} />
-          <Route path="/register" component={RegisterPage} />
-          <Route path="/profile/:username" component={ProfilePage} />
-          <Route path="/panel">
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminPanel />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/panel/:section">
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminPanel />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/djpanel">
-            <ProtectedRoute allowedRoles={["admin", "dj"]}>
-              <DJPanelPage />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/messages" component={MessagesPage} />
-          <Route path="/armario" component={ArmarioPage} />
-          <Route path="/catalog" component={CatalogPage} />
-          <Route path="/maintenance" component={MaintenancePage} />
-          <Route path="/legal" component={LegalPage} />
-          <Route path="/privacy" component={LegalPage} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-
-      <Footer />
-    </div>
-  );
+	return (
+		<div className="min-h-screen flex flex-col">
+			<ThemeParticles />
+			<TopNavBar />
+			<ThemeDecoBar />
+			<main className="flex-1">
+				<Suspense fallback={null}>
+					<Switch>
+						<Route path="/" component={HomePage} />
+						<Route path="/news" component={NewsPage} />
+						<Route path="/news/:id" component={NewsDetailPage} />
+						<Route path="/events" component={EventsPage} />
+						<Route path="/schedule" component={SchedulePage} />
+						<Route path="/team" component={TeamPage} />
+						<Route path="/badges" component={BadgesPage} />
+						<Route path="/marketplace" component={MarketplacePage} />
+						<Route path="/imager" component={ImagerPage} />
+						<Route path="/forum" component={ForumPage} />
+						<Route path="/forum/:id" component={ForumThreadPage} />
+						<Route path="/contact" component={ContactPage} />
+						<Route path="/login" component={LoginPage} />
+						<Route path="/register" component={RegisterPage} />
+						<Route path="/panel" component={AdminPanel} />
+						<Route path="/djpanel" component={DJPanelPage} />
+						<Route path="/messages" component={MessagesPage} />
+						<Route path="/armario" component={ArmarioPage} />
+						<Route path="/herramientas" component={HerramientasPage} />
+						<Route path="/tienda" component={ShopPage} />
+						<Route path="/shop" component={ShopPage} />
+						<Route path="/catalog" component={CatalogPage} />
+						<Route path="/habbo3d" component={Habbo3D} />
+						<Route path="/legal" component={LegalPage} />
+						<Route path="/privacy" component={LegalPage} />
+						<Route path="/maintenance" component={MaintenancePage} />
+						<Route path="/profile/:username" component={ProfilePage} />
+						<Route component={NotFound} />
+					</Switch>
+				</Suspense>
+			</main>
+			<Footer />
+			<FloatingRadioPlayer />
+		</div>
+	);
 }
 
 export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router hook={useHashLocation}>
-          <ThemeProvider>
-            <Layout />
-            <Toaster />
-          </ThemeProvider>
-        </Router>
-      </AuthProvider>
-    </QueryClientProvider>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<AuthProvider>
+				<ThemeProvider>
+					<AppContent />
+					<Toaster />
+				</ThemeProvider>
+			</AuthProvider>
+		</QueryClientProvider>
+	);
 }

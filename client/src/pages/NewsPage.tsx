@@ -33,7 +33,7 @@ export default function NewsPage() {
       {/* Featured banner (first featured article) */}
       {!isLoading && featured.length > 0 && (
         <Link href={`/news/${featured[0].id}`}>
-          <a className="block group" data-testid="card-featured-hero">
+          <div className="block group" data-testid="card-featured-hero">
             <div className="relative h-56 sm:h-72 rounded-2xl overflow-hidden shadow-xl border border-yellow-400/20">
               {featured[0].imageUrl ? (
                 <img
@@ -64,7 +64,7 @@ export default function NewsPage() {
                 </div>
               </div>
             </div>
-          </a>
+          </div>
         </Link>
       )}
 
@@ -91,7 +91,7 @@ export default function NewsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sorted.map((article: any) => (
             <Link href={`/news/${article.id}`} key={article.id}>
-              <a className="block group h-full" data-testid={`card-news-${article.id}`}>
+              <div className="block group h-full" data-testid={`card-news-${article.id}`}>
                 <div className={`bg-card border rounded-xl overflow-hidden hover:shadow-lg transition-all h-full flex flex-col ${
                   article.featured
                     ? "border-yellow-400/30 hover:border-yellow-400/50 shadow-yellow-400/5"
@@ -134,7 +134,7 @@ export default function NewsPage() {
                     </span>
                   </div>
                 </div>
-              </a>
+              </div>
             </Link>
           ))}
         </div>

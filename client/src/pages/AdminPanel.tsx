@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Newspaper, Calendar, Clock, Users, Shield, Plus, Trash2, Edit, Palette, Check, Radio, Headphones, UsersRound, Download, Ban, Mail, Flag, ScrollText } from "lucide-react";
+import { Settings, Newspaper, Calendar, Clock, Users, Shield, Plus, Trash2, Edit, Palette, Check, Radio, Headphones, UsersRound, Download, Ban, Mail, Flag, ScrollText, ShoppingCart, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/hooks/useTheme";
 import type { Theme } from "@shared/schema";
@@ -27,6 +27,7 @@ const SECTIONS = [
   { id: "users", label: "Usuarios", icon: Users },
   { id: "team", label: "Equipo", icon: UsersRound },
   { id: "downloads", label: "Descargas", icon: Download },
+  { id: "shop", label: "Tienda", icon: ShoppingCart },
   { id: "banned", label: "Canciones", icon: Ban },
   { id: "contacts", label: "Contactos", icon: Mail },
   { id: "reports", label: "Reportes", icon: Flag },
@@ -827,6 +828,161 @@ function PanelLogsAdmin() {
   );
 }
 
+// ============ SHOP ADMIN ============
+function ShopAdmin() {
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [form, setForm] = useState({
+    name: "", description: "", category: "decoracion", price: 0,
+    imageUrl: "", previewUrl: "", isLimited: false, stock: 0, isActive: true,
+  });
+
+  const { data: products } = useQuery<any[]>({
+    queryKey: ["/api/shop/products"],
+    queryFn: async () => { const res = await apiRequest("GET", "/api/shop/products?all=true", undefined, token ? `Bearer ${token}` : undefined); return res.json(); },
+  });
+
+  const openCreate = () => {
+    setEditItem(null);
+    setForm({ name: "", description: "", category: "decoracion", price: 0, imageUrl: "", previewUrl: "", isLimited: false, stock: 0, isActive: true });
+    setOpen(true);
+  };
+
+  const openEdit = (item: any) => {
+    setEditItem(item);
+    setForm({
+      name: item.name || "", description: item.description || "", category: item.category || "decoracion",
+      price: item.price || 0, imageUrl: item.imageUrl || "", previewUrl: item.previewUrl || "",
+      isLimited: item.isLimited || false, stock: item.stock ?? 0, isActive: item.isActive ?? true,
+    });
+    setOpen(true);
+  };
+
+  const createMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/shop/products", data, token ? `Bearer ${token}` : undefined);
+      if (!res.ok) throw new Error("Error al crear producto");
+      return res.json();
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/shop/products"] }); setOpen(false); toast({ title: "Producto creado" }); },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const res = await apiRequest("PUT", `/api/shop/products/${id}`, data, token ? `Bearer ${token}` : undefined);
+      if (!res.ok) throw new Error("Error al actualizar");
+      return res.json();
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/shop/products"] }); setOpen(false); toast({ title: "Producto actualizado" }); },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await apiRequest("DELETE", `/api/shop/products/${id}`, undefined, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/shop/products"] }); toast({ title: "Producto eliminado" }); },
+  });
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
+  const CATEGORIES = [
+    { value: "decoracion", label: "Decoración" },
+    { value: "objeto", label: "Objeto" },
+    { value: "tema", label: "Tema" },
+    { value: "fondo", label: "Fondo" },
+    { value: "efecto", label: "Efecto" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-sm font-semibold">Gestión de Tienda ({products?.length || 0})</h2>
+        <Button size="sm" className="bg-primary hover:bg-primary/80 text-white text-xs" onClick={openCreate} data-testid="button-new-product">
+          <Plus className="w-3 h-3 mr-1" />Nuevo Producto
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        {(products || []).map((p: any) => (
+          <div key={p.id} className="flex items-center gap-2 bg-secondary/30 rounded-lg px-3 py-2 border border-border">
+            {p.imageUrl && (
+              <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded object-cover flex-shrink-0" />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm truncate font-medium">{p.name}</p>
+                <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">{CATEGORIES.find(c => c.value === p.category)?.label || p.category}</Badge>
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-xs font-bold text-yellow-400">{p.price} SP</span>
+                {p.isLimited && <Badge variant="outline" className="text-[9px] border-red-500/30 text-red-400">Limitado ({p.stock})</Badge>}
+                {!p.isActive && <Badge variant="outline" className="text-[9px] border-gray-500/30 text-gray-400">Inactivo</Badge>}
+                {p.isActive && <Badge variant="outline" className="text-[9px] border-green-500/30 text-green-400">Activo</Badge>}
+              </div>
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => openEdit(p)} data-testid={`button-edit-product-${p.id}`}>
+                <Edit className="w-3.5 h-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={() => deleteMutation.mutate(p.id)} data-testid={`button-delete-product-${p.id}`}>
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        ))}
+        {(products || []).length === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-6">No hay productos en la tienda</p>
+        )}
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="bg-card border-border max-w-lg">
+          <DialogHeader><DialogTitle className="text-sm">{editItem ? "Editar Producto" : "Nuevo Producto"}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label className="text-xs">Nombre</Label><Input className="mt-1" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} data-testid="input-product-name" /></div>
+            <div><Label className="text-xs">Descripción</Label><Textarea className="mt-1 resize-none" rows={2} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><Label className="text-xs">Categoría</Label>
+                <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v }))}>
+                  <SelectTrigger className="mt-1 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label className="text-xs">Precio (SP)</Label><Input className="mt-1" type="number" min={0} value={form.price} onChange={e => setForm(p => ({ ...p, price: parseInt(e.target.value) || 0 }))} /></div>
+            </div>
+            <div><Label className="text-xs">URL de imagen</Label><Input className="mt-1" placeholder="https://..." value={form.imageUrl} onChange={e => setForm(p => ({ ...p, imageUrl: e.target.value }))} /></div>
+            <div><Label className="text-xs">URL de preview (opcional)</Label><Input className="mt-1" placeholder="https://..." value={form.previewUrl} onChange={e => setForm(p => ({ ...p, previewUrl: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><Label className="text-xs">Stock</Label><Input className="mt-1" type="number" min={0} value={form.stock} onChange={e => setForm(p => ({ ...p, stock: parseInt(e.target.value) || 0 }))} /></div>
+              <div className="flex items-end gap-2 pb-1">
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setForm(p => ({ ...p, isLimited: !p.isLimited }))} className={`text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${form.isLimited ? "border-red-500/50 bg-red-500/10 text-red-400" : "border-border bg-secondary/30 text-muted-foreground"}`}>
+                    Limitado
+                  </button>
+                  <button type="button" onClick={() => setForm(p => ({ ...p, isActive: !p.isActive }))} className={`text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${form.isActive ? "border-green-500/50 bg-green-500/10 text-green-400" : "border-border bg-secondary/30 text-muted-foreground"}`}>
+                    Activo
+                  </button>
+                </div>
+              </div>
+            </div>
+            <Button className="w-full bg-primary hover:bg-primary/80 text-white text-xs" onClick={() => {
+              if (editItem) updateMutation.mutate({ id: editItem.id, data: form });
+              else createMutation.mutate(form);
+            }} disabled={isPending || !form.name} data-testid="button-submit-product">
+              {isPending ? "Guardando..." : editItem ? "Guardar Cambios" : "Crear Producto"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 // ============ MAIN PANEL ============
 export default function AdminPanel() {
   const { section } = useParams<{ section?: string }>();
@@ -868,6 +1024,7 @@ export default function AdminPanel() {
         <TabsContent value="users"><Card className="bg-card border-border"><CardContent className="p-5"><UsersAdmin /></CardContent></Card></TabsContent>
         <TabsContent value="team"><Card className="bg-card border-border"><CardContent className="p-5"><TeamAdmin /></CardContent></Card></TabsContent>
         <TabsContent value="downloads"><Card className="bg-card border-border"><CardContent className="p-5"><DownloadsAdmin /></CardContent></Card></TabsContent>
+        <TabsContent value="shop"><Card className="bg-card border-border"><CardContent className="p-5"><ShopAdmin /></CardContent></Card></TabsContent>
         <TabsContent value="banned"><Card className="bg-card border-border"><CardContent className="p-5"><BannedSongsAdmin /></CardContent></Card></TabsContent>
         <TabsContent value="contacts"><Card className="bg-card border-border"><CardContent className="p-5"><ContactsAdmin /></CardContent></Card></TabsContent>
         <TabsContent value="reports"><Card className="bg-card border-border"><CardContent className="p-5"><ReportsAdmin /></CardContent></Card></TabsContent>

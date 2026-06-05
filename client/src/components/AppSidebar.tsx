@@ -37,7 +37,7 @@ function NavLink({ href, icon: Icon, label, collapsed }: { href: string; icon: a
 
   return (
     <Link href={href}>
-      <a
+      <span
         data-testid={`nav-link-${label.toLowerCase()}`}
         className={cn(
           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group",
@@ -49,7 +49,7 @@ function NavLink({ href, icon: Icon, label, collapsed }: { href: string; icon: a
         <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary transition-colors")} />
         {!collapsed && <span className="truncate">{label}</span>}
         {!collapsed && isActive && <ChevronRight className="w-3 h-3 ml-auto text-primary/60" />}
-      </a>
+      </span>
     </Link>
   );
 }
@@ -168,19 +168,19 @@ export default function AppSidebar({ collapsed }: SidebarProps) {
         ) : (
           <div className={cn("flex gap-2", collapsed ? "flex-col items-center" : "")}>
             <Link href="/login">
-              <a data-testid="link-login" className="flex-1">
+              <span data-testid="link-login" className="flex-1">
                 <Button variant="outline" size="sm" className={cn("border-primary/30 text-primary hover:bg-primary/10 text-xs", collapsed ? "w-8 h-8 p-0" : "w-full")}>
                   {collapsed ? <LogIn className="w-3.5 h-3.5" /> : <><LogIn className="w-3 h-3 mr-1.5" />Entrar</>}
                 </Button>
-              </a>
+              </span>
             </Link>
             {!collapsed && (
               <Link href="/register">
-                <a data-testid="link-register">
+                <span data-testid="link-register">
                   <Button size="sm" className="bg-primary hover:bg-primary/80 text-white text-xs">
                     <UserPlus className="w-3 h-3 mr-1.5" />Registro
                   </Button>
-                </a>
+                </span>
               </Link>
             )}
           </div>

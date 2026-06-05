@@ -300,13 +300,19 @@ export default function MarketplacePage() {
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <ShoppingBag className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold">Marketplace</h1>
-          <Badge variant="outline" className="border-primary/30 text-primary/70 text-[10px]">Habbo.{hotel}</Badge>
+      <div className="site-panel-strong p-5 sm:p-6 flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <p className="site-kicker">Mercado</p>
+          <h1 className="site-title mt-2 flex items-center gap-3">
+            <ShoppingBag className="w-5 h-5 text-primary" />
+            Marketplace
+          </h1>
+          <p className="text-xs text-muted-foreground mt-2 max-w-2xl">
+            Explora furnis, compara precios y sigue el pulso del mercado con una interfaz más clara.
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary/80 text-[10px]">Habbo.{hotel}</Badge>
           <Select value={hotel} onValueChange={(v) => { setHotel(v); setPage(1); }}>
             <SelectTrigger className="w-28 h-8 text-xs" data-testid="select-marketplace-hotel">
               <SelectValue />
@@ -328,7 +334,7 @@ export default function MarketplacePage() {
       </div>
 
       {/* Search bar always visible */}
-      <div className="flex gap-2">
+      <div className="site-panel p-3 flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -346,7 +352,7 @@ export default function MarketplacePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-secondary/40 rounded-xl p-1">
+      <div className="flex gap-1 bg-white/5 rounded-xl p-1 border border-border/60 backdrop-blur-sm">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -366,7 +372,7 @@ export default function MarketplacePage() {
 
       {/* Sort control (catalog only) */}
       {tab === "catalog" && (
-        <div className="flex items-center gap-2">
+        <div className="site-panel p-3 flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Ordenar:</span>
           <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v as any); setPage(1); }}>
             <SelectTrigger className="w-44 h-8 text-xs">

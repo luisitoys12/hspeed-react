@@ -88,7 +88,7 @@ function ThreadList({ categoryId, categoryName }: { categoryId: number; category
           )
           : (threads || []).map((thread) => (
             <Link href={`/forum/${thread.id}`} key={thread.id}>
-              <a className="block group" data-testid={`link-thread-${thread.id}`}>
+              <div className="block group" data-testid={`link-thread-${thread.id}`}>
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary/20 hover:bg-secondary/50 border border-border/40 hover:border-primary/30 transition-all">
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
                     {thread.isPinned && <Pin className="w-3 h-3 text-yellow-400 flex-shrink-0" />}
@@ -101,7 +101,7 @@ function ThreadList({ categoryId, categoryName }: { categoryId: number; category
                     <ArrowRight className="w-3.5 h-3.5 text-primary/50 group-hover:text-primary transition-colors" />
                   </div>
                 </div>
-              </a>
+              </div>
             </Link>
           ))
       }

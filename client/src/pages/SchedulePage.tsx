@@ -29,9 +29,17 @@ export default function SchedulePage() {
 
   return (
     <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-5">
-      <div className="flex items-center gap-3">
-        <Clock className="w-5 h-5 text-primary" />
-        <h1 className="text-xl font-bold">Horarios de DJ</h1>
+      <div className="site-panel-strong p-5 sm:p-6 flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <p className="site-kicker">Programación</p>
+          <h1 className="site-title mt-2 flex items-center gap-3">
+            <Clock className="w-5 h-5 text-primary" />
+            Horarios de DJ
+          </h1>
+          <p className="text-xs text-muted-foreground mt-2 max-w-2xl">
+            Consulta la programación semanal con un estilo más limpio y legible.
+          </p>
+        </div>
       </div>
 
       {isLoading ? (
@@ -52,7 +60,7 @@ export default function SchedulePage() {
             return (
               <Card
                 key={day}
-                className={`bg-card border overflow-hidden ${DAY_COLORS[day] || "border-border"}`}
+                className={`site-panel overflow-hidden ${DAY_COLORS[day] || "border-border"}`}
                 data-testid={`card-day-${day}`}
               >
                 <CardHeader className="pb-2 pt-4 px-4">
@@ -68,7 +76,7 @@ export default function SchedulePage() {
                     ? slots.map((slot) => (
                         <div
                           key={slot.id}
-                          className="bg-secondary/50 rounded-lg p-2.5 border border-border/50"
+                          className="bg-white/5 rounded-lg p-2.5 border border-border/50"
                           data-testid={`slot-${slot.id}`}
                         >
                           <div className="flex items-center gap-1.5 mb-1">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { proxyImage } from "@/lib/habboProxy";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,7 +8,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import FloatingRadioPlayer from "@/components/FloatingRadioPlayer";
+import NotificationBell from "@/components/NotificationBell";
 import {
   Menu,
   X,
@@ -20,6 +20,7 @@ import {
   ChevronDown,
   Mail,
   Headphones,
+  Clock,
   Home,
   Newspaper,
   Calendar,
@@ -29,6 +30,7 @@ import {
   Users,
   Shirt,
   Wrench,
+  ShoppingCart,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,6 +40,7 @@ const navItems: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/events", label: "EVENTOS", icon: Calendar },
   { href: "/forum", label: "FORO", icon: MessageSquare },
   { href: "/badges", label: "PLACAS", icon: Award },
+  { href: "/tienda", label: "TIENDA", icon: ShoppingCart },
   { href: "/marketplace", label: "MARKETPLACE", icon: TrendingUp },
   { href: "/imager", label: "IMAGER", icon: Users },
   { href: "/armario", label: "ARMARIO", icon: Shirt },
@@ -55,17 +58,18 @@ function NavLink({ href, label, icon: Icon }: { href: string; label: string; ico
       href={href}
       data-testid={`nav-link-${label.toLowerCase()}`}
       className={cn(
-        "flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold tracking-wide transition-all whitespace-nowrap rounded-md relative group",
+        "flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold tracking-[0.18em] uppercase transition-all whitespace-nowrap rounded-md relative group",
         isActive
-          ? "text-primary bg-primary/10"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+          ? "text-white bg-white/12"
+          : "text-white/75 hover:text-white hover:bg-white/10"
       )}
       title={label}
     >
+      <Icon className="w-3.5 h-3.5 opacity-90" />
+      <span>{label}</span>
       {isActive && (
-        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full" />
+        <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-white rounded-full opacity-80" />
       )}
-      {label}
     </Link>
   );
 }
@@ -80,6 +84,27 @@ export default function TopNavBar() {
 
   const emoji = decorations?.emoji || "";
 
+  const djMessage = useMemo(() => {
+    const guestMessages = [
+      "Hola, como les va por el hotel? Hoy tenemos radio en vivo, eventos y premios.",
+      "Buenas! Sube el volumen y pasa por el foro, la comunidad esta on fire.",
+      "Hey familia Habbo, ponte comodo: radio, noticias y sorpresas todo el dia.",
+      "Hola! Deja tu mensaje en el foro y revisa los horarios de DJs."
+    ];
+
+    const userMessages = [
+      (name: string) => `Hola ${name}, como va todo? Hoy hay radio en vivo y mucha actividad.`,
+      (name: string) => `Hola ${name}, gracias por volver. Revisa el foro y los horarios de DJs.`,
+      (name: string) => `Hola ${name}, ponte comodo y disfruta la radio. Hay novedades en la fansite.`,
+    ];
+
+    const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)];
+    if (user?.displayName) {
+      return pick(userMessages)(user.displayName);
+    }
+    return pick(guestMessages);
+  }, [user?.displayName]);
+
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread"],
     queryFn: async () => {
@@ -93,333 +118,207 @@ export default function TopNavBar() {
   const unreadCount = unreadData?.count || 0;
 
   return (
-    <nav
-      className="sticky top-0 z-50 w-full bg-card/98 backdrop-blur-md border-b border-border shadow-sm"
-      data-testid="top-nav-bar"
-    >
-      {/* ── ROW 1: Logo | Auth ─────────────────────────────── */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-        <div className="flex items-center h-14 gap-3">
-          {/* Left: Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 flex-shrink-0 group"
-            data-testid="nav-logo"
-          >
-            {/* SVG logo mark */}
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 32 32"
-              fill="none"
-              aria-label="HabboSpeed Logo"
-              className="flex-shrink-0"
-            >
-              <rect
-                width="32"
-                height="32"
-                rx="6"
-                className="fill-primary"
-              />
-              <rect x="6" y="6" width="4" height="4" fill="white" />
-              <rect x="10" y="6" width="4" height="4" fill="white" />
-              <rect x="14" y="6" width="4" height="4" fill="white" />
-              <rect x="6" y="10" width="4" height="4" fill="white" />
-              <rect x="14" y="10" width="4" height="4" fill="white" />
-              <rect x="6" y="14" width="4" height="4" fill="white" />
-              <rect x="10" y="14" width="4" height="4" fill="white" />
-              <rect x="14" y="14" width="4" height="4" fill="white" />
-              <rect
-                x="18"
-                y="10"
-                width="8"
-                height="3"
-                className="fill-primary/60"
-              />
-              <rect
-                x="22"
-                y="13"
-                width="4"
-                height="3"
-                className="fill-primary/60"
-              />
-              <rect
-                x="18"
-                y="16"
-                width="8"
-                height="3"
-                className="fill-primary/60"
-              />
-              <rect
-                x="18"
-                y="19"
-                width="4"
-                height="3"
-                className="fill-primary/60"
-              />
-              <rect
-                x="18"
-                y="22"
-                width="8"
-                height="3"
-                className="fill-primary/60"
-              />
-            </svg>
-            <div className="hidden sm:block leading-none">
-              <span className="font-pixel text-[9px] text-theme-gradient block">
-                HABBO
-              </span>
-              <span className="font-pixel text-[8px] text-muted-foreground block">
-                SPEED
+    <nav className="site-shell sticky top-0 z-50 w-full" data-testid="top-nav-bar">
+      <div className="site-hero-band site-hero-skyline">
+        <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-5 relative z-10">
+          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr] items-center">
+            <Link href="/" className="flex items-center gap-4 min-w-0" data-testid="nav-logo">
+              <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-label="HabboSpeed Logo" className="flex-shrink-0 drop-shadow-lg">
+                <rect width="56" height="56" rx="14" fill="#2b6cb0" />
+                <rect x="10" y="10" width="7" height="7" fill="white" />
+                <rect x="17" y="10" width="7" height="7" fill="white" />
+                <rect x="24" y="10" width="7" height="7" fill="white" />
+                <rect x="10" y="17" width="7" height="7" fill="white" />
+                <rect x="24" y="17" width="7" height="7" fill="white" />
+                <rect x="10" y="24" width="7" height="7" fill="white" />
+                <rect x="17" y="24" width="7" height="7" fill="white" />
+                <rect x="24" y="24" width="7" height="7" fill="white" />
+                <rect x="31" y="17" width="14" height="5" fill="rgba(255,255,255,0.56)" />
+                <rect x="38" y="22" width="7" height="5" fill="rgba(255,255,255,0.56)" />
+                <rect x="31" y="27" width="14" height="5" fill="rgba(255,255,255,0.56)" />
+              </svg>
+              <div className="min-w-0">
+                <p className="font-pixel text-[11px] sm:text-sm text-white tracking-wide drop-shadow">HABBOSPEED</p>
+                <p className="text-white/80 text-xs sm:text-sm font-medium max-w-xl truncate">
+                  La fansite de Habbo con radio, noticias, foros, armario y herramientas.
+                </p>
+              </div>
+            </Link>
+
+            <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-sm shadow-2xl overflow-hidden">
+              <div className="flex items-center gap-3 p-3 sm:p-4">
+                <Link href={`/profile/${user?.habboUsername || user?.displayName || "HabboSpeed"}`} className="hidden sm:block w-16 h-16 rounded-xl bg-black/20 border border-white/10 overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-primary/50 transition-all">
+                  <img
+                    src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${user?.habboUsername || "HabboSpeed"}&size=b&headonly=0&direction=3&head_direction=3&gesture=sml`) }
+                    alt={user?.displayName || "HabboSpeed"}
+                    className="w-full h-full object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-white/70 font-bold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 live-indicator" />
+                    En vivo ahora
+                  </div>
+                  <p className="text-sm sm:text-base font-bold text-white mt-1 truncate">
+                    {user ? `Welcome back ${user.displayName}!` : "Join the community today"}
+                  </p>
+                  <p className="text-xs text-white/75 mt-1 line-clamp-2">
+                    Noticias, radio, armario, placas y foros en una sola portada limpia y rápida.
+                  </p>
+                </div>
+                <div className="hidden lg:flex flex-col items-end gap-2 flex-shrink-0">
+                  <Badge className="bg-sky-200/20 text-white border-white/15 text-[10px]">Fansite 2026</Badge>
+                  <div className="flex gap-2">
+                    <Link href="/news" className="inline-flex items-center rounded-lg bg-white text-slate-900 px-3 py-2 text-[11px] font-bold hover:bg-slate-100">
+                      Noticias
+                    </Link>
+                    <Link href="/armario" className="inline-flex items-center rounded-lg bg-slate-900/60 text-white px-3 py-2 text-[11px] font-bold hover:bg-slate-900/80">
+                      Armario
+                    </Link>
+                  </div>
+                </div>
+                <button
+                  className="lg:hidden text-white/90 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  data-testid="button-mobile-menu"
+                  aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                >
+                  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="site-status-bar border-y border-white/10">
+        <div className="mx-auto max-w-[1600px] px-4 sm:px-6">
+          <div className="flex items-center gap-3 py-2.5">
+            <div className="flex-1 min-w-0 flex items-center gap-2">
+              <span className="font-bold text-[11px] uppercase tracking-[0.24em] text-white/90 whitespace-nowrap">DJ says:</span>
+              <span className="text-[12px] text-white/85 truncate">
+                {djMessage}
               </span>
             </div>
-            {emoji && (
-              <span className="text-sm hidden md:inline" aria-hidden="true">
-                {emoji}
-              </span>
-            )}
-          </Link>
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Right: auth area */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Auth area */}
-            {user ? (
-              <div className="relative flex items-center gap-2">
-                {/* Unread messages badge icon */}
-                {unreadCount > 0 && (
-                  <Link
-                    href="/messages"
-                    className="relative flex-shrink-0"
-                    data-testid="button-messages-badge"
-                  >
-                    <Mail className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 bg-primary text-white text-[8px] rounded-full flex items-center justify-center px-0.5">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  </Link>
-                )}
-                <button
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 transition-colors"
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  data-testid="button-user-menu"
-                >
-                  {user.habboUsername ? (
-                    <img
-                      src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`)}
-                      alt={user.displayName}
-                      className="w-7 h-7 rounded bg-muted object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                      data-testid="img-user-avatar"
-                    />
-                  ) : (
-                    <div className="w-7 h-7 rounded bg-muted flex items-center justify-center">
-                      <User className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <span className="hidden sm:inline text-xs font-medium text-foreground truncate max-w-[120px]" data-testid="text-username">
-                    {user.displayName}
-                  </span>
-                  <ChevronDown className="w-3 h-3 text-muted-foreground hidden sm:block flex-shrink-0" />
-                </button>
-
-                {/* Dropdown menu */}
-                {userMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setUserMenuOpen(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-1 w-52 bg-card border border-border rounded-lg shadow-xl z-50 py-1 animate-fade-in-up">
-                      <div className="px-3 py-2 border-b border-border">
-                        <p className="text-sm font-medium" data-testid="text-dropdown-username">{user.displayName}</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] border-primary/30 text-primary/80 py-0"
-                          >
-                            {user.role}
-                          </Badge>
-                          <span className="text-[10px] text-yellow-400 font-medium">
-                            ⚡ {user.speedPoints}
-                          </span>
-                        </div>
-                      </div>
-                      <Link
-                        href={`/profile/${user.habboUsername || user.displayName}`}
-                        className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                        data-testid="link-profile"
-                      >
-                        <User className="w-3.5 h-3.5" />
-                        Mi Perfil
-                      </Link>
-                      <Link
-                        href="/messages"
-                        className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                        data-testid="link-messages"
-                      >
-                        <Mail className="w-3.5 h-3.5" />
-                        Mensajes
-                      </Link>
-                      {isDjOrAdmin && (
-                        <Link
-                          href="/djpanel"
-                          className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                          onClick={() => setUserMenuOpen(false)}
-                          data-testid="link-dj-panel"
-                        >
-                          <Headphones className="w-3.5 h-3.5" />
-                          Panel DJ
-                        </Link>
-                      )}
-                      {isAdmin && (
-                        <Link
-                          href="/panel"
-                          className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                          onClick={() => setUserMenuOpen(false)}
-                          data-testid="link-admin-panel"
-                        >
-                          <Settings className="w-3.5 h-3.5" />
-                          Panel Admin
-                        </Link>
-                      )}
-                      <div className="border-t border-border mt-1 pt-1">
-                        <button
-                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-muted-foreground hover:text-destructive hover:bg-muted/50 transition-colors"
-                          onClick={() => {
-                            logout();
-                            setUserMenuOpen(false);
-                          }}
-                          data-testid="button-logout"
-                        >
-                          <LogOut className="w-3.5 h-3.5" />
-                          Cerrar sesión
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link href="/login" data-testid="link-login">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-primary/40 text-primary hover:bg-primary/10 hover:border-primary/60 text-[11px] h-8 px-4 font-semibold"
-                  >
-                    <LogIn className="w-3 h-3 mr-1.5 flex-shrink-0" />
-                    Entrar
-                  </Button>
-                </Link>
-                <Link href="/register" data-testid="link-register">
-                  <Button
-                    size="sm"
-                    className="bg-primary hover:bg-primary/85 text-primary-foreground text-[11px] h-8 px-4 font-semibold"
-                  >
-                    <UserPlus className="w-3 h-3 mr-1.5 flex-shrink-0" />
-                    Registro
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            {/* Mobile hamburger */}
-            <button
-              className="lg:hidden text-muted-foreground hover:text-foreground p-1.5 ml-1 rounded-md hover:bg-muted/50 transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              data-testid="button-mobile-menu"
-              aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
-            >
-              {mobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── ROW 2: Navigation bar (desktop only) ───────────────────── */}
-      <div className="hidden lg:block border-t border-border/50 bg-card/80">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
-            {navItems.map((item) => (
-              <NavLink key={item.href} {...item} />
-            ))}
-            {user && (
-              <Link
-                href="/messages"
-                className={cn(
-                  "relative flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold tracking-wide transition-all whitespace-nowrap rounded-md",
-                  location.startsWith("/messages")
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                )}
-                data-testid="nav-link-mensajes"
-              >
-                {location.startsWith("/messages") && (
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full" />
-                )}
-                MENSAJES
-                {unreadCount > 0 && (
-                  <span className="ml-0.5 min-w-[16px] h-4 bg-primary text-white text-[9px] rounded-full flex items-center justify-center px-1">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
+            <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+              <Link href="/schedule" className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white hover:bg-white/15">
+                <Clock className="w-3.5 h-3.5" />
+                Horarios
               </Link>
-            )}
+              <Link href="/forum" className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white hover:bg-white/15">
+                <MessageSquare className="w-3.5 h-3.5" />
+                Foro
+              </Link>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 flex-shrink-0 text-white/80">
+              <Link
+                href="/schedule"
+                className="w-7 h-7 rounded-md bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition-colors"
+                aria-label="Horarios de radio"
+                title="Horarios de radio"
+              >
+                📻
+              </Link>
+              <Link
+                href="/news"
+                className="w-7 h-7 rounded-md bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition-colors"
+                aria-label="Alertas y noticias"
+                title="Alertas y noticias"
+              >
+                ⚠️
+              </Link>
+              <Link
+                href="/forum"
+                className="w-7 h-7 rounded-md bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition-colors"
+                aria-label="Foro"
+                title="Foro"
+              >
+                💬
+              </Link>
+              <Link
+                href="/contact"
+                className="w-7 h-7 rounded-md bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition-colors"
+                aria-label="Contacto"
+                title="Contacto"
+              >
+                🎧
+              </Link>
+              {isDjOrAdmin && (
+                <Link
+                  href="/djpanel"
+                  className="w-7 h-7 rounded-md bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition-colors"
+                  aria-label="Panel DJ"
+                  title="Panel DJ"
+                >
+                  🎚️
+                </Link>
+              )}
+              {isAdmin && (
+                <Link
+                  href="/panel"
+                  className="w-7 h-7 rounded-md bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition-colors"
+                  aria-label="Panel Admin"
+                  title="Panel Admin"
+                >
+                  🛠️
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── ROW 3: Radio Player Bar (desktop only — full width like the reference) ── */}
-      <div className="relative">
-        <FloatingRadioPlayer />
-      </div>
-
-      {/* ── Mobile slide-down panel ─────────────────────────────────── */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-border bg-card/99 backdrop-blur-md animate-fade-in-up">
+        <div className="lg:hidden border-t border-white/10 bg-slate-950/95 backdrop-blur-md animate-fade-in-up">
           <div className="max-w-[1600px] mx-auto px-4 py-3 space-y-1">
             {navItems.map((item) => {
-              const isActive =
-                item.href === "/"
-                  ? location === "/"
-                  : location.startsWith(item.href);
+              const isActive = item.href === "/" ? location === "/" : location.startsWith(item.href);
               const MobileIcon = item.icon;
-
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary/15 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    isActive ? "bg-white/10 text-white" : "text-white/75 hover:text-white hover:bg-white/8"
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid={`mobile-nav-${item.label.toLowerCase()}`}
                 >
-                  <MobileIcon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-primary" : "")} />
+                  <MobileIcon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-white" : "text-white/60")} />
                   {item.label}
                 </Link>
               );
             })}
 
-            {/* Messages link in mobile */}
+            {!user && (
+              <div className="flex items-center gap-2 px-3">
+                <Link
+                  href="/login"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-white/10 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
+                  onClick={() => setMobileMenuOpen(false)}
+                  data-testid="mobile-nav-login"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Iniciar sesion
+                </Link>
+                <Link
+                  href="/register"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-white/10 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
+                  onClick={() => setMobileMenuOpen(false)}
+                  data-testid="mobile-nav-register"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Registro
+                </Link>
+              </div>
+            )}
+
             {user && (
               <Link
                 href="/messages"
-                className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-white/75 hover:text-white hover:bg-white/8"
                 onClick={() => setMobileMenuOpen(false)}
                 data-testid="mobile-nav-mensajes"
               >
@@ -428,16 +327,27 @@ export default function TopNavBar() {
                   MENSAJES
                 </span>
                 {unreadCount > 0 && (
-                  <Badge className="bg-primary text-white text-[9px] py-0 px-1.5">{unreadCount > 9 ? "9+" : unreadCount}</Badge>
+                  <Badge className="bg-white text-slate-900 text-[9px] py-0 px-1.5">{unreadCount > 9 ? "9+" : unreadCount}</Badge>
                 )}
               </Link>
             )}
 
-            {/* DJ Panel link in mobile */}
+            {user && (
+              <Link
+                href="/tienda"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/75 hover:text-white hover:bg-white/8"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-nav-tienda"
+              >
+                <ShoppingCart className="w-4 h-4 flex-shrink-0" />
+                TIENDA SP
+              </Link>
+            )}
+
             {isDjOrAdmin && (
               <Link
                 href="/djpanel"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/75 hover:text-white hover:bg-white/8"
                 onClick={() => setMobileMenuOpen(false)}
                 data-testid="mobile-nav-djpanel"
               >
@@ -446,11 +356,10 @@ export default function TopNavBar() {
               </Link>
             )}
 
-            {/* Admin link in mobile */}
             {isAdmin && (
               <Link
                 href="/panel"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/75 hover:text-white hover:bg-white/8"
                 onClick={() => setMobileMenuOpen(false)}
                 data-testid="mobile-nav-admin"
               >
@@ -459,9 +368,8 @@ export default function TopNavBar() {
               </Link>
             )}
 
-            {/* Radio player in mobile */}
-            <div className="pt-2 mt-2 border-t border-border">
-              <FloatingRadioPlayer />
+            <div className="pt-2 mt-2 border-t border-white/10 text-[11px] text-white/70">
+              En vivo ahora. Usa las secciones para escuchar, leer y participar.
             </div>
           </div>
         </div>

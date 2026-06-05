@@ -18,8 +18,7 @@ function HabboAvatar({ username, displayName, isOP = false }: { username?: strin
     <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
       {username ? (
         <img
-          src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`}
-            src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`)}
+          src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`)}
           alt={displayName}
           className="w-10 h-10 rounded-xl bg-secondary object-contain"
           onError={(e) => {

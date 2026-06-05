@@ -30,7 +30,7 @@ export class MemStorage implements IStorage {
   private schedule: Map<number, Schedule> = new Map();
   private comments: Map<number, Comment> = new Map();
   private polls: Map<number, Poll> = new Map();
-  private themes: Map<number, Theme> = new Map();
+  private themes: Map<string, Theme> = new Map();
   private forumCategories: Map<number, ForumCategory> = new Map();
   private forumThreads: Map<number, ForumThread> = new Map();
   private forumPosts: Map<number, ForumPost> = new Map();
@@ -44,7 +44,7 @@ export class MemStorage implements IStorage {
   private panelLogs: Map<number, PanelLog> = new Map();
   private reportedMessages: Map<number, ReportedMessage> = new Map();
   
-  private configItem: Config;
+  private configItem!: Config;
   private djPanelState: any;
   private chatMessagesList: any[] = [];
   private privateMessagesList: any[] = [];
@@ -60,9 +60,9 @@ export class MemStorage implements IStorage {
     // Configuración por defecto
     this.configItem = {
       id: 1,
-      radioService: "zenofm",
-      apiUrl: "https://zeno.fm/api/metadata", // URL fake
-      listenUrl: "https://stream.zeno.fm/fake-stream",
+      radioService: "azuracast",
+      apiUrl: "https://radio.kusmedios.lat/api/nowplaying/runa-fm",
+      listenUrl: "https://radio.kusmedios.lat/listen/runa-fm/radio.mp3",
       homePlayerBgUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       slideshow: [
         { image: "https://images.habbo.com/c_images/reception/rec_background_beach.png", title: "¡Bienvenidos a HabboSpeed!", link: "#" },
@@ -116,6 +116,20 @@ export class MemStorage implements IStorage {
       category: "Noticias",
       date: new Date().toLocaleDateString("es-ES"),
       reactions: { "❤️": 5, "🔥": 8 },
+      authorId: 1,
+      createdAt: new Date()
+    });
+
+    this.news.set(2, {
+      id: 2,
+      title: "Mega Fix: mejoras y correcciones en todo el sitio",
+      summary: "Aplicamos un paquete completo de mejoras para estabilidad, radio, Habbo API y experiencia de usuario.",
+      content: "Resumen de cambios recientes:\n\n- Radio actualizada: stream AzuraCast y Now Playing configurados.\n- Habbo API reforzada: proxy de imagenes para evitar bloqueos y carga correcta de avatares.\n- Hot Looks: fallback con looks curados si la API falla.\n- Armario: busqueda y previsualizacion de avatares mas estables.\n- Barra DJ: mensaje mas creativo y consistente.\n- Emojis utiles: ahora funcionan como accesos rapidos.\n- Menu superior simplificado: queda solo el menu del boton de tres rayitas.\n- Popups estaticos: se corrigio el movimiento para poder usarlos sin problemas.\n\nSeguimos optimizando velocidad y detalles visuales para que la fansite se vea como las top de Habbo.es.",
+      imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+      imageHint: "Actualizacion del sitio",
+      category: "Actualizaciones",
+      date: new Date().toLocaleDateString("es-ES"),
+      reactions: { "🔥": 12, "✅": 9 },
       authorId: 1,
       createdAt: new Date()
     });
@@ -648,7 +662,16 @@ export class MemStorage implements IStorage {
   async getAllDownloads() { return Array.from(this.downloads.values()); }
   async createDownload(d: InsertDownload) {
     const id = this.currentId++;
-    const item: Download = { id, ...d, downloadCount: 0, createdAt: new Date() };
+    const item: Download = {
+      id,
+      title: d.title,
+      description: d.description ?? null,
+      fileUrl: d.fileUrl,
+      category: d.category ?? "general",
+      addedBy: d.addedBy ?? "",
+      downloadCount: 0,
+      createdAt: new Date(),
+    };
     this.downloads.set(id, item);
     return item;
   }
@@ -665,7 +688,14 @@ export class MemStorage implements IStorage {
   async getAllBannedSongs() { return Array.from(this.bannedSongs.values()); }
   async createBannedSong(s: InsertBannedSong) {
     const id = this.currentId++;
-    const item: BannedSong = { id, ...s, createdAt: new Date() };
+    const item: BannedSong = {
+      id,
+      title: s.title,
+      artist: s.artist ?? null,
+      reason: s.reason ?? null,
+      bannedBy: s.bannedBy ?? "",
+      createdAt: new Date(),
+    };
     this.bannedSongs.set(id, item);
     return item;
   }
@@ -675,7 +705,16 @@ export class MemStorage implements IStorage {
   async getAllContactMessages() { return Array.from(this.contactMessages.values()); }
   async createContactMessage(msg: InsertContactMessage) {
     const id = this.currentId++;
-    const item: ContactMessage = { id, ...msg, status: msg.status || "pending", createdAt: new Date() };
+    const item: ContactMessage = {
+      id,
+      name: msg.name,
+      email: msg.email,
+      subject: msg.subject,
+      message: msg.message,
+      ip: msg.ip ?? null,
+      status: msg.status || "pending",
+      createdAt: new Date(),
+    };
     this.contactMessages.set(id, item);
     return item;
   }
@@ -694,7 +733,15 @@ export class MemStorage implements IStorage {
   }
   async createPanelLog(log: InsertPanelLog) {
     const id = this.currentId++;
-    const item: PanelLog = { id, ...log, createdAt: new Date() };
+    const item: PanelLog = {
+      id,
+      userId: log.userId ?? null,
+      userName: log.userName,
+      action: log.action,
+      details: log.details ?? null,
+      ip: log.ip ?? null,
+      createdAt: new Date(),
+    };
     this.panelLogs.set(id, item);
     return item;
   }
@@ -717,7 +764,14 @@ export class MemStorage implements IStorage {
   }
   async createReport(report: InsertReportedMessage) {
     const id = this.currentId++;
-    const item: ReportedMessage = { id, ...report, status: report.status || "pending", createdAt: new Date() };
+    const item: ReportedMessage = {
+      id,
+      messageId: report.messageId ?? null,
+      reportedBy: report.reportedBy ?? null,
+      reason: report.reason,
+      status: report.status || "pending",
+      createdAt: new Date(),
+    };
     this.reportedMessages.set(id, item);
     return item;
   }
@@ -729,4 +783,119 @@ export class MemStorage implements IStorage {
     return r;
   }
   async deleteReport(id: number) { return this.reportedMessages.delete(id); }
+
+  // Shop Products (MemStorage stubs)
+  private shopProducts: Map<number, any> = new Map();
+  private _shopId = 0;
+  async getAllShopProducts(includeInactive?: boolean) { return Array.from(this.shopProducts.values()).filter((p: any) => includeInactive || p.isActive); }
+  async getShopProductById(id: number) { return this.shopProducts.get(id); }
+  async createShopProduct(product: any) {
+    const id = ++this._shopId;
+    const item = { id, ...product, createdAt: new Date() };
+    this.shopProducts.set(id, item);
+    return item;
+  }
+  async updateShopProduct(id: number, data: any) {
+    const item = this.shopProducts.get(id);
+    if (!item) return undefined;
+    Object.assign(item, data);
+    this.shopProducts.set(id, item);
+    return item;
+  }
+  async deleteShopProduct(id: number) { return this.shopProducts.delete(id); }
+
+  // User Inventory (MemStorage stubs)
+  private userInventory: Map<number, any> = new Map();
+  private _invId = 0;
+  async getUserInventory(userId: number) {
+    return Array.from(this.userInventory.values()).filter((i: any) => i.userId === userId);
+  }
+  async purchaseProduct(userId: number, productId: number) {
+    const product = this.shopProducts.get(productId);
+    if (!product) throw new Error("Producto no encontrado");
+    const id = ++this._invId;
+    const item = { id, userId, productId, isEquipped: false, purchasedAt: new Date() };
+    this.userInventory.set(id, item);
+    return item;
+  }
+  async toggleEquipItem(userId: number, itemId: number) {
+    const item = this.userInventory.get(itemId);
+    if (!item || item.userId !== userId) throw new Error("Item no encontrado");
+    item.isEquipped = !item.isEquipped;
+    this.userInventory.set(itemId, item);
+    return item;
+  }
+
+  // Notifications (MemStorage stubs)
+  private notifs: Map<number, any> = new Map();
+  private _notifId = 0;
+  async getUserNotifications(userId: number, limit = 50) {
+    const arr: any[] = [];
+    this.notifs.forEach((n) => { if (n.userId === userId) arr.push(n); });
+    arr.sort((a: any, b: any) => b.createdAt - a.createdAt);
+    return arr.slice(0, limit);
+  }
+  async getUnreadNotificationCount(userId: number) {
+    return Array.from(this.notifs.values()).filter((n: any) => n.userId === userId && !n.isRead).length;
+  }
+  async createNotification(notif: any) {
+    const id = ++this._notifId;
+    const item = { id, ...notif, isRead: false, createdAt: new Date() };
+    this.notifs.set(id, item);
+    return item;
+  }
+  async markNotificationRead(id: number) {
+    const n = this.notifs.get(id);
+    if (!n) return undefined;
+    n.isRead = true;
+    return n;
+  }
+  async markAllNotificationsRead(userId: number) {
+    this.notifs.forEach((n) => { if (n.userId === userId) n.isRead = true; });
+  }
+
+  // Profile Wall (MemStorage stubs)
+  private profileWall: Map<number, any> = new Map();
+  private _wallId = 0;
+
+  // User Profiles (MemStorage stubs)
+  private userProfiles: Map<number, any> = new Map();
+  async getUserProfile(userId: number) {
+    return Array.from(this.userProfiles.values()).find((p: any) => p.userId === userId);
+  }
+  async upsertUserProfile(userId: number, data: any) {
+    const existing = await this.getUserProfile(userId);
+    if (existing) {
+      Object.assign(existing, data, { updatedAt: new Date() });
+      return existing;
+    }
+    return this.createUserProfile(userId, data);
+  }
+  async createUserProfile(userId: number, data: any) {
+    const item = { id: this.userProfiles.size + 1, userId, ...data, updatedAt: new Date() };
+    this.userProfiles.set(item.id, item);
+    return item;
+  }
+
+  // Profile Wall / Muro (MemStorage stubs)
+  async getWallMessages(profileUserId: number) {
+    return Array.from(this.profileWall.values())
+      .filter((msg: any) => msg.profileUserId === profileUserId)
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createWallMessage(msg: InsertProfileWall) {
+    const id = ++this._wallId;
+    const item = { id, ...msg, createdAt: new Date() };
+    this.profileWall.set(id, item);
+    return item;
+  }
+
+  async deleteWallMessage(id: number) {
+    return this.profileWall.delete(id);
+  }
+
+  async getWallMessageById(id: number) {
+    return this.profileWall.get(id);
+  }
 }

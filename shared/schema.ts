@@ -362,3 +362,87 @@ export const reportedMessages = pgTable("reported_messages", {
 export const insertReportedMessageSchema = createInsertSchema(reportedMessages).omit({ id: true, createdAt: true });
 export type InsertReportedMessage = z.infer<typeof insertReportedMessageSchema>;
 export type ReportedMessage = typeof reportedMessages.$inferSelect;
+
+// ============ SHOP / STORE (gamification) ============
+export const shopProducts = pgTable("shop_products", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull().default("decoracion"), // decoracion, objeto, tema, fondo, efecto
+  price: integer("price").notNull().default(0),
+  imageUrl: text("image_url"),
+  previewUrl: text("preview_url"),
+  data: jsonb("data").default({}), // extra config (css vars, animation, etc)
+  isLimited: boolean("is_limited").notNull().default(false),
+  stock: integer("stock").default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertShopProductSchema = createInsertSchema(shopProducts).omit({ id: true, createdAt: true });
+export type InsertShopProduct = z.infer<typeof insertShopProductSchema>;
+export type ShopProduct = typeof shopProducts.$inferSelect;
+
+// ============ USER INVENTORY ============
+export const userInventory = pgTable("user_inventory", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  productId: integer("product_id").references(() => shopProducts.id).notNull(),
+  isEquipped: boolean("is_equipped").notNull().default(false),
+  purchasedAt: timestamp("purchased_at").defaultNow(),
+});
+
+export const insertUserInventorySchema = createInsertSchema(userInventory).omit({ id: true, purchasedAt: true });
+export type InsertUserInventory = z.infer<typeof insertUserInventorySchema>;
+export type UserInventory = typeof userInventory.$inferSelect;
+
+// ============ NOTIFICATIONS ============
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  type: text("type").notNull().default("info"), // info, success, warning, achievement, points, message, shop
+  title: text("title").notNull(),
+  message: text("message"),
+  icon: text("icon"),
+  link: text("link"),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;
+
+// ============ USER PROFILE EXTENDED ============
+export const userProfiles = pgTable("user_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  bio: text("bio").default(""),
+  backgroundUrl: text("background_url"),
+  backgroundColor: text("background_color").default("#1e293b"),
+  accentColor: text("accent_color"),
+  aboutMe: text("about_me").default(""),
+  socialYoutube: text("social_youtube"),
+  socialTwitter: text("social_twitter"),
+  socialInstagram: text("social_instagram"),
+  customCss: text("custom_css"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({ id: true, updatedAt: true });
+export type InsertUserProfile = z.infer<typeof insertUserProfileSchema>;
+export type UserProfile = typeof userProfiles.$inferSelect;
+
+// ============ PROFILE WALL / MURO ============
+export const profileWall = pgTable("profile_wall", {
+  id: serial("id").primaryKey(),
+  profileUserId: integer("profile_user_id").references(() => users.id).notNull(),
+  authorId: integer("author_id").references(() => users.id).notNull(),
+  authorName: text("author_name").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertProfileWallSchema = createInsertSchema(profileWall).omit({ id: true, createdAt: true });
+export type InsertProfileWall = z.infer<typeof insertProfileWallSchema>;
+export type ProfileWallMessage = typeof profileWall.$inferSelect;

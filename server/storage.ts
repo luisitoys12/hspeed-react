@@ -19,6 +19,10 @@ import {
   type ContactMessage, type InsertContactMessage,
   type PanelLog, type InsertPanelLog,
   type ReportedMessage, type InsertReportedMessage,
+  type ShopProduct, type InsertShopProduct,
+  type UserInventory, type InsertUserInventory,
+  type Notification, type InsertNotification,
+  type UserProfile, type InsertUserProfile,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -151,6 +155,36 @@ export interface IStorage {
   createReport(report: InsertReportedMessage): Promise<ReportedMessage>;
   updateReportStatus(id: number, status: string): Promise<ReportedMessage | undefined>;
   deleteReport(id: number): Promise<boolean>;
+
+  // Shop Products
+  getAllShopProducts(includeInactive?: boolean): Promise<ShopProduct[]>;
+  getShopProductById(id: number): Promise<ShopProduct | undefined>;
+  createShopProduct(product: InsertShopProduct): Promise<ShopProduct>;
+  updateShopProduct(id: number, data: Partial<InsertShopProduct>): Promise<ShopProduct | undefined>;
+  deleteShopProduct(id: number): Promise<boolean>;
+
+  // User Inventory
+  getUserInventory(userId: number): Promise<UserInventory[]>;
+  purchaseProduct(userId: number, productId: number): Promise<UserInventory>;
+  toggleEquipItem(userId: number, itemId: number): Promise<UserInventory | undefined>;
+
+  // Notifications
+  getUserNotifications(userId: number, limit?: number): Promise<Notification[]>;
+  getUnreadNotificationCount(userId: number): Promise<number>;
+  createNotification(notif: InsertNotification): Promise<Notification>;
+  markNotificationRead(id: number): Promise<Notification | undefined>;
+  markAllNotificationsRead(userId: number): Promise<void>;
+
+  // User Profiles
+  getUserProfile(userId: number): Promise<UserProfile | undefined>;
+  upsertUserProfile(userId: number, data: Partial<InsertUserProfile>): Promise<UserProfile>;
+  createUserProfile(userId: number, data: Partial<InsertUserProfile>): Promise<UserProfile>;
+
+  // Profile Wall / Muro
+  getWallMessages(profileUserId: number): Promise<ProfileWallMessage[]>;
+  getWallMessageById(id: number): Promise<ProfileWallMessage | undefined>;
+  createWallMessage(msg: InsertProfileWall): Promise<ProfileWallMessage>;
+  deleteWallMessage(id: number): Promise<boolean>;
 }
 
 // Helper to map snake_case DB rows to camelCase TypeScript objects
@@ -271,6 +305,29 @@ function mapPanelLog(row: any): PanelLog {
 }
 function mapReportedMessage(row: any): ReportedMessage {
   return { id: row.id, messageId: row.message_id, reportedBy: row.reported_by, reason: row.reason, status: row.status, createdAt: row.created_at };
+}
+function mapShopProduct(row: any): ShopProduct {
+  return { id: row.id, name: row.name, description: row.description, category: row.category, price: row.price, imageUrl: row.image_url, previewUrl: row.preview_url, data: row.data, isLimited: row.is_limited, stock: row.stock, isActive: row.is_active, createdAt: row.created_at };
+}
+function mapUserInventory(row: any): UserInventory {
+  return { id: row.id, userId: row.user_id, productId: row.product_id, isEquipped: row.is_equipped, purchasedAt: row.purchased_at };
+}
+function mapNotification(row: any): Notification {
+  return { id: row.id, userId: row.user_id, type: row.type, title: row.title, message: row.message, icon: row.icon, link: row.link, isRead: row.is_read, createdAt: row.created_at };
+}
+function mapUserProfile(row: any): UserProfile {
+  return { id: row.id, userId: row.user_id, bio: row.bio, backgroundUrl: row.background_url, backgroundColor: row.background_color, accentColor: row.accent_color, aboutMe: row.about_me, socialYoutube: row.social_youtube, socialTwitter: row.social_twitter, socialInstagram: row.social_instagram, customCss: row.custom_css, updatedAt: row.updated_at };
+}
+
+function mapProfileWall(row: any): ProfileWallMessage {
+  return {
+    id: row.id,
+    profileUserId: row.profile_user_id,
+    authorId: row.author_id,
+    authorName: row.author_name,
+    message: row.message,
+    createdAt: row.created_at,
+  };
 }
 
 export class SupabaseStorage implements IStorage {
@@ -936,7 +993,7 @@ export class SupabaseStorage implements IStorage {
       LEFT JOIN users reporter ON rm.reported_by = reporter.id
       ORDER BY rm.created_at DESC
     `);
-    return r.rows.map(row => ({
+    return r.rows.map((row: any) => ({
       ...mapReportedMessage(row),
       messageContent: row.message_content,
       messageSubject: row.message_subject,
@@ -955,6 +1012,199 @@ export class SupabaseStorage implements IStorage {
   }
   async deleteReport(id: number) {
     const r = await this.query("DELETE FROM reported_messages WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  // Shop Products
+  async getAllShopProducts(includeInactive?: boolean) {
+    const r = await this.query(
+      includeInactive
+        ? "SELECT * FROM shop_products ORDER BY category, price ASC"
+        : "SELECT * FROM shop_products WHERE is_active = true ORDER BY category, price ASC"
+    );
+    return r.rows.map(mapShopProduct);
+  }
+  async getShopProductById(id: number) {
+    const r = await this.query("SELECT * FROM shop_products WHERE id = $1", [id]);
+    return r.rows[0] ? mapShopProduct(r.rows[0]) : undefined;
+  }
+  async createShopProduct(product: InsertShopProduct) {
+    const r = await this.query(
+      `INSERT INTO shop_products (name, description, category, price, image_url, preview_url, data, is_limited, stock, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [product.name, product.description || null, product.category, product.price, product.imageUrl || null, product.previewUrl || null, JSON.stringify(product.data || {}), product.isLimited ?? false, product.stock ?? 0, product.isActive ?? true]
+    );
+    return mapShopProduct(r.rows[0]);
+  }
+  async updateShopProduct(id: number, data: Partial<InsertShopProduct>) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
+    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
+    if (data.category !== undefined) { fields.push(`category = $${i++}`); values.push(data.category); }
+    if (data.price !== undefined) { fields.push(`price = $${i++}`); values.push(data.price); }
+    if (data.imageUrl !== undefined) { fields.push(`image_url = $${i++}`); values.push(data.imageUrl); }
+    if (data.previewUrl !== undefined) { fields.push(`preview_url = $${i++}`); values.push(data.previewUrl); }
+    if (data.data !== undefined) { fields.push(`data = $${i++}`); values.push(JSON.stringify(data.data)); }
+    if (data.isLimited !== undefined) { fields.push(`is_limited = $${i++}`); values.push(data.isLimited); }
+    if (data.stock !== undefined) { fields.push(`stock = $${i++}`); values.push(data.stock); }
+    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
+    if (fields.length === 0) return this.getShopProductById(id);
+    values.push(id);
+    const r = await this.query(`UPDATE shop_products SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    return r.rows[0] ? mapShopProduct(r.rows[0]) : undefined;
+  }
+  async deleteShopProduct(id: number) {
+    const r = await this.query("DELETE FROM shop_products WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  // User Inventory
+  async getUserInventory(userId: number) {
+    const r = await this.query(
+      `SELECT ui.*, sp.name as product_name, sp.category, sp.image_url, sp.preview_url, sp.price, sp.data
+       FROM user_inventory ui
+       LEFT JOIN shop_products sp ON ui.product_id = sp.id
+       WHERE ui.user_id = $1 ORDER BY ui.purchased_at DESC`,
+      [userId]
+    );
+    return r.rows.map((row: any) => ({
+      ...mapUserInventory(row),
+      productName: row.product_name,
+      category: row.category,
+      imageUrl: row.image_url,
+      previewUrl: row.preview_url,
+      price: row.price,
+      productData: row.data,
+    }));
+  }
+  async purchaseProduct(userId: number, productId: number) {
+    const product = await this.getShopProductById(productId);
+    if (!product) throw new Error("Producto no encontrado");
+    const user = await this.getUser(userId);
+    if (!user) throw new Error("Usuario no encontrado");
+    if ((user.speedPoints ?? 0) < product.price) throw new Error("SpeedPoints insuficientes");
+    // Deduct points
+    await this.updateUser(userId, { speedPoints: (user.speedPoints ?? 0) - product.price });
+    // Create inventory item
+    const r = await this.query(
+      `INSERT INTO user_inventory (user_id, product_id) VALUES ($1, $2) RETURNING *`,
+      [userId, productId]
+    );
+    return mapUserInventory(r.rows[0]);
+  }
+  async toggleEquipItem(userId: number, itemId: number) {
+    const item = await this.query("SELECT * FROM user_inventory WHERE id = $1 AND user_id = $2", [itemId, userId]);
+    if (!item.rows[0]) throw new Error("Item no encontrado");
+    const currentEquipped = item.rows[0].is_equipped;
+    const newEquipped = !currentEquipped;
+    const r = await this.query(
+      "UPDATE user_inventory SET is_equipped = $1 WHERE id = $2 RETURNING *",
+      [newEquipped, itemId]
+    );
+    return r.rows[0] ? mapUserInventory(r.rows[0]) : undefined;
+  }
+
+  // Notifications
+  async getUserNotifications(userId: number, limit = 50) {
+    const r = await this.query(
+      "SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2",
+      [userId, limit]
+    );
+    return r.rows.map(mapNotification);
+  }
+  async getUnreadNotificationCount(userId: number) {
+    const r = await this.query(
+      "SELECT COUNT(*) AS count FROM notifications WHERE user_id = $1 AND is_read = false",
+      [userId]
+    );
+    return parseInt(r.rows[0]?.count ?? '0', 10);
+  }
+  async createNotification(notif: InsertNotification) {
+    const r = await this.query(
+      `INSERT INTO notifications (user_id, type, title, message, icon, link) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [notif.userId, notif.type || "info", notif.title, notif.message || null, notif.icon || null, notif.link || null]
+    );
+    return mapNotification(r.rows[0]);
+  }
+  async markNotificationRead(id: number) {
+    const r = await this.query("UPDATE notifications SET is_read = true WHERE id = $1 RETURNING *", [id]);
+    return r.rows[0] ? mapNotification(r.rows[0]) : undefined;
+  }
+  async markAllNotificationsRead(userId: number) {
+    await this.query("UPDATE notifications SET is_read = true WHERE user_id = $1", [userId]);
+  }
+
+  // User Profiles
+  async getUserProfile(userId: number) {
+    const r = await this.query("SELECT * FROM user_profiles WHERE user_id = $1", [userId]);
+    return r.rows[0] ? mapUserProfile(r.rows[0]) : undefined;
+  }
+  async upsertUserProfile(userId: number, data: Partial<InsertUserProfile>) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.bio !== undefined) { fields.push(`bio = $${i++}`); values.push(data.bio); }
+    if (data.backgroundUrl !== undefined) { fields.push(`background_url = $${i++}`); values.push(data.backgroundUrl); }
+    if (data.backgroundColor !== undefined) { fields.push(`background_color = $${i++}`); values.push(data.backgroundColor); }
+    if (data.accentColor !== undefined) { fields.push(`accent_color = $${i++}`); values.push(data.accentColor); }
+    if (data.aboutMe !== undefined) { fields.push(`about_me = $${i++}`); values.push(data.aboutMe); }
+    if (data.socialYoutube !== undefined) { fields.push(`social_youtube = $${i++}`); values.push(data.socialYoutube); }
+    if (data.socialTwitter !== undefined) { fields.push(`social_twitter = $${i++}`); values.push(data.socialTwitter); }
+    if (data.socialInstagram !== undefined) { fields.push(`social_instagram = $${i++}`); values.push(data.socialInstagram); }
+    if (data.customCss !== undefined) { fields.push(`custom_css = $${i++}`); values.push(data.customCss); }
+    fields.push(`updated_at = NOW()`);
+    const existing = await this.getUserProfile(userId);
+    if (existing) {
+      values.push(userId);
+      const r = await this.query(`UPDATE user_profiles SET ${fields.join(", ")} WHERE user_id = $${i} RETURNING *`, values);
+      return mapUserProfile(r.rows[0]);
+    } else {
+      return this.createUserProfile(userId, data);
+    }
+  }
+  async createUserProfile(userId: number, data: Partial<InsertUserProfile>) {
+    const r = await this.query(
+      `INSERT INTO user_profiles (user_id, bio, background_url, background_color, accent_color, about_me, social_youtube, social_twitter, social_instagram, custom_css)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [userId, data.bio || "", data.backgroundUrl || null, data.backgroundColor || "#1e293b", data.accentColor || null, data.aboutMe || "", data.socialYoutube || null, data.socialTwitter || null, data.socialInstagram || null, data.customCss || null]
+    );
+    return mapUserProfile(r.rows[0]);
+  }
+
+  // Profile Wall / Muro
+  async getWallMessages(profileUserId: number) {
+    const r = await this.query(
+      "SELECT pw.*, u.display_name as author_name FROM profile_wall pw " +
+      "JOIN users u ON pw.author_id = u.id " +
+      "WHERE pw.profile_user_id = $1 ORDER BY pw.created_at DESC",
+      [profileUserId]
+    );
+    return r.rows.map(mapProfileWall);
+  }
+
+  async getWallMessageById(id: number) {
+    const r = await this.query(
+      "SELECT pw.*, u.display_name as author_name FROM profile_wall pw " +
+      "JOIN users u ON pw.author_id = u.id " +
+      "WHERE pw.id = $1",
+      [id]
+    );
+    return r.rows[0] ? mapProfileWall(r.rows[0]) : undefined;
+  }
+
+  async createWallMessage(msg: InsertProfileWall) {
+    const r = await this.query(
+      `INSERT INTO profile_wall (profile_user_id, author_id, author_name, message) 
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [msg.profileUserId, msg.authorId, msg.authorName, msg.message]
+    );
+    return mapProfileWall(r.rows[0]);
+  }
+
+  async deleteWallMessage(id: number) {
+    const r = await this.query("DELETE FROM profile_wall WHERE id = $1", [id]);
     return (r.rowCount ?? 0) > 0;
   }
 }

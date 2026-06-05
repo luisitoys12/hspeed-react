@@ -9,3 +9,6 @@ node_modules/
 _build_specs.md
 .env
 .env.local
+server/.cache/
+test-output/
+server/*.txt

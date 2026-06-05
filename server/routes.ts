@@ -47,6 +47,33 @@ function djMiddleware(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(server: Server, app: Express) {
+  // If DB pool is available, ensure minimal users table exists so seeding works on Neon
+  (async () => {
+    try {
+      const { pool } = await import("./db");
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          await client.query(`
+            CREATE TABLE IF NOT EXISTS users (
+              avatar_url TEXT,
+              role TEXT,
+              approved BOOLEAN DEFAULT false,
+              speed_points INTEGER DEFAULT 0,
+              created_at TIMESTAMPTZ DEFAULT now()
+            )
+          `);
+          // other tables can be created lazily or via migrations
+        } finally {
+          client.release();
+        }
+        console.log("DB: ensured minimal users table exists");
+      }
+    } catch (e: any) {
+      // non-fatal
+      console.log("DB ensureTables skipped:", e?.message || e);
+    }
+  })();
   // ============ SEED DEFAULT ADMIN USER ============
   (async () => {
     try {
@@ -135,6 +162,81 @@ export async function registerRoutes(server: Server, app: Express) {
     const user = await storage.getUser(req.userId);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
     res.json({ ...user, passwordHash: undefined });
+  });
+
+  // ============ PROFILE WALL / MURO ============
+  app.get("/api/wall/:userId", async (req, res) => {
+    const userId = parseInt(req.params.userId, 10);
+    if (!Number.isFinite(userId)) return res.status(400).json({ message: "ID inválido" });
+
+    const profileUser = await storage.getUser(userId);
+    if (!profileUser || !profileUser.approved) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const messages = await storage.getWallMessages(userId);
+    res.json(messages);
+  });
+
+  app.post("/api/wall/:userId", authMiddleware, async (req: any, res) => {
+    const profileUserId = parseInt(req.params.userId, 10);
+    if (!Number.isFinite(profileUserId)) return res.status(400).json({ message: "ID inválido" });
+
+    const profileUser = await storage.getUser(profileUserId);
+    if (!profileUser || !profileUser.approved) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const { message } = req.body;
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({ message: "Mensaje requerido" });
+    }
+
+    const author = await storage.getUser(req.userId);
+    if (!author) {
+      return res.status(401).json({ message: "No autenticado" });
+    }
+
+    const wallMsg = await storage.createWallMessage({
+      profileUserId,
+      authorId: author.id,
+      authorName: author.displayName,
+      message: message.trim(),
+    });
+
+    if (wallMsg.authorId !== profileUserId) {
+      await storage.createNotification({
+        userId: profileUserId,
+        type: "wall",
+        title: "Nuevo mensaje en tu muro",
+        message: `${wallMsg.authorName} te dejó un mensaje en tu muro`,
+        icon: "message-circle",
+      });
+    }
+
+    res.status(201).json(wallMsg);
+  });
+
+  app.delete("/api/wall/:id", authMiddleware, async (req: any, res) => {
+    const messageId = parseInt(req.params.id, 10);
+    if (!Number.isFinite(messageId)) return res.status(400).json({ message: "ID inválido" });
+
+    const user = await storage.getUser(req.userId);
+    if (!user) {
+      return res.status(401).json({ message: "No autenticado" });
+    }
+
+    const wallMsg = await storage.getWallMessageById(messageId);
+    if (!wallMsg) {
+      return res.status(404).json({ message: "Mensaje no encontrado" });
+    }
+
+    if (wallMsg.authorId !== user.id && wallMsg.profileUserId !== user.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
+
+    await storage.deleteWallMessage(wallMsg.id);
+    res.json({ message: "Eliminado" });
   });
 
   // ============ NEWS ============
@@ -590,13 +692,27 @@ export async function registerRoutes(server: Server, app: Express) {
   // Proxy image endpoint to avoid CORS/ORB blocking for external images
   app.get("/api/habbo/proxy-image", async (req, res) => {
     try {
-      const url = req.query.u as string;
-      if (!url) return res.status(400).send("missing url");
-      // allowlist hosts
+      const urlParam = req.query.u as string | undefined;
+      const figure = req.query.figure as string | undefined;
+      const hotel = (req.query.hotel as string) || "es";
+      const size = (req.query.size as string) || "b";
+
+      // Build source URL: either provided 'u' or constructed from figure
+      let sourceUrl: string | null = null;
+      if (figure) {
+        const safeHotel = (hotel || "es").trim().toLowerCase();
+        const host = `https://www.habbo.${safeHotel}`;
+        sourceUrl = `${host}/habbo-imaging/avatarimage?figure=${encodeURIComponent(figure)}&size=${encodeURIComponent(size)}`;
+      } else if (urlParam) {
+        sourceUrl = urlParam;
+      } else {
+        return res.status(400).send("missing url or figure");
+      }
+
+      // allowlist hosts for user-provided urls
       const allowed = ["images.habbo.com", "www.habbo.es", "origins.habbo.es", "habbo.es"];
-      let parsed: URL;
       try {
-        parsed = new URL(url);
+        const parsed = new URL(sourceUrl);
         if (!allowed.some((h) => parsed.hostname.includes(h))) {
           return res.status(403).send("forbidden host");
         }
@@ -604,38 +720,94 @@ export async function registerRoutes(server: Server, app: Express) {
         return res.status(400).send("invalid url");
       }
 
-      // Simple disk cache
-      const cacheDir = path.join(process.cwd(), 'server', '.cache', 'images');
+      // Cache settings
+      const cacheDir = path.join(process.cwd(), "server", ".cache", "images");
       await fsp.mkdir(cacheDir, { recursive: true });
-      const hash = crypto.createHash('sha1').update(url).digest('hex');
-      const cacheFile = path.join(cacheDir, `${hash}`);
-      const ttlSeconds = 60 * 60 * 24; // 24h
+      const indexFile = path.join(cacheDir, "index.json");
+      const maxBytes = parseInt(process.env.PROXY_CACHE_MAX_BYTES || "209715200", 10); // default 200MB
+      const ttlSeconds = parseInt(process.env.PROXY_CACHE_TTL_SECONDS || `${60 * 60 * 24}`, 10); // default 24h
 
+      // Load or create index
+      let index: Record<string, { file: string; size: number; atimeMs: number; mtimeMs: number }> = {};
       try {
-        const stat = await fsp.stat(cacheFile).catch(() => null);
-        if (stat && (Date.now() - stat.mtimeMs) / 1000 < ttlSeconds) {
-          const buf = await fsp.readFile(cacheFile);
-          res.setHeader('Content-Type', 'image/png');
-          res.setHeader('Cache-Control', `public, max-age=${ttlSeconds}`);
-          return res.send(buf);
+        const raw = await fsp.readFile(indexFile, "utf-8").catch(() => "{}");
+        index = JSON.parse(raw || "{}");
+      } catch (e) { index = {}; }
+
+      // Compute key
+      const keySource = `src:${sourceUrl}`;
+      const hash = crypto.createHash("sha1").update(keySource).digest("hex");
+      const cacheFile = path.join(cacheDir, hash);
+
+      const saveIndex = async () => {
+        try { await fsp.writeFile(indexFile, JSON.stringify(index), "utf-8"); } catch { /* ignore */ }
+      };
+
+      const totalCacheBytes = async () => {
+        return Object.values(index).reduce((s, v) => s + (v.size || 0), 0);
+      };
+
+      const evictIfNeeded = async () => {
+        try {
+          let total = await totalCacheBytes();
+          if (total <= maxBytes) return;
+          // sort by atimeMs ascending (oldest first)
+          const entries = Object.entries(index).sort((a, b) => (a[1].atimeMs || 0) - (b[1].atimeMs || 0));
+          for (const [k, v] of entries) {
+            try { await fsp.unlink(path.join(cacheDir, v.file)).catch(() => null); } catch {}
+            total -= v.size || 0;
+            delete index[k];
+            if (total <= maxBytes) break;
+          }
+          await saveIndex();
+        } catch (e) {
+          // ignore
         }
-      } catch (e) {
-        // ignore
+      };
+
+      // Serve from cache if valid
+      const meta = index[hash];
+      if (meta) {
+        const now = Date.now();
+        if ((now - (meta.mtimeMs || 0)) / 1000 < ttlSeconds) {
+          try {
+            const buf = await fsp.readFile(path.join(cacheDir, meta.file));
+            // update atime
+            meta.atimeMs = Date.now();
+            await saveIndex();
+            res.setHeader("Content-Type", "image/png");
+            res.setHeader("Cache-Control", `public, max-age=${ttlSeconds}`);
+            return res.send(buf);
+          } catch (e) {
+            // fallthrough to fetch
+          }
+        }
       }
 
-      const r = await fetch(url, { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      if (!r.ok) return res.status(502).send("bad upstream");
-      const contentType = r.headers.get("content-type") || "image/png";
-      const buffer = Buffer.from(await r.arrayBuffer());
+      // Fetch upstream
+      const upstream = await fetch(sourceUrl, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      if (!upstream.ok) return res.status(502).send("bad upstream");
+      const contentType = upstream.headers.get("content-type") || "image/png";
+      const buffer = Buffer.from(await upstream.arrayBuffer());
+
+      // Write to cache file and update index
       try {
         await fsp.writeFile(cacheFile, buffer).catch(() => null);
+        const stat = await fsp.stat(cacheFile).catch(() => null);
+        const size = stat?.size || buffer.length || 0;
+        index[hash] = { file: path.basename(cacheFile), size, atimeMs: Date.now(), mtimeMs: stat?.mtimeMs || Date.now() };
+        await saveIndex();
+        // enforce size limit
+        await evictIfNeeded();
       } catch (e) {
-        // ignore
+        // ignore cache errors
       }
+
       res.setHeader("Content-Type", contentType);
       res.setHeader("Cache-Control", `public, max-age=${ttlSeconds}`);
       res.send(buffer);
     } catch (e) {
+      console.error("/api/habbo/proxy-image error:", e);
       res.status(500).send("proxy error");
     }
   });
@@ -712,10 +884,26 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   app.get("/api/habbo/hotlooks", async (_req, res) => {
+    const fallbackHotLooks = [
+      { name: "Neon Rider", gender: "M", figure: "hd-180-1.hr-828-61.ch-3030-110.lg-270-82.sh-290-80.ha-1014-0" },
+      { name: "Aqua Queen", gender: "F", figure: "hd-600-1.hr-890-61.ch-232-92.lg-275-92.sh-295-80.ha-1012-110" },
+      { name: "Chrome DJ", gender: "M", figure: "hd-180-1.hr-170-61.ch-220-110.lg-285-82.sh-3089-80.ha-1001-0" },
+      { name: "Pixel Nomad", gender: "M", figure: "hd-180-1.hr-185-61.ch-230-82.lg-281-110.sh-300-80" },
+      { name: "Ruby Star", gender: "F", figure: "hd-600-1.hr-175-61.ch-225-66.lg-270-92.sh-295-62.ha-1012-62" },
+      { name: "Night Wave", gender: "M", figure: "hd-180-1.hr-680-61.ch-804-1341.lg-285-82.sh-3089-110" },
+      { name: "Golden Crown", gender: "F", figure: "hd-600-1.hr-165-61.ch-232-82.lg-275-110.sh-305-62.ha-1014-0" },
+      { name: "Street Funk", gender: "M", figure: "hd-180-1.hr-177-61.ch-255-92.lg-290-82.sh-290-80.ha-1002-0" }
+    ];
+
     try {
       const r = await fetch("https://www.habbo.es/api/public/lists/hotlooks", { headers: { "User-Agent": "HabboSpeed/1.0" } });
-      res.json(r.ok ? await r.json() : []);
-    } catch { res.json([]); }
+      if (!r.ok) return res.json(fallbackHotLooks);
+      const data = await r.json();
+      const list = Array.isArray(data) ? data : (data?.hotLooks || data?.hotlooks || []);
+      res.json(list.length ? list : fallbackHotLooks);
+    } catch {
+      res.json(fallbackHotLooks);
+    }
   });
 
   app.get("/api/habbo/badge-owners/:badgeCode", async (req, res) => {
@@ -757,7 +945,48 @@ export async function registerRoutes(server: Server, app: Express) {
   // ============ USERS (Admin + self-update) ============
   app.get("/api/users", adminMiddleware, async (_req, res) => {
     const users = await storage.getAllUsers();
-    res.json(users.map(u => ({ ...u, passwordHash: undefined })));
+    res.json(users.map((u: any) => ({ ...u, passwordHash: undefined })));
+  });
+
+  // ============ ADMIN: Cache management endpoints ============
+  app.post('/api/admin/cache/clear', adminMiddleware, async (_req, res) => {
+    try {
+      const cacheDir = path.join(process.cwd(), 'server', '.cache', 'images');
+      const indexFile = path.join(cacheDir, 'index.json');
+      // remove files and index
+      const idxRaw = await fsp.readFile(indexFile, 'utf-8').catch(() => '{}');
+      const index = JSON.parse(idxRaw || '{}');
+      for (const k of Object.keys(index)) {
+        try { await fsp.unlink(path.join(cacheDir, index[k].file)).catch(() => null); } catch {}
+      }
+      await fsp.writeFile(indexFile, JSON.stringify({})).catch(() => null);
+      res.json({ ok: true, message: 'cache cleared' });
+    } catch (e: any) {
+      res.status(500).json({ ok: false, message: e.message || String(e) });
+    }
+  });
+
+  app.post('/api/admin/cache/evict', adminMiddleware, async (req, res) => {
+    try {
+      const targetBytes = parseInt(req.body.targetBytes || req.query.targetBytes || '0', 10);
+      if (!targetBytes || targetBytes <= 0) return res.status(400).json({ ok: false, message: 'invalid targetBytes' });
+      const cacheDir = path.join(process.cwd(), 'server', '.cache', 'images');
+      const indexFile = path.join(cacheDir, 'index.json');
+      const idxRaw = await fsp.readFile(indexFile, 'utf-8').catch(() => '{}');
+      const index: Record<string, any> = JSON.parse(idxRaw || '{}');
+      const entries = Object.entries(index).sort((a: any, b: any) => (a[1].atimeMs || 0) - (b[1].atimeMs || 0));
+      let total = Object.values(index).reduce((s: number, v: any) => s + (v.size || 0), 0);
+      for (const [k, v] of entries) {
+        if (total <= targetBytes) break;
+        try { await fsp.unlink(path.join(cacheDir, v.file)).catch(() => null); } catch {}
+        total -= v.size || 0;
+        delete index[k];
+      }
+      await fsp.writeFile(indexFile, JSON.stringify(index)).catch(() => null);
+      res.json({ ok: true, freedBytes: Math.max(0, targetBytes - total), remaining: total });
+    } catch (e: any) {
+      res.status(500).json({ ok: false, message: e.message || String(e) });
+    }
   });
 
   // Self-update (PATCH — propio perfil)
@@ -1006,5 +1235,88 @@ export async function registerRoutes(server: Server, app: Express) {
   app.delete("/api/reported-messages/:id", adminMiddleware, async (req: any, res) => {
     await storage.deleteReport(parseInt(req.params.id));
     res.json({ message: "Eliminado" });
+  });
+
+  // ============ SHOP / STORE ============
+  app.get("/api/shop/products", async (req, res) => {
+    const includeInactive = req.query.all === "true";
+    res.json(await storage.getAllShopProducts(includeInactive));
+  });
+  app.get("/api/shop/products/:id", async (req, res) => {
+    const product = await storage.getShopProductById(parseInt(req.params.id));
+    if (!product) return res.status(404).json({ message: "Producto no encontrado" });
+    res.json(product);
+  });
+  app.post("/api/shop/products", adminMiddleware, async (req: any, res) => {
+    res.status(201).json(await storage.createShopProduct(req.body));
+  });
+  app.put("/api/shop/products/:id", adminMiddleware, async (req, res) => {
+    const product = await storage.updateShopProduct(parseInt(req.params.id), req.body);
+    if (!product) return res.status(404).json({ message: "Producto no encontrado" });
+    res.json(product);
+  });
+  app.delete("/api/shop/products/:id", adminMiddleware, async (req, res) => {
+    await storage.deleteShopProduct(parseInt(req.params.id));
+    res.json({ message: "Eliminado" });
+  });
+
+  // ============ USER INVENTORY ============
+  app.get("/api/inventory", authMiddleware, async (req: any, res) => {
+    res.json(await storage.getUserInventory(req.userId));
+  });
+  app.post("/api/inventory/purchase", authMiddleware, async (req: any, res) => {
+    try {
+      const { productId } = req.body;
+      if (!productId) return res.status(400).json({ message: "productId requerido" });
+      const item = await storage.purchaseProduct(req.userId, productId);
+      // Create notification
+      await storage.createNotification({
+        userId: req.userId,
+        type: "shop",
+        title: "¡Compra realizada!",
+        message: "Has comprado un producto en la tienda.",
+        icon: "shopping-cart",
+      });
+      res.status(201).json(item);
+    } catch (e: any) {
+      res.status(400).json({ message: e.message });
+    }
+  });
+  app.post("/api/inventory/:id/toggle", authMiddleware, async (req: any, res) => {
+    try {
+      const item = await storage.toggleEquipItem(req.userId, parseInt(req.params.id));
+      res.json(item);
+    } catch (e: any) {
+      res.status(400).json({ message: e.message });
+    }
+  });
+
+  // ============ NOTIFICATIONS ============
+  app.get("/api/notifications", authMiddleware, async (req: any, res) => {
+    const limit = parseInt(req.query.limit as string) || 50;
+    res.json(await storage.getUserNotifications(req.userId, limit));
+  });
+  app.get("/api/notifications/unread-count", authMiddleware, async (req: any, res) => {
+    res.json({ count: await storage.getUnreadNotificationCount(req.userId) });
+  });
+  app.put("/api/notifications/:id/read", authMiddleware, async (req: any, res) => {
+    const notif = await storage.markNotificationRead(parseInt(req.params.id));
+    if (!notif) return res.status(404).json({ message: "Notificación no encontrada" });
+    res.json(notif);
+  });
+  app.put("/api/notifications/read-all", authMiddleware, async (req: any, res) => {
+    await storage.markAllNotificationsRead(req.userId);
+    res.json({ message: "Todas las notificaciones marcadas como leídas" });
+  });
+
+  // ============ USER PROFILES ============
+  app.get("/api/profiles/:userId", async (req, res) => {
+    const profile = await storage.getUserProfile(parseInt(req.params.userId));
+    if (!profile) return res.status(404).json({ message: "Perfil no encontrado" });
+    res.json(profile);
+  });
+  app.put("/api/profiles", authMiddleware, async (req: any, res) => {
+    const profile = await storage.upsertUserProfile(req.userId, req.body);
+    res.json(profile);
   });
 }

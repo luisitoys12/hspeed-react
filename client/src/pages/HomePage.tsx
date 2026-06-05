@@ -34,7 +34,7 @@ function DJInfoBar() {
   const djMessage = djPanel?.djMessage || "";
 
   return (
-    <div className="relative bg-card border border-primary/20 glow-border-themed rounded-2xl overflow-hidden shadow-2xl backdrop-blur-lg group" data-testid="dj-info-bar">
+    <div className="relative site-panel-strong border-primary/20 overflow-hidden group" data-testid="dj-info-bar">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-50 pointer-events-none" />
       <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 px-5 py-4">
         
@@ -124,8 +124,8 @@ function HeroBanner({ slides }: { slides: any[] }) {
   const slide = displaySlides[currentSlide];
 
   return (
-    <div className="relative h-48 sm:h-56 lg:h-full lg:min-h-[14rem] rounded-xl overflow-hidden group" data-testid="hero-banner">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+    <div className="relative h-56 sm:h-64 lg:h-full lg:min-h-[18rem] rounded-2xl overflow-hidden group site-panel-strong" data-testid="hero-banner">
+      <div className="absolute inset-0 bg-gradient-to-br from-sky-900 via-slate-900 to-slate-950" />
       {slide.imageUrl && (
         <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-70 transition-opacity duration-700" />
       )}
@@ -133,8 +133,12 @@ function HeroBanner({ slides }: { slides: any[] }) {
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
 
       <div className="relative z-10 h-full flex flex-col justify-end px-6 sm:px-10 pb-6">
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white/85 mb-2 w-fit">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 live-indicator" />
+          En vivo ahora
+        </div>
         <h1 className="text-xl sm:text-2xl font-bold text-white mb-1.5 max-w-lg drop-shadow-lg">{slide.title}</h1>
-        <p className="text-sm text-white/80 max-w-md leading-relaxed drop-shadow">{slide.subtitle}</p>
+        <p className="text-sm text-white/85 max-w-md leading-relaxed drop-shadow">{slide.subtitle}</p>
 
         <div className="flex items-center gap-2 mt-3 flex-wrap">
           {slide.cta && (
@@ -540,8 +544,8 @@ function RecentBadgesGrid() {
    ============================================================ */
 function EventsSidebar({ events, loading }: { events: Event[]; loading: boolean }) {
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
+  <div className="site-panel overflow-hidden">
+    <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/70 bg-white/5">
         <Calendar className="w-3.5 h-3.5 text-primary" />
         <span className="text-xs font-bold uppercase tracking-wider">Próximos Eventos</span>
         <Link href="/events" className="text-[10px] text-primary ml-auto hover:underline">Ver más →</Link>
@@ -659,7 +663,7 @@ function StatsBar() {
         { icon: <Newspaper className="w-4 h-4" />, label: "Noticias",  value: "Diarias",  color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20" },
         { icon: <Music className="w-4 h-4" />,     label: "Peticiones", value: "Abiertas", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
       ].map((s, i) => (
-        <div key={i} className={`rounded-xl p-3.5 flex items-center gap-3 border ${s.bg}`}>
+        <div key={i} className={`site-panel p-3.5 flex items-center gap-3 border ${s.bg}`}>
           <span className={s.color}>{s.icon}</span>
           <div>
             <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
@@ -700,11 +704,14 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary" /> Últimas Noticias
-              </h2>
-              <Link href="/news" className="text-xs text-primary hover:underline">Ver todas →</Link>
+            <div className="site-panel px-4 py-3 flex items-center justify-between">
+              <div>
+                <p className="site-kicker">Portal de Noticias</p>
+                <h2 className="site-title flex items-center gap-2 mt-1">
+                  <TrendingUp className="w-4 h-4 text-primary" /> Últimas Noticias
+                </h2>
+              </div>
+              <Link href="/news" className="text-xs text-primary hover:underline font-semibold">Ver todas →</Link>
             </div>
             <NewsGrid news={latestNews} loading={newsLoading} />
           </div>
