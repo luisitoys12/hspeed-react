@@ -433,3 +433,42 @@
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* ===== FOOTBALL MODE ===== */
+.football-mode .site-hero-band {
+  background: linear-gradient(180deg,#0b6b0b 0%, #07360a 100%);
+  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 4px), linear-gradient(180deg,#0b6b0b, #083f08);
+}
+.football-mode .site-hero-band::before {
+  background-image: url('/slides/slide-welcome.png');
+  opacity: 0.06;
+}
+.football-mode .site-panel-strong {
+  border-color: rgba(16,185,129,0.08);
+}
+.football-mode .bg-theme-gradient {
+  background: linear-gradient(135deg,#16a34a,#4ade80);
+}
+.football-mode .site-hero-band .live-indicator {
+  box-shadow: 0 0 8px rgba(34,197,94,0.25), 0 0 20px rgba(34,197,94,0.12);
+}
+
+/* Pitch stripes */
+.football-mode .site-hero-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(90deg, rgba(255,255,255,0.02) 0 10px, transparent 10px 20px);
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Small badge style for the toggle */
+.football-toggle-badge {
+  background: linear-gradient(135deg,#16a34a,#065f46);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  font-weight: 700;
+}

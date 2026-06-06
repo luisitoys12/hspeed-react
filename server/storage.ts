@@ -23,6 +23,7 @@ import {
   type UserInventory, type InsertUserInventory,
   type Notification, type InsertNotification,
   type UserProfile, type InsertUserProfile,
+  type InsertProfileWall, type ProfileWallMessage,
 } from "@shared/schema";
 
 export interface IStorage {

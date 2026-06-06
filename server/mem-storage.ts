@@ -19,6 +19,7 @@ import {
   type ContactMessage, type InsertContactMessage,
   type PanelLog, type InsertPanelLog,
   type ReportedMessage, type InsertReportedMessage,
+  type InsertProfileWall, type ProfileWallMessage,
 } from "@shared/schema";
 import { type IStorage } from "./storage";
 import bcrypt from "bcryptjs";

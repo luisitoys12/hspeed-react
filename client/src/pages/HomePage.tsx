@@ -15,6 +15,9 @@ import {
   Users, Radio, Newspaper, Send, MessageSquare, Headphones, Music,
   Award, Clock, ArrowRight, Package, LogIn, UserPlus,
 } from "lucide-react";
+import FloatingRadioPlayer from "@/components/FloatingRadioPlayer";
+import WorldCupPanel from "@/components/WorldCupPanel";
+import FootballNewsSection from "@/components/FootballNewsSection";
 import type { News, Event, Poll } from "@shared/schema";
 
 /* ============================================================
@@ -157,6 +160,13 @@ function HeroBanner({ slides }: { slides: any[] }) {
               </Link>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Compact hero-mounted player (desktop) */}
+      <div className="absolute top-4 right-4 z-20 hidden lg:block">
+        <div className="w-[420px]">
+          <FloatingRadioPlayer />
         </div>
       </div>
 
@@ -349,8 +359,7 @@ function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
   return (
     <div className="space-y-4">
       {/* Featured News - Hero Card */}
-      <Link href={`/news/${featured.id}`}>
-        <a className="block group" data-testid={`card-news-featured-${featured.id}`}>
+      <Link href={`/news/${featured.id}`} className="block group" data-testid={`card-news-featured-${featured.id}`}>
           <div className="relative bg-card border border-primary/20 glow-border-themed rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 hover:border-primary/40 group">
             {featured.imageUrl && (
               <div className="h-48 sm:h-64 overflow-hidden relative">
@@ -381,14 +390,12 @@ function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
               </div>
             </div>
           </div>
-        </a>
       </Link>
 
       {/* Secondary News - RubyXD Rectangular Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {rest.map((article) => (
-          <Link href={`/news/${article.id}`} key={article.id}>
-            <a className="block group" data-testid={`card-news-${article.id}`}>
+          <Link href={`/news/${article.id}`} key={article.id} className="block group" data-testid={`card-news-${article.id}`}>
               <div className="bg-card border border-border/50 hover:border-primary/30 glow-border-themed rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl h-full flex flex-col">
                 {article.imageUrl && (
                   <div className="h-36 overflow-hidden relative">
@@ -421,7 +428,6 @@ function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
                   </div>
                 </div>
               </div>
-            </a>
           </Link>
         ))}
       </div>
@@ -702,6 +708,10 @@ export default function HomePage() {
         <FurniStrip />
         <RecentBadgesGrid />
 
+        <div className="mt-4 space-y-4">
+          <WorldCupPanel />
+          <FootballNewsSection />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-3">
             <div className="site-panel px-4 py-3 flex items-center justify-between">

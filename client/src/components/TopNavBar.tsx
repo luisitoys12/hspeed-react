@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { proxyImage } from "@/lib/habboProxy";
 import { useAuth } from "@/hooks/useAuth";
@@ -81,6 +81,18 @@ export default function TopNavBar() {
   const isDjOrAdmin = user && (user.role === "admin" || user.role === "dj");
   const { decorations } = useTheme();
   const [location] = useLocation();
+
+  const [footballMode, setFootballMode] = useState<boolean>(() => {
+    try { return localStorage.getItem("footballMode") === "1"; } catch { return false; }
+  });
+
+  useEffect(() => {
+    try {
+      if (footballMode) document.documentElement.classList.add("football-mode");
+      else document.documentElement.classList.remove("football-mode");
+      localStorage.setItem("footballMode", footballMode ? "1" : "0");
+    } catch (e) {}
+  }, [footballMode]);
 
   const emoji = decorations?.emoji || "";
 
@@ -169,13 +181,21 @@ export default function TopNavBar() {
                 </div>
                 <div className="hidden lg:flex flex-col items-end gap-2 flex-shrink-0">
                   <Badge className="bg-sky-200/20 text-white border-white/15 text-[10px]">Fansite 2026</Badge>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <Link href="/news" className="inline-flex items-center rounded-lg bg-white text-slate-900 px-3 py-2 text-[11px] font-bold hover:bg-slate-100">
                       Noticias
                     </Link>
                     <Link href="/armario" className="inline-flex items-center rounded-lg bg-slate-900/60 text-white px-3 py-2 text-[11px] font-bold hover:bg-slate-900/80">
                       Armario
                     </Link>
+                    <button
+                      onClick={() => setFootballMode((p) => !p)}
+                      className="ml-2 inline-flex items-center gap-2 px-3 py-2 rounded-lg football-toggle-badge hover:opacity-90 transition-opacity"
+                      title="Activar modo fútbol"
+                      data-testid="button-toggle-football"
+                    >
+                      ⚽ Modo Fútbol
+                    </button>
                   </div>
                 </div>
                 <button
