@@ -10,7 +10,7 @@ export default function ThemeDecoBar() {
   if (isLoading) {
     return (
       <div
-        className="h-[3px] w-full bg-theme-gradient"
+        className="h-[2px] w-full bg-theme-gradient"
         data-testid="theme-deco-bar"
       />
     );
@@ -18,7 +18,7 @@ export default function ThemeDecoBar() {
 
   return (
     <div
-      className="relative w-full h-7 bg-theme-gradient overflow-hidden flex-shrink-0"
+      className="relative w-full h-[2px] bg-theme-gradient overflow-hidden flex-shrink-0"
       data-testid="theme-deco-bar"
     >
       {/* Optional animated stripe overlay for circus theme */}
@@ -33,28 +33,7 @@ export default function ThemeDecoBar() {
         />
       )}
 
-      {/* Scrolling emojis */}
-      {emojis.length > 0 && (
-        <div className="absolute inset-0 flex items-center overflow-hidden">
-          <div className="animate-marquee whitespace-nowrap flex items-center gap-8">
-            {/* Duplicate for seamless loop */}
-            {[...emojis, ...emojis, ...emojis, ...emojis, ...emojis, ...emojis].map(
-              (emoji, i) => (
-                <span
-                  key={i}
-                  className="text-sm opacity-30 select-none"
-                  aria-hidden="true"
-                >
-                  {emoji}
-                </span>
-              )
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Subtle shimmer overlay */}
-      <div className="absolute inset-0 shimmer-bg" />
+      {/* Emoji strip removed to keep the template cleaner */}
     </div>
   );
 }

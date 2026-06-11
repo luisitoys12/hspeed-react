@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { proxyImage } from "@/lib/habboProxy";
 import {
   ShoppingBag, Search, TrendingUp, TrendingDown, Flame, Tag, Coins, Star, X
 } from "lucide-react";
@@ -48,7 +49,7 @@ function getImageUrl(item: FurniItem): string | null {
   const revision = item?.Revision ?? (item as any)?.revision ?? 0;
   const classname = item?.ClassName ?? item?.className ?? (item as any)?.classname;
   if (classname) {
-    return `https://images.habbo.com/dcr/hof_furni/${revision}/${classname}_icon.png`;
+    return proxyImage(`https://images.habbo.com/dcr/hof_furni/${revision}/${classname}_icon.png`);
   }
   return null;
 }

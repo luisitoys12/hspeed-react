@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { queryClient } from "@/lib/queryClient";
+import { proxyImage } from "@/lib/habboProxy";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,6 @@ export function MessageBoard() {
   };
 
   const msgs = chatMessages || [];
-
   return (
     <div
       className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-full"
@@ -119,10 +119,10 @@ export function MessageBoard() {
             <div className="flex items-center gap-1.5">
               {user.habboUsername && (
                 <img
-                  src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`}
+                  src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(user.habboUsername)}&size=s&headonly=1`)}
                   alt=""
                   className="w-5 h-5 rounded"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
                 />
               )}
               <span className="text-[10px] text-muted-foreground truncate max-w-[80px]">
@@ -171,12 +171,10 @@ export function MessageBoard() {
               className="flex items-start gap-2 py-0.5 hover:bg-secondary/20 rounded px-1 transition-colors group"
             >
               <img
-                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${
-                  msg.habboUsername || msg.userName || "HabboSpeed"
-                }&size=s&headonly=1`}
+                src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(msg.habboUsername || msg.userName || "HabboSpeed")}&size=s&headonly=1`)}
                 alt=""
                 className="w-6 h-6 rounded flex-shrink-0 bg-secondary/50 mt-0.5"
-                onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+                onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
               />
               <div className="min-w-0 flex-1">
                 <span className="text-[11px] font-bold text-primary mr-1">

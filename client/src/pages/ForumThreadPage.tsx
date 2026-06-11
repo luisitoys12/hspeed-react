@@ -168,7 +168,7 @@ export default function ForumThreadPage() {
               <div className="flex items-center gap-2">
                 {user.habboUsername ? (
                   <img
-                    src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(user.habboUsername)}&size=s&headonly=1`}
+                    src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(user.habboUsername)}&size=s&headonly=1`)}
                     alt={user.displayName}
                     className="w-8 h-8 rounded-xl bg-secondary object-contain"
                   />

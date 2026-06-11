@@ -15,171 +15,10 @@ import {
   Users, Radio, Newspaper, Send, MessageSquare, Headphones, Music,
   Award, Clock, ArrowRight, Package, LogIn, UserPlus,
 } from "lucide-react";
-import FloatingRadioPlayer from "@/components/FloatingRadioPlayer";
+import HabboRadioHero from "@/components/HabboRadioHero";
 import WorldCupPanel from "@/components/WorldCupPanel";
 import FootballNewsSection from "@/components/FootballNewsSection";
 import type { News, Event, Poll } from "@shared/schema";
-
-/* ============================================================
-   DJ INFO BAR
-   ============================================================ */
-function DJInfoBar() {
-  const { data: djPanel } = useQuery<any>({
-    queryKey: ["/api/dj-panel"],
-    refetchInterval: 15000,
-    retry: false,
-  });
-
-  const rawDj = djPanel?.currentDj || "";
-  const isAutoDJ = !rawDj || ["autodj", "auto dj", "habbospeed"].includes(rawDj.toLowerCase());
-  const currentDj = isAutoDJ ? "HabboSpeed" : rawDj;
-  const nextDj = djPanel?.nextDj || "";
-  const djMessage = djPanel?.djMessage || "";
-
-  return (
-    <div className="relative site-panel-strong border-primary/20 overflow-hidden group" data-testid="dj-info-bar">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-50 pointer-events-none" />
-      <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 px-5 py-4">
-        
-        {/* DJ Avatar & Name */}
-        <div className="flex items-center gap-4 w-full sm:w-auto flex-shrink-0">
-          <div className="relative">
-            <div className="w-14 h-14 rounded-2xl bg-secondary/15 border border-border flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:border-primary/40 shadow-inner">
-              <img
-                src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${isAutoDJ ? "HabboSpeed" : currentDj}&size=b&headonly=0&direction=3&head_direction=3&gesture=sml`)}
-                alt={currentDj}
-                className="w-12 h-14 object-contain mt-1 select-none transition-transform duration-500 group-hover:scale-110"
-                onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
-              />
-            </div>
-            {/* Live Glow Dot */}
-            <span className={`absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full border-3 border-card flex items-center justify-center ${
-              isAutoDJ ? "bg-yellow-500" : "bg-red-500 live-indicator"
-            }`} />
-          </div>
-          <div>
-            <p className="text-[9px] uppercase tracking-widest text-primary/80 font-bold glow-text-themed">{isAutoDJ ? "Sistema Radio" : "DJ en Turno"}</p>
-            <p className="text-base font-extrabold text-foreground tracking-tight">{currentDj}</p>
-          </div>
-        </div>
-
-        <div className="h-10 w-px bg-border/60 hidden sm:block flex-shrink-0" />
-
-        {/* Next DJ */}
-        {nextDj && (
-          <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center border border-border/50 text-muted-foreground">
-              <Clock className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">Siguiente</p>
-              <p className="text-xs font-bold text-foreground/90">{nextDj}</p>
-            </div>
-          </div>
-        )}
-
-        {/* DJ Message / Motto */}
-        {djMessage && (
-          <div className="flex-1 min-w-0 overflow-hidden hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/5 border border-border/20">
-            <MessageSquare className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-            <p className="text-xs text-muted-foreground/90 truncate italic font-medium">"{djMessage}"</p>
-          </div>
-        )}
-
-        {/* Live status badge */}
-        <div className="sm:ml-auto w-full sm:w-auto flex justify-end flex-shrink-0">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 font-pixel text-[9px] shadow-sm select-none ${
-            isAutoDJ 
-              ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.15)]" 
-              : "bg-red-500/10 border-red-500/30 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.15)] animate-pulse"
-          }`}>
-            <Radio className={`w-3.5 h-3.5 ${isAutoDJ ? "text-yellow-400" : "text-red-400"}`} />
-            <span className="font-semibold uppercase tracking-widest">
-              {isAutoDJ ? "AUTODJ" : "EN VIVO"}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
-   HERO BANNER
-   ============================================================ */
-function HeroBanner({ slides }: { slides: any[] }) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const { user } = useAuth();
-
-  const defaultSlides = [
-    { title: "Bienvenido a HabboSpeed", subtitle: "La radio y fansite #1 de la comunidad Habbo en español", cta: { text: "Explorar", href: "/news" }, imageUrl: "/slides/slide-welcome.png" },
-    { title: "Eventos en vivo", subtitle: "Participa en nuestros eventos semanales y gana premios increíbles", cta: { text: "Ver Eventos", href: "/events" }, imageUrl: "/slides/slide-events.png" },
-    { title: "Únete al equipo", subtitle: "¿Eres DJ, periodista o diseñador? Tenemos un lugar para ti", cta: { text: "Ver Equipo", href: "/team" }, imageUrl: "/slides/slide-team.png" },
-  ];
-
-  const displaySlides = slides?.length > 0 ? slides : defaultSlides;
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentSlide((p) => (p + 1) % displaySlides.length), 6000);
-    return () => clearInterval(timer);
-  }, [displaySlides.length]);
-
-  const slide = displaySlides[currentSlide];
-
-  return (
-    <div className="relative h-56 sm:h-64 lg:h-full lg:min-h-[18rem] rounded-2xl overflow-hidden group site-panel-strong" data-testid="hero-banner">
-      <div className="absolute inset-0 bg-gradient-to-br from-sky-900 via-slate-900 to-slate-950" />
-      {slide.imageUrl && (
-        <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-70 transition-opacity duration-700" />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
-
-      <div className="relative z-10 h-full flex flex-col justify-end px-6 sm:px-10 pb-6">
-        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white/85 mb-2 w-fit">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 live-indicator" />
-          En vivo ahora
-        </div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1.5 max-w-lg drop-shadow-lg">{slide.title}</h1>
-        <p className="text-sm text-white/85 max-w-md leading-relaxed drop-shadow">{slide.subtitle}</p>
-
-        <div className="flex items-center gap-2 mt-3 flex-wrap">
-          {slide.cta && (
-            <Link href={slide.cta.href || "/"} className="inline-flex items-center gap-2 text-xs font-semibold bg-primary/90 hover:bg-primary text-white px-4 py-2 rounded-lg transition-all shadow-lg" data-testid="button-hero-cta">
-              {slide.cta.text} <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          )}
-          {/* Login / Register si no hay sesión */}
-          {!user && (
-            <>
-              <Link href="/login" className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 backdrop-blur text-white border border-white/20 px-3 py-2 rounded-lg transition-all" data-testid="button-hero-login">
-                <LogIn className="w-3.5 h-3.5" /> Entrar
-              </Link>
-              <Link href="/register" className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 backdrop-blur text-white border border-white/20 px-3 py-2 rounded-lg transition-all" data-testid="button-hero-register">
-                <UserPlus className="w-3.5 h-3.5" /> Registro
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Compact hero-mounted player (desktop) */}
-      <div className="absolute top-4 right-4 z-20 hidden lg:block">
-        <div className="w-[420px]">
-          <FloatingRadioPlayer />
-        </div>
-      </div>
-
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-        {displaySlides.map((_: any, i: number) => (
-          <button key={i} onClick={() => setCurrentSlide(i)} className={`h-1.5 rounded-full transition-all ${i === currentSlide ? "bg-white w-6" : "bg-white/40 w-2"}`} />
-        ))}
-      </div>
-      <button onClick={() => setCurrentSlide((p) => (p - 1 + displaySlides.length) % displaySlides.length)} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"><ChevronLeft className="w-4 h-4" /></button>
-      <button onClick={() => setCurrentSlide((p) => (p + 1) % displaySlides.length)} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"><ChevronRight className="w-4 h-4" /></button>
-    </div>
-  );
-}
 
 /* ============================================================
    CHAT / MESSAGE BOARD — FIXED
@@ -243,7 +82,7 @@ function MessageBoard() {
           <div className="flex items-center gap-1.5">
             {user.habboUsername && (
               <img
-                src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`)}
+                src="/habbo-radio/frank_small_03.gif"
                 alt=""
                 className="w-5 h-5 rounded"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
@@ -267,7 +106,7 @@ function MessageBoard() {
           (chatMessages || []).map((msg: any, i: number) => (
             <div key={msg.id || i} className="flex items-start gap-2 py-0.5 hover:bg-secondary/20 rounded px-1 transition-colors">
               <img
-                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${msg.habboUsername || msg.userName || "HabboSpeed"}&size=s&headonly=1`}
+                src="/habbo-radio/frank_small_03.gif"
                 alt=""
                 className="w-6 h-6 rounded flex-shrink-0 bg-secondary/50 mt-0.5"
                 onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
@@ -458,7 +297,7 @@ function FurniStrip() {
           {[...items, ...items].map((item: any, i: number) => (
             <div key={i} className="flex-shrink-0 w-12 h-12 rounded-lg bg-secondary/30 border border-border/30 flex items-center justify-center hover:scale-110 hover:border-primary/40 transition-all cursor-pointer group relative">
               <img
-                src={item.iconUrl}
+                src={proxyImage(item.iconUrl)}
                 alt={item.name}
                 className="w-10 h-10 object-contain"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
@@ -511,7 +350,7 @@ function RecentBadgesGrid() {
               const code = badge.code || badge.badge_code || "PLA";
               const title = badge.name || `Placa ${code}`;
               const desc = badge.description || "Nueva placa descubierta en el hotel";
-              const imgUrl = badge.url_habbo || badge.url_habboassets || `https://images.habbo.com/c_images/album1584/${code}.gif`;
+              const imgUrl = badge.url_habbo || badge.url_habboassets || proxyImage(`https://images.habbo.com/c_images/album1584/${code}.gif`);
 
               return (
                 <div
@@ -692,26 +531,16 @@ export default function HomePage() {
 
   const latestNews = (news || []).slice(0, 5);
   const activePolls = (polls || []).filter((p) => p.isActive).slice(0, 1);
-  const slides = Array.isArray(config?.slideshow) ? config.slideshow : [];
 
   return (
     <div className="min-h-screen">
       <div className="p-4 lg:p-6 space-y-5 max-w-7xl mx-auto">
-        <DJInfoBar />
-
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-          <div className="lg:col-span-3"><HeroBanner slides={slides} /></div>
-          <div className="lg:col-span-2"><MessageBoard /></div>
-        </div>
+        <HabboRadioHero />
 
         <StatsBar />
         <FurniStrip />
         <RecentBadgesGrid />
 
-        <div className="mt-4 space-y-4">
-          <WorldCupPanel />
-          <FootballNewsSection />
-        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-3">
             <div className="site-panel px-4 py-3 flex items-center justify-between">
@@ -730,6 +559,11 @@ export default function HomePage() {
             {activePolls.length > 0 && <PollWidget poll={activePolls[0]} />}
             <QuickTools />
           </div>
+        </div>
+
+        <div className="mt-4 space-y-4">
+          <WorldCupPanel />
+          <FootballNewsSection />
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { proxyImage } from "@/lib/habboProxy";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, MessageSquare, Send, Star } from "lucide-react";
@@ -22,7 +23,7 @@ function HabboHeadAvatar({ username, displayName }: { username?: string | null; 
   }
   return (
     <img
-      src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`}
+      src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&size=s&headonly=1`)}
       alt={displayName}
       className="w-9 h-9 rounded-xl bg-secondary object-contain flex-shrink-0"
       onError={(e) => {

@@ -9,7 +9,6 @@ import { Toaster } from "@/components/ui/toaster";
 import TopNavBar from "@/components/TopNavBar";
 import ThemeDecoBar from "@/components/ThemeDecoBar";
 import ThemeParticles from "@/components/ThemeParticles";
-import FloatingRadioPlayer from "@/components/FloatingRadioPlayer";
 import Footer from "@/components/Footer";
 import HomePage from "@/pages/HomePage";
 import NewsPage from "@/pages/NewsPage";
@@ -105,7 +104,6 @@ function AppContent() {
 				</Suspense>
 			</main>
 			<Footer />
-			<FloatingRadioPlayer />
 		</div>
 	);
 }

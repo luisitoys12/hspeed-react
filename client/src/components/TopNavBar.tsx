@@ -1,10 +1,10 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { proxyImage } from "@/lib/habboProxy";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { proxyImage } from "@/lib/habboProxy";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -161,10 +161,10 @@ export default function TopNavBar() {
               <div className="flex items-center gap-3 p-3 sm:p-4">
                 <Link href={`/profile/${user?.habboUsername || user?.displayName || "HabboSpeed"}`} className="hidden sm:block w-16 h-16 rounded-xl bg-black/20 border border-white/10 overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-primary/50 transition-all">
                   <img
-                    src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${user?.habboUsername || "HabboSpeed"}&size=b&headonly=0&direction=3&head_direction=3&gesture=sml`) }
+                    src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(user?.habboUsername || user?.displayName || "HabboSpeed")}&size=s&headonly=1`)}
                     alt={user?.displayName || "HabboSpeed"}
                     className="w-full h-full object-contain"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
                   />
                 </Link>
                 <div className="min-w-0 flex-1">

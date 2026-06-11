@@ -36,6 +36,7 @@ import {
   ChevronUp,
   Clock,
   Zap,
+  Mic,
   ExternalLink,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -330,17 +331,17 @@ export default function FloatingRadioPlayer() {
       )}
 
       {/* ═══ DESKTOP PLAYER BAR ════════════════════════════════════════════ */}
-      <div className="radio-player-bar hidden xl:flex items-center w-full gap-0 h-[52px] bg-card/97 backdrop-blur-sm border-b border-border/40 px-3 relative overflow-visible">
+      <div className="radio-player-bar hidden xl:flex fixed bottom-0 left-0 right-0 z-50 items-center w-full gap-0 h-[42px] bg-card/97 backdrop-blur-sm border-t border-border/40 px-2.5 relative overflow-visible shadow-[0_-12px_30px_rgba(0,0,0,0.25)]">
         {/* Gradient accent line top */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-theme-gradient opacity-70" />
 
-        {/* ── DJ Avatar + ON AIR badge ── */}
-        <div className="flex items-center gap-2 pr-3 border-r border-border/30 flex-shrink-0">
-          <div className="relative">
+        {/* ── DJ Avatar + name ── */}
+        <div className="flex items-center gap-2 pr-2.5 border-r border-border/30 flex-shrink-0 min-w-[150px]">
+          <div className="relative flex-shrink-0">
             <img
               src={getHabboAvatar(djName)}
               alt={djName}
-              className="w-9 h-10 rounded-lg object-cover bg-secondary border border-border/50"
+              className="w-8 h-10 rounded-lg object-cover bg-secondary border border-border/50"
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
                   getHabboAvatar("AutoDJ");
@@ -348,40 +349,43 @@ export default function FloatingRadioPlayer() {
             />
             {isLive && (
               <span className="absolute -top-1 -right-1 px-1 py-0.5 bg-red-500 text-white text-[7px] font-black rounded leading-none live-indicator">
-                ON AIR
+                LIVE
               </span>
             )}
-          </div>
-          <div className="min-w-0">
-            <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold block">
-              DJ
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-fuchsia-500 text-white shadow border border-white/30">
+              <Mic className="h-2.5 w-2.5" />
             </span>
-            <span className="text-xs font-bold text-foreground truncate max-w-[100px] block">
+          </div>
+          <div className="min-w-0 leading-tight">
+            <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold block">
+              DJ actual
+            </span>
+            <span className="text-sm font-bold text-foreground truncate max-w-[108px] block">
               {djName}
             </span>
           </div>
         </div>
 
-        {/* ── Current song with scroll animation ── */}
-        <div className="flex items-center gap-2 px-3 border-r border-border/30 min-w-0 flex-shrink-0 max-w-[220px]">
-          <div className="min-w-0 overflow-hidden">
-            <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold block">
-              SONANDO
+        {/* ── Current song and status ── */}
+        <div className="flex items-center gap-2 px-3 border-r border-border/30 min-w-0 flex-1 overflow-hidden">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
+            <Radio className="h-3.5 w-3.5" />
+          </div>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold block leading-none">
+              Radio en vivo
             </span>
-            <div className="overflow-hidden max-w-[190px]">
-              <p className="text-xs font-semibold text-foreground truncate">
-                {songTitle}
-              </p>
-            </div>
+            <p className="text-[11px] font-semibold text-foreground truncate leading-tight mt-0.5">
+              {songTitle}
+            </p>
           </div>
         </div>
 
         {/* ── Controls ── */}
         <div className="flex items-center gap-2.5 px-3 border-r border-border/30 flex-shrink-0">
-          {/* Play / Stop */}
           <button
             onClick={togglePlay}
-            className="radio-play-btn w-9 h-9 rounded-full flex items-center justify-center transition-all"
+            className="radio-play-btn w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all"
             data-testid="button-play-pause"
             aria-label={isPlaying ? "Detener" : "Reproducir"}
           >
@@ -392,7 +396,6 @@ export default function FloatingRadioPlayer() {
             )}
           </button>
 
-          {/* Listeners */}
           <div className="flex items-center gap-1 bg-primary/10 rounded-lg px-2 py-1">
             <Headphones className="w-3 h-3 text-primary" />
             <span className="text-[11px] font-bold text-primary" data-testid="text-listeners">
@@ -400,7 +403,6 @@ export default function FloatingRadioPlayer() {
             </span>
           </div>
 
-          {/* Mute + Volume */}
           <button
             onClick={() => setIsMuted(!isMuted)}
             className="text-muted-foreground hover:text-foreground transition-colors"
@@ -420,59 +422,13 @@ export default function FloatingRadioPlayer() {
             }}
             max={100}
             step={1}
-            className="w-16 h-1"
+            className="w-14 h-1"
             data-testid="slider-volume"
           />
         </div>
 
-        {/* ── Program progress ── */}
-        <div className="flex items-center gap-2 px-3 border-r border-border/30 flex-shrink-0 min-w-[170px]">
-          <div className="flex flex-col gap-1 w-full">
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3 text-primary" />
-              <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold">
-                {currentSchedule?.showName || "PROGRAMA"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground">{programStart}</span>
-              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden relative">
-                <div
-                  className="h-full bg-theme-gradient rounded-full transition-all duration-1000 relative"
-                  style={{ width: `${programProgress}%` }}
-                >
-                  <span className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full border border-card shadow" />
-                </div>
-              </div>
-              <span className="text-[10px] text-muted-foreground">{programEnd}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Next DJ ── */}
-        <div className="flex items-center gap-2 px-3 border-r border-border/30 flex-shrink-0">
-          <div className="min-w-0">
-            <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold block">
-              SIGUIENTE
-            </span>
-            <span className="text-xs font-bold text-foreground truncate max-w-[90px] block">
-              {nextDj || "—"}
-            </span>
-          </div>
-          {nextDj && (
-            <img
-              src={getHabboAvatar(nextDj, true)}
-              alt={nextDj}
-              className="w-6 h-6 rounded-lg object-cover bg-secondary"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-          )}
-        </div>
-
         {/* ── Right actions ── */}
-        <div className="ml-auto pl-3 flex items-center gap-2 flex-shrink-0">
+        <div className="ml-auto pl-2.5 flex items-center gap-2 flex-shrink-0">
           {/* Historial */}
           <button
             onClick={() => setShowHistory(!showHistory)}
@@ -509,7 +465,7 @@ export default function FloatingRadioPlayer() {
       </div>
 
       {/* ═══ MOBILE COMPACT BAR ════════════════════════════════════════════ */}
-      <div className="xl:hidden flex items-center gap-3 flex-1 min-w-0 relative">
+      <div className="xl:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center gap-3 min-w-0 relative bg-card/97 backdrop-blur-sm border-t border-border/40 px-3 py-2 shadow-[0_-12px_30px_rgba(0,0,0,0.25)]">
         {/* Gradient accent */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-theme-gradient opacity-60" />
 

@@ -522,7 +522,7 @@ function FriendsTab({ username }: { username: string }) {
             friendList.slice(0, 24).map((f: any, i: number) => (
               <div key={i} className="flex items-center gap-1.5 bg-secondary/30 rounded-full px-2 py-1 text-[10px]" title={f.name}>
                 <img
-                  src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${f.name}&size=s&headonly=1`}
+                  src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${f.name}&size=s&headonly=1`)}
                   alt={f.name}
                   className="w-5 h-5 rounded-full"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}

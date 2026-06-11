@@ -18,43 +18,29 @@ export default function Footer() {
   const emoji = decorations?.emoji || "";
 
   return (
-    <footer className="relative bg-card border-t border-border mt-auto" data-testid="footer">
-      {/* Top gradient line */}
+    <footer className="relative site-footer-bar border-t border-border/70 mt-auto" data-testid="footer">
       <div className="h-[2px] w-full bg-theme-gradient" />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          {/* Left: Logo + tagline */}
-          <div className="flex flex-col gap-2">
+      <div className="max-w-7xl mx-auto px-4 py-7">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-[1.2fr_0.8fr_0.8fr] items-start">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              {emoji && (
-                <span className="text-lg" aria-hidden="true">
-                  {emoji}
-                </span>
-              )}
-              <span className="font-pixel text-[10px] text-theme-gradient leading-tight">
-                HABBOSPEED
-              </span>
+              <span className="font-pixel text-[10px] text-theme-gradient leading-tight">HABBOSPEED</span>
+              {emoji && <span className="text-sm opacity-40" aria-hidden="true">{emoji}</span>}
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Tu fansite de Habbo favorita
-            </p>
-            <p className="text-[10px] text-muted-foreground/70 leading-relaxed mt-1">
-              HabboSpeed es un fansite no oficial. No está afiliado, respaldado ni conectado con Sulake Corporation Oy. Habbo® es una marca registrada de Sulake Corporation Oy.
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
+              Fansite de Habbo con radio, noticias, foros, armario y herramientas en un diseño inspirado en HabboRadio.
             </p>
           </div>
 
-          {/* Center: Quick links */}
-          <div className="flex flex-col items-start md:items-center gap-3">
-            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              Enlaces
-            </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-3">Enlaces</p>
+            <div className="grid gap-2 text-sm">
               {quickLinks.map((link) => (
                 <Link
                   key={link.href + link.label}
                   href={link.href}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm text-foreground/80 hover:text-primary transition-colors"
                   data-testid={`footer-link-${link.label.toLowerCase()}`}
                 >
                   {link.label}
@@ -63,35 +49,19 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Right: Legal Links */}
-          <div className="flex flex-col items-start md:items-end gap-3">
-            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              Legal
-            </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              <Link href="/legal" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                Aviso Legal
-              </Link>
-              <Link href="/legal" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                Política de Privacidad
-              </Link>
-              <Link href="/legal" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                Términos de Uso
-              </Link>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-3">Legal</p>
+            <div className="grid gap-2 text-sm">
+              <Link href="/legal" className="text-foreground/80 hover:text-primary transition-colors">Aviso Legal</Link>
+              <Link href="/legal" className="text-foreground/80 hover:text-primary transition-colors">Privacidad</Link>
+              <Link href="/legal" className="text-foreground/80 hover:text-primary transition-colors">Términos de Uso</Link>
             </div>
-            {emoji && (
-              <span className="text-xs opacity-20" aria-hidden="true">
-                {emoji} {emoji} {emoji}
-              </span>
-            )}
           </div>
         </div>
 
-        {/* Bottom copyright */}
-        <div className="border-t border-border mt-6 pt-4 text-center">
-          <p className="text-[10px] text-muted-foreground/60">
-            © 2026 HabboSpeed. Todos los derechos reservados.
-          </p>
+        <div className="mt-6 pt-4 border-t border-border/70 text-[10px] text-muted-foreground/70 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+          <p>© 2026 HabboSpeed. Todos los derechos reservados.</p>
+          <p>HabboSpeed es una fansite no oficial y no está afiliada con Sulake Corporation Oy.</p>
         </div>
       </div>
     </footer>
