@@ -2,6 +2,9 @@
   command = "npm run build"
   publish = "dist/public"
 
+[build.environment]
+  NPM_FLAGS = "--legacy-peer-deps"
+
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
