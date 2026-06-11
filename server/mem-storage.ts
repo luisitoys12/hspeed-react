@@ -64,10 +64,10 @@ export class MemStorage implements IStorage {
       radioService: "azuracast",
       apiUrl: "https://radio.kusmedios.lat/api/nowplaying/runa-fm",
       listenUrl: "https://radio.kusmedios.lat/listen/runa-fm/radio.mp3",
-      homePlayerBgUrl: `/api/habbo/proxy-image?u=${encodeURIComponent("https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png")}`,
+      homePlayerBgUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       slideshow: [
-        { image: `/api/habbo/proxy-image?u=${encodeURIComponent("https://images.habbo.com/c_images/reception/rec_background_beach.png")}`, title: "¡Bienvenidos a HabboSpeed!", link: "#" },
-        { image: `/api/habbo/proxy-image?u=${encodeURIComponent("https://images.habbo.com/c_images/reception/rec_background_habboween.png")}`, title: "¡Sintoniza nuestra Radio 24/7!", link: "#" }
+        { image: "https://images.habbo.com/c_images/reception/rec_background_beach.png", title: "¡Bienvenidos a HabboSpeed!", link: "#" },
+        { image: "https://images.habbo.com/c_images/reception/rec_background_habboween.png", title: "¡Sintoniza nuestra Radio 24/7!", link: "#" }
       ],
       discordWebhooks: {},
       activeTheme: "nubis",
@@ -91,7 +91,7 @@ export class MemStorage implements IStorage {
       passwordHash: adminPassHash,
       displayName: "Administrador",
       habboUsername: "HabboSpeed",
-      avatarUrl: `/api/habbo/proxy-image?u=${encodeURIComponent("https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=b")}`,
+      avatarUrl: "https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=b",
       role: "admin",
       approved: true,
       speedPoints: 500,
@@ -112,7 +112,7 @@ export class MemStorage implements IStorage {
       title: "¡Gran Apertura de HabboSpeed!",
       summary: "Iniciamos el rebranding y lanzamiento del nuevo sitio web.",
       content: "Bienvenidos a HabboSpeed. Disfruta de la mejor radio, noticias al instante, guías actualizadas, foros interactivos y eventos diarios. ¡Regístrate ya y gana SpeedPoints para canjear en nuestro catálogo!",
-      imageUrl: `/api/habbo/proxy-image?u=${encodeURIComponent("https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png")}`,
+      imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       imageHint: "Apertura oficial",
       category: "Noticias",
       date: new Date().toLocaleDateString("es-ES"),
@@ -126,7 +126,7 @@ export class MemStorage implements IStorage {
       title: "Mega Fix: mejoras y correcciones en todo el sitio",
       summary: "Aplicamos un paquete completo de mejoras para estabilidad, radio, Habbo API y experiencia de usuario.",
       content: "Resumen de cambios recientes:\n\n- Radio actualizada: stream AzuraCast y Now Playing configurados.\n- Habbo API reforzada: proxy de imagenes para evitar bloqueos y carga correcta de avatares.\n- Hot Looks: fallback con looks curados si la API falla.\n- Armario: busqueda y previsualizacion de avatares mas estables.\n- Barra DJ: mensaje mas creativo y consistente.\n- Emojis utiles: ahora funcionan como accesos rapidos.\n- Menu superior simplificado: queda solo el menu del boton de tres rayitas.\n- Popups estaticos: se corrigio el movimiento para poder usarlos sin problemas.\n\nSeguimos optimizando velocidad y detalles visuales para que la fansite se vea como las top de Habbo.es.",
-      imageUrl: `/api/habbo/proxy-image?u=${encodeURIComponent("https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png")}`,
+      imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       imageHint: "Actualizacion del sitio",
       category: "Actualizaciones",
       date: new Date().toLocaleDateString("es-ES"),
@@ -263,7 +263,7 @@ export class MemStorage implements IStorage {
         gradientTo: "#059669",
         secondary: "45 85% 65%"
       },
-      bannerUrl: `/api/habbo/proxy-image?u=${encodeURIComponent("https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png")}`,
+      bannerUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       logoUrl: null,
       decorations: {
         emoji: "🌿",

@@ -16,7 +16,8 @@ import {
   User, Zap, Calendar, Shield, Users, Home,
   Star, Edit3, Save, X, Wifi, WifiOff, Trophy,
   Coins, Crown, MessageCircle, Image, Heart, Award,
-  Info, Youtube, Twitter, Instagram, Link as LinkIcon
+  Info, Youtube, Twitter, Instagram, Link as LinkIcon,
+  Trash2, LogIn, UserPlus
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -569,6 +570,191 @@ function GroupsTab({ groups }: { groups: any[] | undefined }) {
               <span className="font-medium">{g.name}</span>
             </div>
           ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ===== WALL TAB / MURO =====
+function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwnProfile: boolean }) {
+  const { user: currentUser, token } = useAuth();
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const [newMsg, setNewMsg] = useState("");
+
+  const { data: messages, isLoading } = useQuery<any[]>({
+    queryKey: ["/api/wall", profileUserId],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/wall/${profileUserId}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    retry: false,
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: async (messageText: string) => {
+      const res = await apiRequest(
+        "POST",
+        `/api/wall/${profileUserId}`,
+        { message: messageText },
+        token ? `Bearer ${token}` : undefined
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Error al publicar" }));
+        throw new Error(err.message || "Error al publicar mensaje");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      setNewMsg("");
+      qc.invalidateQueries({ queryKey: ["/api/wall", profileUserId] });
+      toast({ title: "¡Mensaje publicado!", description: "Se ha agregado al muro." });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (msgId: number) => {
+      const res = await apiRequest(
+        "DELETE",
+        `/api/wall/${msgId}`,
+        undefined,
+        token ? `Bearer ${token}` : undefined
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Error al eliminar" }));
+        throw new Error(err.message || "Error al eliminar mensaje");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/wall", profileUserId] });
+      toast({ title: "¡Mensaje eliminado!" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMsg.trim()) return;
+    sendMutation.mutate(newMsg.trim());
+  };
+
+  if (isLoading) return <Skeleton className="h-40 rounded-xl" />;
+
+  const msgs = Array.isArray(messages) ? messages : [];
+
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader className="pb-2">
+        <p className="text-sm font-bold">Muro de Mensajes ({msgs.length})</p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Form para nuevo mensaje */}
+        {currentUser ? (
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Dejar un mensaje en el muro</Label>
+            <div className="flex gap-2">
+              <Textarea
+                placeholder="Escribe algo simpático en este muro..."
+                className="text-xs resize-none bg-background/50 border-border/50 focus:border-primary/50 flex-1"
+                rows={2}
+                value={newMsg}
+                onChange={(e) => setNewMsg(e.target.value)}
+                maxLength={250}
+              />
+              <Button
+                type="submit"
+                size="sm"
+                className="self-end"
+                disabled={sendMutation.isPending || !newMsg.trim()}
+              >
+                Publicar
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 text-center space-y-2">
+            <p className="text-xs text-muted-foreground">Debes estar registrado o iniciar sesión para firmar el muro.</p>
+            <div className="flex justify-center gap-3">
+              <Link href="/login">
+                <Button variant="outline" size="sm" className="text-xs h-8 border-primary/30 text-primary hover:bg-primary/10">
+                  <LogIn className="w-3.5 h-3.5 mr-1" /> Iniciar Sesión
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="sm" className="text-xs h-8 bg-primary hover:bg-primary/80 text-white">
+                  <UserPlus className="w-3.5 h-3.5 mr-1" /> Registrarse
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Lista de mensajes */}
+        <div className="space-y-3 pt-2">
+          {msgs.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-6">El muro está vacío. ¡Sé el primero en firmar!</p>
+          ) : (
+            msgs.map((msg: any) => {
+              const canDelete =
+                currentUser &&
+                (msg.authorId === currentUser.id ||
+                  profileUserId === currentUser.id ||
+                  currentUser.role === "admin");
+
+              return (
+                <div key={msg.id} className="flex gap-3 bg-secondary/15 rounded-2xl p-3 border border-border/30 hover:border-primary/20 transition-all group">
+                  <Link href={`/profile/${msg.authorName}`}>
+                    <div className="w-9 h-9 rounded-xl bg-secondary/50 border border-border flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all flex-shrink-0 cursor-pointer">
+                      <img
+                        src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(msg.authorName)}&size=s&headonly=1`}
+                        alt={msg.authorName}
+                        className="w-full h-full object-contain"
+                        onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
+                      />
+                    </div>
+                  </Link>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Link href={`/profile/${msg.authorName}`}>
+                        <span className="text-xs font-bold text-primary hover:underline cursor-pointer">{msg.authorName}</span>
+                      </Link>
+                      <div className="flex items-center gap-2">
+                        {msg.createdAt && (
+                          <span className="text-[9px] text-muted-foreground/60">
+                            {new Date(msg.createdAt).toLocaleString("es-ES", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => deleteMutation.mutate(msg.id)}
+                            className="text-muted-foreground hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 p-0.5 rounded"
+                            title="Eliminar mensaje"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-foreground/90 whitespace-pre-wrap break-words">{msg.message}</p>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </CardContent>
     </Card>

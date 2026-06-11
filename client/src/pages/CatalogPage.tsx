@@ -72,7 +72,7 @@ export default function CatalogPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {clothingEntries.map((c) => (
                 <div key={c.id} className="bg-secondary/40 rounded p-2 flex flex-col items-center">
-                  <img src={c.iconUrl ? `/api/habbo/proxy-image?u=${encodeURIComponent(c.iconUrl)}` : "/public/fallback.png"} alt={c.name} className="w-20 h-20 object-contain mb-2" />
+                  <img src={c.iconUrl || "/public/fallback.png"} alt={c.name} className="w-20 h-20 object-contain mb-2" />
                   <div className="text-xs truncate text-center w-full">{c.name}</div>
                   <div className="mt-2 flex gap-1">
                     <Button size="sm" onClick={() => handleApply(c, "ch")}>
