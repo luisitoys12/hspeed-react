@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { proxyImage } from "@/lib/habboProxy";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
@@ -349,13 +349,14 @@ export default function ProfilePage() {
       )}
 
       {/* ===== HABBO 2010 STYLE PROFILE TABS ===== */}
-      {hasHabboData && (
+      {(hasHabboData || localUser) && (
         <Tabs defaultValue="badges" className="w-full">
           <TabsList className="bg-secondary/50 border border-border h-auto flex-wrap gap-0.5 w-full">
             <TabsTrigger value="badges" className="text-xs gap-1.5"><Award className="w-3 h-3" /> Placas</TabsTrigger>
             <TabsTrigger value="rooms" className="text-xs gap-1.5"><Home className="w-3 h-3" /> Salas</TabsTrigger>
             <TabsTrigger value="friends" className="text-xs gap-1.5"><Users className="w-3 h-3" /> Amigos</TabsTrigger>
             <TabsTrigger value="groups" className="text-xs gap-1.5"><Heart className="w-3 h-3" /> Grupos</TabsTrigger>
+            {localUser && <TabsTrigger value="muro" className="text-xs gap-1.5"><MessageCircle className="w-3 h-3" /> Muro</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="badges">
@@ -373,6 +374,12 @@ export default function ProfilePage() {
           <TabsContent value="groups">
             <GroupsTab groups={habboGroups} />
           </TabsContent>
+
+          {localUser && (
+            <TabsContent value="muro">
+              <WallTab profileUserId={localUser.id} isOwnProfile={isOwnProfile} />
+            </TabsContent>
+          )}
         </Tabs>
       )}
 

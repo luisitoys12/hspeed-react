@@ -6,10 +6,7 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Dialog = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root>
->(({ open, onOpenChange, ...props }, ref) => {
+const Dialog = ({ open, onOpenChange, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root>) => {
   const scrollPos = React.useRef(0)
 
   React.useEffect(() => {
@@ -45,13 +42,12 @@ const Dialog = React.forwardRef<
 
   return (
     <DialogPrimitive.Root
-      ref={ref}
       open={open}
       onOpenChange={onOpenChange}
       {...props}
     />
   )
-})
+}
 Dialog.displayName = DialogPrimitive.Root.displayName
 
 const DialogTrigger = DialogPrimitive.Trigger

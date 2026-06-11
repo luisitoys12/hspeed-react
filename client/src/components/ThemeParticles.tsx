@@ -1,41 +1,49 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
 
 interface Particle {
   id: number;
   emoji: string;
-  left: string;
-  animationDuration: string;
-  animationDelay: string;
-  fontSize: string;
+  left: number;
+  duration: number;
+  delay: number;
+  size: number;
   opacity: number;
+  drift: number;
+  rotation: number;
 }
 
-const PARTICLE_CONFIGS: Record<string, { emojis: string[]; className: string; count: number }> = {
+const PARTICLE_CONFIGS: Record<string, { emojis: string[]; count: number; baseSize: number; driftRange: number }> = {
   confetti: {
     emojis: ["🔴", "🟡", "🟢", "🔵", "🟣", "🎪", "🎭", "✨"],
-    className: "particle-confetti",
-    count: 12,
+    count: 16,
+    baseSize: 16,
+    driftRange: 30,
   },
   ghosts: {
     emojis: ["👻", "🦇", "💀", "🕷️", "🎃", "☠️"],
-    className: "particle-float",
-    count: 10,
+    count: 12,
+    baseSize: 20,
+    driftRange: 40,
   },
   snow: {
     emojis: ["❄️", "❅", "❆", "✧", "·"],
-    className: "particle-confetti",
-    count: 15,
+    count: 20,
+    baseSize: 14,
+    driftRange: 25,
   },
   bubbles: {
     emojis: ["🫧", "○", "◯", "◌", "💧"],
-    className: "particle-float",
-    count: 10,
+    count: 14,
+    baseSize: 18,
+    driftRange: 35,
   },
   stars: {
     emojis: ["⭐", "✨", "💫", "🌟", "✦"],
-    className: "particle-float",
-    count: 10,
+    count: 12,
+    baseSize: 16,
+    driftRange: 50,
   },
 };
 
@@ -46,16 +54,20 @@ function generateParticles(type: string): Particle[] {
   return Array.from({ length: config.count }, (_, i) => ({
     id: i,
     emoji: config.emojis[i % config.emojis.length],
-    left: `${(i * 7.7 + 2) % 98}%`,
-    animationDuration: `${8 + (i % 5) * 3}s`,
-    animationDelay: `${(i * 1.3) % 8}s`,
-    fontSize: `${10 + (i % 3) * 4}px`,
-    opacity: 0.15 + (i % 4) * 0.05,
+    left: Math.random() * 100,
+    duration: 8 + Math.random() * 12,
+    delay: Math.random() * 5,
+    size: config.baseSize + Math.random() * 12,
+    opacity: 0.15 + Math.random() * 0.25,
+    drift: (Math.random() - 0.5) * config.driftRange * 2,
+    rotation: (Math.random() - 0.5) * 360,
   }));
 }
 
 export default function ThemeParticles() {
   const { decorations } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const particleType = decorations?.particleType || "none";
   const config = PARTICLE_CONFIGS[particleType];
@@ -65,30 +77,89 @@ export default function ThemeParticles() {
     return generateParticles(particleType);
   }, [particleType, config]);
 
+  // Restart animations when theme changes
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.style.animation = "none";
+      containerRef.current.offsetHeight; // trigger reflow
+      containerRef.current.style.animation = "";
+    }
+  }, [particleType]);
+
   if (!config || particles.length === 0) return null;
+
+  const particleVariants = {
+    initial: { y: 100, opacity: 0, rotate: 0 },
+    animate: (p: Particle) => ({
+      y: -120,
+      opacity: [0, p.opacity, p.opacity, 0],
+      rotate: p.rotation,
+      x: [0, p.drift * 0.3, p.drift * 0.6, p.drift],
+    }),
+    exit: { opacity: 0 },
+  };
+
+  const transition = (p: Particle) => ({
+    duration: shouldReduceMotion ? 0.01 : p.duration,
+    delay: shouldReduceMotion ? 0 : p.delay,
+    ease: "linear",
+    repeat: Infinity,
+    repeatDelay: 0,
+  });
 
   return (
     <div
+      ref={containerRef}
       className="fixed inset-0 pointer-events-none z-10 overflow-hidden"
       aria-hidden="true"
       data-testid="theme-particles"
+      style={{ willChange: "transform" }}
     >
       {particles.map((p) => (
-        <span
+        <motion.span
           key={p.id}
-          className={config.className}
+          initial="initial"
+          animate="animate"
+          variants={particleVariants}
+          custom={p}
           style={{
             position: "absolute",
-            left: p.left,
-            fontSize: p.fontSize,
-            opacity: p.opacity,
-            animationDuration: p.animationDuration,
-            animationDelay: p.animationDelay,
+            left: `${p.left}%`,
+            fontSize: `${p.size}px`,
+            top: "100vh",
             willChange: "transform, opacity",
           }}
+          transition={transition(p)}
         >
           {p.emoji}
-        </span>
+        </motion.span>
+      ))}
+      {/* Subtle ambient glow particles */}
+      {!shouldReduceMotion && Array.from({ length: 8 }, (_, i) => (
+        <motion.div
+          key={`glow-${i}`}
+          style={{
+            position: "absolute",
+            left: `${10 + i * 11}%`,
+            top: `${20 + (i * 7) % 60}%`,
+            width: "4px",
+            height: "4px",
+            borderRadius: "50%",
+            background: "rgba(var(--theme-glow), 0.3)",
+            filter: "blur(8px)",
+            willChange: "opacity, transform",
+          }}
+          animate={{
+            opacity: [0.1, 0.4, 0.1],
+            scale: [0.5, 1.5, 0.5],
+          }}
+          transition={{
+            duration: 4 + i * 0.5,
+            delay: i * 0.3,
+            ease: "easeInOut",
+            repeat: Infinity,
+          }}
+        />
       ))}
     </div>
   );
