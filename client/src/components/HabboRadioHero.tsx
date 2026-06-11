@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { proxyImage } from "@/lib/habboProxy";
 import { Play, Pause, Square, Radio, Headphones, Volume2, VolumeX, MessageSquare, Gift, Clock, Megaphone, CalendarDays, MessagesSquare, Zap, Trash2 } from "lucide-react";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "wouter";
 
 interface NowPlayingData {
   now_playing?: { song?: { title?: string; artist?: string } };
@@ -81,6 +83,60 @@ export default function HabboRadioHero() {
   const [peticionForm, setPeticionForm] = useState({ songTitle: "", artist: "", details: "" });
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
+  
+  const { user: currentUser, login, token } = useAuth();
+  const qc = useQueryClient();
+  const [chatInput, setChatInput] = useState("");
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [loginPending, setLoginPending] = useState(false);
+
+  const handleInlineLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginForm.email || !loginForm.password) return;
+    setLoginPending(true);
+    try {
+      await login(loginForm.email, loginForm.password);
+      toast({ title: "¡Sesión iniciada!", description: "Bienvenido de vuelta a HabboSpeed." });
+    } catch (err: any) {
+      toast({ title: "Error al iniciar sesión", description: err.message, variant: "destructive" });
+    } finally {
+      setLoginPending(false);
+    }
+  };
+
+  const sendChatMutation = useMutation({
+    mutationFn: async (content: string) => {
+      const authToken = token || localStorage.getItem("token");
+      if (!authToken) throw new Error("Debes iniciar sesión para chatear");
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ content }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Error al enviar" }));
+        throw new Error(err.message || "Error al enviar mensaje");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      setChatInput("");
+      qc.invalidateQueries({ queryKey: ["/api/chat", 6] });
+      qc.invalidateQueries({ queryKey: ["/api/chat"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error al enviar", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const handleSendChatMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    sendChatMutation.mutate(chatInput.trim());
+  };
 
   const { data: nowPlaying } = useQuery<NowPlayingData>({
     queryKey: ["/api/nowplaying"],
@@ -297,18 +353,105 @@ export default function HabboRadioHero() {
           <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_50%_0,rgba(255,255,255,0.08),transparent_55%)]" />
 
           <div className="relative grid min-h-[340px] gap-8 px-5 py-8 lg:grid-cols-[1.05fr_1fr] lg:px-10">
-            <div className="flex flex-col justify-center max-w-xl">
-              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-white/75">Regístrate</p>
-              <h2 className="mt-3 max-w-md text-4xl font-semibold leading-[0.96] tracking-tight sm:text-5xl">Accede a todo lo de HabboRadio</h2>
-              <p className="mt-4 max-w-md text-sm leading-6 text-white/78">La composición sigue el template original, pero usando datos reales y el estilo del sitio para que el reproductor se vea igual de limpio y fuerte.</p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <a href="/register" className="inline-flex items-center justify-center rounded-md bg-[#26d7ff] px-6 py-3 text-sm font-semibold text-[#1a1553] transition hover:bg-[#61e4ff]">
-                  Crear cuenta
-                </a>
-                <a href="/login" className="inline-flex items-center justify-center rounded-md border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                  Iniciar sesión
-                </a>
-              </div>
+            <div className="flex flex-col justify-center max-w-xl w-full">
+              {currentUser ? (
+                /* VISTA LOGGED IN: Panel útil con info de usuario y quick-chat para el muro */
+                <div className="space-y-4 w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/15 overflow-hidden flex-shrink-0">
+                      <img
+                        src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(currentUser.habboUsername || currentUser.displayName)}&size=s&headonly=1`}
+                        alt={currentUser.displayName}
+                        className="w-full h-full object-contain"
+                        onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#26d7ff]">Conectado</p>
+                      <h3 className="text-lg font-bold text-white leading-tight">{currentUser.displayName}</h3>
+                      <p className="text-xs text-white/70 flex items-center gap-1.5 mt-0.5">
+                        <Zap className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                        <span>{currentUser.speedPoints} SpeedPoints</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSendChatMessage} className="space-y-2.5">
+                    <Label htmlFor="player-chat-msg" className="text-[10px] font-bold uppercase tracking-wider text-white/70">
+                      Enviar mensaje al chat en vivo
+                    </Label>
+                    <div className="flex gap-2">
+                      <input
+                        id="player-chat-msg"
+                        type="text"
+                        placeholder="Escribe un mensaje..."
+                        className="flex-1 px-3 py-2 text-xs rounded-lg bg-[#14073f]/65 border border-white/15 focus:outline-none focus:border-cyan-400 text-white placeholder-white/40 font-sans"
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        maxLength={200}
+                      />
+                      <Button
+                        type="submit"
+                        size="sm"
+                        className="bg-[#26d7ff] hover:bg-[#61e4ff] text-[#1a1553] font-bold text-xs"
+                        disabled={sendChatMutation.isPending || !chatInput.trim()}
+                      >
+                        Enviar
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                /* VISTA GUEST: Formulario de Login directo integrado en el Player */
+                <div className="space-y-4 w-full">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#26d7ff]">Inicia sesión</p>
+                    <h2 className="mt-1.5 text-2xl font-bold leading-tight text-white tracking-tight sm:text-3xl">Únete a HabboRadio</h2>
+                    <p className="text-xs text-white/70 mt-1">Conéctate al instante para enviar saludos, pedir canciones y chatear.</p>
+                  </div>
+
+                  <form onSubmit={handleInlineLogin} className="space-y-2.5">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <input
+                          type="email"
+                          placeholder="Tu correo"
+                          required
+                          className="w-full px-3 py-2 text-xs rounded-lg bg-[#14073f]/65 border border-white/15 focus:outline-none focus:border-cyan-400 text-white placeholder-white/40 font-sans"
+                          value={loginForm.email}
+                          onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="password"
+                          placeholder="Tu contraseña"
+                          required
+                          className="w-full px-3 py-2 text-xs rounded-lg bg-[#14073f]/65 border border-white/15 focus:outline-none focus:border-cyan-400 text-white placeholder-white/40 font-sans"
+                          value={loginForm.password}
+                          onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="submit"
+                        size="sm"
+                        className="flex-1 bg-[#26d7ff] hover:bg-[#61e4ff] text-[#1a1553] font-bold text-xs"
+                        disabled={loginPending}
+                      >
+                        {loginPending ? "Ingresando..." : "Iniciar Sesión"}
+                      </Button>
+                      <a
+                        href="/register"
+                        className="inline-flex items-center justify-center rounded-md border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
+                      >
+                        Crear cuenta
+                      </a>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
 
             <div className="relative">
