@@ -13,8 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 const DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
-function getProgramProgress(startTime: string, endTime: string) {
-  const now = new Date();
+function getProgramProgress(startTime: string, endTime: string, now: Date) {
   const [sh, sm] = startTime.split(":").map(Number);
   const [eh, em] = endTime.split(":").map(Number);
   const startMin = sh * 60 + sm;
@@ -203,6 +202,15 @@ export default function TopNavBar() {
   });
   const unreadCount = unreadData?.count || 0;
 
+  // Dynamic timer to keep player progress active (non-static)
+  const [nowDate, setNowDate] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowDate(new Date());
+    }, 10000); // Update every 10 seconds
+    return () => clearInterval(timer);
+  }, []);
+
   // Estados de reproducción de Audio
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(70);
@@ -248,7 +256,7 @@ export default function TopNavBar() {
   );
   const programStart = currentSchedule?.startTime || "01:00";
   const programEnd = currentSchedule?.endTime || "02:00";
-  const programProgress = currentSchedule ? getProgramProgress(programStart, programEnd) : 12;
+  const programProgress = currentSchedule ? getProgramProgress(programStart, programEnd, nowDate) : 12;
 
   // Modales
   const [showPeticionesModal, setShowPeticionesModal] = useState(false);

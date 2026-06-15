@@ -524,3 +524,18 @@ export const hspeedRooms = pgTable("hspeed_rooms", {
 export const insertHSpeedRoomSchema = createInsertSchema(hspeedRooms).omit({ id: true, createdAt: true });
 export type InsertHSpeedRoom = z.infer<typeof insertHSpeedRoomSchema>;
 export type HSpeedRoom = typeof hspeedRooms.$inferSelect;
+
+// ============ SUPPORT TICKETS ============
+export const supportTickets = pgTable("support_tickets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  subject: text("subject").notNull(),
+  description: text("description").notNull(),
+  status: text("status").notNull().default("open"), // open, in_progress, resolved, closed
+  category: text("category").notNull().default("general"), // bug, suggestion, radio, vip, other
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSupportTicketSchema = createInsertSchema(supportTickets).omit({ id: true, createdAt: true });
+export type InsertSupportTicket = z.infer<typeof insertSupportTicketSchema>;
+export type SupportTicket = typeof supportTickets.$inferSelect;

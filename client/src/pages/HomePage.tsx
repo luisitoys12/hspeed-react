@@ -22,6 +22,23 @@ function MessageBoard() {
   const [message, setMessage] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  const [mexicoTime, setMexicoTime] = useState("");
+  useEffect(() => {
+    const updateTime = () => {
+      const timeString = new Date().toLocaleTimeString("es-MX", {
+        timeZone: "America/Mexico_City",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
+      setMexicoTime(timeString);
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   // States para login inline
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -93,6 +110,10 @@ function MessageBoard() {
           <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
           <span className="text-xs font-bold uppercase tracking-wider">Chat en Vivo</span>
           <span className="text-[10px] text-muted-foreground">({(chatMessages || []).length})</span>
+        </div>
+        <div className="flex items-center gap-1 text-[10px] font-bold text-primary animate-pulse bg-black/30 px-2 py-0.5 rounded border border-primary/20">
+          <i className="fa-regular fa-clock text-[9.5px]"></i>
+          <span>CDMX: {mexicoTime}</span>
         </div>
       </div>
 

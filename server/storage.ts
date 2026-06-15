@@ -28,6 +28,7 @@ import {
   type VipMembership, type InsertVipMembership,
   type VipPerkLog, type InsertVipPerkLog,
   type HSpeedRoom, type InsertHSpeedRoom,
+  type SupportTicket, type InsertSupportTicket,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -212,6 +213,12 @@ export interface IStorage {
   createRoom(room: InsertHSpeedRoom): Promise<HSpeedRoom>;
   updateRoom(id: number, data: Partial<InsertHSpeedRoom>): Promise<HSpeedRoom | undefined>;
   deleteRoom(id: number): Promise<boolean>;
+
+  // Support Tickets
+  getTicketsByUser(userId: number): Promise<SupportTicket[]>;
+  createTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
+  updateTicketStatus(id: number, status: string): Promise<SupportTicket | undefined>;
+  getAllTickets(): Promise<SupportTicket[]>;
 }
 
 // Helper to map snake_case DB rows to camelCase TypeScript objects
@@ -419,6 +426,18 @@ function mapHSpeedRoom(row: any): HSpeedRoom {
     isActive: row.is_active,
     thumbnailUrl: row.thumbnail_url,
     featured: row.featured,
+    createdAt: row.created_at,
+  };
+}
+
+function mapSupportTicket(row: any): SupportTicket {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    subject: row.subject,
+    description: row.description,
+    status: row.status,
+    category: row.category,
     createdAt: row.created_at,
   };
 }
@@ -1491,5 +1510,33 @@ export class SupabaseStorage implements IStorage {
   async deleteRoom(id: number): Promise<boolean> {
     const r = await this.query("DELETE FROM hspeed_rooms WHERE id = $1", [id]);
     return (r.rowCount ?? 0) > 0;
+  }
+
+  // Support Tickets
+  async getTicketsByUser(userId: number): Promise<SupportTicket[]> {
+    const r = await this.query("SELECT * FROM support_tickets WHERE user_id = $1 ORDER BY created_at DESC", [userId]);
+    return r.rows.map(mapSupportTicket);
+  }
+
+  async createTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
+    const r = await this.query(
+      `INSERT INTO support_tickets (user_id, subject, description, status, category)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [ticket.userId, ticket.subject, ticket.description, ticket.status ?? 'open', ticket.category ?? 'general']
+    );
+    return mapSupportTicket(r.rows[0]);
+  }
+
+  async updateTicketStatus(id: number, status: string): Promise<SupportTicket | undefined> {
+    const r = await this.query(
+      "UPDATE support_tickets SET status = $1 WHERE id = $2 RETURNING *",
+      [status, id]
+    );
+    return r.rows[0] ? mapSupportTicket(r.rows[0]) : undefined;
+  }
+
+  async getAllTickets(): Promise<SupportTicket[]> {
+    const r = await this.query("SELECT * FROM support_tickets ORDER BY created_at DESC");
+    return r.rows.map(mapSupportTicket);
   }
 }

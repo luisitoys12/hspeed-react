@@ -24,6 +24,7 @@ import {
   type VipMembership, type InsertVipMembership,
   type VipPerkLog, type InsertVipPerkLog,
   type HSpeedRoom, type InsertHSpeedRoom,
+  type SupportTicket, type InsertSupportTicket,
 } from "@shared/schema";
 import { type IStorage } from "./storage";
 import bcrypt from "bcryptjs";
@@ -53,10 +54,12 @@ export class MemStorage implements IStorage {
   private vipMembershipsList: Map<number, VipMembership> = new Map();
   private vipPerkLogsList: Map<number, VipPerkLog> = new Map();
   private hspeedRoomsList: Map<number, HSpeedRoom> = new Map();
+  private supportTicketsList: Map<number, SupportTicket> = new Map();
   private _songHistoryId = 0;
   private _vipMembershipId = 0;
   private _vipPerkLogId = 0;
   private _hspeedRoomId = 0;
+  private _supportTicketId = 0;
 
   private configItem!: Config;
   private djPanelState: any;
@@ -160,6 +163,20 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     });
 
+    this.news.set(3, {
+      id: 3,
+      title: "Mega Actualización HSpeed: Nueva Era Noir + Gold y Roadmap",
+      summary: "Presentamos oficialmente nuestro rediseño visual Noir + Gold, el historial de canciones en vivo, membresías VIP, catálogo de salas y nuestro plan de desarrollo.",
+      content: "¡Hola a todos los apasionados de HabboSpeed! \n\nEstamos sumamente orgullosos de presentarles la **Mega Actualización** de nuestra fansite, un cambio completo tanto estético como funcional que redefine lo que un fansite de Habbo puede ofrecer.\n\n### 🎨 Nueva Identidad Visual: Noir + Gold\nHemos dejado atrás el tema azul y morado genérico para adoptar un estilo **Noir + Gold** de calidad editorial y premium. Con tipografías sofisticadas como `Cabinet Grotesk` para títulos y `Satoshi` para cuerpo de texto, logramos una lectura cómoda y un diseño que se ve espectacular en computadoras y móviles.\n\n### 🎵 Historial de Canciones (`/song-history`)\nSintoniza nuestra radio y mira el historial en tiempo real de las canciones reproducidas por nuestros DJs. ¡Incluso puedes volver a pedir tus temas favoritos con un solo clic!\n\n### 💎 Membresía VIP con 3 Niveles\nYa están disponibles los rangos **Silver, Gold y Diamond**. Consigue SpeedPoints en los juegos del sitio y canjéalos para obtener multiplicadores de puntos, insignias doradas en tu perfil y comandos premium.\n\n### 🏠 Buscador de Salas (`/rooms`)\nUn catálogo interactivo para compartir tus salas de Habbo con códigos copiables al portapapeles y efectos de confetti.\n\n### 🔔 Notificaciones en Tiempo Real y Soporte\nAhora recibirás avisos importantes en tu campana de notificaciones y lanzamos el sistema de **Soporte en Vivo mediante Tickets** directo en tu sección de mensajes personales.\n\n---\n\n## 🚀 Hoja de Ruta (Roadmap): 10 Funciones Únicas Esperadas\nSeguimos mejorando constantemente. Aquí están las 10 funciones exclusivas que llegarán próximamente a HabboSpeed:\n\n1. **Álbum de Estampas Interactivo en Tiempo Real:** Intercambia tus estampas repetidas del mundial y colecciones especiales directamente con otros usuarios en línea.\n2. **Conexión Directa de Inventario con Habbo:** Vincula tus raros y furnis reales del hotel y muéstralos en tu perfil de HabboSpeed.\n3. **Misiones de Aventura Diarias:** Misiones de rol al estilo RPG dentro de nuestra web para ganar placas y SpeedPoints.\n4. **Guerra de Clanes HSpeed:** Crea tu clan, recluta amigos y compite por el control del ranking de SpeedPoints semanal.\n5. **Minijuegos 8-Bit Integrados:** Juega a los Penales Retro, la Lotería de Píxeles y el Casino Speed desde tu navegador.\n6. **Transmisiones de Voz en Vivo de DJs:** Escucha la voz de nuestros DJs en cabina con latencia cero usando WebRTC.\n7. **Chat Personal Encriptado:** Envía mensajes directos seguros con soporte para emojis, stickers y Habbo widgets.\n8. **Bot de Radio para Discord:** Sintoniza la música de HabboSpeed directamente en los canales de voz de tu servidor de Discord.\n9. **Canje Directo de Placas en Habbo:** Sistema automatizado para recibir tus placas ganadas en la web directamente dentro del hotel Habbo.es.\n10. **Centro de Ayuda con Chat en Vivo:** Soporte técnico con chat en vivo atendido por moderadores oficiales las 24 horas del día.\n\nComenta aquí abajo qué te parece esta actualización y cuál de las nuevas funciones del Roadmap estás más ansioso por probar. ¡Gracias por ser parte de HabboSpeed!",
+      imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+      imageHint: "Apertura e Identidad",
+      category: "Actualizaciones",
+      date: new Date().toLocaleDateString("es-ES"),
+      reactions: { "🔥": 15, "❤️": 22 },
+      authorId: 1,
+      createdAt: new Date()
+    });
+
     // Mocks de eventos
     this.events.set(1, {
       id: 1,
@@ -172,6 +189,34 @@ export class MemStorage implements IStorage {
       host: "DJ_Speedy",
       imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png",
       imageHint: "Fiesta playera",
+      createdAt: new Date()
+    });
+
+    this.events.set(2, {
+      id: 2,
+      title: "Habbo Fan Festival 2026: Apertura",
+      server: "Habbo.es",
+      date: new Date().toLocaleDateString("es-ES"),
+      time: "18:00",
+      roomName: "[HS] Main Stage Festival",
+      roomOwner: "HabboSpeed",
+      host: "DJ_Loco",
+      imageUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
+      imageHint: "Festival de Fans",
+      createdAt: new Date()
+    });
+
+    this.events.set(3, {
+      id: 3,
+      title: "Batalla de Bandas HSpeed Fest",
+      server: "Habbo.es",
+      date: new Date(Date.now() + 86400000).toLocaleDateString("es-ES"),
+      time: "21:00",
+      roomName: "[HS] Rock Arena",
+      roomOwner: "HabboSpeed",
+      host: "DJ_RockStar",
+      imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+      imageHint: "Batalla de Bandas",
       createdAt: new Date()
     });
 
@@ -1105,5 +1150,39 @@ export class MemStorage implements IStorage {
 
   async deleteRoom(id: number): Promise<boolean> {
     return this.hspeedRoomsList.delete(id);
+  }
+
+  // Support Tickets
+  async getTicketsByUser(userId: number): Promise<SupportTicket[]> {
+    return Array.from(this.supportTicketsList.values())
+      .filter((t) => t.userId === userId)
+      .sort((a, b) => (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0));
+  }
+
+  async createTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
+    const id = ++this._supportTicketId;
+    const item: SupportTicket = {
+      id,
+      userId: ticket.userId,
+      subject: ticket.subject,
+      description: ticket.description,
+      status: ticket.status ?? "open",
+      category: ticket.category ?? "general",
+      createdAt: new Date(),
+    };
+    this.supportTicketsList.set(id, item);
+    return item;
+  }
+
+  async updateTicketStatus(id: number, status: string): Promise<SupportTicket | undefined> {
+    const item = this.supportTicketsList.get(id);
+    if (!item) return undefined;
+    item.status = status;
+    return item;
+  }
+
+  async getAllTickets(): Promise<SupportTicket[]> {
+    return Array.from(this.supportTicketsList.values())
+      .sort((a, b) => (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0));
   }
 }

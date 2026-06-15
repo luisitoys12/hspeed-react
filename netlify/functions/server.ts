@@ -1070,4 +1070,53 @@ app.delete("/api/rooms/:id", authMiddleware, async (req: any, res) => {
   } catch (e: any) { res.status(500).json({ message: e.message }); }
 });
 
+// ============ SUPPORT TICKETS ============
+app.get("/api/tickets", authMiddleware, async (req: any, res) => {
+  try {
+    const r = await query("SELECT * FROM support_tickets WHERE user_id = $1 ORDER BY created_at DESC", [req.userId]);
+    res.json(r.rows);
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.get("/api/tickets/all", authMiddleware, async (req: any, res) => {
+  try {
+    const userRes = await query("SELECT role FROM users WHERE id = $1", [req.userId]);
+    if (userRes.rows[0]?.role !== "admin") return res.status(403).json({ message: "No autorizado" });
+    const r = await query("SELECT * FROM support_tickets ORDER BY created_at DESC");
+    res.json(r.rows);
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/tickets", authMiddleware, async (req: any, res) => {
+  try {
+    const { subject, description, category } = req.body;
+    if (!subject || !description) {
+      return res.status(400).json({ message: "Asunto y descripción son obligatorios" });
+    }
+    const r = await query(
+      `INSERT INTO support_tickets (user_id, subject, description, status, category)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [req.userId, subject, description, "open", category || "general"]
+    );
+    res.status(201).json(r.rows[0]);
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.put("/api/tickets/:id/status", authMiddleware, async (req: any, res) => {
+  try {
+    const userRes = await query("SELECT role FROM users WHERE id = $1", [req.userId]);
+    if (userRes.rows[0]?.role !== "admin") return res.status(403).json({ message: "No autorizado" });
+
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ message: "Estado obligatorio" });
+
+    const r = await query(
+      "UPDATE support_tickets SET status = $1 WHERE id = $2 RETURNING *",
+      [status, parseInt(req.params.id)]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ message: "Ticket no encontrado" });
+    res.json(r.rows[0]);
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
 export const handler = serverless(app);

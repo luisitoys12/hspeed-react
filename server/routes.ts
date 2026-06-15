@@ -100,6 +100,95 @@ export async function registerRoutes(server: Server, app: Express) {
     }
   })();
 
+  // Seed Events, Forum Categories, and initial Threads/Posts
+  (async () => {
+    try {
+      const { pool } = await import("./db");
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          // Check if events exists
+          const eventsCheck = await client.query("SELECT COUNT(*) FROM events");
+          if (parseInt(eventsCheck.rows[0].count) === 0) {
+            await client.query(`
+              INSERT INTO events (title, server, date, time, room_name, room_owner, host, image_url, image_hint)
+              VALUES 
+              ('Gran Fiesta en Habbo', 'Habbo.es', '15/06/2026', '20:00', '[HS] Central de Eventos', 'HabboSpeed', 'DJ_Speedy', 'https://images.habbo.com/c_images/reception/rec_background_beach.png', 'Fiesta playera'),
+              ('Habbo Fan Festival 2026: Apertura', 'Habbo.es', '15/06/2026', '18:00', '[HS] Main Stage Festival', 'HabboSpeed', 'DJ_Loco', 'https://images.habbo.com/c_images/reception/rec_background_habboween.png', 'Festival de Fans'),
+              ('Batalla de Bandas HSpeed Fest', 'Habbo.es', '16/06/2026', '21:00', '[HS] Rock Arena', 'HabboSpeed', 'DJ_RockStar', 'https://images.habbo.com/c_images/reception/rec_background_beach.png', 'Batalla de Bandas')
+            `);
+            console.log("[Seed] Default events inserted successfully");
+          }
+
+          // Check if news article exists
+          const newsCheck = await client.query("SELECT COUNT(*) FROM news WHERE title = 'Mega Actualización HSpeed: Nueva Era Noir + Gold y Roadmap'");
+          if (parseInt(newsCheck.rows[0].count) === 0) {
+            await client.query(`
+              INSERT INTO news (title, summary, content, image_url, image_hint, category, date, reactions, author_id)
+              VALUES (
+                'Mega Actualización HSpeed: Nueva Era Noir + Gold y Roadmap',
+                'Presentamos oficialmente nuestro rediseño visual Noir + Gold, el historial de canciones en vivo, membresías VIP, catálogo de salas y nuestro plan de desarrollo.',
+                '¡Hola a todos los apasionados de HabboSpeed! \n\nEstamos sumamente orgullosos de presentarles la **Mega Actualización** de nuestra fansite, un cambio completo tanto estético como funcional que redefine lo que un fansite de Habbo puede ofrecer.\n\n### 🎨 Nueva Identidad Visual: Noir + Gold\nHemos dejado atrás el tema azul y morado genérico para adoptar un estilo **Noir + Gold** de calidad editorial y premium. Con tipografías sofisticadas como \`Cabinet Grotesk\` para títulos y \`Satoshi\` para cuerpo de texto, logramos una lectura cómoda y un diseño que se ve espectacular en computadoras y móviles.\n\n### 🎵 Historial de Canciones (\`/song-history\`)\nSintoniza nuestra radio y mira el historial en tiempo real de las canciones reproducidas por nuestros DJs. ¡Incluso puedes volver a pedir tus temas favoritos con un solo clic!\n\n### 💎 Membresía VIP con 3 Niveles\nYa están disponibles los rangos **Silver, Gold y Diamond**. Consigue SpeedPoints en los juegos del sitio y canjéalos para obtener multiplicadores de puntos, insignias doradas en tu perfil y comandos premium.\n\n### 🏠 Buscador de Salas (\`/rooms\`)\nUn catálogo interactivo para compartir tus salas de Habbo con códigos copiables al portapapeles y efectos de confetti.\n\n### 🔔 Notificaciones en Tiempo Real y Soporte\nAhora recibirás avisos importantes en tu campana de notificaciones y lanzamos el sistema de **Soporte en Vivo mediante Tickets** directo en tu sección de mensajes personales.\n\n---\n\n## 🚀 Hoja de Ruta (Roadmap): 10 Funciones Únicas Esperadas\nSeguimos mejorando constantemente. Aquí están las 10 funciones exclusivas que llegarán próximamente a HabboSpeed:\n\n1. **Álbum de Estampas Interactivo en Tiempo Real:** Intercambia tus estampas repetidas del mundial y colecciones especiales directamente con otros usuarios en línea.\n2. **Conexión Directa de Inventario con Habbo:** Vincula tus raros y furnis reales del hotel y muéstralos en tu perfil de HabboSpeed.\n3. **Misiones de Aventura Diarias:** Misiones de rol al estilo RPG dentro de nuestra web para ganar placas y SpeedPoints.\n4. **Guerra de Clanes HSpeed:** Crea tu clan, recluta amigos y compite por el control del ranking de SpeedPoints semanal.\n5. **Minijuegos 8-Bit Integrados:** Juega a los Penales Retro, la Lotería de Píxeles y el Casino Speed desde tu navegador.\n6. **Transmisiones de Voz en Vivo de DJs:** Escucha la voz de nuestros DJs en cabina con latencia cero usando WebRTC.\n7. **Chat Personal Encriptado:** Envía mensajes directos seguros con soporte para emojis, stickers y Habbo widgets.\n8. **Bot de Radio para Discord:** Sintoniza la música de HabboSpeed directamente en los canales de voz de tu servidor de Discord.\n9. **Canje Directo de Placas en Habbo:** Sistema automatizado para recibir tus placas ganadas en la web directamente dentro del hotel Habbo.es.\n10. **Centro de Ayuda con Chat en Vivo:** Soporte técnico con chat en vivo atendido por moderadores oficiales las 24 horas del día.\n\nComenta aquí abajo qué te parece esta actualización y cuál de las nuevas funciones del Roadmap estás más ansioso por probar. ¡Gracias por ser parte de HabboSpeed!',
+                'https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png',
+                'Apertura e Identidad',
+                'Actualizaciones',
+                $1,
+                '{"🔥": 15, "❤️": 22}',
+                1
+              )
+            `, [new Date().toLocaleDateString("es-ES")]);
+            console.log("[Seed] News article inserted successfully");
+          }
+
+          // Check if categories exists
+          const catCheck = await client.query("SELECT COUNT(*) FROM forum_categories");
+          if (parseInt(catCheck.rows[0].count) === 0) {
+            await client.query(`
+              INSERT INTO forum_categories (name, description, sort_order)
+              VALUES 
+              ('General', 'Foro general sobre HabboSpeed', 0),
+              ('Soporte', 'Soporte técnico, dudas y reportes', 1),
+              ('Radio', 'Peticiones, críticas de DJ y comentarios de sintonía', 2),
+              ('Juegos & Concursos', 'Participa en sorteos, actividades y eventos especiales', 3)
+            `);
+            console.log("[Seed] Default forum categories inserted successfully");
+          }
+
+          // Check if threads exist
+          const threadCheck = await client.query("SELECT COUNT(*) FROM forum_threads");
+          if (parseInt(threadCheck.rows[0].count) === 0) {
+            const catRes = await client.query("SELECT id FROM forum_categories WHERE name = 'General'");
+            if (catRes.rows.length > 0) {
+              const catId = catRes.rows[0].id;
+              const threadRes = await client.query(`
+                INSERT INTO forum_threads (category_id, title, author_id, author_name, is_pinned, is_locked, views)
+                VALUES 
+                ($1, '¡Bienvenidos a HabboSpeed Fansite Oficial!', 1, 'Administrador', true, false, 45),
+                ($1, 'Roadmap: 10 Funciones Únicas de HabboSpeed en Desarrollo', 1, 'Administrador', true, false, 82)
+                RETURNING id
+              `, [catId]);
+
+              const threadId1 = threadRes.rows[0].id;
+              const threadId2 = threadRes.rows[1].id;
+
+              await client.query(`
+                INSERT INTO forum_posts (thread_id, author_id, author_name, content)
+                VALUES 
+                ($1, 1, 'Administrador', 'Bienvenidos a la fansite oficial. Este foro es para compartir ideas, charlar sobre Habbo y convivir con toda la comunidad. ¡Sintoniza la radio y a divertirse!'),
+                ($2, 1, 'Administrador', 'Aquí les presentamos la hoja de ruta de lo que se viene próximamente en HSpeed:\n\n1. Álbum de Estampas Interactivo en Tiempo Real.\n2. Conexión Directa de Inventario con Habbo.\n3. Sistema de Misiones de Aventura Diarias.\n4. Competiciones de Clanes y SpeedPoints.\n5. Minijuegos Integrados (Penales 8-Bit, Lotería, etc.).\n6. Consola de DJ y Transmisiones de Voz en Vivo.\n7. Chat de Mensajería Directa Encriptado.\n8. Canjes de Placas Exclusivas y Regalos en Habbo.\n9. Centro de Tickets de Soporte Directo.\n10. Integración Avanzada con Discord y Bot de Radio.\n\nComenta cuál es la que más esperas.')
+              `, [threadId1, threadId2]);
+              console.log("[Seed] Default forum threads and posts inserted successfully");
+            }
+          }
+        } finally {
+          client.release();
+        }
+      }
+    } catch (e: any) {
+      console.error("[Seed] Error during seeding:", e.message || e);
+    }
+  })();
+
   // ============ AUTH ============
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -1694,6 +1783,46 @@ export async function registerRoutes(server: Server, app: Express) {
       const success = await storage.deleteRoom(parseInt(req.params.id));
       if (!success) return res.status(404).json({ message: "Sala no encontrada" });
       res.json({ message: "Sala eliminada con éxito" });
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  // ============ SUPPORT TICKETS ============
+  app.get("/api/tickets", authMiddleware, async (req: any, res) => {
+    try {
+      res.json(await storage.getTicketsByUser(req.userId));
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.get("/api/tickets/all", adminMiddleware, async (_req, res) => {
+    try {
+      res.json(await storage.getAllTickets());
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.post("/api/tickets", authMiddleware, async (req: any, res) => {
+    try {
+      const { subject, description, category } = req.body;
+      if (!subject || !description) {
+        return res.status(400).json({ message: "Asunto y descripción son obligatorios" });
+      }
+      const ticket = await storage.createTicket({
+        userId: req.userId,
+        subject,
+        description,
+        status: "open",
+        category: category || "general",
+      });
+      res.status(201).json(ticket);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.put("/api/tickets/:id/status", adminMiddleware, async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!status) return res.status(400).json({ message: "Estado obligatorio" });
+      const ticket = await storage.updateTicketStatus(parseInt(req.params.id), status);
+      if (!ticket) return res.status(404).json({ message: "Ticket no encontrado" });
+      res.json(ticket);
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 }
