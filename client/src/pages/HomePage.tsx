@@ -521,6 +521,72 @@ function StatsBar() {
 }
 
 /* ============================================================
+   HOME HERO BANNER (Slideshow)
+   ============================================================ */
+function HomeHeroBanner({ slideshow }: { slideshow: any[] }) {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    if (!slideshow || slideshow.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slideshow.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [slideshow]);
+
+  if (!slideshow || slideshow.length === 0) return null;
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden h-[300px] border border-border shadow-lg bg-[#0c0634] group w-full">
+      {slideshow.map((slide, i) => (
+        <div
+          key={i}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            i === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+          }`}
+        >
+          {slide.image && (
+            <img
+              src={slide.image}
+              alt={slide.title || "Slideshow"}
+              className="w-full h-full object-cover opacity-75 group-hover:scale-105 transition-transform duration-[8000ms] ease-out"
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+          <div className="absolute bottom-6 left-6 right-6 text-white space-y-2 z-20">
+            <Badge className="bg-primary hover:bg-primary/80 border-none font-bold text-[10px] uppercase tracking-wider px-2.5 py-0.5">
+              HabboSpeed Fansite
+            </Badge>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-tight drop-shadow-md">
+              {slide.title || "¡Bienvenidos a HabboSpeed!"}
+            </h2>
+            <p className="text-xs text-white/80 max-w-md drop-shadow">
+              Sintoniza nuestra radio 24/7, mantente al día con las últimas noticias de Habbo y explora nuestro catálogo de furnis y placas.
+            </p>
+          </div>
+        </div>
+      ))}
+
+      {/* Slide Indicators */}
+      {slideshow.length > 1 && (
+        <div className="absolute bottom-6 right-6 z-20 flex gap-1.5">
+          {slideshow.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                i === currentSlide ? "bg-white w-4" : "bg-white/40"
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================================================
    MAIN HOMEPAGE
    ============================================================ */
 export default function HomePage() {
@@ -532,10 +598,24 @@ export default function HomePage() {
   const latestNews = (news || []).slice(0, 5);
   const activePolls = (polls || []).filter((p) => p.isActive).slice(0, 1);
 
+  const slideshow = config?.slideshow || [
+    { image: "https://images.habbo.com/c_images/reception/rec_background_beach.png", title: "¡Bienvenidos a HabboSpeed!", link: "#" },
+    { image: "https://images.habbo.com/c_images/reception/rec_background_habboween.png", title: "¡Sintoniza nuestra Radio 24/7!", link: "#" }
+  ];
+
   return (
     <div className="min-h-screen">
       <div className="p-4 lg:p-6 space-y-5 max-w-7xl mx-auto">
-        <HabboRadioHero />
+        
+        {/* Top Grid: Welcome Banner Slideshow & Live Chat */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+          <div className="lg:col-span-2">
+            <HomeHeroBanner slideshow={slideshow} />
+          </div>
+          <div className="h-full min-h-[300px]">
+            <MessageBoard />
+          </div>
+        </div>
 
         <StatsBar />
         <FurniStrip />
