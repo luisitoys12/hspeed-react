@@ -11,10 +11,151 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const DEFAULT_SOURCES = [
-  { id: "fifa", name: "FIFA", url: "https://www.fifa.com/", note: "Calendario, sede y anuncios oficiales" },
-  { id: "uefa", name: "UEFA", url: "https://www.uefa.com/", note: "Cobertura europea y contexto competitivo" },
-  { id: "marca", name: "Marca", url: "https://www.marca.com/futbol/", note: "Noticias, previas y análisis diario" },
+  { id: "fifa", name: "FIFA Oficial", url: "https://www.fifa.com/", note: "Calendario, sede y anuncios oficiales de la copa mundial." },
+  { id: "marca", name: "Marca", url: "https://www.marca.com/", note: "Noticias, previas, resultados y análisis diario de fútbol internacional." },
 ];
+
+const TEAMS = [
+  { name: "México", flag: "🇲🇽", group: "A" },
+  { name: "Estados Unidos", flag: "🇺🇸", group: "A" },
+  { name: "Canadá", flag: "🇨🇦", group: "A" },
+  { name: "Argentina", flag: "🇦🇷", group: "B" },
+  { name: "Brasil", flag: "🇧🇷", group: "B" },
+  { name: "Uruguay", flag: "🇺🇾", group: "B" },
+  { name: "Colombia", flag: "🇨🇴", group: "B" },
+  { name: "España", flag: "🇪🇸", group: "C" },
+  { name: "Francia", flag: "🇫🇷", group: "C" },
+  { name: "Alemania", flag: "🇩🇪", group: "C" },
+  { name: "Inglaterra", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", group: "D" },
+  { name: "Italia", flag: "🇮🇹", group: "D" },
+  { name: "Portugal", flag: "🇵🇹", group: "D" },
+  { name: "Países Bajos", flag: "🇳🇱", group: "D" },
+  { name: "Bélgica", flag: "🇧🇪", group: "E" },
+  { name: "Croacia", flag: "🇭🇷", group: "E" },
+  { name: "Marruecos", flag: "🇲🇦", group: "F" },
+  { name: "Senegal", flag: "🇸🇳", group: "F" },
+  { name: "Japón", flag: "🇯🇵", group: "G" },
+  { name: "Corea del Sur", flag: "🇰🇷", group: "G" },
+  { name: "Arabia Saudita", flag: "🇸🇦", group: "H" },
+  { name: "Australia", flag: "🇦🇺", group: "H" },
+  { name: "Camerún", flag: "🇨🇲", group: "H" },
+  { name: "Ecuador", flag: "🇪🇨", group: "H" }
+];
+
+function seedRandom(seedStr: string) {
+  let hash = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = seedStr.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return () => {
+    const x = Math.sin(hash++) * 10000;
+    return x - Math.floor(x);
+  };
+}
+
+export interface SimulatedMatch {
+  id: string;
+  teamA: string;
+  teamB: string;
+  flagA: string;
+  flagB: string;
+  date: string;
+  group: string;
+  time: string;
+  scoreA: number;
+  scoreB: number;
+  status: string;
+  min: string;
+}
+
+export function generateMatchesForDate(d: Date): SimulatedMatch[] {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const dateStr = `${year}-${month}-${day}`;
+
+  const rand = seedRandom(dateStr);
+  const shuffled = [...TEAMS];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  const matches: SimulatedMatch[] = [];
+  const times = ["14:00", "17:00", "20:00"];
+  const monthsSp = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  const readableDate = `${day} de ${monthsSp[d.getMonth()]}, ${year}`;
+
+  for (let idx = 0; idx < 3; idx++) {
+    const teamA = shuffled[idx * 2];
+    const teamB = shuffled[idx * 2 + 1];
+    const scoreA = Math.floor(rand() * 4);
+    const scoreB = Math.floor(rand() * 4);
+    
+    const now = new Date();
+    const isToday = now.toDateString() === d.toDateString();
+    const isPast = d.getTime() < new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    
+    let status = "PRÓXIMAMENTE";
+    let min = "—";
+    let curScoreA = scoreA;
+    let curScoreB = scoreB;
+
+    if (isPast) {
+      status = "FINAL";
+      min = "90'";
+    } else if (isToday) {
+      const matchHour = parseInt(times[idx].split(":")[0]);
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      if (currentHour > matchHour + 1) {
+        status = "FINAL";
+        min = "90'";
+      } else if (currentHour === matchHour || (currentHour === matchHour + 1 && currentMinute < 45)) {
+        status = "LIVE";
+        const elapsed = (currentHour === matchHour) ? currentMinute : currentMinute + 60;
+        min = `${elapsed}'`;
+        if (elapsed < 30) {
+          curScoreA = Math.min(scoreA, 0);
+          curScoreB = Math.min(scoreB, 0);
+        } else if (elapsed < 60) {
+          curScoreA = Math.min(scoreA, Math.max(0, scoreA - 1));
+          curScoreB = Math.min(scoreB, Math.max(0, scoreB - 1));
+        }
+      } else {
+        status = `HOY ${times[idx]}`;
+        min = "—";
+        curScoreA = 0;
+        curScoreB = 0;
+      }
+    } else {
+      status = `HOY ${times[idx]}`;
+      min = "—";
+      curScoreA = 0;
+      curScoreB = 0;
+    }
+
+    matches.push({
+      id: `m_${dateStr.replace(/-/g, "")}_${idx + 1}`,
+      teamA: teamA.name,
+      teamB: teamB.name,
+      flagA: teamA.flag,
+      flagB: teamB.flag,
+      date: readableDate,
+      group: `Grupo ${teamA.group}`,
+      time: times[idx],
+      scoreA: curScoreA,
+      scoreB: curScoreB,
+      status,
+      min
+    });
+  }
+  return matches;
+}
 
 const ESTAMPAS = [
   { id: "trofeo", name: "Copa Dorada 2026", rarity: "Legendario", image: "/habbo-radio/estampa_trofeo.png", cost: 25, badgeColor: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30", glowClass: "shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:border-yellow-500/80 border-yellow-500/20" },
@@ -33,7 +174,7 @@ const LOGROS = [
 ];
 
 function getSection(pathname: string) {
-  if (pathname.includes("/source/")) return "source";
+  if (pathname.includes("/source")) return "source";
   if (pathname.includes("/pronosticos")) return "forecast";
   if (pathname.includes("/ranking")) return "ranking";
   if (pathname.includes("/equipos")) return "teams";
@@ -201,23 +342,83 @@ export default function MundialPage() {
   const [revealedStamp, setRevealedStamp] = useState<typeof ESTAMPAS[0] | null>(null);
   const [packModalOpen, setPackModalOpen] = useState(false);
 
-  // Estados de Pronósticos
-  const [predictionsInput, setPredictionsInput] = useState<Record<string, { t1: string; t2: string }>>({
-    m1: { t1: "", t2: "" },
-    m2: { t1: "", t2: "" },
-    m3: { t1: "", t2: "" },
-  });
+  // Estados de Pronósticos Dinámicos
+  const todayMatches = useMemo(() => generateMatchesForDate(new Date()), []);
+  const [predictionsInput, setPredictionsInput] = useState<Record<string, { t1: string; t2: string }>>({});
 
   useEffect(() => {
+    const initialInput: Record<string, { t1: string; t2: string }> = {};
+    todayMatches.forEach(m => {
+      initialInput[m.id] = { t1: "", t2: "" };
+    });
+    
     if (user?.mundialPredictions) {
-      const p = user.mundialPredictions;
-      setPredictionsInput({
-        m1: p.m1 || { t1: "", t2: "" },
-        m2: p.m2 || { t1: "", t2: "" },
-        m3: p.m3 || { t1: "", t2: "" },
+      const p = user.mundialPredictions as Record<string, { t1: string; t2: string }>;
+      todayMatches.forEach(m => {
+        if (p[m.id]) {
+          initialInput[m.id] = p[m.id];
+        }
       });
     }
-  }, [user]);
+    setPredictionsInput(initialInput);
+  }, [user, todayMatches]);
+
+  // 3. Noticias & Fuentes
+  const [sources, setSources] = useState<{ id: string; name: string; url: string; note?: string }[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("mundial_custom_sources");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error("Error parsing saved sources", e);
+        }
+      }
+    }
+    return DEFAULT_SOURCES;
+  });
+
+  const [sourceName, setSourceName] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
+
+  const handleAddSource = () => {
+    if (!sourceName.trim() || !sourceUrl.trim()) {
+      toast({ title: "Error", description: "Rellena el nombre y la dirección URL.", variant: "destructive" });
+      return;
+    }
+
+    let formattedUrl = sourceUrl.trim();
+    if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
+      formattedUrl = "https://" + formattedUrl;
+    }
+
+    const newSource = {
+      id: "src_" + Date.now().toString(),
+      name: sourceName.trim(),
+      url: formattedUrl,
+      note: "Fuente externa agregada por el usuario."
+    };
+
+    const updated = [newSource, ...sources];
+    setSources(updated);
+    localStorage.setItem("mundial_custom_sources", JSON.stringify(updated));
+    setSourceName("");
+    setSourceUrl("");
+    playSynthSound("click");
+    toast({ title: "Fuente agregada", description: `Has registrado "${newSource.name}" como fuente de noticias.` });
+  };
+
+  const handleRemoveSource = (id: string) => {
+    if (id === "fifa" || id === "marca") {
+      toast({ title: "Acción no permitida", description: "No puedes borrar las fuentes oficiales predeterminadas.", variant: "destructive" });
+      return;
+    }
+    const updated = sources.filter(s => s.id !== id);
+    setSources(updated);
+    localStorage.setItem("mundial_custom_sources", JSON.stringify(updated));
+    playSynthSound("click");
+    toast({ title: "Fuente eliminada", description: "La fuente ha sido retirada del listado." });
+  };
 
   // API Call Handlers
   const handleClaimStamp = async (stamp: typeof ESTAMPAS[0]) => {
@@ -693,7 +894,7 @@ export default function MundialPage() {
       </div>
 
       {/* Sub-Navegación del Mundial (Pestañas Rápidas) */}
-      <div className="grid gap-2 grid-cols-3 md:grid-cols-7">
+      <div className="grid gap-2 grid-cols-4 md:grid-cols-8">
         <Link href="/mundial" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "home" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-trophy text-xs"></i> ÁLBUM
         </Link>
@@ -714,6 +915,9 @@ export default function MundialPage() {
         </Link>
         <Link href="/mundial/mini/sorteos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "mini-draw" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-gift text-xs"></i> SORTEOS
+        </Link>
+        <Link href="/mundial/sources" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "source" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+          <i className="fa-solid fa-newspaper text-xs"></i> FUENTES
         </Link>
       </div>
 
@@ -897,11 +1101,7 @@ export default function MundialPage() {
               </p>
 
               <div className="space-y-3 pt-2">
-                {[
-                  { id: "m1", teamA: "México", teamB: "Estados Unidos", flagA: "🇲🇽", flagB: "🇺🇸", date: "15 de Junio, 2026" },
-                  { id: "m2", teamA: "Argentina", teamB: "Brasil", flagA: "🇦🇷", flagB: "🇧🇷", date: "18 de Junio, 2026" },
-                  { id: "m3", teamA: "España", teamB: "Francia", flagA: "🇪🇸", flagB: "🇫🇷", date: "20 de Junio, 2026" },
-                ].map((match) => {
+                {todayMatches.map((match) => {
                   const hasPred = userPredictions[match.id] !== undefined;
                   const dbPred = userPredictions[match.id] || { t1: "", t2: "" };
                   
@@ -909,7 +1109,7 @@ export default function MundialPage() {
                     <div key={match.id} className="p-4 bg-secondary/10 border border-border/60 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                       <div className="text-center md:text-left">
                         <p className="text-[10px] text-muted-foreground font-semibold">{match.date}</p>
-                        <p className="text-xs font-bold text-foreground mt-0.5">Fase de Grupos</p>
+                        <p className="text-xs font-bold text-foreground mt-0.5">{match.group} • {match.time}</p>
                       </div>
 
                       <div className="flex items-center justify-center gap-3">
@@ -1357,19 +1557,88 @@ export default function MundialPage() {
                 <i className="fa-solid fa-newspaper text-primary text-sm"></i>
                 <h3 className="text-sm font-extrabold uppercase">Fuentes Oficiales y Noticias Externas</h3>
               </div>
-              <div className="space-y-2 pt-2">
-                {DEFAULT_SOURCES.map((source) => (
-                  <div key={source.id} className="rounded-xl border border-border/60 bg-background/40 p-4 flex items-start justify-between gap-3">
-                    <div>
-                      <a href={source.url} target="_blank" rel="noreferrer" className="text-xs font-black text-primary hover:underline inline-flex items-center gap-1">
-                        {source.name}
-                        <i className="fa-solid fa-up-right-from-square text-[9px]"></i>
-                      </a>
-                      <p className="text-[11px] text-muted-foreground mt-1">{source.note}</p>
-                      <p className="text-[10px] text-muted-foreground/80 font-mono mt-1 break-all">{source.url}</p>
-                    </div>
+              <p className="text-xs text-muted-foreground">
+                Agrega y gestiona tus propios enlaces o fuentes de noticias para estar al tanto de todo lo que ocurre en el Mundial 2026.
+              </p>
+
+              {/* Form to add custom sources */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-secondary/15 border border-border/40 rounded-2xl p-4 mt-2">
+                <div className="sm:col-span-2 space-y-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input 
+                      placeholder="Nombre de la fuente (Ej: FIFA Oficial)" 
+                      value={sourceName} 
+                      onChange={(e) => setSourceName(e.target.value)}
+                      className="bg-background/80 border-border/60 text-xs h-9"
+                    />
+                    <Input 
+                      placeholder="Dirección URL (Ej: www.fifa.com)" 
+                      value={sourceUrl} 
+                      onChange={(e) => setSourceUrl(e.target.value)}
+                      className="bg-background/80 border-border/60 text-xs h-9"
+                    />
                   </div>
-                ))}
+                </div>
+                <div className="flex items-end sm:justify-start">
+                  <Button 
+                    onClick={handleAddSource} 
+                    className="w-full bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 flex items-center justify-center gap-1.5"
+                  >
+                    <i className="fa-solid fa-plus text-[10px]"></i>
+                    Agregar Fuente
+                  </Button>
+                </div>
+                <div className="sm:col-span-3 text-[10px] text-muted-foreground pt-1 border-t border-border/20 flex flex-wrap gap-x-4 gap-y-1">
+                  <span><strong>Reglas:</strong> Solo fuentes verificadas.</span>
+                  <span>Links públicos y respetuosos.</span>
+                </div>
+              </div>
+
+              {/* List of sources */}
+              <div className="space-y-3 pt-2">
+                {sources.map((source) => {
+                  const isDefault = source.id === "fifa" || source.id === "marca";
+                  return (
+                    <div key={source.id} className="rounded-xl border border-border/60 bg-background/40 p-4 flex items-start justify-between gap-3 hover:border-primary/30 transition-colors">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <a href={source.url} target="_blank" rel="noreferrer" className="text-xs font-black text-primary hover:underline inline-flex items-center gap-1">
+                            {source.name}
+                            <i className="fa-solid fa-up-right-from-square text-[9px]"></i>
+                          </a>
+                          {isDefault && (
+                            <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] px-1.5 py-0">
+                              Oficial
+                            </Badge>
+                          )}
+                        </div>
+                        {source.note && <p className="text-[11px] text-muted-foreground">{source.note}</p>}
+                        <p className="text-[9px] text-muted-foreground/80 font-mono break-all">{source.url}</p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <a 
+                          href={source.url} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-xs text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors font-bold"
+                        >
+                          Ver
+                        </a>
+                        {!isDefault && (
+                          <Button
+                            onClick={() => handleRemoveSource(source.id)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 w-8 p-0"
+                          >
+                            <i className="fa-solid fa-trash-can text-xs"></i>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -1424,34 +1693,11 @@ export default function MundialPage() {
 
 // Subcomponente de Simulador de Partidos
 function LiveMatchesWidget() {
-  const [matches, setMatches] = useState([
-    { t1: "México", t2: "Estados Unidos", flag1: "🇲🇽", flag2: "🇺🇸", score1: 1, score2: 1, min: "74'", status: "LIVE" },
-    { t1: "Argentina", t2: "Brasil", flag1: "🇦🇷", flag2: "🇧🇷", score1: 0, score2: 0, min: "—", status: "HOY 20:00" },
-    { t1: "España", t2: "Francia", flag1: "🇪🇸", flag2: "🇫🇷", score1: 2, score2: 1, min: "90+4'", status: "FINAL" },
-  ]);
+  const [matches, setMatches] = useState<SimulatedMatch[]>(() => generateMatchesForDate(new Date()));
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setMatches(prev => prev.map(m => {
-        if (m.status === "LIVE") {
-          const currentMin = parseInt(m.min);
-          const nextMin = currentMin < 90 ? currentMin + 1 : 90;
-          let nextScore1 = m.score1;
-          let nextScore2 = m.score2;
-          if (Math.random() < 0.05) {
-            if (Math.random() < 0.5) nextScore1++;
-            else nextScore2++;
-          }
-          return {
-            ...m,
-            min: `${nextMin}'`,
-            score1: nextScore1,
-            score2: nextScore2,
-            status: nextMin === 90 ? "FINAL" : "LIVE"
-          };
-        }
-        return m;
-      }));
+      setMatches(generateMatchesForDate(new Date()));
     }, 15000);
 
     return () => clearInterval(interval);
@@ -1470,16 +1716,16 @@ function LiveMatchesWidget() {
         <div className="space-y-2.5">
           {matches.map((m, idx) => (
             <div key={idx} className="flex items-center justify-between bg-[#0e0a32]/20 border border-white/5 rounded-xl p-2 text-[10px]">
-              <div className="flex items-center gap-1.5 w-[42%] justify-end">
-                <span className="font-bold truncate text-[10px]">{m.t1} {m.flag1}</span>
-                <span className="font-mono bg-black/35 px-1 py-0.5 rounded font-black text-primary">{m.score1}</span>
+              <div className="flex items-center gap-1.5 w-[42%] justify-end font-semibold">
+                <span className="font-bold truncate text-[10px]">{m.teamA} {m.flagA}</span>
+                <span className="font-mono bg-black/35 px-1 py-0.5 rounded font-black text-primary">{m.scoreA}</span>
               </div>
               <span className="text-[9px] font-bold text-muted-foreground px-1">:</span>
-              <div className="flex items-center gap-1.5 w-[42%] justify-start">
-                <span className="font-mono bg-black/35 px-1 py-0.5 rounded font-black text-primary">{m.score2}</span>
-                <span className="font-bold truncate text-[10px]">{m.flag2} {m.t2}</span>
+              <div className="flex items-center gap-1.5 w-[42%] justify-start font-semibold">
+                <span className="font-mono bg-black/35 px-1 py-0.5 rounded font-black text-primary">{m.scoreB}</span>
+                <span className="font-bold truncate text-[10px]">{m.flagB} {m.teamB}</span>
               </div>
-              <Badge className={m.status === "LIVE" ? "bg-red-500/15 text-red-400 border border-red-500/20 text-[8px] font-bold py-0.5 px-1 w-12 text-center flex justify-center" : "bg-secondary/40 text-muted-foreground text-[8px] py-0.5 px-1 w-12 text-center flex justify-center"}>
+              <Badge className={m.status === "LIVE" ? "bg-red-500/15 text-red-400 border border-red-500/20 text-[8px] font-bold py-0.5 px-1 w-14 text-center flex justify-center" : "bg-secondary/40 text-muted-foreground text-[8px] py-0.5 px-1 w-14 text-center flex justify-center"}>
                 {m.status === "LIVE" ? `${m.min}` : m.status}
               </Badge>
             </div>

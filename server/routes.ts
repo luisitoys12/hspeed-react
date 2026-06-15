@@ -766,37 +766,47 @@ export async function registerRoutes(server: Server, app: Express) {
       }
 
       // Cache settings
-      const cacheDir = path.join(process.cwd(), "server", ".cache", "images");
-      await fsp.mkdir(cacheDir, { recursive: true });
-      const indexFile = path.join(cacheDir, "index.json");
-      const maxBytes = parseInt(process.env.PROXY_CACHE_MAX_BYTES || "209715200", 10); // default 200MB
-      const ttlSeconds = parseInt(process.env.PROXY_CACHE_TTL_SECONDS || `${60 * 60 * 24}`, 10); // default 24h
-
-      // Load or create index
+      let useCache = true;
+      let cacheDir = "";
+      let indexFile = "";
+      let maxBytes = 209715200;
+      let ttlSeconds = 60 * 60 * 24;
       let index: Record<string, { file: string; size: number; atimeMs: number; mtimeMs: number }> = {};
+      let hash = "";
+      let cacheFile = "";
+
       try {
+        cacheDir = path.join(process.cwd(), "server", ".cache", "images");
+        await fsp.mkdir(cacheDir, { recursive: true });
+        indexFile = path.join(cacheDir, "index.json");
+        maxBytes = parseInt(process.env.PROXY_CACHE_MAX_BYTES || "209715200", 10);
+        ttlSeconds = parseInt(process.env.PROXY_CACHE_TTL_SECONDS || `${60 * 60 * 24}`, 10);
+
         const raw = await fsp.readFile(indexFile, "utf-8").catch(() => "{}");
         index = JSON.parse(raw || "{}");
-      } catch (e) { index = {}; }
-
-      // Compute key
-      const keySource = `src:${sourceUrl}`;
-      const hash = crypto.createHash("sha1").update(keySource).digest("hex");
-      const cacheFile = path.join(cacheDir, hash);
+        const keySource = `src:${sourceUrl}`;
+        hash = crypto.createHash("sha1").update(keySource).digest("hex");
+        cacheFile = path.join(cacheDir, hash);
+      } catch (e) {
+        useCache = false;
+        ttlSeconds = 60 * 60 * 24;
+      }
 
       const saveIndex = async () => {
+        if (!useCache) return;
         try { await fsp.writeFile(indexFile, JSON.stringify(index), "utf-8"); } catch { /* ignore */ }
       };
 
       const totalCacheBytes = async () => {
+        if (!useCache) return 0;
         return Object.values(index).reduce((s, v) => s + (v.size || 0), 0);
       };
 
       const evictIfNeeded = async () => {
+        if (!useCache) return;
         try {
           let total = await totalCacheBytes();
           if (total <= maxBytes) return;
-          // sort by atimeMs ascending (oldest first)
           const entries = Object.entries(index).sort((a, b) => (a[1].atimeMs || 0) - (b[1].atimeMs || 0));
           for (const [k, v] of entries) {
             try { await fsp.unlink(path.join(cacheDir, v.file)).catch(() => null); } catch {}
@@ -805,47 +815,46 @@ export async function registerRoutes(server: Server, app: Express) {
             if (total <= maxBytes) break;
           }
           await saveIndex();
-        } catch (e) {
-          // ignore
-        }
+        } catch (e) {}
       };
 
       // Serve from cache if valid
-      const meta = index[hash];
-      if (meta) {
-        const now = Date.now();
-        if ((now - (meta.mtimeMs || 0)) / 1000 < ttlSeconds) {
-          try {
-            const buf = await fsp.readFile(path.join(cacheDir, meta.file));
-            // update atime
-            meta.atimeMs = Date.now();
-            await saveIndex();
-            res.setHeader("Content-Type", "image/png");
-            res.setHeader("Cache-Control", `public, max-age=${ttlSeconds}`);
-            return res.send(buf);
-          } catch (e) {
-            // fallthrough to fetch
+      if (useCache) {
+        const meta = index[hash];
+        if (meta) {
+          const now = Date.now();
+          if ((now - (meta.mtimeMs || 0)) / 1000 < ttlSeconds) {
+            try {
+              const buf = await fsp.readFile(path.join(cacheDir, meta.file));
+              meta.atimeMs = Date.now();
+              await saveIndex();
+              res.setHeader("Content-Type", "image/png");
+              res.setHeader("Cache-Control", `public, max-age=${ttlSeconds}`);
+              return res.send(buf);
+            } catch (e) {
+              // fallthrough to fetch
+            }
           }
         }
       }
 
-      // Fetch upstream
-      const upstream = await fetch(sourceUrl, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      // Fetch upstream using standard Chrome User-Agent to bypass Cloudflare
+      const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+      const upstream = await fetch(sourceUrl, { headers: { "User-Agent": userAgent } });
       if (!upstream.ok) return res.status(502).send("bad upstream");
       const contentType = upstream.headers.get("content-type") || "image/png";
       const buffer = Buffer.from(await upstream.arrayBuffer());
 
       // Write to cache file and update index
-      try {
-        await fsp.writeFile(cacheFile, buffer).catch(() => null);
-        const stat = await fsp.stat(cacheFile).catch(() => null);
-        const size = stat?.size || buffer.length || 0;
-        index[hash] = { file: path.basename(cacheFile), size, atimeMs: Date.now(), mtimeMs: stat?.mtimeMs || Date.now() };
-        await saveIndex();
-        // enforce size limit
-        await evictIfNeeded();
-      } catch (e) {
-        // ignore cache errors
+      if (useCache) {
+        try {
+          await fsp.writeFile(cacheFile, buffer).catch(() => null);
+          const stat = await fsp.stat(cacheFile).catch(() => null);
+          const size = stat?.size || buffer.length || 0;
+          index[hash] = { file: path.basename(cacheFile), size, atimeMs: Date.now(), mtimeMs: stat?.mtimeMs || Date.now() };
+          await saveIndex();
+          await evictIfNeeded();
+        } catch (e) {}
       }
 
       res.setHeader("Content-Type", contentType);
@@ -860,7 +869,7 @@ export async function registerRoutes(server: Server, app: Express) {
   // Extended Habbo API routes
   app.get("/api/habbo/room/:roomId", async (req, res) => {
     try {
-      const r = await fetch(`https://www.habbo.es/api/public/rooms/${encodeURIComponent(req.params.roomId)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch(`https://www.habbo.es/api/public/rooms/${encodeURIComponent(req.params.roomId)}`, { headers: HABBO_HEADERS });
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
       res.json(await r.json());
     } catch { res.status(500).json({ message: "Error" }); }
@@ -870,7 +879,7 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.status(404).json({ message: "Error" });
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/profile`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/profile`, { headers: HABBO_HEADERS });
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
       res.json({ uniqueId: uid, ...(await r.json() as any) });
     } catch { res.status(500).json({ message: "Error" }); }
@@ -880,7 +889,7 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.status(404).json({ message: "Error" });
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/friends`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/friends`, { headers: HABBO_HEADERS });
       res.json(r.ok ? await r.json() : []);
     } catch { res.json([]); }
   });
@@ -889,7 +898,7 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.json([]);
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/rooms`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/rooms`, { headers: HABBO_HEADERS });
       res.json(r.ok ? await r.json() : []);
     } catch { res.json([]); }
   });
@@ -898,7 +907,7 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.json([]);
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/badges`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/badges`, { headers: HABBO_HEADERS });
       res.json(r.ok ? await r.json() : []);
     } catch { res.json([]); }
   });
@@ -907,14 +916,14 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.json([]);
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/groups`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/groups`, { headers: HABBO_HEADERS });
       res.json(r.ok ? await r.json() : []);
     } catch { res.json([]); }
   });
 
   app.get("/api/habbo/group/:id", async (req, res) => {
     try {
-      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}`, { headers: HABBO_HEADERS });
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
       res.json(await r.json());
     } catch { res.status(500).json({ message: "Error" }); }
@@ -922,7 +931,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/group/:id/members", async (req, res) => {
     try {
-      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}/members`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}/members`, { headers: HABBO_HEADERS });
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
       res.json(await r.json());
     } catch { res.status(500).json({ message: "Error" }); }
@@ -941,7 +950,7 @@ export async function registerRoutes(server: Server, app: Express) {
     ];
 
     try {
-      const r = await fetch("https://www.habbo.es/api/public/lists/hotlooks", { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch("https://www.habbo.es/api/public/lists/hotlooks", { headers: HABBO_HEADERS });
       if (!r.ok) return res.json(fallbackHotLooks);
       const data = await r.json();
       const list = Array.isArray(data) ? data : (data?.hotLooks || data?.hotlooks || []);
@@ -953,7 +962,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/badge-owners/:badgeCode", async (req, res) => {
     try {
-      const r = await fetch(`https://www.habbo.es/api/public/badge/owners/${encodeURIComponent(req.params.badgeCode)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch(`https://www.habbo.es/api/public/badge/owners/${encodeURIComponent(req.params.badgeCode)}`, { headers: HABBO_HEADERS });
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
       res.json(await r.json());
     } catch { res.status(500).json({ message: "Error" }); }
@@ -961,7 +970,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/achievements", async (_req, res) => {
     try {
-      const r = await fetch("https://www.habbo.es/api/public/achievements", { headers: { "User-Agent": "HabboSpeed/1.0" } });
+      const r = await fetch("https://www.habbo.es/api/public/achievements", { headers: HABBO_HEADERS });
       res.json(r.ok ? await r.json() : []);
     } catch { res.json([]); }
   });

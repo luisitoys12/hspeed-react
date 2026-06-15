@@ -473,4 +473,48 @@ app.get("/api/nowplaying", async (_req, res) => {
   } catch { res.status(500).json({}); }
 });
 
+app.get("/api/habbo/proxy-image", async (req, res) => {
+  try {
+    const urlParam = req.query.u as string | undefined;
+    const figure = req.query.figure as string | undefined;
+    const hotel = (req.query.hotel as string) || "es";
+    const size = (req.query.size as string) || "b";
+
+    let sourceUrl: string | null = null;
+    if (figure) {
+      const safeHotel = (hotel || "es").trim().toLowerCase();
+      const host = `https://www.habbo.${safeHotel}`;
+      sourceUrl = `${host}/habbo-imaging/avatarimage?figure=${encodeURIComponent(figure)}&size=${encodeURIComponent(size)}`;
+    } else if (urlParam) {
+      sourceUrl = urlParam;
+    } else {
+      return res.status(400).send("missing url or figure");
+    }
+
+    const allowed = ["images.habbo.com", "habbo.es", "habbo.com", "habbo.com.br", "habbo.de", "habbo.fi", "habbo.fr", "habbo.it", "habbo.nl"];
+    try {
+      const parsed = new URL(sourceUrl);
+      const host = parsed.hostname.toLowerCase();
+      const isAllowed = allowed.some((h) => host === h || host.endsWith("." + h));
+      if (!isAllowed) {
+        return res.status(403).send("forbidden host");
+      }
+    } catch (err) {
+      return res.status(400).send("invalid url");
+    }
+
+    const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+    const upstream = await fetch(sourceUrl, { headers: { "User-Agent": userAgent } });
+    if (!upstream.ok) return res.status(502).send("bad upstream");
+    const contentType = upstream.headers.get("content-type") || "image/png";
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.send(buffer);
+  } catch (e) {
+    res.status(500).send("proxy error");
+  }
+});
+
 export const handler = serverless(app);
