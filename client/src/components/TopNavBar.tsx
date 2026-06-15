@@ -314,6 +314,7 @@ export default function TopNavBar() {
     { href: "/forum", label: "Foro", iconClass: "fa-solid fa-comments" },
     { href: "/team", label: "Nuestro Equipo", iconClass: "fa-solid fa-users" },
     { href: "/rooms", label: "Salas Comunitarias", iconClass: "fa-solid fa-hotel" },
+    { href: "/soporte", label: "Soporte / Tickets", iconClass: "fa-solid fa-ticket" },
     { href: "/contact", label: "Contacto", iconClass: "fa-solid fa-envelope" },
   ];
 
@@ -325,6 +326,7 @@ export default function TopNavBar() {
   ];
 
   const habboItems: DropdownItem[] = [
+    { href: "/herramientas", label: "Centro de Herramientas", iconClass: "fa-solid fa-screwdriver-wrench" },
     { href: "/armario", label: "Armario", iconClass: "fa-solid fa-shirt" },
     { href: "/imager", label: "Generador de Avatar (Imager)", iconClass: "fa-solid fa-image" },
     { href: "/catalog", label: "Catálogo de Furnis", iconClass: "fa-solid fa-cubes" },
@@ -367,10 +369,10 @@ export default function TopNavBar() {
             {/* Links Escritorio en Dropdowns */}
             <div className="hidden md:flex items-center gap-6">
               <DirectNavLink href="/" label="INICIO" />
-              <NavDropdown label="COMUNIDAD" items={comunidadItems} activePrefixes={["/news", "/events", "/forum", "/team", "/contact"]} />
-              <NavDropdown label="RADIO" items={radioItems} activePrefixes={["/schedule"]} />
-              <NavDropdown label="HERRAMIENTAS" items={habboItems} activePrefixes={["/armario", "/imager", "/catalog", "/badges", "/habbo3d"]} />
-              <NavDropdown label="TIENDA" items={tiendaItems} activePrefixes={["/tienda", "/marketplace"]} />
+              <NavDropdown label="COMUNIDAD" items={comunidadItems} activePrefixes={["/news", "/events", "/forum", "/team", "/contact", "/rooms"]} />
+              <NavDropdown label="RADIO" items={radioItems} activePrefixes={["/schedule", "/song-history"]} />
+              <NavDropdown label="HERRAMIENTAS" items={habboItems} activePrefixes={["/herramientas", "/armario", "/imager", "/catalog", "/badges", "/habbo3d"]} />
+              <NavDropdown label="TIENDA" items={tiendaItems} activePrefixes={["/tienda", "/shop", "/vip", "/marketplace"]} />
               <NavDropdown label="MUNDIAL 2026" items={mundialItems} activePrefixes={["/mundial"]} />
             </div>
           </div>
@@ -503,6 +505,14 @@ export default function TopNavBar() {
                       {unreadCount > 0 && (
                         <Badge className="bg-primary text-white text-[9px] px-1.5 py-0.5">{unreadCount}</Badge>
                       )}
+                    </Link>
+                    <Link
+                      href="/soporte"
+                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <i className="fa-solid fa-ticket text-slate-400 w-4 text-center"></i>
+                      SOPORTE
                     </Link>
                     {isAdmin && (
                       <Link
@@ -711,7 +721,10 @@ export default function TopNavBar() {
             <div>
               <p className="px-3 text-[10px] font-black tracking-wider text-slate-400 uppercase">Herramientas Habbo</p>
               <div className="pl-3 mt-1 space-y-0.5">
-                {habboItems.map((item, idx) => (
+                <Link href="/herramientas" className="flex items-center gap-2 px-3 py-2 text-xs font-black text-primary bg-primary/5 rounded" onClick={() => setMobileMenuOpen(false)}>
+                  <i className="fa-solid fa-screwdriver-wrench w-4 text-center text-primary"></i> Centro de Herramientas
+                </Link>
+                {habboItems.slice(1).map((item, idx) => (
                   <Link key={idx} href={item.href || "#"} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded" onClick={() => setMobileMenuOpen(false)}>
                     <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
                   </Link>

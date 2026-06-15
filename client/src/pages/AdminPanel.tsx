@@ -983,6 +983,395 @@ function ShopAdmin() {
   );
 }
 
+// ============ FORUM ADMIN ============
+function ForumAdmin() {
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const [catForm, setCatForm] = useState({ name: "", description: "", color: "#7c3aed", icon: "fa-solid fa-comments" });
+  const [catOpen, setCatOpen] = useState(false);
+
+  const { data: categories = [], refetch: refetchCats } = useQuery<any[]>({
+    queryKey: ["/api/forum/categories"],
+    queryFn: async () => (await apiRequest("GET", "/api/forum/categories", undefined, token ? `Bearer ${token}` : undefined)).json(),
+  });
+
+  const createCatMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("POST", "/api/forum/categories", data, `Bearer ${token}`),
+    onSuccess: () => { toast({ title: "Categoría creada" }); setCatOpen(false); setCatForm({ name: "", description: "", color: "#7c3aed", icon: "fa-solid fa-comments" }); refetchCats(); queryClient.invalidateQueries({ queryKey: ["/api/forum/categories"] }); },
+    onError: () => toast({ title: "Error al crear categoría", variant: "destructive" }),
+  });
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-white mb-1">Foro — Categorías y Hilos</h2>
+          <p className="text-xs text-muted-foreground">Gestiona categorías del foro y modera los hilos de la comunidad.</p>
+        </div>
+        <Dialog open={catOpen} onOpenChange={setCatOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="bg-primary text-white hover:bg-primary/80 text-xs"><Plus className="w-3.5 h-3.5 mr-1" /> Nueva Categoría</Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card border-border max-w-sm">
+            <DialogHeader><DialogTitle>Nueva Categoría de Foro</DialogTitle></DialogHeader>
+            <div className="space-y-3 pt-2">
+              <div><Label className="text-xs">Nombre</Label><Input className="mt-1 text-xs" placeholder="Ej: General, Radio..." value={catForm.name} onChange={e => setCatForm(p => ({ ...p, name: e.target.value }))} /></div>
+              <div><Label className="text-xs">Descripción</Label><Textarea className="mt-1 text-xs resize-none" rows={2} placeholder="Describe esta categoría..." value={catForm.description} onChange={e => setCatForm(p => ({ ...p, description: e.target.value }))} /></div>
+              <div className="grid grid-cols-2 gap-2">
+                <div><Label className="text-xs">Color</Label><Input className="mt-1 text-xs" type="color" value={catForm.color} onChange={e => setCatForm(p => ({ ...p, color: e.target.value }))} /></div>
+                <div><Label className="text-xs">Icono (FA class)</Label><Input className="mt-1 text-xs" placeholder="fa-solid fa-comments" value={catForm.icon} onChange={e => setCatForm(p => ({ ...p, icon: e.target.value }))} /></div>
+              </div>
+              <Button className="w-full bg-primary text-white text-xs" disabled={!catForm.name} onClick={() => createCatMutation.mutate(catForm)}>Crear Categoría</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {categories.map((cat: any) => (
+          <div key={cat.id} className="p-4 rounded-xl border border-border bg-zinc-900/60 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm" style={{ background: cat.color || "#7c3aed" }}>
+                <i className={cat.icon || "fa-solid fa-comments"}></i>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-white truncate">{cat.name}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{cat.description}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <span>{cat.threadCount || 0} hilos</span>
+              <span style={{ color: cat.color || "#7c3aed" }}>●</span>
+            </div>
+          </div>
+        ))}
+        {categories.length === 0 && <p className="text-xs text-muted-foreground col-span-3">No hay categorías. Crea la primera.</p>}
+      </div>
+    </div>
+  );
+}
+
+// ============ TICKETS ADMIN ============
+function TicketsAdmin() {
+  const { token } = useAuth();
+  const { toast } = useToast();
+
+  const { data: tickets = [], refetch } = useQuery<any[]>({
+    queryKey: ["/api/tickets/all"],
+    queryFn: async () => (await apiRequest("GET", "/api/tickets/all", undefined, `Bearer ${token}`)).json(),
+    enabled: !!token,
+  });
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) =>
+      apiRequest("PUT", `/api/tickets/${id}/status`, { status }, `Bearer ${token}`),
+    onSuccess: () => { toast({ title: "Estado actualizado" }); refetch(); },
+    onError: () => toast({ title: "Error", variant: "destructive" }),
+  });
+
+  const statusColor: Record<string, string> = {
+    open: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
+    in_progress: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+    resolved: "bg-green-500/10 text-green-400 border-green-500/30",
+    closed: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
+  };
+
+  const openCount = tickets.filter((t: any) => t.status === "open").length;
+  const inProgressCount = tickets.filter((t: any) => t.status === "in_progress").length;
+  const resolvedCount = tickets.filter((t: any) => t.status === "resolved").length;
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-sm font-bold uppercase tracking-wider text-white mb-1">Tickets de Soporte</h2>
+        <p className="text-xs text-muted-foreground">Gestiona las solicitudes de ayuda y soporte de los usuarios.</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: "Abiertos", value: openCount, color: "text-yellow-400", bg: "bg-yellow-500/5 border-yellow-500/20" },
+          { label: "En Progreso", value: inProgressCount, color: "text-blue-400", bg: "bg-blue-500/5 border-blue-500/20" },
+          { label: "Resueltos", value: resolvedCount, color: "text-green-400", bg: "bg-green-500/5 border-green-500/20" },
+        ].map((s, i) => (
+          <div key={i} className={`p-3 rounded-xl border ${s.bg} text-center`}>
+            <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Ticket Table */}
+      <div className="rounded-xl border border-border overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">ID</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Asunto</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Categoría</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Estado</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {tickets.length === 0 ? (
+              <TableRow><TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-8">No hay tickets</TableCell></TableRow>
+            ) : tickets.map((ticket: any) => (
+              <TableRow key={ticket.id} className="border-border hover:bg-zinc-800/40">
+                <TableCell className="text-xs text-muted-foreground font-mono">#{ticket.id}</TableCell>
+                <TableCell>
+                  <p className="text-xs font-semibold text-white truncate max-w-[200px]">{ticket.subject}</p>
+                  <p className="text-[10px] text-muted-foreground truncate max-w-[200px] mt-0.5">{ticket.description}</p>
+                </TableCell>
+                <TableCell><Badge variant="outline" className="text-[10px] capitalize">{ticket.category || "general"}</Badge></TableCell>
+                <TableCell>
+                  <span className={`text-[10px] px-2 py-1 rounded-full border font-bold ${statusColor[ticket.status] || statusColor["open"]}`}>
+                    {ticket.status === "open" ? "Abierto" : ticket.status === "in_progress" ? "En Progreso" : ticket.status === "resolved" ? "Resuelto" : "Cerrado"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Select value={ticket.status} onValueChange={(val) => updateStatus.mutate({ id: ticket.id, status: val })}>
+                    <SelectTrigger className="h-7 text-[10px] w-28 bg-zinc-800 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="open" className="text-xs">Abierto</SelectItem>
+                      <SelectItem value="in_progress" className="text-xs">En Progreso</SelectItem>
+                      <SelectItem value="resolved" className="text-xs">Resuelto</SelectItem>
+                      <SelectItem value="closed" className="text-xs">Cerrado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+// ============ ROOMS ADMIN ============
+function RoomsAdmin() {
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [editRoom, setEditRoom] = useState<any>(null);
+  const emptyForm = { name: "", description: "", ownerName: "", roomCode: "", imageUrl: "", category: "social", isActive: true, isFeatured: false };
+  const [form, setForm] = useState({ ...emptyForm });
+
+  const { data: rooms = [], refetch } = useQuery<any[]>({
+    queryKey: ["/api/rooms"],
+    queryFn: async () => (await apiRequest("GET", "/api/rooms?includeInactive=true", undefined, `Bearer ${token}`)).json(),
+    enabled: !!token,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("POST", "/api/rooms", data, `Bearer ${token}`),
+    onSuccess: () => { toast({ title: "Sala creada" }); setOpen(false); setForm({ ...emptyForm }); refetch(); queryClient.invalidateQueries({ queryKey: ["/api/rooms"] }); },
+    onError: () => toast({ title: "Error al crear sala", variant: "destructive" }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest("PUT", `/api/rooms/${id}`, data, `Bearer ${token}`),
+    onSuccess: () => { toast({ title: "Sala actualizada" }); setOpen(false); setEditRoom(null); setForm({ ...emptyForm }); refetch(); queryClient.invalidateQueries({ queryKey: ["/api/rooms"] }); },
+    onError: () => toast({ title: "Error al actualizar sala", variant: "destructive" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/rooms/${id}`, undefined, `Bearer ${token}`),
+    onSuccess: () => { toast({ title: "Sala eliminada" }); refetch(); queryClient.invalidateQueries({ queryKey: ["/api/rooms"] }); },
+    onError: () => toast({ title: "Error al eliminar", variant: "destructive" }),
+  });
+
+  const openEdit = (room: any) => {
+    setEditRoom(room);
+    setForm({ name: room.name, description: room.description || "", ownerName: room.ownerName || "", roomCode: room.roomCode || "", imageUrl: room.imageUrl || "", category: room.category || "social", isActive: room.isActive !== false, isFeatured: !!room.isFeatured });
+    setOpen(true);
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-white mb-1">Salas Comunitarias</h2>
+          <p className="text-xs text-muted-foreground">Gestiona las salas Habbo destacadas de la comunidad HabboSpeed.</p>
+        </div>
+        <Button size="sm" className="bg-primary text-white hover:bg-primary/80 text-xs" onClick={() => { setEditRoom(null); setForm({ ...emptyForm }); setOpen(true); }}>
+          <Plus className="w-3.5 h-3.5 mr-1" /> Nueva Sala
+        </Button>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader><DialogTitle>{editRoom ? "Editar Sala" : "Nueva Sala Comunitaria"}</DialogTitle></DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div><Label className="text-xs">Nombre de la Sala</Label><Input className="mt-1 text-xs" placeholder="Mi Sala Habbo" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} /></div>
+            <div><Label className="text-xs">Descripción</Label><Textarea className="mt-1 text-xs resize-none" rows={2} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><Label className="text-xs">Dueño (Habbo Nick)</Label><Input className="mt-1 text-xs" value={form.ownerName} onChange={e => setForm(p => ({ ...p, ownerName: e.target.value }))} /></div>
+              <div><Label className="text-xs">Código de Sala</Label><Input className="mt-1 text-xs font-mono" placeholder="r-xxxxxx" value={form.roomCode} onChange={e => setForm(p => ({ ...p, roomCode: e.target.value }))} /></div>
+            </div>
+            <div><Label className="text-xs">URL de Imagen (opcional)</Label><Input className="mt-1 text-xs" placeholder="https://..." value={form.imageUrl} onChange={e => setForm(p => ({ ...p, imageUrl: e.target.value }))} /></div>
+            <div><Label className="text-xs">Categoría</Label>
+              <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v }))}>
+                <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["social", "juegos", "eventos", "radio", "otro"].map(c => <SelectItem key={c} value={c} className="text-xs capitalize">{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setForm(p => ({ ...p, isActive: !p.isActive }))} className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${form.isActive ? "border-green-500/50 bg-green-500/10 text-green-400" : "border-border bg-secondary/30 text-muted-foreground"}`}>Activa</button>
+              <button type="button" onClick={() => setForm(p => ({ ...p, isFeatured: !p.isFeatured }))} className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${form.isFeatured ? "border-yellow-500/50 bg-yellow-500/10 text-yellow-400" : "border-border bg-secondary/30 text-muted-foreground"}`}>Destacada ⭐</button>
+            </div>
+            <Button className="w-full bg-primary text-white text-xs" disabled={!form.name} onClick={() => editRoom ? updateMutation.mutate({ id: editRoom.id, data: form }) : createMutation.mutate(form)}>
+              {editRoom ? "Guardar Cambios" : "Crear Sala"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="rounded-xl border border-border overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Sala</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Dueño</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Cat.</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Estado</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rooms.length === 0 ? (
+              <TableRow><TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-8">No hay salas registradas</TableCell></TableRow>
+            ) : rooms.map((room: any) => (
+              <TableRow key={room.id} className="border-border hover:bg-zinc-800/40">
+                <TableCell>
+                  <p className="text-xs font-semibold text-white">{room.name}</p>
+                  <p className="text-[10px] text-muted-foreground truncate max-w-[180px]">{room.description}</p>
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">{room.ownerName || "—"}</TableCell>
+                <TableCell><Badge variant="outline" className="text-[10px] capitalize">{room.category}</Badge></TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${room.isActive ? "bg-green-400" : "bg-zinc-500"}`}></span>
+                    {room.isFeatured && <span className="text-yellow-400 text-[10px]">⭐</span>}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1.5">
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-zinc-700" onClick={() => openEdit(room)}><Edit className="w-3 h-3" /></Button>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-red-500/10 hover:text-red-400" onClick={() => deleteMutation.mutate(room.id)}><Trash2 className="w-3 h-3" /></Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+// ============ VIP ADMIN ============
+function VipAdmin() {
+  const { token } = useAuth();
+  const { toast } = useToast();
+
+  const { data: memberships = [], refetch } = useQuery<any[]>({
+    queryKey: ["/api/vip/admin/all"],
+    queryFn: async () => (await apiRequest("GET", "/api/vip/admin/all", undefined, `Bearer ${token}`)).json(),
+    enabled: !!token,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ userId, data }: { userId: number; data: any }) =>
+      apiRequest("PUT", `/api/vip/admin/${userId}`, data, `Bearer ${token}`),
+    onSuccess: () => { toast({ title: "Membresía actualizada" }); refetch(); },
+    onError: () => toast({ title: "Error al actualizar", variant: "destructive" }),
+  });
+
+  const tierColors: Record<string, string> = {
+    silver: "bg-zinc-400/10 text-zinc-300 border-zinc-400/30",
+    gold: "bg-yellow-400/10 text-yellow-400 border-yellow-400/30",
+    platinum: "bg-cyan-400/10 text-cyan-300 border-cyan-400/30",
+    diamond: "bg-purple-400/10 text-purple-300 border-purple-400/30",
+  };
+
+  const activeCount = memberships.filter((m: any) => m.isActive).length;
+  const tiers = ["silver", "gold", "platinum", "diamond"];
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-sm font-bold uppercase tracking-wider text-white mb-1">Membresías VIP</h2>
+        <p className="text-xs text-muted-foreground">Gestiona las membresías VIP de los usuarios y sus beneficios.</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {tiers.map(tier => {
+          const count = memberships.filter((m: any) => m.tier === tier && m.isActive).length;
+          return (
+            <div key={tier} className={`p-3 rounded-xl border text-center ${tierColors[tier] || "border-border"}`}>
+              <p className="text-xl font-black">{count}</p>
+              <p className="text-[10px] uppercase tracking-wider mt-0.5 font-bold capitalize">{tier}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="rounded-xl border border-border overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Usuario ID</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Tier</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Vence</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Estado</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {memberships.length === 0 ? (
+              <TableRow><TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-8">No hay membresías registradas</TableCell></TableRow>
+            ) : memberships.map((m: any) => (
+              <TableRow key={m.id} className="border-border hover:bg-zinc-800/40">
+                <TableCell className="text-xs font-mono text-muted-foreground">#{m.userId}</TableCell>
+                <TableCell>
+                  <span className={`text-[10px] px-2 py-1 rounded-full border font-bold capitalize ${tierColors[m.tier] || "border-border"}`}>{m.tier}</span>
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {m.expiresAt ? new Date(m.expiresAt).toLocaleDateString("es-MX") : "—"}
+                </TableCell>
+                <TableCell>
+                  <span className={`text-[10px] px-2 py-1 rounded-full border font-bold ${m.isActive ? "bg-green-500/10 text-green-400 border-green-500/30" : "bg-zinc-500/10 text-zinc-400 border-zinc-500/30"}`}>
+                    {m.isActive ? "Activa" : "Inactiva"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Select value={m.tier} onValueChange={(tier) => updateMutation.mutate({ userId: m.userId, data: { tier } })}>
+                      <SelectTrigger className="h-7 text-[10px] w-24 bg-zinc-800 border-border"><SelectValue /></SelectTrigger>
+                      <SelectContent>{tiers.map(t => <SelectItem key={t} value={t} className="text-xs capitalize">{t}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <button
+                      onClick={() => updateMutation.mutate({ userId: m.userId, data: { isActive: !m.isActive } })}
+                      className={`text-[10px] px-2 py-1 rounded border transition-colors ${m.isActive ? "border-red-500/30 text-red-400 hover:bg-red-500/10" : "border-green-500/30 text-green-400 hover:bg-green-500/10"}`}
+                    >{m.isActive ? "Desactivar" : "Activar"}</button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
 // ============ MAIN PANEL ============
 export default function AdminPanel() {
   const { section } = useParams<{ section?: string }>();
@@ -1044,6 +1433,10 @@ export default function AdminPanel() {
         { id: "team", label: "Equipo", icon: "fa-solid fa-user-shield" },
         { id: "shop", label: "Tienda", icon: "fa-solid fa-store" },
         { id: "contacts", label: "Mensajes", icon: "fa-solid fa-envelope" },
+        { id: "forum", label: "Foro", icon: "fa-solid fa-comments" },
+        { id: "rooms", label: "Salas", icon: "fa-solid fa-hotel" },
+        { id: "vip", label: "Membresías VIP", icon: "fa-solid fa-crown" },
+        { id: "tickets", label: "Tickets Soporte", icon: "fa-solid fa-ticket" },
       ]
     },
     {
@@ -1193,6 +1586,10 @@ export default function AdminPanel() {
                 {activeTab === "logs" && <PanelLogsAdmin />}
                 {activeTab === "dj" && <DjPanelAdmin />}
                 {activeTab === "config" && <ConfigAdmin />}
+                {activeTab === "forum" && <ForumAdmin />}
+                {activeTab === "tickets" && <TicketsAdmin />}
+                {activeTab === "rooms" && <RoomsAdmin />}
+                {activeTab === "vip" && <VipAdmin />}
               </CardContent>
             </Card>
           )}

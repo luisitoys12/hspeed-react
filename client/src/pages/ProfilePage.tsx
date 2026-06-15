@@ -414,11 +414,32 @@ export default function ProfilePage() {
         )}
       </div>
 
+      {/* Support / Tickets quick access — only own profile */}
+      {isOwnProfile && (
+        <div className="bg-gradient-to-r from-[#0b0632]/80 via-card to-card border border-primary/20 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+              <i className="fa-solid fa-ticket text-primary text-base"></i>
+            </div>
+            <div>
+              <p className="text-sm font-black text-white">Centro de Soporte</p>
+              <p className="text-[11px] text-muted-foreground">¿Tienes un problema? Crea un ticket y te ayudamos.</p>
+            </div>
+          </div>
+          <Link href="/soporte">
+            <Button size="sm" className="bg-primary hover:bg-primary/80 text-white text-xs whitespace-nowrap">
+              <i className="fa-solid fa-ticket mr-2"></i> Ir a Soporte
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* About Me / Social */}
       {localUser && <AboutSection userId={localUser.id} isOwnProfile={isOwnProfile} />}
     </div>
   );
 }
+
 
 // ===== BADGES TAB =====
 function BadgesTab({ username }: { username: string }) {
