@@ -66,30 +66,14 @@ export default function AppSidebar({ collapsed }: SidebarProps) {
     >
       {/* Logo */}
       <div className="p-4 flex items-center gap-3 border-b border-sidebar-border">
-        <div className="flex-shrink-0">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="HabboSpeed Logo">
-            <rect width="32" height="32" rx="6" fill="hsl(262 84% 58%)" />
-            <rect x="6" y="6" width="4" height="4" fill="white" />
-            <rect x="10" y="6" width="4" height="4" fill="white" />
-            <rect x="14" y="6" width="4" height="4" fill="white" />
-            <rect x="6" y="10" width="4" height="4" fill="white" />
-            <rect x="14" y="10" width="4" height="4" fill="white" />
-            <rect x="6" y="14" width="4" height="4" fill="white" />
-            <rect x="10" y="14" width="4" height="4" fill="white" />
-            <rect x="14" y="14" width="4" height="4" fill="white" />
-            <rect x="18" y="10" width="8" height="3" fill="#a78bfa" />
-            <rect x="22" y="13" width="4" height="3" fill="#a78bfa" />
-            <rect x="18" y="16" width="8" height="3" fill="#a78bfa" />
-            <rect x="18" y="19" width="4" height="3" fill="#a78bfa" />
-            <rect x="18" y="22" width="8" height="3" fill="#a78bfa" />
-          </svg>
-        </div>
-        {!collapsed && (
-          <div>
-            <p className="font-pixel text-[9px] text-primary glow-text leading-tight">HABBO</p>
-            <p className="font-pixel text-[9px] text-primary/70 leading-tight">SPEED</p>
-          </div>
-        )}
+        <Link href="/" className="flex items-center gap-2.5">
+          <img src="/logo.png" alt="hSpeed Logo" className="h-9 w-auto object-contain" />
+          {!collapsed && (
+            <span className="text-xs uppercase tracking-widest font-black text-sidebar-foreground">
+              HabboSpeed
+            </span>
+          )}
+        </Link>
         {!collapsed && (
           <div className="ml-auto flex-shrink-0">
             <span className="flex items-center gap-1 text-[9px] text-red-400 font-medium">

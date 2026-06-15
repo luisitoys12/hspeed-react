@@ -145,7 +145,9 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg space-y-4 relative z-10">
         {/* Logo */}
         <div className="text-center space-y-2">
-          <p className="font-pixel text-[10px] text-primary glow-text">HABBO<span className="text-primary/60">SPEED</span></p>
+          <div className="flex justify-center mb-2">
+            <img src="/logo.png" alt="hSpeed Logo" className="h-12 w-auto object-contain" />
+          </div>
           <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Crear Cuenta</h1>
           <p className="text-xs text-muted-foreground">Únete a la comunidad de forma segura mediante verificación de personaje</p>
         </div>

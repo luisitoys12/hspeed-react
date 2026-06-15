@@ -35,7 +35,9 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-4">
         {/* Logo */}
         <div className="text-center space-y-2">
-          <p className="font-pixel text-[10px] text-primary glow-text">HABBO<span className="text-primary/60">SPEED</span></p>
+          <div className="flex justify-center mb-2">
+            <img src="/logo.png" alt="hSpeed Logo" className="h-12 w-auto object-contain" />
+          </div>
           <h1 className="text-lg font-bold">Iniciar Sesión</h1>
           <p className="text-xs text-muted-foreground">Bienvenido de vuelta a la comunidad</p>
         </div>

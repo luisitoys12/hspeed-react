@@ -181,6 +181,7 @@ function getSection(pathname: string) {
   if (pathname.includes("/aventura")) return "adventure";
   if (pathname.includes("/mini/rapido")) return "mini-rapid";
   if (pathname.includes("/mini/sorteos")) return "mini-draw";
+  if (pathname.includes("/album")) return "album";
   return "home";
 }
 
@@ -782,7 +783,9 @@ export default function MundialPage() {
                 ? "Sorteos y premios"
                 : section === "source"
                   ? "Fuente seleccionada"
-                  : "Mundial 2026";
+                  : section === "album"
+                    ? "Álbum de Estampas"
+                    : "Mundial 2026 Hub";
 
   const activeCopy =
     section === "forecast"
@@ -799,7 +802,9 @@ export default function MundialPage() {
                 ? "Compra boletos usando SpeedPoints y participa en el gran sorteo de raras y estampas."
                 : section === "source"
                   ? "Gestiona fuentes externas del Mundial y mantén visible el disclaimer."
-                  : "Zona temática para seguir el Mundial 2026 con pronósticos, aventura y colección de estampas.";
+                  : section === "album"
+                    ? "Compra sobres con tus SpeedPoints, colecciona estampas oficiales y completa tu álbum."
+                    : "Zona temática para seguir el Mundial 2026 con pronósticos, aventura y colección de estampas.";
 
   if (!user) {
     return (
@@ -894,8 +899,11 @@ export default function MundialPage() {
       </div>
 
       {/* Sub-Navegación del Mundial (Pestañas Rápidas) */}
-      <div className="grid gap-2 grid-cols-4 md:grid-cols-8">
+      <div className="grid gap-2 grid-cols-4 md:grid-cols-9">
         <Link href="/mundial" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "home" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+          <i className="fa-solid fa-house text-xs"></i> INICIO
+        </Link>
+        <Link href="/mundial/album" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "album" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-trophy text-xs"></i> ÁLBUM
         </Link>
         <Link href="/mundial/pronosticos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "forecast" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
@@ -923,8 +931,8 @@ export default function MundialPage() {
 
       {/* Renderizado de Sección Activa */}
 
-      {/* 1. ALBUM DE ESTAMPAS (Home) */}
-      {section === "home" && (
+      {/* 1. ALBUM DE ESTAMPAS (Album) */}
+      {section === "album" && (
         <div className="space-y-4 animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="bg-card border-border md:col-span-2 flex flex-col justify-center">
@@ -1084,6 +1092,250 @@ export default function MundialPage() {
 
             </CardContent>
           </Card>
+        </div>
+      )}
+ 
+      {/* 0. INICIO / DASHBOARD WELCOME */}
+      {section === "home" && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Tarjeta de bienvenida y marcadores rápidos */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="md:col-span-2 space-y-4">
+              <Card className="bg-card border-border overflow-hidden relative shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none" />
+                <CardContent className="p-6 space-y-4 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-500/15 rounded-xl flex items-center justify-center text-emerald-400 text-lg">
+                      <i className="fa-solid fa-star-of-life animate-spin-slow"></i>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-white">¡Bienvenido al Centro Mundialista!</h3>
+                      <p className="text-[11px] text-muted-foreground">Tu espacio de entretenimiento, juego y pasión por el fútbol.</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Usa los <strong>SpeedPoints (SP)</strong> que ganas escuchando la radio o comentando en el foro para abrir sobres de estampas, jugar a los penales o participar en los sorteos especiales de placas en el hotel.
+                  </p>
+                  <div className="pt-2 flex flex-wrap gap-2.5">
+                    <Link href="/mundial/album">
+                      <Button className="bg-primary hover:bg-primary/95 text-white font-extrabold text-[10px] h-8.5 uppercase tracking-wider px-4">
+                        Colección de Estampas
+                      </Button>
+                    </Link>
+                    <Link href="/mundial/mini/rapido">
+                      <Button variant="outline" className="border-border hover:bg-secondary/40 text-slate-300 font-extrabold text-[10px] h-8.5 uppercase tracking-wider px-4">
+                        Patear Penales
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Guía Rápida */}
+              <div className="p-4 bg-secondary/5 border border-border/60 rounded-2xl">
+                <div className="flex items-center gap-2 mb-2 text-xs font-black uppercase text-white">
+                  <i className="fa-solid fa-compass text-primary"></i>
+                  Cómo Participar
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3 text-[11px] text-slate-300">
+                  <div className="space-y-1">
+                    <span className="font-mono text-emerald-400 font-extrabold">1. Gana SP</span>
+                    <p className="text-muted-foreground leading-normal">Escucha la radio en vivo y sintoniza los programas para sumar SpeedPoints.</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="font-mono text-emerald-400 font-extrabold">2. Juega & Colecciona</span>
+                    <p className="text-muted-foreground leading-normal">Abre sobres sorpresas, juega tanda de penales, y únete a un clan.</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="font-mono text-emerald-400 font-extrabold">3. Consigue Placas</span>
+                    <p className="text-muted-foreground leading-normal">Participa en sorteos semanales para ganar placas oficiales e insignias.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Widget de Marcadores del Día */}
+            <div className="space-y-4">
+              <LiveMatchesWidget />
+            </div>
+          </div>
+
+          {/* Rejilla de Módulos */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <i className="fa-solid fa-table-cells text-primary"></i> Actividades Disponibles
+            </h3>
+            
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Card 1: Álbum */}
+              <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
+                <CardContent className="p-4.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-400">
+                      <i className="fa-solid fa-images group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-yellow-500/5 text-yellow-300 border-yellow-500/20">Colección</Badge>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Álbum de Estampas</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                      Consigue las 4 estampas oficiales o desbloquea estampas de logros gratis completando actividades.
+                    </p>
+                  </div>
+                  <Link href="/mundial/album" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                    Ver mi álbum <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Card 2: Pronósticos */}
+              <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
+                <CardContent className="p-4.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                      <i className="fa-solid fa-chart-line group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-emerald-500/5 text-emerald-300 border-emerald-500/20">Diario</Badge>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Pronósticos Diarios</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                      Apuesta tus predicciones de los partidos internacionales y gana SpeedPoints gratis por tus aciertos exactos.
+                    </p>
+                  </div>
+                  <Link href="/mundial/pronosticos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                    Pronosticar partidos <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Card 3: Penales */}
+              <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
+                <CardContent className="p-4.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+                      <i className="fa-solid fa-futbol group-hover:rotate-45 transition-transform duration-500"></i>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-cyan-500/5 text-cyan-300 border-cyan-500/20">Minijuego</Badge>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Tanda de Penales</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                      Desafía a Frank el portero. Cada gol anotado te otorga SpeedPoints directamente en tu saldo.
+                    </p>
+                  </div>
+                  <Link href="/mundial/mini/rapido" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                    Jugar ahora <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Card 4: Ranking */}
+              <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
+                <CardContent className="p-4.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
+                      <i className="fa-solid fa-ranking-star group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-purple-500/5 text-purple-300 border-purple-500/20">Social</Badge>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Ranking</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                      Compite contra otros usuarios de la comunidad para alcanzar el Top de pronósticos y liderar el Fansite.
+                    </p>
+                  </div>
+                  <Link href="/mundial/ranking" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                    Ver clasificación <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Card 5: Clanes */}
+              <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
+                <CardContent className="p-4.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400">
+                      <i className="fa-solid fa-users-gear group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-orange-500/5 text-orange-300 border-orange-500/20">Comunidad</Badge>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Equipos y Clanes</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                      Únete a una facción de fanáticos en el hotel y demuestra qué hinchada es la más comprometida.
+                    </p>
+                  </div>
+                  <Link href="/mundial/equipos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                    Elegir mi clan <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Card 6: Aventura */}
+              <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
+                <CardContent className="p-4.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400">
+                      <i className="fa-solid fa-compass group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-pink-500/5 text-pink-300 border-pink-500/20">Aventura</Badge>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Aventura Mundialista</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                      Explora pistas, responde preguntas sobre la radio y completa misiones temáticas con recompensas.
+                    </p>
+                  </div>
+                  <Link href="/mundial/aventura" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                    Iniciar aventura <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Card 7: Sorteos */}
+              <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
+                <CardContent className="p-4.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400">
+                      <i className="fa-solid fa-gift group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-rose-500/5 text-rose-300 border-rose-500/20">Sorteo</Badge>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Sorteos de Placas</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                      Compra boletos de rifa por 15 SP y participa para ganar insignias y placas exclusivas del Fansite.
+                    </p>
+                  </div>
+                  <Link href="/mundial/mini/sorteos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                    Participar en rifas <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Card 8: Fuentes */}
+              <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
+                <CardContent className="p-4.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-slate-500/10 flex items-center justify-center text-slate-400">
+                      <i className="fa-solid fa-newspaper group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-slate-500/5 text-slate-300 border-slate-500/20">Información</Badge>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Fuentes & Noticias</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                      Revisa las fuentes oficiales externas o añade las tuyas personalizadas para seguir las novedades.
+                    </p>
+                  </div>
+                  <Link href="/mundial/sources" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                    Ver fuentes de noticias <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       )}
 

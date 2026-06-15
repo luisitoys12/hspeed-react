@@ -314,9 +314,11 @@ export default function TopNavBar() {
           
           {/* Logo y Dropdowns de Navegación */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2 font-pixel text-slate-900 tracking-wider font-bold">
-              <span className="bg-primary text-white p-1.5 rounded-lg text-xs leading-none">HS</span>
-              <span className="hidden sm:inline-block text-[11px] uppercase tracking-widest font-black">HabboSpeed</span>
+            <Link href="/" className="flex items-center gap-2.5">
+              <img src="/logo.png" alt="hSpeed Logo" className="h-9 w-auto object-contain" />
+              <span className="hidden sm:inline-block text-xs uppercase tracking-widest font-black text-slate-900">
+                HabboSpeed
+              </span>
             </Link>
 
             {/* Links Escritorio en Dropdowns */}

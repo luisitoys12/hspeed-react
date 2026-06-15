@@ -32,7 +32,24 @@ async function query(text: string, params?: any[]) {
 
 // ============ Row Mappers ============
 function mapUser(r: any) {
-  return { id: r.id, email: r.email, passwordHash: r.password_hash, displayName: r.display_name, habboUsername: r.habbo_username, avatarUrl: r.avatar_url, role: r.role, approved: r.approved, speedPoints: r.speed_points, createdAt: r.created_at };
+  return { 
+    id: r.id, 
+    email: r.email, 
+    passwordHash: r.password_hash, 
+    displayName: r.display_name, 
+    habboUsername: r.habbo_username, 
+    avatarUrl: r.avatar_url, 
+    role: r.role, 
+    approved: r.approved, 
+    speedPoints: r.speed_points, 
+    createdAt: r.created_at,
+    mundialStamps: r.mundial_stamps || [],
+    mundialLogros: r.mundial_logros || [],
+    mundialClan: r.mundial_clan || null,
+    mundialPredictions: r.mundial_predictions || {},
+    mundialTickets: r.mundial_tickets || 0,
+    mundialPenalties: r.mundial_penalties || { maxScore: 0, totalGames: 0 }
+  };
 }
 function mapNews(r: any) {
   return { id: r.id, title: r.title, summary: r.summary, content: r.content, imageUrl: r.image_url, imageHint: r.image_hint, category: r.category, date: r.date, reactions: r.reactions, authorId: r.author_id, createdAt: r.created_at };
@@ -471,6 +488,201 @@ app.get("/api/nowplaying", async (_req, res) => {
     if (!r.ok) return res.status(500).json({});
     res.json(await r.json());
   } catch { res.status(500).json({}); }
+});
+
+// ============ MUNDIAL 2026 ENDPOINTS ============
+async function dbUpdateUser(userId: number, data: any) {
+  const fields: string[] = [];
+  const vals: any[] = [];
+  let i = 1;
+  if (data.speedPoints !== undefined) { fields.push(`speed_points=$${i++}`); vals.push(data.speedPoints); }
+  if (data.mundialStamps !== undefined) { fields.push(`mundial_stamps=$${i++}`); vals.push(JSON.stringify(data.mundialStamps)); }
+  if (data.mundialLogros !== undefined) { fields.push(`mundial_logros=$${i++}`); vals.push(JSON.stringify(data.mundialLogros)); }
+  if (data.mundialClan !== undefined) { fields.push(`mundial_clan=$${i++}`); vals.push(data.mundialClan); }
+  if (data.mundialPredictions !== undefined) { fields.push(`mundial_predictions=$${i++}`); vals.push(JSON.stringify(data.mundialPredictions)); }
+  if (data.mundialTickets !== undefined) { fields.push(`mundial_tickets=$${i++}`); vals.push(data.mundialTickets); }
+  if (data.mundialPenalties !== undefined) { fields.push(`mundial_penalties=$${i++}`); vals.push(JSON.stringify(data.mundialPenalties)); }
+  
+  if (fields.length === 0) return null;
+  vals.push(userId);
+  const r = await query(`UPDATE users SET ${fields.join(",")} WHERE id=$${i} RETURNING *`, vals);
+  return r.rows[0] ? mapUser(r.rows[0]) : null;
+}
+
+app.post("/api/mundial/buy-pack", authMiddleware, async (req: any, res) => {
+  try {
+    const userResult = await query("SELECT * FROM users WHERE id = $1", [req.userId]);
+    const user = userResult.rows[0] ? mapUser(userResult.rows[0]) : null;
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if ((user.speedPoints ?? 0) < 10) return res.status(400).json({ message: "SpeedPoints insuficientes (necesitas 10 SP)" });
+    
+    const ESTAMPAS = ["trofeo", "balon", "estadio", "botas"];
+    const randomStampId = ESTAMPAS[Math.floor(Math.random() * ESTAMPAS.length)];
+    
+    const currentStamps = user.mundialStamps || [];
+    const updatedStamps = currentStamps.includes(randomStampId) ? currentStamps : [...currentStamps, randomStampId];
+    
+    const updated = await dbUpdateUser(req.userId, {
+      speedPoints: (user.speedPoints ?? 0) - 10,
+      mundialStamps: updatedStamps
+    });
+    res.json({ user: { ...updated, passwordHash: undefined }, stampId: randomStampId });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/mundial/buy-stamp", authMiddleware, async (req: any, res) => {
+  try {
+    const { stampId, cost } = req.body;
+    if (!stampId || cost === undefined) return res.status(400).json({ message: "stampId y cost son requeridos" });
+    
+    const userResult = await query("SELECT * FROM users WHERE id = $1", [req.userId]);
+    const user = userResult.rows[0] ? mapUser(userResult.rows[0]) : null;
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if ((user.speedPoints ?? 0) < cost) return res.status(400).json({ message: `SpeedPoints insuficientes (necesitas ${cost} SP)` });
+    
+    const currentStamps = user.mundialStamps || [];
+    if (currentStamps.includes(stampId)) return res.status(400).json({ message: "Ya posees esta estampa" });
+    
+    const updated = await dbUpdateUser(req.userId, {
+      speedPoints: (user.speedPoints ?? 0) - cost,
+      mundialStamps: [...currentStamps, stampId]
+    });
+    res.json({ ...updated, passwordHash: undefined });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/mundial/claim-logro", authMiddleware, async (req: any, res) => {
+  try {
+    const { logroId } = req.body;
+    if (!logroId) return res.status(400).json({ message: "logroId es requerido" });
+    
+    const userResult = await query("SELECT * FROM users WHERE id = $1", [req.userId]);
+    const user = userResult.rows[0] ? mapUser(userResult.rows[0]) : null;
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    
+    const currentLogros = user.mundialLogros || [];
+    if (currentLogros.includes(logroId)) return res.json({ ...user, passwordHash: undefined });
+    
+    const updated = await dbUpdateUser(req.userId, {
+      mundialLogros: [...currentLogros, logroId]
+    });
+    res.json({ ...updated, passwordHash: undefined });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/mundial/predict", authMiddleware, async (req: any, res) => {
+  try {
+    const { matchId, t1, t2 } = req.body;
+    if (!matchId || t1 === undefined || t2 === undefined) return res.status(400).json({ message: "matchId, t1 y t2 son requeridos" });
+    
+    const userResult = await query("SELECT * FROM users WHERE id = $1", [req.userId]);
+    const user = userResult.rows[0] ? mapUser(userResult.rows[0]) : null;
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    
+    const predictions = user.mundialPredictions || {};
+    predictions[matchId] = { t1: String(t1), t2: String(t2) };
+    
+    const currentLogros = user.mundialLogros || [];
+    const updatedLogros = currentLogros.includes("votante") ? currentLogros : [...currentLogros, "votante"];
+    
+    const updated = await dbUpdateUser(req.userId, {
+      mundialPredictions: predictions,
+      mundialLogros: updatedLogros
+    });
+    res.json({ ...updated, passwordHash: undefined });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/mundial/join-clan", authMiddleware, async (req: any, res) => {
+  try {
+    const { clanName } = req.body;
+    if (!clanName) return res.status(400).json({ message: "clanName es requerido" });
+    
+    const userResult = await query("SELECT * FROM users WHERE id = $1", [req.userId]);
+    const user = userResult.rows[0] ? mapUser(userResult.rows[0]) : null;
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    
+    const updated = await dbUpdateUser(req.userId, {
+      mundialClan: clanName
+    });
+    res.json({ ...updated, passwordHash: undefined });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/mundial/complete-mission", authMiddleware, async (req: any, res) => {
+  try {
+    const { missionId } = req.body;
+    if (!missionId) return res.status(400).json({ message: "missionId es requerido" });
+    
+    const userResult = await query("SELECT * FROM users WHERE id = $1", [req.userId]);
+    const user = userResult.rows[0] ? mapUser(userResult.rows[0]) : null;
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    
+    const currentLogros = user.mundialLogros || [];
+    const missionLogroId = `mision_${missionId}`;
+    if (currentLogros.includes(missionLogroId)) {
+      return res.status(400).json({ message: "Misión ya completada anteriormente" });
+    }
+    
+    const updatedLogros = [...currentLogros, missionLogroId];
+    if (!updatedLogros.includes("hincha")) {
+      updatedLogros.push("hincha");
+    }
+    
+    const updated = await dbUpdateUser(req.userId, {
+      speedPoints: (user.speedPoints ?? 0) + 15,
+      mundialLogros: updatedLogros
+    });
+    res.json({ ...updated, passwordHash: undefined });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/mundial/buy-ticket", authMiddleware, async (req: any, res) => {
+  try {
+    const userResult = await query("SELECT * FROM users WHERE id = $1", [req.userId]);
+    const user = userResult.rows[0] ? mapUser(userResult.rows[0]) : null;
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if ((user.speedPoints ?? 0) < 15) return res.status(400).json({ message: "SpeedPoints insuficientes (necesitas 15 SP)" });
+    
+    const updated = await dbUpdateUser(req.userId, {
+      speedPoints: (user.speedPoints ?? 0) - 15,
+      mundialTickets: (user.mundialTickets ?? 0) + 1
+    });
+    res.json({ ...updated, passwordHash: undefined });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/mundial/penalty-result", authMiddleware, async (req: any, res) => {
+  try {
+    const { score } = req.body;
+    if (score === undefined || isNaN(Number(score))) return res.status(400).json({ message: "score es requerido" });
+    
+    const userResult = await query("SELECT * FROM users WHERE id = $1", [req.userId]);
+    const user = userResult.rows[0] ? mapUser(userResult.rows[0]) : null;
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    
+    const penalties = user.mundialPenalties || { maxScore: 0, totalGames: 0 };
+    const newMaxScore = Math.max(penalties.maxScore || 0, score);
+    const newTotalGames = (penalties.totalGames || 0) + 1;
+    
+    const currentLogros = user.mundialLogros || [];
+    const updatedLogros = [...currentLogros];
+    if (score >= 5 && !updatedLogros.includes("penales")) {
+      updatedLogros.push("penales");
+    }
+    
+    let reward = score * 2;
+    if (score >= 5) {
+      reward += 10;
+    }
+    
+    const updated = await dbUpdateUser(req.userId, {
+      speedPoints: (user.speedPoints ?? 0) + reward,
+      mundialPenalties: { maxScore: newMaxScore, totalGames: newTotalGames },
+      mundialLogros: updatedLogros
+    });
+    res.json({ ...updated, passwordHash: undefined });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
 });
 
 app.get("/api/habbo/proxy-image", async (req, res) => {
