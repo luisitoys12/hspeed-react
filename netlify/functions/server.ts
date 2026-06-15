@@ -445,7 +445,12 @@ app.get("/api/habbo/user/:username", async (req, res) => {
 });
 app.get("/api/habbo/badges/:hotel", async (req, res) => {
   try {
-    const r = await fetch(`https://www.habboassets.com/api/v1/badges?hotel=${req.params.hotel}&limit=${req.query.limit || "20"}`);
+    const hotel = req.params.hotel || "es";
+    const limit = req.query.limit || "20";
+    const offset = req.query.offset || "0";
+    const term = req.query.term || "";
+    const url = `https://www.habboassets.com/api/v1/badges?hotel=${hotel}&limit=${limit}&offset=${offset}&term=${encodeURIComponent(term as string)}`;
+    const r = await fetch(url);
     if (!r.ok) return res.status(500).json([]);
     res.json(await r.json());
   } catch { res.status(500).json([]); }

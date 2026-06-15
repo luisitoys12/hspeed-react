@@ -13,6 +13,12 @@ export const users = pgTable("users", {
   role: text("role").notNull().default("pending"), // admin, dj, user, pending
   approved: boolean("approved").notNull().default(false),
   speedPoints: integer("speed_points").notNull().default(0),
+  mundialStamps: jsonb("mundial_stamps").default([]),
+  mundialLogros: jsonb("mundial_logros").default([]),
+  mundialClan: text("mundial_clan"),
+  mundialPredictions: jsonb("mundial_predictions").default({}),
+  mundialTickets: integer("mundial_tickets").notNull().default(0),
+  mundialPenalties: jsonb("mundial_penalties").default({ maxScore: 0, totalGames: 0 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -195,6 +195,12 @@ function mapUser(row: any): User {
     displayName: row.display_name, habboUsername: row.habbo_username,
     avatarUrl: row.avatar_url, role: row.role, approved: row.approved,
     speedPoints: row.speed_points, createdAt: row.created_at,
+    mundialStamps: row.mundial_stamps,
+    mundialLogros: row.mundial_logros,
+    mundialClan: row.mundial_clan,
+    mundialPredictions: row.mundial_predictions,
+    mundialTickets: row.mundial_tickets,
+    mundialPenalties: row.mundial_penalties,
   };
 }
 function mapNews(row: any): News {
@@ -376,6 +382,12 @@ export class SupabaseStorage implements IStorage {
     if (data.approved !== undefined) { fields.push(`approved = $${i++}`); values.push(data.approved); }
     if (data.speedPoints !== undefined) { fields.push(`speed_points = $${i++}`); values.push(data.speedPoints); }
     if (data.passwordHash !== undefined) { fields.push(`password_hash = $${i++}`); values.push(data.passwordHash); }
+    if (data.mundialStamps !== undefined) { fields.push(`mundial_stamps = $${i++}`); values.push(JSON.stringify(data.mundialStamps)); }
+    if (data.mundialLogros !== undefined) { fields.push(`mundial_logros = $${i++}`); values.push(JSON.stringify(data.mundialLogros)); }
+    if (data.mundialClan !== undefined) { fields.push(`mundial_clan = $${i++}`); values.push(data.mundialClan); }
+    if (data.mundialPredictions !== undefined) { fields.push(`mundial_predictions = $${i++}`); values.push(JSON.stringify(data.mundialPredictions)); }
+    if (data.mundialTickets !== undefined) { fields.push(`mundial_tickets = $${i++}`); values.push(data.mundialTickets); }
+    if (data.mundialPenalties !== undefined) { fields.push(`mundial_penalties = $${i++}`); values.push(JSON.stringify(data.mundialPenalties)); }
     if (fields.length === 0) return this.getUser(id);
     values.push(id);
     const r = await this.query(`UPDATE users SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);

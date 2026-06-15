@@ -1,4 +1,4 @@
-﻿import { Suspense, lazy } from "react";
+import { Suspense, lazy } from "react";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Route, Switch, useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
@@ -91,14 +91,7 @@ function AppContent() {
 						<Route path="/privacy" component={LegalPage} />
 						<Route path="/maintenance" component={MaintenancePage} />
 						<Route path="/profile/:username" component={ProfilePage} />
-						<Route path="/mundial" component={MundialPage} />
-						<Route path="/mundial/pronosticos" component={MundialPage} />
-						<Route path="/mundial/ranking" component={MundialPage} />
-						<Route path="/mundial/equipos" component={MundialPage} />
-						<Route path="/mundial/aventura" component={MundialPage} />
-						<Route path="/mundial/mini/rapido" component={MundialPage} />
-						<Route path="/mundial/mini/sorteos" component={MundialPage} />
-						<Route path="/mundial/source/:id" component={MundialPage} />
+						<Route path="/mundial/:subpage*" component={MundialPage} />
 						<Route component={NotFound} />
 					</Switch>
 				</Suspense>

@@ -1,3 +1,4 @@
 export function proxyImage(url: string) {
-  return url;
+  if (!url) return "";
+  return `/api/habbo/proxy-image?u=${encodeURIComponent(url)}`;
 }

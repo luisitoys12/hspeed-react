@@ -95,6 +95,12 @@ export class MemStorage implements IStorage {
       role: "admin",
       approved: true,
       speedPoints: 500,
+      mundialStamps: [],
+      mundialLogros: [],
+      mundialClan: null,
+      mundialPredictions: {},
+      mundialTickets: 0,
+      mundialPenalties: { maxScore: 0, totalGames: 0 },
       createdAt: new Date()
     });
     this.currentId = 2;
@@ -291,6 +297,12 @@ export class MemStorage implements IStorage {
       role: user.role || "pending",
       approved: user.approved ?? false,
       speedPoints: user.speedPoints ?? 0,
+      mundialStamps: [],
+      mundialLogros: [],
+      mundialClan: null,
+      mundialPredictions: {},
+      mundialTickets: 0,
+      mundialPenalties: { maxScore: 0, totalGames: 0 },
       createdAt: new Date()
     };
     this.users.set(id, newUser);

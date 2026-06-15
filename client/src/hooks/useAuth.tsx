@@ -11,6 +11,12 @@ interface AuthUser {
   approved: boolean;
   speedPoints: number;
   createdAt?: string;
+  mundialStamps?: string[] | null;
+  mundialLogros?: string[] | null;
+  mundialClan?: string | null;
+  mundialPredictions?: Record<string, { t1: string; t2: string }> | null;
+  mundialTickets?: number | null;
+  mundialPenalties?: { maxScore: number; totalGames: number } | null;
 }
 
 interface AuthContextType {
@@ -22,6 +28,7 @@ interface AuthContextType {
   logout: () => void;
   isAdmin: boolean;
   isDJ: boolean;
+  refetchUser: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -96,11 +103,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
   }, []);
 
+  const refetchUser = useCallback(async () => {
+    const storedToken = localStorage.getItem("token") || token;
+    if (storedToken) {
+      try {
+        const res = await fetch("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
+        });
+        if (res.ok) {
+          const userData = await res.json();
+          setUser(userData);
+        }
+      } catch (e) {
+        console.error("Error refetching user data:", e);
+      }
+    }
+  }, [token]);
+
   const isAdmin = user?.role === "admin";
   const isDJ = user?.role === "dj" || user?.role === "admin";
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, isAdmin, isDJ }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, isAdmin, isDJ, refetchUser }}>
       {children}
     </AuthContext.Provider>
   );
