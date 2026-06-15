@@ -48,7 +48,13 @@ function mapUser(r: any) {
     mundialClan: r.mundial_clan || null,
     mundialPredictions: r.mundial_predictions || {},
     mundialTickets: r.mundial_tickets || 0,
-    mundialPenalties: r.mundial_penalties || { maxScore: 0, totalGames: 0 }
+    mundialPenalties: r.mundial_penalties || { maxScore: 0, totalGames: 0 },
+    vipTier: r.vip_tier || null,
+    totalRequests: r.total_requests || 0,
+    favoriteGenre: r.favorite_genre || null,
+    bio: r.bio || null,
+    socialLinks: r.social_links || {},
+    badgesEarned: r.badges_earned || []
   };
 }
 function mapNews(r: any) {
@@ -486,8 +492,39 @@ app.get("/api/nowplaying", async (_req, res) => {
     if (!cfg.rows[0]?.api_url) return res.status(400).json({});
     const r = await fetch(cfg.rows[0].api_url);
     if (!r.ok) return res.status(500).json({});
-    res.json(await r.json());
-  } catch { res.status(500).json({}); }
+    const data = await r.json();
+    
+    // Auto-sync to song_history
+    const np = Array.isArray(data) ? data[0]?.now_playing : data?.now_playing;
+    const songInfo = np?.song;
+    if (songInfo && songInfo.title && songInfo.artist) {
+      const djPanelRes = await query("SELECT current_dj FROM dj_panel ORDER BY id LIMIT 1").catch(() => null);
+      const playedByDj = djPanelRes?.rows[0]?.current_dj || "AutoDJ";
+      
+      const check = await query(
+        "SELECT id FROM song_history WHERE title = $1 AND artist = $2 AND played_at > NOW() - INTERVAL '2 minutes' LIMIT 1",
+        [songInfo.title, songInfo.artist]
+      ).catch(() => null);
+      
+      if (check && check.rows.length > 0) {
+        await query(
+          "UPDATE song_history SET play_count = play_count + 1, played_at = NOW() WHERE id = $1",
+          [check.rows[0].id]
+        ).catch(err => console.error("Error auto-updating song history play count:", err));
+      } else {
+        await query(
+          `INSERT INTO song_history (title, artist, album, cover_url, played_by_dj, duration_seconds, requested_by, play_count)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, 1)`,
+          [songInfo.title, songInfo.artist, songInfo.album || null, songInfo.art || null, playedByDj, np.duration || null, null]
+        ).catch(err => console.error("Error auto-inserting song history:", err));
+      }
+    }
+    
+    res.json(data);
+  } catch (err: any) { 
+    console.error("Error in nowplaying:", err);
+    res.status(500).json({}); 
+  }
 });
 
 // ============ MUNDIAL 2026 ENDPOINTS ============
@@ -502,6 +539,12 @@ async function dbUpdateUser(userId: number, data: any) {
   if (data.mundialPredictions !== undefined) { fields.push(`mundial_predictions=$${i++}`); vals.push(JSON.stringify(data.mundialPredictions)); }
   if (data.mundialTickets !== undefined) { fields.push(`mundial_tickets=$${i++}`); vals.push(data.mundialTickets); }
   if (data.mundialPenalties !== undefined) { fields.push(`mundial_penalties=$${i++}`); vals.push(JSON.stringify(data.mundialPenalties)); }
+  if (data.vipTier !== undefined) { fields.push(`vip_tier=$${i++}`); vals.push(data.vipTier); }
+  if (data.totalRequests !== undefined) { fields.push(`total_requests=$${i++}`); vals.push(data.totalRequests); }
+  if (data.favoriteGenre !== undefined) { fields.push(`favorite_genre=$${i++}`); vals.push(data.favoriteGenre); }
+  if (data.bio !== undefined) { fields.push(`bio=$${i++}`); vals.push(data.bio); }
+  if (data.socialLinks !== undefined) { fields.push(`social_links=$${i++}`); vals.push(JSON.stringify(data.socialLinks)); }
+  if (data.badgesEarned !== undefined) { fields.push(`badges_earned=$${i++}`); vals.push(JSON.stringify(data.badgesEarned)); }
   
   if (fields.length === 0) return null;
   vals.push(userId);
@@ -727,6 +770,304 @@ app.get("/api/habbo/proxy-image", async (req, res) => {
   } catch (e) {
     res.status(500).send("proxy error");
   }
+});
+
+// ============ USER PROFILES ============
+app.get("/api/profiles/:userId", async (req, res) => {
+  try {
+    const r = await query("SELECT * FROM user_profiles WHERE user_id = $1", [parseInt(req.params.userId)]);
+    if (!r.rows[0]) return res.status(404).json({ message: "Perfil no encontrado" });
+    
+    const p = r.rows[0];
+    res.json({
+      id: p.id,
+      userId: p.user_id,
+      bio: p.bio,
+      backgroundUrl: p.background_url,
+      backgroundColor: p.background_color,
+      accentColor: p.accent_color,
+      aboutMe: p.about_me,
+      socialYoutube: p.social_youtube,
+      socialTwitter: p.social_twitter,
+      socialInstagram: p.social_instagram,
+      customCss: p.custom_css,
+      updatedAt: p.updated_at
+    });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.put("/api/profiles", authMiddleware, async (req: any, res) => {
+  try {
+    const data = req.body;
+    const existing = await query("SELECT id FROM user_profiles WHERE user_id = $1", [req.userId]);
+    
+    if (existing.rows.length > 0) {
+      const fields: string[] = [];
+      const vals: any[] = [];
+      let i = 1;
+      if (data.bio !== undefined) { fields.push(`bio = $${i++}`); vals.push(data.bio); }
+      if (data.backgroundUrl !== undefined) { fields.push(`background_url = $${i++}`); vals.push(data.backgroundUrl); }
+      if (data.backgroundColor !== undefined) { fields.push(`background_color = $${i++}`); vals.push(data.backgroundColor); }
+      if (data.accentColor !== undefined) { fields.push(`accent_color = $${i++}`); vals.push(data.accentColor); }
+      if (data.aboutMe !== undefined) { fields.push(`about_me = $${i++}`); vals.push(data.aboutMe); }
+      if (data.socialYoutube !== undefined) { fields.push(`social_youtube = $${i++}`); vals.push(data.socialYoutube); }
+      if (data.socialTwitter !== undefined) { fields.push(`social_twitter = $${i++}`); vals.push(data.socialTwitter); }
+      if (data.socialInstagram !== undefined) { fields.push(`social_instagram = $${i++}`); vals.push(data.socialInstagram); }
+      if (data.customCss !== undefined) { fields.push(`custom_css = $${i++}`); vals.push(data.customCss); }
+      fields.push(`updated_at = NOW()`);
+      
+      vals.push(req.userId);
+      const r = await query(`UPDATE user_profiles SET ${fields.join(", ")} WHERE user_id = $${i} RETURNING *`, vals);
+      res.json(r.rows[0]);
+    } else {
+      const r = await query(
+        `INSERT INTO user_profiles (user_id, bio, background_url, background_color, accent_color, about_me, social_youtube, social_twitter, social_instagram, custom_css)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+        [req.userId, data.bio || "", data.backgroundUrl || null, data.backgroundColor || "#1e293b", data.accentColor || null, data.aboutMe || "", data.socialYoutube || null, data.socialTwitter || null, data.socialInstagram || null, data.customCss || null]
+      );
+      res.json(r.rows[0]);
+    }
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+// ============ SONG HISTORY ============
+app.get("/api/song-history", async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+    const r = await query("SELECT * FROM song_history ORDER BY played_at DESC LIMIT $1", [limit]);
+    res.json(r.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      artist: row.artist,
+      album: row.album,
+      coverUrl: row.cover_url,
+      playedAt: row.played_at,
+      playedByDj: row.played_by_dj,
+      durationSeconds: row.duration_seconds,
+      requestedBy: row.requested_by,
+      playCount: row.play_count
+    })));
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.get("/api/song-history/top", async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const r = await query(
+      "SELECT title, artist, album, cover_url, SUM(play_count) as play_count FROM song_history GROUP BY title, artist, album, cover_url ORDER BY play_count DESC LIMIT $1",
+      [limit]
+    );
+    res.json(r.rows.map((row, idx) => ({
+      id: idx + 1,
+      title: row.title,
+      artist: row.artist,
+      album: row.album,
+      coverUrl: row.cover_url,
+      playCount: parseInt(row.play_count) || 1,
+      playedAt: new Date(),
+      playedByDj: null,
+      durationSeconds: null,
+      requestedBy: null
+    })));
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+// ============ VIP MEMBERSHIPS ============
+app.get("/api/vip/status", authMiddleware, async (req: any, res) => {
+  try {
+    const r = await query("SELECT * FROM vip_memberships WHERE user_id = $1 AND is_active = true ORDER BY expires_at DESC LIMIT 1", [req.userId]);
+    if (r.rows[0]) {
+      const p = r.rows[0];
+      res.json({
+        id: p.id,
+        userId: p.user_id,
+        tier: p.tier,
+        startedAt: p.started_at,
+        expiresAt: p.expires_at,
+        paymentRef: p.payment_ref,
+        isActive: p.is_active
+      });
+    } else {
+      res.json({ isActive: false });
+    }
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/vip/subscribe", authMiddleware, async (req: any, res) => {
+  try {
+    const { tier, months, paymentRef } = req.body;
+    if (!tier || !months) return res.status(400).json({ message: "Nivel (tier) y meses son requeridos" });
+    
+    const costs: { [key: string]: number } = { silver: 100, gold: 200, diamond: 400 };
+    const costPerMonth = costs[tier.toLowerCase()] || 100;
+    const totalCost = costPerMonth * parseInt(months);
+
+    const userRes = await query("SELECT * FROM users WHERE id = $1", [req.userId]);
+    const user = userRes.rows[0];
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (user.speed_points < totalCost) {
+      return res.status(400).json({ message: `No tienes suficientes SpeedPoints. Necesitas ${totalCost} SP y tienes ${user.speed_points} SP.` });
+    }
+
+    await query("UPDATE users SET speed_points = speed_points - $1, vip_tier = $2 WHERE id = $3", [totalCost, tier.toLowerCase(), req.userId]);
+
+    const expiresAt = new Date();
+    expiresAt.setMonth(expiresAt.getMonth() + parseInt(months));
+
+    const r = await query(
+      `INSERT INTO vip_memberships (user_id, tier, expires_at, payment_ref, is_active)
+       VALUES ($1, $2, $3, $4, true) RETURNING *`,
+      [req.userId, tier.toLowerCase(), expiresAt, paymentRef || `SP_PURCHASE_${Date.now()}`]
+    );
+
+    // Create notification
+    await query(
+      "INSERT INTO notifications (user_id, type, title, message, icon, link, is_read) VALUES ($1, $2, $3, $4, $5, $6, false)",
+      [req.userId, "success", "¡Membresía VIP Activa!", `Felicidades, ahora eres miembro VIP ${tier.toUpperCase()} por ${months} mes(es).`, "crown", "/vip"]
+    );
+
+    res.status(201).json(r.rows[0]);
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.get("/api/vip/admin/all", authMiddleware, async (req: any, res) => {
+  try {
+    const userRes = await query("SELECT role FROM users WHERE id = $1", [req.userId]);
+    if (userRes.rows[0]?.role !== "admin") return res.status(403).json({ message: "No autorizado" });
+
+    const r = await query(
+      `SELECT vm.*, u.display_name, u.email, u.habbo_username 
+       FROM vip_memberships vm 
+       JOIN users u ON vm.user_id = u.id 
+       ORDER BY vm.started_at DESC`
+    );
+    res.json(r.rows.map(row => ({
+      id: row.id,
+      userId: row.user_id,
+      tier: row.tier,
+      startedAt: row.started_at,
+      expiresAt: row.expires_at,
+      paymentRef: row.payment_ref,
+      isActive: row.is_active,
+      displayName: row.display_name,
+      email: row.email,
+      habboUsername: row.habbo_username
+    })));
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.put("/api/vip/admin/:userId", authMiddleware, async (req: any, res) => {
+  try {
+    const userRes = await query("SELECT role FROM users WHERE id = $1", [req.userId]);
+    if (userRes.rows[0]?.role !== "admin") return res.status(403).json({ message: "No autorizado" });
+
+    const targetUserId = parseInt(req.params.userId);
+    const { tier, expiresAt, isActive } = req.body;
+
+    const fields: string[] = [];
+    const vals: any[] = [];
+    let i = 1;
+    if (tier !== undefined) { fields.push(`tier = $${i++}`); vals.push(tier); }
+    if (expiresAt !== undefined) { fields.push(`expires_at = $${i++}`); vals.push(expiresAt); }
+    if (isActive !== undefined) { fields.push(`is_active = $${i++}`); vals.push(isActive); }
+
+    if (fields.length > 0) {
+      vals.push(targetUserId);
+      await query(`UPDATE vip_memberships SET ${fields.join(", ")} WHERE user_id = $${i}`, vals);
+    }
+
+    if (tier !== undefined || isActive === false) {
+      const newTier = isActive === false ? null : tier;
+      await query("UPDATE users SET vip_tier = $1 WHERE id = $2", [newTier, targetUserId]);
+    }
+
+    res.json({ message: "Membresía VIP actualizada con éxito" });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+// ============ HSPEED ROOMS ============
+app.get("/api/rooms", async (req, res) => {
+  try {
+    const includeInactive = req.query.includeInactive === "true";
+    const q = includeInactive 
+      ? "SELECT * FROM hspeed_rooms ORDER BY featured DESC, created_at DESC"
+      : "SELECT * FROM hspeed_rooms WHERE is_active = true ORDER BY featured DESC, created_at DESC";
+    const r = await query(q);
+    res.json(r.rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      roomCode: row.room_code,
+      ownerHabbo: row.owner_habbo,
+      hotel: row.hotel,
+      category: row.category,
+      capacity: row.capacity,
+      currentVisitors: row.current_visitors,
+      isActive: row.is_active,
+      thumbnailUrl: row.thumbnail_url,
+      featured: row.featured,
+      createdAt: row.created_at
+    })));
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.post("/api/rooms", authMiddleware, async (req: any, res) => {
+  try {
+    const userRes = await query("SELECT role FROM users WHERE id = $1", [req.userId]);
+    if (userRes.rows[0]?.role !== "admin") return res.status(403).json({ message: "No autorizado" });
+
+    const room = req.body;
+    const r = await query(
+      `INSERT INTO hspeed_rooms (name, description, room_code, owner_habbo, hotel, category, capacity, current_visitors, is_active, thumbnail_url, featured)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [room.name, room.description || null, room.roomCode || null, room.ownerHabbo || null, room.hotel || 'es', room.category || null, room.capacity || null, room.currentVisitors || 0, room.isActive ?? true, room.thumbnailUrl || null, room.featured ?? false]
+    );
+    res.status(201).json(r.rows[0]);
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.put("/api/rooms/:id", authMiddleware, async (req: any, res) => {
+  try {
+    const userRes = await query("SELECT role FROM users WHERE id = $1", [req.userId]);
+    if (userRes.rows[0]?.role !== "admin") return res.status(403).json({ message: "No autorizado" });
+
+    const roomId = parseInt(req.params.id);
+    const room = req.body;
+
+    const fields: string[] = [];
+    const vals: any[] = [];
+    let i = 1;
+    if (room.name !== undefined) { fields.push(`name = $${i++}`); vals.push(room.name); }
+    if (room.description !== undefined) { fields.push(`description = $${i++}`); vals.push(room.description); }
+    if (room.roomCode !== undefined) { fields.push(`room_code = $${i++}`); vals.push(room.roomCode); }
+    if (room.ownerHabbo !== undefined) { fields.push(`owner_habbo = $${i++}`); vals.push(room.ownerHabbo); }
+    if (room.hotel !== undefined) { fields.push(`hotel = $${i++}`); vals.push(room.hotel); }
+    if (room.category !== undefined) { fields.push(`category = $${i++}`); vals.push(room.category); }
+    if (room.capacity !== undefined) { fields.push(`capacity = $${i++}`); vals.push(room.capacity); }
+    if (room.currentVisitors !== undefined) { fields.push(`current_visitors = $${i++}`); vals.push(room.currentVisitors); }
+    if (room.isActive !== undefined) { fields.push(`is_active = $${i++}`); vals.push(room.isActive); }
+    if (room.thumbnailUrl !== undefined) { fields.push(`thumbnail_url = $${i++}`); vals.push(room.thumbnailUrl); }
+    if (room.featured !== undefined) { fields.push(`featured = $${i++}`); vals.push(room.featured); }
+
+    if (fields.length > 0) {
+      vals.push(roomId);
+      const r = await query(`UPDATE hspeed_rooms SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, vals);
+      res.json(r.rows[0]);
+    } else {
+      const r = await query("SELECT * FROM hspeed_rooms WHERE id = $1", [roomId]);
+      res.json(r.rows[0]);
+    }
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete("/api/rooms/:id", authMiddleware, async (req: any, res) => {
+  try {
+    const userRes = await query("SELECT role FROM users WHERE id = $1", [req.userId]);
+    if (userRes.rows[0]?.role !== "admin") return res.status(403).json({ message: "No autorizado" });
+
+    await query("DELETE FROM hspeed_rooms WHERE id = $1", [parseInt(req.params.id)]);
+    res.json({ message: "Sala eliminada con éxito" });
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
 });
 
 export const handler = serverless(app);

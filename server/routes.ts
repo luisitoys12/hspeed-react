@@ -1112,8 +1112,30 @@ export async function registerRoutes(server: Server, app: Express) {
       if (!cfg || !cfg.apiUrl) return res.status(400).json({ message: "Radio no configurada" });
       const r = await fetch(cfg.apiUrl);
       if (!r.ok) return res.status(500).json({ message: "Error al consultar radio" });
-      res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error al consultar radio" }); }
+      const data = await r.json();
+      
+      const np = Array.isArray(data) ? data[0]?.now_playing : data?.now_playing;
+      const songInfo = np?.song;
+      if (songInfo && songInfo.title && songInfo.artist) {
+        const djPanel = await storage.getDjPanel().catch(() => null);
+        const playedByDj = djPanel?.currentDj || "AutoDJ";
+        await storage.createSongHistory({
+          title: songInfo.title,
+          artist: songInfo.artist,
+          album: songInfo.album || null,
+          coverUrl: songInfo.art || null,
+          playedByDj,
+          durationSeconds: np.duration || null,
+          requestedBy: null,
+          playCount: 1
+        }).catch((err: any) => console.error("Error auto-saving song history:", err));
+      }
+
+      res.json(data);
+    } catch (err: any) {
+      console.error("Error fetching nowplaying:", err);
+      res.status(500).json({ message: "Error al consultar radio" });
+    }
   });
 
   // ============ DJ PANEL ============
@@ -1543,5 +1565,135 @@ export async function registerRoutes(server: Server, app: Express) {
   app.put("/api/profiles", authMiddleware, async (req: any, res) => {
     const profile = await storage.upsertUserProfile(req.userId, req.body);
     res.json(profile);
+  });
+
+  // ============ SONG HISTORY ============
+  app.get("/api/song-history", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      res.json(await storage.getSongHistory(limit));
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.get("/api/song-history/top", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      res.json(await storage.getMostPlayedSongs(limit));
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.post("/api/song-history", djMiddleware, async (req, res) => {
+    try {
+      res.status(201).json(await storage.createSongHistory(req.body));
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  // ============ VIP MEMBERSHIPS ============
+  app.get("/api/vip/status", authMiddleware, async (req: any, res) => {
+    try {
+      const vip = await storage.getVipMembership(req.userId);
+      res.json(vip || { isActive: false });
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.post("/api/vip/subscribe", authMiddleware, async (req: any, res) => {
+    try {
+      const { tier, months, paymentRef } = req.body;
+      if (!tier || !months) return res.status(400).json({ message: "Nivel (tier) y meses son requeridos" });
+      
+      const costs: { [key: string]: number } = { silver: 100, gold: 200, diamond: 400 };
+      const costPerMonth = costs[tier.toLowerCase()] || 100;
+      const totalCost = costPerMonth * parseInt(months);
+
+      const user = await storage.getUser(req.userId);
+      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+      if (user.speedPoints < totalCost) {
+        return res.status(400).json({ message: `No tienes suficientes SpeedPoints. Necesitas ${totalCost} SP y tienes ${user.speedPoints} SP.` });
+      }
+
+      await storage.updateUser(req.userId, { speedPoints: user.speedPoints - totalCost });
+
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + parseInt(months));
+
+      const vip = await storage.createVipMembership({
+        userId: req.userId,
+        tier: tier.toLowerCase(),
+        expiresAt,
+        paymentRef: paymentRef || `SP_PURCHASE_${Date.now()}`,
+        isActive: true
+      });
+
+      await storage.createNotification({
+        userId: req.userId,
+        type: "success",
+        title: "¡Membresía VIP Activa!",
+        message: `Felicidades, ahora eres miembro VIP ${tier.toUpperCase()} por ${months} mes(es).`,
+        icon: "crown",
+        link: "/vip",
+        isRead: false
+      });
+
+      res.status(201).json(vip);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.post("/api/vip/perks/log", authMiddleware, async (req: any, res) => {
+    try {
+      const { perkUsed } = req.body;
+      if (!perkUsed) return res.status(400).json({ message: "Perk name is required" });
+      res.status(201).json(await storage.logVipPerkUse(req.userId, perkUsed));
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.get("/api/vip/admin/all", adminMiddleware, async (_req, res) => {
+    try {
+      res.json(await storage.getAllVipMemberships());
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.put("/api/vip/admin/:userId", adminMiddleware, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const vip = await storage.updateVipMembership(userId, req.body);
+      if (!vip) return res.status(404).json({ message: "Membresía VIP no encontrada" });
+      res.json(vip);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  // ============ HSPEED ROOMS ============
+  app.get("/api/rooms", async (req, res) => {
+    try {
+      const includeInactive = req.query.includeInactive === "true";
+      res.json(await storage.getAllRooms(includeInactive));
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.get("/api/rooms/featured", async (_req, res) => {
+    try {
+      res.json(await storage.getFeaturedRooms());
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.post("/api/rooms", adminMiddleware, async (req, res) => {
+    try {
+      res.status(201).json(await storage.createRoom(req.body));
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.put("/api/rooms/:id", adminMiddleware, async (req, res) => {
+    try {
+      const room = await storage.updateRoom(parseInt(req.params.id), req.body);
+      if (!room) return res.status(404).json({ message: "Sala no encontrada" });
+      res.json(room);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.delete("/api/rooms/:id", adminMiddleware, async (req, res) => {
+    try {
+      const success = await storage.deleteRoom(parseInt(req.params.id));
+      if (!success) return res.status(404).json({ message: "Sala no encontrada" });
+      res.json({ message: "Sala eliminada con éxito" });
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 }

@@ -1452,10 +1452,20 @@ function BannedSongsSection() {
 
 // ============ MAIN DJ PANEL ============
 export default function DJPanelPage() {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("timetable");
+  const { user, token } = useAuth();
+  const [activeTab, setActiveTab] = useState("home");
 
   const canAccess = user && (user.role === "admin" || user.role === "dj");
+
+  const { data: requests = [] } = useQuery<any[]>({
+    queryKey: ["/api/requests"],
+    enabled: !!user && !!canAccess,
+  });
+
+  const { data: djPanel } = useQuery<any>({
+    queryKey: ["/api/dj-panel"],
+    enabled: !!user && !!canAccess,
+  });
 
   if (!user) {
     return (
@@ -1483,89 +1493,172 @@ export default function DJPanelPage() {
     );
   }
 
+  const menuGroups = [
+    {
+      title: "General",
+      items: [
+        { id: "home", label: "Inicio DJ", icon: "fa-solid fa-house" },
+        { id: "estado", label: "Estado Emisión", icon: "fa-solid fa-radio" },
+        { id: "timetable", label: "Timetable Horario", icon: "fa-solid fa-calendar-week" },
+      ]
+    },
+    {
+      title: "Interacción",
+      items: [
+        { id: "peticiones", label: "Peticiones", icon: "fa-solid fa-music" },
+        { id: "chat", label: "Chat de Muro", icon: "fa-solid fa-comments" },
+        { id: "mensajes", label: "Mensajes DJ", icon: "fa-solid fa-bullhorn" },
+      ]
+    },
+    {
+      title: "Herramientas",
+      items: [
+        { id: "puntos", label: "SpeedPoints", icon: "fa-solid fa-coins" },
+        { id: "horarios", label: "Horarios DJ", icon: "fa-solid fa-clock" },
+        { id: "eventos", label: "Eventos", icon: "fa-solid fa-calendar-days" },
+        { id: "banned", label: "Canciones", icon: "fa-solid fa-ban" },
+      ]
+    }
+  ];
+
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-5">
-      <div className="flex items-center gap-3">
-        <Headphones className="w-5 h-5 text-primary" />
-        <h1 className="text-xl font-bold" data-testid="text-djpanel-title">Panel DJ</h1>
-        <Badge className="bg-primary/10 text-primary border-primary/30 text-[9px]">DJ</Badge>
-        {user.habboUsername && (
-          <img
-            src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=s&headonly=1`}
-            alt={user.displayName}
-            className="w-8 h-8 rounded bg-secondary ml-auto"
-          />
-        )}
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="flex flex-col lg:flex-row gap-8">
+        
+        {/* Left Sidebar Menu */}
+        <aside className="w-full lg:w-64 flex-shrink-0">
+          <div className="bg-card border border-border rounded-xl p-4 sticky top-24">
+            <div className="flex items-center gap-3 mb-6 px-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <i className="fa-solid fa-headphones"></i>
+              </div>
+              <div>
+                <h2 className="font-bold text-white text-xs uppercase tracking-wider font-cabinet">Panel DJ</h2>
+                <span className="text-[10px] text-muted-foreground uppercase font-semibold text-primary">Locución</span>
+              </div>
+            </div>
+
+            <nav className="space-y-6">
+              {menuGroups.map((group, groupIdx) => (
+                <div key={groupIdx} className="space-y-2">
+                  <h3 className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground px-2">
+                    {group.title}
+                  </h3>
+                  <div className="space-y-0.5">
+                    {group.items.map((item) => {
+                      const isActive = activeTab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveTab(item.id)}
+                          className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                            isActive
+                              ? "bg-primary text-black"
+                              : "text-muted-foreground hover:bg-zinc-800 hover:text-white"
+                          }`}
+                        >
+                          <span className="w-4 text-center"><i className={item.icon}></i></span>
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </div>
+        </aside>
+
+        {/* Right Content Area */}
+        <main className="flex-1 min-w-0">
+          {activeTab === "home" ? (
+            <div className="space-y-8">
+              {/* Welcome Banner */}
+              <div className="bg-gradient-to-r from-primary/10 via-card to-card border border-primary/20 rounded-xl p-6 relative overflow-hidden">
+                <div className="relative z-10 max-w-md">
+                  <h2 className="text-2xl font-black uppercase text-white font-cabinet mb-1">
+                    ¡Al Aire, DJ {user.displayName}!
+                  </h2>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Gestiona tu emisión en vivo, revisa las peticiones de canciones o saludos de los usuarios en tiempo real, y otorga SpeedPoints para premiar a tu audiencia.
+                  </p>
+                </div>
+                {user.habboUsername && (
+                  <img
+                    src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=l`}
+                    alt={user.displayName}
+                    className="absolute -right-4 -bottom-10 w-36 h-36 object-contain opacity-30 sm:opacity-100"
+                  />
+                )}
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: "Peticiones", value: requests.length || "0", icon: "fa-solid fa-music", color: "text-blue-400 bg-blue-500/5" },
+                  { label: "DJ en Transmisión", value: djPanel?.currentDj || "AutoDJ", icon: "fa-solid fa-radio", color: "text-primary bg-primary/5" },
+                  { label: "Rango", value: user.role.toUpperCase(), icon: "fa-solid fa-headphones", color: "text-red-400 bg-red-500/5" },
+                  { label: "Mis SP", value: `${user.speedPoints} SP`, icon: "fa-solid fa-coins", color: "text-yellow-400 bg-yellow-500/5" },
+                ].map((stat, i) => (
+                  <Card key={i} className="border border-border bg-card/60">
+                    <CardContent className="p-4 flex items-center justify-between gap-4">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold">{stat.label}</span>
+                        <p className="text-lg font-black text-white mt-1 truncate max-w-[120px]">{stat.value}</p>
+                      </div>
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm ${stat.color}`}>
+                        <i className={stat.icon}></i>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Quick Actions */}
+              <Card className="border border-border bg-card">
+                <CardContent className="p-6">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white font-cabinet mb-4 flex items-center gap-2">
+                    <i className="fa-solid fa-bolt text-primary"></i> Accesos Rápidos
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { label: "Estado Locución", action: () => setActiveTab("estado"), icon: "fa-solid fa-radio" },
+                      { label: "Ver Peticiones", action: () => setActiveTab("peticiones"), icon: "fa-solid fa-music" },
+                      { label: "Dar SpeedPoints", action: () => setActiveTab("puntos"), icon: "fa-solid fa-coins" },
+                      { label: "Chat del Hotel", action: () => setActiveTab("chat"), icon: "fa-solid fa-comments" },
+                    ].map((act, i) => (
+                      <Button
+                        key={i}
+                        variant="outline"
+                        className="h-20 flex flex-col items-center justify-center gap-2 border-border bg-zinc-950 text-xs font-bold text-muted-foreground hover:text-white hover:bg-zinc-900"
+                        onClick={act.action}
+                      >
+                        <i className={`${act.icon} text-lg text-primary`}></i>
+                        <span>{act.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <Card className="bg-card border-border">
+              <CardContent className="p-6">
+                {activeTab === "timetable" && <TimetableSection />}
+                {activeTab === "estado" && <DjStatusSection />}
+                {activeTab === "peticiones" && <RequestsSection />}
+                {activeTab === "puntos" && <SpeedPointsSection />}
+                {activeTab === "horarios" && <HorariosSection />}
+                {activeTab === "eventos" && <EventosSection />}
+                {activeTab === "chat" && <ChatSection />}
+                {activeTab === "mensajes" && <MensajesSection />}
+                {activeTab === "banned" && <BannedSongsSection />}
+              </CardContent>
+            </Card>
+          )}
+        </main>
+
       </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-secondary/50 border border-border h-auto flex-wrap gap-0.5">
-          {DJ_SECTIONS.map(({ id, label, icon: Icon }) => (
-            <TabsTrigger
-              key={id}
-              value={id}
-              className="text-xs gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-white"
-              data-testid={`tab-dj-${id}`}
-            >
-              <Icon className="w-3 h-3" />
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value="timetable">
-          <Card className="bg-card border-border">
-            <CardContent className="p-5"><TimetableSection /></CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="estado">
-          <Card className="bg-card border-border">
-            <CardContent className="p-5"><DjStatusSection /></CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="peticiones">
-          <Card className="bg-card border-border">
-            <CardContent className="p-5"><RequestsSection /></CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="puntos">
-          <Card className="bg-card border-border">
-            <CardContent className="p-5"><SpeedPointsSection /></CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="horarios">
-          <Card className="bg-card border-border">
-            <CardContent className="p-5"><HorariosSection /></CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="eventos">
-          <Card className="bg-card border-border">
-            <CardContent className="p-5"><EventosSection /></CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="chat">
-          <Card className="bg-card border-border">
-            <CardContent className="p-5"><ChatSection /></CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="mensajes">
-          <Card className="bg-card border-border">
-            <CardContent className="p-5"><MensajesSection /></CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="banned">
-          <Card className="bg-card border-border">
-            <CardContent className="p-5"><BannedSongsSection /></CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }

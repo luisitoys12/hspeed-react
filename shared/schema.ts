@@ -19,6 +19,12 @@ export const users = pgTable("users", {
   mundialPredictions: jsonb("mundial_predictions").default({}),
   mundialTickets: integer("mundial_tickets").notNull().default(0),
   mundialPenalties: jsonb("mundial_penalties").default({ maxScore: 0, totalGames: 0 }),
+  vipTier: text("vip_tier"), // silver, gold, diamond
+  totalRequests: integer("total_requests").notNull().default(0),
+  favoriteGenre: text("favorite_genre"),
+  bio: text("bio"),
+  socialLinks: jsonb("social_links").default({}),
+  badgesEarned: jsonb("badges_earned").default([]),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -452,3 +458,69 @@ export const profileWall = pgTable("profile_wall", {
 export const insertProfileWallSchema = createInsertSchema(profileWall).omit({ id: true, createdAt: true });
 export type InsertProfileWall = z.infer<typeof insertProfileWallSchema>;
 export type ProfileWallMessage = typeof profileWall.$inferSelect;
+
+// ============ SONG HISTORY ============
+export const songHistory = pgTable("song_history", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  artist: text("artist").notNull(),
+  album: text("album"),
+  coverUrl: text("cover_url"),
+  playedAt: timestamp("played_at").defaultNow(),
+  playedByDj: text("played_by_dj"),
+  durationSeconds: integer("duration_seconds"),
+  requestedBy: text("requested_by"),
+  playCount: integer("play_count").notNull().default(1),
+});
+
+export const insertSongHistorySchema = createInsertSchema(songHistory).omit({ id: true, playedAt: true });
+export type InsertSongHistory = z.infer<typeof insertSongHistorySchema>;
+export type SongHistory = typeof songHistory.$inferSelect;
+
+// ============ VIP MEMBERSHIPS ============
+export const vipMemberships = pgTable("vip_memberships", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  tier: text("tier").notNull(), // silver, gold, diamond
+  startedAt: timestamp("started_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+  paymentRef: text("payment_ref"),
+  isActive: boolean("is_active").notNull().default(true),
+});
+
+export const insertVipMembershipSchema = createInsertSchema(vipMemberships).omit({ id: true, startedAt: true });
+export type InsertVipMembership = z.infer<typeof insertVipMembershipSchema>;
+export type VipMembership = typeof vipMemberships.$inferSelect;
+
+// ============ VIP PERKS LOG ============
+export const vipPerksLog = pgTable("vip_perks_log", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  perkUsed: text("perk_used").notNull(),
+  usedAt: timestamp("used_at").defaultNow(),
+});
+
+export const insertVipPerkLogSchema = createInsertSchema(vipPerksLog).omit({ id: true, usedAt: true });
+export type InsertVipPerkLog = z.infer<typeof insertVipPerkLogSchema>;
+export type VipPerkLog = typeof vipPerksLog.$inferSelect;
+
+// ============ HSPEED ROOMS ============
+export const hspeedRooms = pgTable("hspeed_rooms", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  roomCode: text("room_code"),
+  ownerHabbo: text("owner_habbo"),
+  hotel: text("hotel").default("es"),
+  category: text("category"), // oficial, vip, evento, musica
+  capacity: integer("capacity"),
+  currentVisitors: integer("current_visitors").default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  thumbnailUrl: text("thumbnail_url"),
+  featured: boolean("featured").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertHSpeedRoomSchema = createInsertSchema(hspeedRooms).omit({ id: true, createdAt: true });
+export type InsertHSpeedRoom = z.infer<typeof insertHSpeedRoomSchema>;
+export type HSpeedRoom = typeof hspeedRooms.$inferSelect;

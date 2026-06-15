@@ -35,6 +35,9 @@ import LegalPage from "@/pages/LegalPage";
 import MaintenancePage from "@/pages/MaintenancePage";
 import ProfilePage from "@/pages/ProfilePage";
 import MundialPage from "@/pages/MundialPage";
+import SongHistoryPage from "@/pages/SongHistoryPage";
+import VipPage from "@/pages/VipPage";
+import RoomsPage from "@/pages/RoomsPage";
 import NotFound from "@/pages/not-found";
 
 const Habbo3D = lazy(() => import("@/pages/Habbo3D"));
@@ -92,6 +95,9 @@ function AppContent() {
 						<Route path="/maintenance" component={MaintenancePage} />
 						<Route path="/profile/:username" component={ProfilePage} />
 						<Route path="/mundial/:subpage*" component={MundialPage} />
+						<Route path="/song-history" component={SongHistoryPage} />
+						<Route path="/vip" component={VipPage} />
+						<Route path="/rooms" component={RoomsPage} />
 						<Route component={NotFound} />
 					</Switch>
 				</Suspense>

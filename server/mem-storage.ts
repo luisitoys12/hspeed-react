@@ -20,6 +20,10 @@ import {
   type PanelLog, type InsertPanelLog,
   type ReportedMessage, type InsertReportedMessage,
   type InsertProfileWall, type ProfileWallMessage,
+  type SongHistory, type InsertSongHistory,
+  type VipMembership, type InsertVipMembership,
+  type VipPerkLog, type InsertVipPerkLog,
+  type HSpeedRoom, type InsertHSpeedRoom,
 } from "@shared/schema";
 import { type IStorage } from "./storage";
 import bcrypt from "bcryptjs";
@@ -45,6 +49,15 @@ export class MemStorage implements IStorage {
   private panelLogs: Map<number, PanelLog> = new Map();
   private reportedMessages: Map<number, ReportedMessage> = new Map();
   
+  private songHistoryList: Map<number, SongHistory> = new Map();
+  private vipMembershipsList: Map<number, VipMembership> = new Map();
+  private vipPerkLogsList: Map<number, VipPerkLog> = new Map();
+  private hspeedRoomsList: Map<number, HSpeedRoom> = new Map();
+  private _songHistoryId = 0;
+  private _vipMembershipId = 0;
+  private _vipPerkLogId = 0;
+  private _hspeedRoomId = 0;
+
   private configItem!: Config;
   private djPanelState: any;
   private chatMessagesList: any[] = [];
@@ -101,6 +114,12 @@ export class MemStorage implements IStorage {
       mundialPredictions: {},
       mundialTickets: 0,
       mundialPenalties: { maxScore: 0, totalGames: 0 },
+      vipTier: null,
+      totalRequests: 0,
+      favoriteGenre: null,
+      bio: null,
+      socialLinks: {},
+      badgesEarned: [],
       createdAt: new Date()
     });
     this.currentId = 2;
@@ -303,6 +322,12 @@ export class MemStorage implements IStorage {
       mundialPredictions: {},
       mundialTickets: 0,
       mundialPenalties: { maxScore: 0, totalGames: 0 },
+      vipTier: user.vipTier || null,
+      totalRequests: user.totalRequests || 0,
+      favoriteGenre: user.favoriteGenre || null,
+      bio: user.bio || null,
+      socialLinks: user.socialLinks || {},
+      badgesEarned: user.badgesEarned || [],
       createdAt: new Date()
     };
     this.users.set(id, newUser);
@@ -910,5 +935,175 @@ export class MemStorage implements IStorage {
 
   async getWallMessageById(id: number) {
     return this.profileWall.get(id);
+  }
+
+  // Song History
+  async getSongHistory(limit: number = 20): Promise<SongHistory[]> {
+    return Array.from(this.songHistoryList.values())
+      .sort((a, b) => (b.playedAt ? new Date(b.playedAt).getTime() : 0) - (a.playedAt ? new Date(a.playedAt).getTime() : 0))
+      .slice(0, limit);
+  }
+
+  async createSongHistory(song: InsertSongHistory): Promise<SongHistory> {
+    const id = ++this._songHistoryId;
+    const item: SongHistory = {
+      id,
+      title: song.title,
+      artist: song.artist,
+      album: song.album || null,
+      coverUrl: song.coverUrl || null,
+      playedAt: new Date(),
+      playedByDj: song.playedByDj || null,
+      durationSeconds: song.durationSeconds || null,
+      requestedBy: song.requestedBy || null,
+      playCount: song.playCount || 1,
+    };
+    this.songHistoryList.set(id, item);
+    return item;
+  }
+
+  async getMostPlayedSongs(limit: number = 10): Promise<SongHistory[]> {
+    const counts: { [key: string]: { song: SongHistory, count: number } } = {};
+    this.songHistoryList.forEach(item => {
+      const key = `${item.title} - ${item.artist}`;
+      if (counts[key]) {
+        counts[key].count += item.playCount;
+      } else {
+        counts[key] = { song: item, count: item.playCount };
+      }
+    });
+
+    return Object.values(counts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit)
+      .map((entry, idx) => ({
+        ...entry.song,
+        id: idx + 1,
+        playCount: entry.count,
+      }));
+  }
+
+  // VIP Memberships
+  async getVipMembership(userId: number): Promise<VipMembership | undefined> {
+    return Array.from(this.vipMembershipsList.values())
+      .find(m => m.userId === userId && m.isActive);
+  }
+
+  async createVipMembership(membership: InsertVipMembership): Promise<VipMembership> {
+    const id = ++this._vipMembershipId;
+    const item: VipMembership = {
+      id,
+      userId: membership.userId,
+      tier: membership.tier,
+      startedAt: new Date(),
+      expiresAt: membership.expiresAt ? new Date(membership.expiresAt) : null,
+      paymentRef: membership.paymentRef || null,
+      isActive: membership.isActive ?? true,
+    };
+    this.vipMembershipsList.set(id, item);
+    
+    // Update user in users map
+    const user = this.users.get(membership.userId);
+    if (user) {
+      user.vipTier = membership.tier;
+    }
+
+    return item;
+  }
+
+  async updateVipMembership(userId: number, data: Partial<InsertVipMembership>): Promise<VipMembership | undefined> {
+    const active = await this.getVipMembership(userId);
+    if (!active) return undefined;
+
+    Object.assign(active, data);
+    
+    if (data.tier !== undefined || data.isActive === false) {
+      const user = this.users.get(userId);
+      if (user) {
+        user.vipTier = active.isActive ? active.tier : null;
+      }
+    }
+
+    return active;
+  }
+
+  async getAllVipMemberships(): Promise<any[]> {
+    return Array.from(this.vipMembershipsList.values()).map(m => {
+      const user = this.users.get(m.userId);
+      return {
+        ...m,
+        displayName: user?.displayName || "Desconocido",
+        email: user?.email || "",
+        habboUsername: user?.habboUsername || ""
+      };
+    });
+  }
+
+  // VIP Perks Log
+  async logVipPerkUse(userId: number, perkUsed: string): Promise<VipPerkLog> {
+    const id = ++this._vipPerkLogId;
+    const item: VipPerkLog = {
+      id,
+      userId,
+      perkUsed,
+      usedAt: new Date(),
+    };
+    this.vipPerkLogsList.set(id, item);
+    return item;
+  }
+
+  async getVipPerkLogs(userId: number): Promise<VipPerkLog[]> {
+    return Array.from(this.vipPerkLogsList.values())
+      .filter(l => l.userId === userId)
+      .sort((a, b) => (b.usedAt ? new Date(b.usedAt).getTime() : 0) - (a.usedAt ? new Date(a.usedAt).getTime() : 0));
+  }
+
+  // Rooms
+  async getAllRooms(includeInactive: boolean = false): Promise<HSpeedRoom[]> {
+    return Array.from(this.hspeedRoomsList.values())
+      .filter(r => includeInactive || r.isActive)
+      .sort((a, b) => {
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      });
+  }
+
+  async getFeaturedRooms(): Promise<HSpeedRoom[]> {
+    return Array.from(this.hspeedRoomsList.values())
+      .filter(r => r.isActive && r.featured)
+      .sort((a, b) => (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0));
+  }
+
+  async createRoom(room: InsertHSpeedRoom): Promise<HSpeedRoom> {
+    const id = ++this._hspeedRoomId;
+    const item: HSpeedRoom = {
+      id,
+      name: room.name,
+      description: room.description || null,
+      roomCode: room.roomCode || null,
+      ownerHabbo: room.ownerHabbo || null,
+      hotel: room.hotel || "es",
+      category: room.category || null,
+      capacity: room.capacity || null,
+      currentVisitors: room.currentVisitors || 0,
+      isActive: room.isActive ?? true,
+      thumbnailUrl: room.thumbnailUrl || null,
+      featured: room.featured ?? false,
+      createdAt: new Date(),
+    };
+    this.hspeedRoomsList.set(id, item);
+    return item;
+  }
+
+  async updateRoom(id: number, data: Partial<InsertHSpeedRoom>): Promise<HSpeedRoom | undefined> {
+    const item = this.hspeedRoomsList.get(id);
+    if (!item) return undefined;
+    Object.assign(item, data);
+    return item;
+  }
+
+  async deleteRoom(id: number): Promise<boolean> {
+    return this.hspeedRoomsList.delete(id);
   }
 }

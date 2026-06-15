@@ -7,7 +7,7 @@ async function main() {
     console.error('DATABASE_URL not set; cannot run migrations.');
     process.exit(1);
   }
-  const migrations = ['001_create_tables.sql', '002_new_features.sql', '003_mundial_features.sql'];
+  const migrations = ['001_create_tables.sql', '002_new_features.sql', '003_mundial_features.sql', '004_mega_update.sql'];
   const client = await pool.connect();
   try {
     for (const m of migrations) {

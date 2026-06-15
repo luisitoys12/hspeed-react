@@ -986,8 +986,26 @@ function ShopAdmin() {
 // ============ MAIN PANEL ============
 export default function AdminPanel() {
   const { section } = useParams<{ section?: string }>();
-  const { user, isAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState(section || "themes");
+  const { user, isAdmin, token } = useAuth();
+  const [activeTab, setActiveTab] = useState(section || "home");
+
+  const { data: allUsers = [] } = useQuery<any[]>({
+    queryKey: ["/api/users"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/users", undefined, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    enabled: !!user && isAdmin,
+  });
+
+  const { data: djPanel } = useQuery<any>({
+    queryKey: ["/api/dj-panel"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/dj-panel", undefined, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    enabled: !!user && isAdmin,
+  });
 
   if (!user || !isAdmin) {
     return (
@@ -1000,38 +1018,187 @@ export default function AdminPanel() {
     );
   }
 
+  const menuGroups = [
+    {
+      title: "General",
+      items: [
+        { id: "home", label: "Inicio", icon: "fa-solid fa-house" },
+        { id: "config", label: "Configuración", icon: "fa-solid fa-gears" },
+        { id: "themes", label: "Temáticas", icon: "fa-solid fa-palette" },
+        { id: "logs", label: "Logs", icon: "fa-solid fa-scroll" },
+      ]
+    },
+    {
+      title: "Contenido",
+      items: [
+        { id: "news", label: "Noticias", icon: "fa-solid fa-newspaper" },
+        { id: "events", label: "Eventos", icon: "fa-solid fa-calendar-days" },
+        { id: "schedule", label: "Horarios", icon: "fa-solid fa-calendar-plus" },
+        { id: "downloads", label: "Descargas", icon: "fa-solid fa-download" },
+      ]
+    },
+    {
+      title: "Comunidad",
+      items: [
+        { id: "users", label: "Usuarios", icon: "fa-solid fa-users" },
+        { id: "team", label: "Equipo", icon: "fa-solid fa-user-shield" },
+        { id: "shop", label: "Tienda", icon: "fa-solid fa-store" },
+        { id: "contacts", label: "Mensajes", icon: "fa-solid fa-envelope" },
+      ]
+    },
+    {
+      title: "Radio y Reportes",
+      items: [
+        { id: "dj", label: "Estado DJ", icon: "fa-solid fa-radio" },
+        { id: "banned", label: "Canciones", icon: "fa-solid fa-ban" },
+        { id: "reports", label: "Reportes", icon: "fa-solid fa-flag" },
+      ]
+    }
+  ];
+
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-5">
-      <div className="flex items-center gap-3">
-        <Settings className="w-5 h-5 text-primary" />
-        <h1 className="text-xl font-bold">Panel de Administración</h1>
-        <Badge className="bg-red-500/10 text-red-400 border-red-500/30 text-[9px]">ADMIN</Badge>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="flex flex-col lg:flex-row gap-8">
+        
+        {/* Left Navigation Menu */}
+        <aside className="w-full lg:w-64 flex-shrink-0">
+          <div className="bg-card border border-border rounded-xl p-4 sticky top-24">
+            <div className="flex items-center gap-3 mb-6 px-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <i className="fa-solid fa-shield-halved"></i>
+              </div>
+              <div>
+                <h2 className="font-bold text-white text-xs uppercase tracking-wider font-cabinet">Panel Control</h2>
+                <span className="text-[10px] text-muted-foreground uppercase font-semibold text-primary">Administración</span>
+              </div>
+            </div>
+
+            <nav className="space-y-6">
+              {menuGroups.map((group, groupIdx) => (
+                <div key={groupIdx} className="space-y-2">
+                  <h3 className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground px-2">
+                    {group.title}
+                  </h3>
+                  <div className="space-y-0.5">
+                    {group.items.map((item) => {
+                      const isActive = activeTab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveTab(item.id)}
+                          className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                            isActive
+                              ? "bg-primary text-black"
+                              : "text-muted-foreground hover:bg-zinc-800 hover:text-white"
+                          }`}
+                        >
+                          <span className="w-4 text-center"><i className={item.icon}></i></span>
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </div>
+        </aside>
+
+        {/* Right Content Area */}
+        <main className="flex-1 min-w-0">
+          {activeTab === "home" ? (
+            <div className="space-y-8">
+              {/* Welcome Banner */}
+              <div className="bg-gradient-to-r from-primary/10 via-card to-card border border-primary/20 rounded-xl p-6 relative overflow-hidden">
+                <div className="relative z-10 max-w-md">
+                  <h2 className="text-2xl font-black uppercase text-white font-cabinet mb-1">
+                    ¡Bienvenido, {user.displayName}!
+                  </h2>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Este es el centro de control de HabboSpeed. Usa el menú lateral para gestionar la radio, configurar temas, aprobar noticias y moderar la comunidad.
+                  </p>
+                </div>
+                {user.habboUsername && (
+                  <img
+                    src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${user.habboUsername}&size=l`}
+                    alt={user.displayName}
+                    className="absolute -right-4 -bottom-10 w-36 h-36 object-contain opacity-30 sm:opacity-100"
+                  />
+                )}
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: "Usuarios", value: allUsers.length || "—", icon: "fa-solid fa-users", color: "text-blue-400 bg-blue-500/5" },
+                  { label: "DJ en Vivo", value: djPanel?.currentDj || "AutoDJ", icon: "fa-solid fa-radio", color: "text-primary bg-primary/5" },
+                  { label: "Rango", value: user.role.toUpperCase(), icon: "fa-solid fa-shield", color: "text-red-400 bg-red-500/5" },
+                  { label: "Mis SP", value: `${user.speedPoints} SP`, icon: "fa-solid fa-coins", color: "text-yellow-400 bg-yellow-500/5" },
+                ].map((stat, i) => (
+                  <Card key={i} className="border border-border bg-card/60">
+                    <CardContent className="p-4 flex items-center justify-between gap-4">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold">{stat.label}</span>
+                        <p className="text-lg font-black text-white mt-1 truncate max-w-[120px]">{stat.value}</p>
+                      </div>
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm ${stat.color}`}>
+                        <i className={stat.icon}></i>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Fast Actions */}
+              <Card className="border border-border bg-card">
+                <CardContent className="p-6">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white font-cabinet mb-4 flex items-center gap-2">
+                    <i className="fa-solid fa-bolt text-primary"></i> Accesos Rápidos
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { label: "Nueva Noticia", action: () => setActiveTab("news"), icon: "fa-solid fa-newspaper" },
+                      { label: "Cambiar Tema", action: () => setActiveTab("themes"), icon: "fa-solid fa-palette" },
+                      { label: "Estado DJ", action: () => setActiveTab("dj"), icon: "fa-solid fa-radio" },
+                      { label: "Ajustes Radio", action: () => setActiveTab("config"), icon: "fa-solid fa-gears" },
+                    ].map((act, i) => (
+                      <Button
+                        key={i}
+                        variant="outline"
+                        className="h-20 flex flex-col items-center justify-center gap-2 border-border bg-zinc-950 text-xs font-bold text-muted-foreground hover:text-white hover:bg-zinc-900"
+                        onClick={act.action}
+                      >
+                        <i className={`${act.icon} text-lg text-primary`}></i>
+                        <span>{act.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <Card className="bg-card border-border">
+              <CardContent className="p-6">
+                {activeTab === "themes" && <ThemesAdmin />}
+                {activeTab === "news" && <NewsAdmin />}
+                {activeTab === "events" && <EventsAdmin />}
+                {activeTab === "schedule" && <ScheduleAdmin />}
+                {activeTab === "users" && <UsersAdmin />}
+                {activeTab === "team" && <TeamAdmin />}
+                {activeTab === "downloads" && <DownloadsAdmin />}
+                {activeTab === "shop" && <ShopAdmin />}
+                {activeTab === "banned" && <BannedSongsAdmin />}
+                {activeTab === "contacts" && <ContactsAdmin />}
+                {activeTab === "reports" && <ReportsAdmin />}
+                {activeTab === "logs" && <PanelLogsAdmin />}
+                {activeTab === "dj" && <DjPanelAdmin />}
+                {activeTab === "config" && <ConfigAdmin />}
+              </CardContent>
+            </Card>
+          )}
+        </main>
+
       </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-secondary/50 border border-border h-auto flex-wrap gap-0.5">
-          {SECTIONS.map(({ id, label, icon: Icon }) => (
-            <TabsTrigger key={id} value={id} className="text-xs gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-white" data-testid={`tab-admin-${id}`}>
-              <Icon className="w-3 h-3" />{label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value="themes"><Card className="bg-card border-border"><CardContent className="p-5"><ThemesAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="news"><Card className="bg-card border-border"><CardContent className="p-5"><NewsAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="events"><Card className="bg-card border-border"><CardContent className="p-5"><EventsAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="schedule"><Card className="bg-card border-border"><CardContent className="p-5"><ScheduleAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="users"><Card className="bg-card border-border"><CardContent className="p-5"><UsersAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="team"><Card className="bg-card border-border"><CardContent className="p-5"><TeamAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="downloads"><Card className="bg-card border-border"><CardContent className="p-5"><DownloadsAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="shop"><Card className="bg-card border-border"><CardContent className="p-5"><ShopAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="banned"><Card className="bg-card border-border"><CardContent className="p-5"><BannedSongsAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="contacts"><Card className="bg-card border-border"><CardContent className="p-5"><ContactsAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="reports"><Card className="bg-card border-border"><CardContent className="p-5"><ReportsAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="logs"><Card className="bg-card border-border"><CardContent className="p-5"><PanelLogsAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="dj"><Card className="bg-card border-border"><CardContent className="p-5"><DjPanelAdmin /></CardContent></Card></TabsContent>
-        <TabsContent value="config"><Card className="bg-card border-border"><CardContent className="p-5"><ConfigAdmin /></CardContent></Card></TabsContent>
-      </Tabs>
     </div>
   );
 }

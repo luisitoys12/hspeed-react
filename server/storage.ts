@@ -24,6 +24,10 @@ import {
   type Notification, type InsertNotification,
   type UserProfile, type InsertUserProfile,
   type InsertProfileWall, type ProfileWallMessage,
+  type SongHistory, type InsertSongHistory,
+  type VipMembership, type InsertVipMembership,
+  type VipPerkLog, type InsertVipPerkLog,
+  type HSpeedRoom, type InsertHSpeedRoom,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -186,6 +190,28 @@ export interface IStorage {
   getWallMessageById(id: number): Promise<ProfileWallMessage | undefined>;
   createWallMessage(msg: InsertProfileWall): Promise<ProfileWallMessage>;
   deleteWallMessage(id: number): Promise<boolean>;
+
+  // Song History
+  getSongHistory(limit?: number): Promise<SongHistory[]>;
+  createSongHistory(song: InsertSongHistory): Promise<SongHistory>;
+  getMostPlayedSongs(limit?: number): Promise<SongHistory[]>;
+
+  // VIP Memberships
+  getVipMembership(userId: number): Promise<VipMembership | undefined>;
+  createVipMembership(membership: InsertVipMembership): Promise<VipMembership>;
+  updateVipMembership(userId: number, data: Partial<InsertVipMembership>): Promise<VipMembership | undefined>;
+  getAllVipMemberships(): Promise<any[]>;
+
+  // VIP Perks Log
+  logVipPerkUse(userId: number, perkUsed: string): Promise<VipPerkLog>;
+  getVipPerkLogs(userId: number): Promise<VipPerkLog[]>;
+
+  // Rooms
+  getAllRooms(includeInactive?: boolean): Promise<HSpeedRoom[]>;
+  getFeaturedRooms(): Promise<HSpeedRoom[]>;
+  createRoom(room: InsertHSpeedRoom): Promise<HSpeedRoom>;
+  updateRoom(id: number, data: Partial<InsertHSpeedRoom>): Promise<HSpeedRoom | undefined>;
+  deleteRoom(id: number): Promise<boolean>;
 }
 
 // Helper to map snake_case DB rows to camelCase TypeScript objects
@@ -201,6 +227,12 @@ function mapUser(row: any): User {
     mundialPredictions: row.mundial_predictions,
     mundialTickets: row.mundial_tickets,
     mundialPenalties: row.mundial_penalties,
+    vipTier: row.vip_tier,
+    totalRequests: row.total_requests || 0,
+    favoriteGenre: row.favorite_genre,
+    bio: row.bio,
+    socialLinks: row.social_links || {},
+    badgesEarned: row.badges_earned || [],
   };
 }
 function mapNews(row: any): News {
@@ -337,6 +369,60 @@ function mapProfileWall(row: any): ProfileWallMessage {
   };
 }
 
+function mapSongHistory(row: any): SongHistory {
+  return {
+    id: row.id,
+    title: row.title,
+    artist: row.artist,
+    album: row.album,
+    coverUrl: row.cover_url,
+    playedAt: row.played_at,
+    playedByDj: row.played_by_dj,
+    durationSeconds: row.duration_seconds,
+    requestedBy: row.requested_by,
+    playCount: row.play_count,
+  };
+}
+
+function mapVipMembership(row: any): VipMembership {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    tier: row.tier,
+    startedAt: row.started_at,
+    expiresAt: row.expires_at,
+    paymentRef: row.payment_ref,
+    isActive: row.is_active,
+  };
+}
+
+function mapVipPerkLog(row: any): VipPerkLog {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    perkUsed: row.perk_used,
+    usedAt: row.used_at,
+  };
+}
+
+function mapHSpeedRoom(row: any): HSpeedRoom {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    roomCode: row.room_code,
+    ownerHabbo: row.owner_habbo,
+    hotel: row.hotel,
+    category: row.category,
+    capacity: row.capacity,
+    currentVisitors: row.current_visitors,
+    isActive: row.is_active,
+    thumbnailUrl: row.thumbnail_url,
+    featured: row.featured,
+    createdAt: row.created_at,
+  };
+}
+
 export class SupabaseStorage implements IStorage {
   private pool: any;
 
@@ -388,6 +474,12 @@ export class SupabaseStorage implements IStorage {
     if (data.mundialPredictions !== undefined) { fields.push(`mundial_predictions = $${i++}`); values.push(JSON.stringify(data.mundialPredictions)); }
     if (data.mundialTickets !== undefined) { fields.push(`mundial_tickets = $${i++}`); values.push(data.mundialTickets); }
     if (data.mundialPenalties !== undefined) { fields.push(`mundial_penalties = $${i++}`); values.push(JSON.stringify(data.mundialPenalties)); }
+    if (data.vipTier !== undefined) { fields.push(`vip_tier = $${i++}`); values.push(data.vipTier); }
+    if (data.totalRequests !== undefined) { fields.push(`total_requests = $${i++}`); values.push(data.totalRequests); }
+    if (data.favoriteGenre !== undefined) { fields.push(`favorite_genre = $${i++}`); values.push(data.favoriteGenre); }
+    if (data.bio !== undefined) { fields.push(`bio = $${i++}`); values.push(data.bio); }
+    if (data.socialLinks !== undefined) { fields.push(`social_links = $${i++}`); values.push(JSON.stringify(data.socialLinks)); }
+    if (data.badgesEarned !== undefined) { fields.push(`badges_earned = $${i++}`); values.push(JSON.stringify(data.badgesEarned)); }
     if (fields.length === 0) return this.getUser(id);
     values.push(id);
     const r = await this.query(`UPDATE users SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
@@ -1218,6 +1310,186 @@ export class SupabaseStorage implements IStorage {
 
   async deleteWallMessage(id: number) {
     const r = await this.query("DELETE FROM profile_wall WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  // Song History
+  async getSongHistory(limit: number = 20): Promise<SongHistory[]> {
+    const r = await this.query("SELECT * FROM song_history ORDER BY played_at DESC LIMIT $1", [limit]);
+    return r.rows.map(mapSongHistory);
+  }
+
+  async createSongHistory(song: InsertSongHistory): Promise<SongHistory> {
+    const check = await this.query(
+      "SELECT * FROM song_history WHERE title = $1 AND artist = $2 AND played_at > NOW() - INTERVAL '2 minutes' LIMIT 1",
+      [song.title, song.artist]
+    );
+    if (check.rows.length > 0) {
+      const existing = check.rows[0];
+      const r = await this.query(
+        "UPDATE song_history SET play_count = play_count + 1, played_at = NOW() WHERE id = $1 RETURNING *",
+        [existing.id]
+      );
+      return mapSongHistory(r.rows[0]);
+    }
+
+    const r = await this.query(
+      `INSERT INTO song_history (title, artist, album, cover_url, played_by_dj, duration_seconds, requested_by, play_count)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [song.title, song.artist, song.album || null, song.coverUrl || null, song.playedByDj || null, song.durationSeconds || null, song.requestedBy || null, song.playCount || 1]
+    );
+    return mapSongHistory(r.rows[0]);
+  }
+
+  async getMostPlayedSongs(limit: number = 10): Promise<SongHistory[]> {
+    const r = await this.query(
+      "SELECT title, artist, album, cover_url, SUM(play_count) as play_count FROM song_history GROUP BY title, artist, album, cover_url ORDER BY play_count DESC LIMIT $1",
+      [limit]
+    );
+    return r.rows.map((row: any, idx: number) => ({
+      id: idx + 1,
+      title: row.title,
+      artist: row.artist,
+      album: row.album,
+      coverUrl: row.cover_url,
+      playCount: parseInt(row.play_count) || 1,
+      playedAt: new Date(),
+      playedByDj: null,
+      durationSeconds: null,
+      requestedBy: null,
+    }));
+  }
+
+  // VIP Memberships
+  async getVipMembership(userId: number): Promise<VipMembership | undefined> {
+    const r = await this.query("SELECT * FROM vip_memberships WHERE user_id = $1 AND is_active = true ORDER BY expires_at DESC LIMIT 1", [userId]);
+    return r.rows[0] ? mapVipMembership(r.rows[0]) : undefined;
+  }
+
+  async createVipMembership(membership: InsertVipMembership): Promise<VipMembership> {
+    const r = await this.query(
+      `INSERT INTO vip_memberships (user_id, tier, expires_at, payment_ref, is_active)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [membership.userId, membership.tier, membership.expiresAt || null, membership.paymentRef || null, membership.isActive ?? true]
+    );
+    await this.query("UPDATE users SET vip_tier = $1 WHERE id = $2", [membership.tier, membership.userId]);
+    return mapVipMembership(r.rows[0]);
+  }
+
+  async updateVipMembership(userId: number, data: Partial<InsertVipMembership>): Promise<VipMembership | undefined> {
+    const active = await this.getVipMembership(userId);
+    if (!active) return undefined;
+
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.tier !== undefined) { fields.push(`tier = $${i++}`); values.push(data.tier); }
+    if (data.expiresAt !== undefined) { fields.push(`expires_at = $${i++}`); values.push(data.expiresAt); }
+    if (data.paymentRef !== undefined) { fields.push(`payment_ref = $${i++}`); values.push(data.paymentRef); }
+    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
+
+    if (fields.length === 0) return active;
+
+    values.push(active.id);
+    const r = await this.query(
+      `UPDATE vip_memberships SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values
+    );
+
+    if (data.tier !== undefined || data.isActive === false) {
+      const newTier = (data.isActive === false) ? null : (data.tier || active.tier);
+      await this.query("UPDATE users SET vip_tier = $1 WHERE id = $2", [newTier, userId]);
+    }
+
+    return mapVipMembership(r.rows[0]);
+  }
+
+  async getAllVipMemberships(): Promise<any[]> {
+    const r = await this.query(
+      `SELECT vm.*, u.display_name, u.email, u.habbo_username 
+       FROM vip_memberships vm 
+       JOIN users u ON vm.user_id = u.id 
+       ORDER BY vm.started_at DESC`
+    );
+    return r.rows.map((row: any) => ({
+      ...mapVipMembership(row),
+      displayName: row.display_name,
+      email: row.email,
+      habboUsername: row.habbo_username
+    }));
+  }
+
+  // VIP Perks Log
+  async logVipPerkUse(userId: number, perkUsed: string): Promise<VipPerkLog> {
+    const r = await this.query(
+      "INSERT INTO vip_perks_log (user_id, perk_used) VALUES ($1, $2) RETURNING *",
+      [userId, perkUsed]
+    );
+    return mapVipPerkLog(r.rows[0]);
+  }
+
+  async getVipPerkLogs(userId: number): Promise<VipPerkLog[]> {
+    const r = await this.query(
+      "SELECT * FROM vip_perks_log WHERE user_id = $1 ORDER BY used_at DESC",
+      [userId]
+    );
+    return r.rows.map(mapVipPerkLog);
+  }
+
+  // Rooms
+  async getAllRooms(includeInactive: boolean = false): Promise<HSpeedRoom[]> {
+    const queryStr = includeInactive 
+      ? "SELECT * FROM hspeed_rooms ORDER BY featured DESC, created_at DESC"
+      : "SELECT * FROM hspeed_rooms WHERE is_active = true ORDER BY featured DESC, created_at DESC";
+    const r = await this.query(queryStr);
+    return r.rows.map(mapHSpeedRoom);
+  }
+
+  async getFeaturedRooms(): Promise<HSpeedRoom[]> {
+    const r = await this.query("SELECT * FROM hspeed_rooms WHERE is_active = true AND featured = true ORDER BY created_at DESC");
+    return r.rows.map(mapHSpeedRoom);
+  }
+
+  async createRoom(room: InsertHSpeedRoom): Promise<HSpeedRoom> {
+    const r = await this.query(
+      `INSERT INTO hspeed_rooms (name, description, room_code, owner_habbo, hotel, category, capacity, current_visitors, is_active, thumbnailUrl, featured)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [room.name, room.description || null, room.roomCode || null, room.ownerHabbo || null, room.hotel || 'es', room.category || null, room.capacity || null, room.currentVisitors || 0, room.isActive ?? true, room.thumbnailUrl || null, room.featured ?? false]
+    );
+    return mapHSpeedRoom(r.rows[0]);
+  }
+
+  async updateRoom(id: number, data: Partial<InsertHSpeedRoom>): Promise<HSpeedRoom | undefined> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
+    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
+    if (data.roomCode !== undefined) { fields.push(`room_code = $${i++}`); values.push(data.roomCode); }
+    if (data.ownerHabbo !== undefined) { fields.push(`owner_habbo = $${i++}`); values.push(data.ownerHabbo); }
+    if (data.hotel !== undefined) { fields.push(`hotel = $${i++}`); values.push(data.hotel); }
+    if (data.category !== undefined) { fields.push(`category = $${i++}`); values.push(data.category); }
+    if (data.capacity !== undefined) { fields.push(`capacity = $${i++}`); values.push(data.capacity); }
+    if (data.currentVisitors !== undefined) { fields.push(`current_visitors = $${i++}`); values.push(data.currentVisitors); }
+    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
+    if (data.thumbnailUrl !== undefined) { fields.push(`thumbnailUrl = $${i++}`); values.push(data.thumbnailUrl); }
+    if (data.featured !== undefined) { fields.push(`featured = $${i++}`); values.push(data.featured); }
+
+    if (fields.length === 0) {
+      const r = await this.query("SELECT * FROM hspeed_rooms WHERE id = $1", [id]);
+      return r.rows[0] ? mapHSpeedRoom(r.rows[0]) : undefined;
+    }
+
+    values.push(id);
+    const r = await this.query(
+      `UPDATE hspeed_rooms SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values
+    );
+    return r.rows[0] ? mapHSpeedRoom(r.rows[0]) : undefined;
+  }
+
+  async deleteRoom(id: number): Promise<boolean> {
+    const r = await this.query("DELETE FROM hspeed_rooms WHERE id = $1", [id]);
     return (r.rowCount ?? 0) > 0;
   }
 }

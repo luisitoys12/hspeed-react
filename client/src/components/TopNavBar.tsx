@@ -1,8 +1,8 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -118,10 +118,42 @@ function NavDropdown({ label, items, activePrefixes }: { label: string; items: D
 export default function TopNavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const { user, logout, isAdmin, token } = useAuth();
   const isDjOrAdmin = user && (user.role === "admin" || user.role === "dj");
   const { toast } = useToast();
   const [location] = useLocation();
+
+  const { data: notifications = [] } = useQuery<any[]>({
+    queryKey: ["/api/notifications"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/notifications", undefined, token ? `Bearer ${token}` : undefined);
+      return res.json();
+    },
+    enabled: !!user,
+    refetchInterval: 15000,
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("PUT", "/api/notifications/read-all", undefined, token ? `Bearer ${token}` : undefined);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    }
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("PUT", `/api/notifications/${id}/read`, undefined, token ? `Bearer ${token}` : undefined);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    }
+  });
+
+  const unreadNotifs = notifications.filter((n: any) => !n.isRead);
+  const unreadNotifsCount = unreadNotifs.length;
 
   const [footballMode, setFootballMode] = useState<boolean>(() => {
     try { return localStorage.getItem("footballMode") === "1"; } catch { return false; }
@@ -273,11 +305,13 @@ export default function TopNavBar() {
     { href: "/events", label: "Eventos", iconClass: "fa-solid fa-calendar-days" },
     { href: "/forum", label: "Foro", iconClass: "fa-solid fa-comments" },
     { href: "/team", label: "Nuestro Equipo", iconClass: "fa-solid fa-users" },
+    { href: "/rooms", label: "Salas Comunitarias", iconClass: "fa-solid fa-hotel" },
     { href: "/contact", label: "Contacto", iconClass: "fa-solid fa-envelope" },
   ];
 
   const radioItems: DropdownItem[] = [
     { href: "/schedule", label: "Horarios", iconClass: "fa-solid fa-calendar-week" },
+    { href: "/song-history", label: "Historial de Temas", iconClass: "fa-solid fa-compact-disc" },
     { label: "Peticiones", iconClass: "fa-solid fa-bullhorn", onClick: () => setShowPeticionesModal(true) },
     { label: "Saludos", iconClass: "fa-solid fa-gift", onClick: () => setShowSaludosModal(true) },
   ];
@@ -292,6 +326,7 @@ export default function TopNavBar() {
 
   const tiendaItems: DropdownItem[] = [
     { href: "/tienda", label: "Tienda SP", iconClass: "fa-solid fa-cart-shopping" },
+    { href: "/vip", label: "Membresía VIP", iconClass: "fa-solid fa-crown" },
     { href: "/marketplace", label: "Mercadillo (Marketplace)", iconClass: "fa-solid fa-chart-line" },
   ];
 
@@ -343,11 +378,88 @@ export default function TopNavBar() {
               <span className="hidden sm:inline">{footballMode ? "Fútbol On" : "Fútbol Off"}</span>
             </button>
 
-            {user ? (
+             {user ? (
               <div className="flex items-center gap-3 relative">
+                {/* Campana de Notificaciones */}
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setNotifMenuOpen(!notifMenuOpen);
+                      setUserMenuOpen(false);
+                    }}
+                    className="relative text-slate-500 hover:text-slate-800 transition-colors p-1.5 cursor-pointer flex items-center justify-center focus:outline-none"
+                  >
+                    <i className="fa-solid fa-bell text-base"></i>
+                    {unreadNotifsCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 bg-primary text-black text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-black animate-pulse">
+                        {unreadNotifsCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {notifMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-fade-in text-slate-700">
+                      <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+                        <span className="font-extrabold text-[10px] uppercase tracking-wider text-slate-900">Notificaciones</span>
+                        {unreadNotifsCount > 0 && (
+                          <button
+                            onClick={() => markAllReadMutation.mutate()}
+                            className="text-[9px] text-primary hover:underline font-bold uppercase tracking-wider"
+                          >
+                            Marcar leídas
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-60 overflow-y-auto py-1">
+                        {notifications.length === 0 ? (
+                          <div className="px-4 py-6 text-center text-xs text-slate-400">
+                            No tienes notificaciones
+                          </div>
+                        ) : (
+                          notifications.slice(0, 10).map((notif: any) => (
+                            <div
+                              key={notif.id}
+                              className={cn(
+                                "px-4 py-2.5 hover:bg-slate-50 transition-colors flex items-start gap-2.5 border-b border-slate-50 last:border-0 cursor-pointer",
+                                !notif.isRead && "bg-slate-50/50"
+                              )}
+                              onClick={() => {
+                                if (!notif.isRead) markReadMutation.mutate(notif.id);
+                                if (notif.link) {
+                                  // Navigate manually
+                                  window.location.hash = notif.link;
+                                }
+                                setNotifMenuOpen(false);
+                              }}
+                            >
+                              <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 mt-0.5">
+                                <i className={cn("fa-solid", notif.icon === "crown" ? "fa-crown text-amber-500" : notif.icon === "trophy" ? "fa-trophy text-yellow-500" : "fa-info-circle")}></i>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={cn("text-xs font-bold text-slate-800 truncate", !notif.isRead && "text-slate-900")}>
+                                  {notif.title}
+                                </p>
+                                <p className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-normal">
+                                  {notif.message}
+                                </p>
+                              </div>
+                              {!notif.isRead && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Dropdown Botón */}
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  onClick={() => {
+                    setUserMenuOpen(!userMenuOpen);
+                    setNotifMenuOpen(false);
+                  }}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity focus:outline-none"
                 >
                   <img
