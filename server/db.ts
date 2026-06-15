@@ -1,6 +1,15 @@
 import pg from "pg";
 const { Pool } = pg;
 
+// Natively load .env variables if available (Node 20.12.0+)
+try {
+  if (typeof process.loadEnvFile === "function") {
+    process.loadEnvFile();
+  }
+} catch (e) {
+  // Ignored if .env file is not found
+}
+
 let pool: any = null;
 
 if (!process.env.DATABASE_URL) {
