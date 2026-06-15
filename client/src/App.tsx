@@ -94,7 +94,8 @@ function AppContent() {
 						<Route path="/privacy" component={LegalPage} />
 						<Route path="/maintenance" component={MaintenancePage} />
 						<Route path="/profile/:username" component={ProfilePage} />
-						<Route path="/mundial/:subpage*" component={MundialPage} />
+						<Route path="/mundial" component={MundialPage} />
+						<Route path="/mundial/*" component={MundialPage} />
 						<Route path="/song-history" component={SongHistoryPage} />
 						<Route path="/vip" component={VipPage} />
 						<Route path="/rooms" component={RoomsPage} />
