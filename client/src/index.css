@@ -203,7 +203,7 @@
 }
 
 .site-footer-bar {
-  background: hsl(0 0% 100%);
+  background: hsl(0 0% 6%); /* Noir Dark Background #0f0f0f */
   color: hsl(var(--foreground));
 }
 
