@@ -10,24 +10,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import {
-  ChevronLeft, ChevronRight, Calendar, Zap, Star, TrendingUp,
-  Users, Radio, Newspaper, Send, MessageSquare, Headphones, Music,
-  Award, Clock, ArrowRight, Package, LogIn, UserPlus,
-} from "lucide-react";
-import HabboRadioHero from "@/components/HabboRadioHero";
 import WorldCupPanel from "@/components/WorldCupPanel";
-import FootballNewsSection from "@/components/FootballNewsSection";
 import type { News, Event, Poll } from "@shared/schema";
 
 /* ============================================================
-   CHAT / MESSAGE BOARD — FIXED
+   CHAT / MESSAGE BOARD — DYNAMIC WITH INLINE LOGIN & USER CARD
    ============================================================ */
 function MessageBoard() {
-  const { user, token } = useAuth();
+  const { user, login, token } = useAuth();
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // States para login inline
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginPending, setLoginPending] = useState(false);
 
   const { data: chatMessages, isError, refetch } = useQuery<any[]>({
     queryKey: ["/api/chat"],
@@ -65,12 +63,30 @@ function MessageBoard() {
     onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
+  const handleInlineLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setLoginPending(true);
+    try {
+      await login(email, password);
+      toast({ title: "¡Sesión iniciada!", description: "Bienvenido de vuelta a HabboSpeed." });
+      // Reset form
+      setEmail("");
+      setPassword("");
+    } catch (err: any) {
+      toast({ title: "Error al iniciar sesión", description: err.message, variant: "destructive" });
+    } finally {
+      setLoginPending(false);
+    }
+  };
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-full" data-testid="message-board">
+      
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/30 flex-shrink-0">
         <div className="flex items-center gap-2">
@@ -78,60 +94,75 @@ function MessageBoard() {
           <span className="text-xs font-bold uppercase tracking-wider">Chat en Vivo</span>
           <span className="text-[10px] text-muted-foreground">({(chatMessages || []).length})</span>
         </div>
-        {user && (
-          <div className="flex items-center gap-1.5">
-            {user.habboUsername && (
-              <img
-                src="/habbo-radio/frank_small_03.gif"
-                alt=""
-                className="w-5 h-5 rounded"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            )}
-            <span className="text-[10px] text-muted-foreground truncate max-w-[80px]">{user.displayName}</span>
-          </div>
-        )}
       </div>
 
+      {/* Perfil del Usuario Conectado */}
+      {user && (
+        <div className="p-3 border-b border-border bg-secondary/10 flex items-center gap-3.5 flex-shrink-0">
+          <div className="w-12 h-16 relative overflow-hidden bg-primary/10 rounded-lg flex-shrink-0 flex items-center justify-center border border-border/55">
+            <img
+              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(user.habboUsername || user.displayName)}&action=wav&direction=2&head_direction=2&img_format=png&gesture=sml&size=b`}
+              alt={user.displayName}
+              className="absolute top-[-10px] w-16 h-24 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
+            />
+          </div>
+          <div className="flex-grow min-w-0">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Usuario Conectado</p>
+            <h4 className="text-xs font-black text-foreground truncate">{user.displayName}</h4>
+            <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-bold text-yellow-500">
+              <i className="fa-solid fa-bolt"></i>
+              <span>{user.speedPoints ?? 0} SpeedPoints</span>
+            </div>
+            <Link href={`/profile/${user.habboUsername || user.displayName}`} className="text-[9px] text-primary hover:underline font-extrabold mt-1 block uppercase tracking-wider">
+              Ver mi perfil →
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 min-h-0" style={{ maxHeight: "240px" }} data-testid="chat-messages">
+      <div className="flex-grow overflow-y-auto px-3 py-2 space-y-1.5 min-h-[200px]" data-testid="chat-messages">
         {isError ? (
           <div className="flex flex-col items-center justify-center h-full py-8 gap-2 text-center">
-            <MessageSquare className="w-7 h-7 text-muted-foreground/30" />
+            <i className="fa-solid fa-comments text-muted-foreground/35 text-2xl"></i>
             <p className="text-xs text-red-400">No se pudo cargar el chat</p>
             <p className="text-[10px] text-muted-foreground">Intenta recargar la página</p>
             <button onClick={() => refetch()} className="text-[10px] text-primary hover:underline mt-1">Reintentar</button>
           </div>
         ) : (chatMessages || []).length > 0 ? (
-          (chatMessages || []).map((msg: any, i: number) => (
-            <div key={msg.id || i} className="flex items-start gap-2 py-0.5 hover:bg-secondary/20 rounded px-1 transition-colors">
-              <img
-                src="/habbo-radio/frank_small_03.gif"
-                alt=""
-                className="w-6 h-6 rounded flex-shrink-0 bg-secondary/50 mt-0.5"
-                onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
-              />
-              <div className="min-w-0 flex-1">
-                <span className="text-[11px] font-bold text-primary mr-1">{msg.userName || "Anon"}:</span>
-                <span className="text-[11px] text-foreground/85 break-words">{msg.message || msg.content}</span>
+          (chatMessages || []).map((msg: any, i: number) => {
+            const avatarName = msg.habboUsername || msg.userName || "HabboSpeed";
+            return (
+              <div key={msg.id || i} className="flex items-start gap-2 py-0.5 hover:bg-secondary/20 rounded px-1 transition-colors">
+                <img
+                  src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(avatarName)}&size=s&headonly=1&head_direction=2&gesture=std`}
+                  alt={avatarName}
+                  className="w-6 h-6 rounded flex-shrink-0 bg-secondary/30 object-contain"
+                  onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
+                />
+                <div className="min-w-0 flex-grow">
+                  <span className="text-[11px] font-black text-primary mr-1">{msg.userName || "Anon"}:</span>
+                  <span className="text-[11px] text-foreground/85 break-words font-medium">{msg.message || msg.content}</span>
+                </div>
+                {msg.createdAt && (
+                  <span className="text-[8px] text-muted-foreground/50 ml-auto flex-shrink-0 mt-1">
+                    {new Date(msg.createdAt).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                )}
               </div>
-              {msg.createdAt && (
-                <span className="text-[8px] text-muted-foreground/50 ml-auto flex-shrink-0 mt-1">
-                  {new Date(msg.createdAt).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}
-                </span>
-              )}
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className="flex flex-col items-center justify-center h-full py-8 gap-2">
-            <MessageSquare className="w-8 h-8 opacity-25" />
-            <p className="text-xs font-medium text-muted-foreground">¡Sé el primero en escribir!</p>
+            <i className="fa-solid fa-comments text-muted-foreground/20 text-3xl"></i>
+            <p className="text-xs font-semibold text-muted-foreground">¡Sé el primero en escribir!</p>
           </div>
         )}
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input de Mensaje o Formulario de Login inline */}
       <div className="border-t border-border px-3 py-2.5 bg-secondary/20 flex-shrink-0">
         {user ? (
           <div className="flex gap-2">
@@ -151,20 +182,41 @@ function MessageBoard() {
               disabled={sendMutation.isPending || !message.trim()}
               data-testid="button-chat-send"
             >
-              <Send className="w-3.5 h-3.5" />
+              <i className="fa-solid fa-paper-plane text-xs"></i>
             </Button>
           </div>
         ) : (
-          <div className="flex items-center justify-center gap-2 py-0.5">
-            <Link href="/login" className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
-              <LogIn className="w-3 h-3" /> Inicia sesión
-            </Link>
-            <span className="text-muted-foreground text-xs">o</span>
-            <Link href="/register" className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
-              <UserPlus className="w-3 h-3" /> Regístrate
-            </Link>
-            <span className="text-xs text-muted-foreground">para chatear</span>
-          </div>
+          <form onSubmit={handleInlineLogin} className="space-y-2 py-0.5">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Identifícate para participar</p>
+            <div className="grid grid-cols-1 gap-2">
+              <Input
+                type="email"
+                placeholder="Correo electrónico"
+                className="h-8 text-xs bg-background/50 border-border"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Input
+                type="password"
+                placeholder="Contraseña"
+                className="h-8 text-xs bg-background/50 border-border"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button type="submit" size="sm" className="flex-1 text-[10px] font-extrabold h-8" disabled={loginPending}>
+                {loginPending ? "Conectando..." : "Entrar"}
+              </Button>
+              <Link href="/register" className="flex-1">
+                <Button type="button" variant="outline" size="sm" className="w-full text-[10px] font-extrabold h-8">
+                  Registrarse
+                </Button>
+              </Link>
+            </div>
+          </form>
         )}
       </div>
     </div>
@@ -191,7 +243,7 @@ function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
       </div>
     );
   }
-  if (!news.length) return <p className="text-sm text-muted-foreground text-center py-8">No hay noticias aún</p>;
+  if (!news.length) return <p className="text-sm text-muted-foreground text-center py-8 font-semibold">No hay noticias aún</p>;
   const featured = news[0];
   const rest = news.slice(1, 5);
   
@@ -224,7 +276,7 @@ function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/10">
                 <span className="text-[10px] text-white/50 font-semibold">{featured.date}</span>
                 <span className="text-[10px] text-primary font-bold group-hover:underline flex items-center gap-1 ml-auto">
-                  Leer noticia completa <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  Leer noticia completa <i className="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform ml-1"></i>
                 </span>
               </div>
             </div>
@@ -263,7 +315,7 @@ function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
                     </p>
                   </div>
                   <div className="text-[9px] text-primary font-bold group-hover:underline mt-3 pt-2.5 border-t border-border/30 flex items-center gap-1">
-                    Leer más <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                    Leer más <i className="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-0.5 transition-transform ml-1"></i>
                   </div>
                 </div>
               </div>
@@ -288,9 +340,9 @@ function FurniStrip() {
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden" data-testid="furni-strip">
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
-        <Package className="w-3.5 h-3.5 text-orange-400" />
+        <i className="fa-solid fa-box text-orange-400 text-xs"></i>
         <span className="text-xs font-bold uppercase tracking-wider">Últimos Furnis Agregados</span>
-        <Link href="/marketplace" className="text-[10px] text-primary ml-auto hover:underline">Ver todos →</Link>
+        <Link href="/marketplace" className="text-[10px] text-primary ml-auto hover:underline font-extrabold">Ver todos →</Link>
       </div>
       <div className="px-3 py-3 overflow-hidden">
         <div className="flex gap-3 animate-marquee" style={{ width: "max-content" }}>
@@ -333,9 +385,9 @@ function RecentBadgesGrid() {
   return (
     <div className="bg-card border border-primary/20 glow-border-themed rounded-2xl overflow-hidden shadow-2xl backdrop-blur-lg" data-testid="badges-grid">
       <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border/50 bg-secondary/20 flex-shrink-0">
-        <Star className="w-4 h-4 text-yellow-400" />
+        <i className="fa-solid fa-star text-yellow-400 text-xs"></i>
         <span className="text-xs font-bold uppercase tracking-wider">Nuevas Placas Descubiertas</span>
-        <Link href="/badges" className="text-[10px] text-primary ml-auto hover:underline font-bold">Ver todas →</Link>
+        <Link href="/badges" className="text-[10px] text-primary ml-auto hover:underline font-extrabold">Ver todas →</Link>
       </div>
       <div className="p-4 sm:p-5">
         {isLoading ? (
@@ -377,7 +429,7 @@ function RecentBadgesGrid() {
             })}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground text-center py-4">No hay placas recientes disponibles</p>
+          <p className="text-xs text-muted-foreground text-center py-4 font-semibold">No hay placas recientes disponibles</p>
         )}
       </div>
     </div>
@@ -391,16 +443,16 @@ function EventsSidebar({ events, loading }: { events: Event[]; loading: boolean 
   return (
   <div className="site-panel overflow-hidden">
     <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/70 bg-white/5">
-        <Calendar className="w-3.5 h-3.5 text-primary" />
+        <i className="fa-solid fa-calendar text-primary text-xs"></i>
         <span className="text-xs font-bold uppercase tracking-wider">Próximos Eventos</span>
-        <Link href="/events" className="text-[10px] text-primary ml-auto hover:underline">Ver más →</Link>
+        <Link href="/events" className="text-[10px] text-primary ml-auto hover:underline font-extrabold">Ver más →</Link>
       </div>
       <div className="p-3 space-y-2">
         {loading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />) :
           events.length > 0 ? events.slice(0, 3).map((event) => (
             <div key={event.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/20 border border-border/40 hover:border-primary/20 transition-colors" data-testid={`card-event-${event.id}`}>
               <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-3.5 h-3.5 text-primary" />
+                <i className="fa-solid fa-calendar text-primary text-xs"></i>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold truncate">{event.title}</p>
@@ -408,7 +460,7 @@ function EventsSidebar({ events, loading }: { events: Event[]; loading: boolean 
                 <p className="text-[9px] text-muted-foreground truncate">{event.roomName}</p>
               </div>
             </div>
-          )) : <p className="text-xs text-muted-foreground text-center py-4">No hay eventos próximos</p>}
+          )) : <p className="text-xs text-muted-foreground text-center py-4 font-semibold">No hay eventos próximos</p>}
       </div>
     </div>
   );
@@ -433,7 +485,7 @@ function PollWidget({ poll }: { poll: Poll }) {
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
-        <Zap className="w-3.5 h-3.5 text-yellow-400" />
+        <i className="fa-solid fa-bolt text-yellow-400 text-xs"></i>
         <span className="text-xs font-bold uppercase tracking-wider">Encuesta</span>
       </div>
       <div className="p-3 space-y-2">
@@ -448,9 +500,9 @@ function PollWidget({ poll }: { poll: Poll }) {
               onClick={() => voted === null && voteMutation.mutate(i)}
               disabled={voted !== null}
             >
-              <div className="flex justify-between mb-0.5">
+              <div className="flex justify-between mb-0.5 font-semibold">
                 <span>{opt.name || opt.text || opt.label}</span>
-                {voted !== null && <span className="text-muted-foreground text-[10px]">{pct}%</span>}
+                {voted !== null && <span className="text-muted-foreground text-[10px] font-mono">{pct}%</span>}
               </div>
               {voted !== null && (
                 <div className="h-1 bg-muted rounded-full overflow-hidden">
@@ -460,7 +512,7 @@ function PollWidget({ poll }: { poll: Poll }) {
             </button>
           );
         })}
-        <p className="text-[10px] text-muted-foreground text-center">{totalVotes} votos</p>
+        <p className="text-[10px] text-muted-foreground text-center font-bold">{totalVotes} votos</p>
       </div>
     </div>
   );
@@ -471,24 +523,24 @@ function PollWidget({ poll }: { poll: Poll }) {
    ============================================================ */
 function QuickTools() {
   const tools = [
-    { href: "/imager",      label: "Habbo Imager",    icon: <Users className="w-4 h-4" />,       color: "text-cyan-400" },
-    { href: "/badges",      label: "Buscador Placas",  icon: <Award className="w-4 h-4" />,       color: "text-yellow-400" },
-    { href: "/marketplace", label: "Marketplace",      icon: <TrendingUp className="w-4 h-4" />,  color: "text-green-400" },
-    { href: "/schedule",    label: "Programación",     icon: <Radio className="w-4 h-4" />,       color: "text-red-400" },
-    { href: "/forum",       label: "Foro",             icon: <MessageSquare className="w-4 h-4" />, color: "text-violet-400" },
-    { href: "/djpanel",     label: "Panel DJ",         icon: <Headphones className="w-4 h-4" />,  color: "text-primary" },
+    { href: "/imager",      label: "Habbo Imager",    iconClass: "fa-solid fa-image",        color: "text-cyan-400" },
+    { href: "/badges",      label: "Buscador Placas",  iconClass: "fa-solid fa-award",        color: "text-yellow-400" },
+    { href: "/marketplace", label: "Marketplace",      iconClass: "fa-solid fa-chart-line",   color: "text-green-400" },
+    { href: "/schedule",    label: "Programación",     iconClass: "fa-solid fa-radio",        color: "text-red-400" },
+    { href: "/forum",       label: "Foro",             iconClass: "fa-solid fa-comments",     color: "text-violet-400" },
+    { href: "/djpanel",     label: "Panel DJ",         iconClass: "fa-solid fa-headphones",   color: "text-primary" },
   ];
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
-        <Zap className="w-3.5 h-3.5 text-primary" />
+        <i className="fa-solid fa-bolt text-primary text-xs"></i>
         <span className="text-xs font-bold uppercase tracking-wider">Herramientas</span>
       </div>
       <div className="grid grid-cols-2 gap-1.5 p-3">
         {tools.map((t) => (
           <Link key={t.href} href={t.href} className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-all border border-transparent hover:border-border/50">
-            <span className={t.color}>{t.icon}</span>
-            <span className="truncate">{t.label}</span>
+            <span className={t.color}><i className={`${t.iconClass} text-xs w-4 text-center`}></i></span>
+            <span className="truncate font-semibold">{t.label}</span>
           </Link>
         ))}
       </div>
@@ -503,13 +555,13 @@ function StatsBar() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {[
-        { icon: <Radio className="w-4 h-4" />,     label: "Radio",     value: "24/7",     color: "text-red-400",    bg: "bg-red-500/10 border-red-500/20" },
-        { icon: <Users className="w-4 h-4" />,     label: "Comunidad", value: "Activa",   color: "text-green-400",  bg: "bg-green-500/10 border-green-500/20" },
-        { icon: <Newspaper className="w-4 h-4" />, label: "Noticias",  value: "Diarias",  color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20" },
-        { icon: <Music className="w-4 h-4" />,     label: "Peticiones", value: "Abiertas", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
+        { iconClass: "fa-solid fa-radio",     label: "Radio",     value: "24/7",     color: "text-red-400",    bg: "bg-red-500/10 border-red-500/20" },
+        { iconClass: "fa-solid fa-users",     label: "Comunidad", value: "Activa",   color: "text-green-400",  bg: "bg-green-500/10 border-green-500/20" },
+        { iconClass: "fa-solid fa-newspaper", label: "Noticias",  value: "Diarias",  color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20" },
+        { iconClass: "fa-solid fa-music",     label: "Peticiones", value: "Abiertas", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
       ].map((s, i) => (
         <div key={i} className={`site-panel p-3.5 flex items-center gap-3 border ${s.bg}`}>
-          <span className={s.color}>{s.icon}</span>
+          <span className={s.color}><i className={`${s.iconClass} text-sm`}></i></span>
           <div>
             <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
             <p className={`text-xs font-bold ${s.color}`}>{s.value}</p>
@@ -537,7 +589,7 @@ function HomeHeroBanner({ slideshow }: { slideshow: any[] }) {
   if (!slideshow || slideshow.length === 0) return null;
 
   return (
-    <div className="relative rounded-2xl overflow-hidden h-[300px] border border-border shadow-lg bg-[#0c0634] group w-full">
+    <div className="relative rounded-2xl overflow-hidden h-[300px] border border-border shadow-lg bg-[#0c0634] group w-full font-sans">
       {slideshow.map((slide, i) => (
         <div
           key={i}
@@ -621,16 +673,16 @@ export default function HomePage() {
         <FurniStrip />
         <RecentBadgesGrid />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 font-sans">
           <div className="lg:col-span-2 space-y-3">
             <div className="site-panel px-4 py-3 flex items-center justify-between">
               <div>
-                <p className="site-kicker">Portal de Noticias</p>
+                <p className="site-kicker font-black">Portal de Noticias</p>
                 <h2 className="site-title flex items-center gap-2 mt-1">
-                  <TrendingUp className="w-4 h-4 text-primary" /> Últimas Noticias
+                  <i className="fa-solid fa-chart-line text-primary text-sm mr-1"></i> Últimas Noticias
                 </h2>
               </div>
-              <Link href="/news" className="text-xs text-primary hover:underline font-semibold">Ver todas →</Link>
+              <Link href="/news" className="text-xs text-primary hover:underline font-extrabold">Ver todas →</Link>
             </div>
             <NewsGrid news={latestNews} loading={newsLoading} />
           </div>
@@ -643,7 +695,6 @@ export default function HomePage() {
 
         <div className="mt-4 space-y-4">
           <WorldCupPanel />
-          <FootballNewsSection />
         </div>
       </div>
     </div>
