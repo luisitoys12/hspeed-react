@@ -180,6 +180,20 @@ export async function registerRoutes(server: Server, app: Express) {
               console.log("[Seed] Default forum threads and posts inserted successfully");
             }
           }
+
+          // Seed default rooms
+          const roomsCheck = await client.query("SELECT COUNT(*) FROM hspeed_rooms");
+          if (parseInt(roomsCheck.rows[0].count) === 0) {
+            await client.query(`
+              INSERT INTO hspeed_rooms (name, description, room_code, owner_habbo, hotel, category, current_visitors, is_active, featured)
+              VALUES
+              ('[HS] Central de HabboSpeed', 'La sala oficial de HabboSpeed. Música en vivo, eventos y convivencia con la comunidad. ¡Siempre hay algo que hacer!', 'r-hs001', 'HabboSpeed', 'es', 'oficial', 24, true, true),
+              ('[HS] Radio Lounge', 'Sala temática de la radio. Escucha a nuestros DJs en vivo mientras convives con fans. Decoración premium estilo club nocturno.', 'r-hs002', 'DJ_Speedy', 'es', 'musica', 15, true, true),
+              ('[HS] VIP Zone', 'Sala exclusiva para miembros VIP de HabboSpeed. Acceso restringido a usuarios con membresía Gold o Diamond activa.', 'r-hs003', 'AdminHS', 'es', 'vip', 8, true, false),
+              ('[HS] Fan Festival 2026', 'Sala especial del Habbo Fan Festival 2026. Eventos, concursos y transmisiones especiales durante todo el mundial.', 'r-hs004', 'HabboSpeed', 'es', 'evento', 37, true, true)
+            `);
+            console.log("[Seed] Default rooms inserted successfully");
+          }
         } finally {
           client.release();
         }

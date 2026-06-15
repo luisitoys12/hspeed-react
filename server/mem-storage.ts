@@ -342,6 +342,18 @@ export class MemStorage implements IStorage {
       },
       isDefault: false
     });
+
+    // Seed rooms por defecto
+    const defaultRooms = [
+      { id: 1, name: "[HS] Central de HabboSpeed", description: "La sala oficial de HabboSpeed. Música en vivo, eventos y convivencia con la comunidad. ¡Siempre hay algo que hacer!", roomCode: "r-hs001", ownerHabbo: "HabboSpeed", hotel: "es", category: "oficial", capacity: 50, currentVisitors: 24, isActive: true, thumbnailUrl: null, featured: true },
+      { id: 2, name: "[HS] Radio Lounge", description: "Sala temática de la radio. Escucha a nuestros DJs en vivo mientras convives con fans. Decoración premium estilo club nocturno.", roomCode: "r-hs002", ownerHabbo: "DJ_Speedy", hotel: "es", category: "musica", capacity: 50, currentVisitors: 15, isActive: true, thumbnailUrl: null, featured: true },
+      { id: 3, name: "[HS] VIP Zone", description: "Sala exclusiva para miembros VIP de HabboSpeed. Acceso restringido a usuarios con membresía Gold o Diamond activa.", roomCode: "r-hs003", ownerHabbo: "AdminHS", hotel: "es", category: "vip", capacity: 25, currentVisitors: 8, isActive: true, thumbnailUrl: null, featured: false },
+      { id: 4, name: "[HS] Fan Festival 2026", description: "Sala especial del Habbo Fan Festival 2026. Eventos, concursos y transmisiones especiales durante todo el mundial.", roomCode: "r-hs004", ownerHabbo: "HabboSpeed", hotel: "es", category: "evento", capacity: 100, currentVisitors: 37, isActive: true, thumbnailUrl: null, featured: true },
+    ];
+    defaultRooms.forEach(r => {
+      this.hspeedRoomsList.set(r.id, { ...r, createdAt: new Date() });
+      if (r.id > this._hspeedRoomId) this._hspeedRoomId = r.id;
+    });
   }
 
   // Users

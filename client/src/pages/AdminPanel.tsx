@@ -1157,7 +1157,7 @@ function RoomsAdmin() {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editRoom, setEditRoom] = useState<any>(null);
-  const emptyForm = { name: "", description: "", ownerName: "", roomCode: "", imageUrl: "", category: "social", isActive: true, isFeatured: false };
+  const emptyForm = { name: "", description: "", ownerHabbo: "", roomCode: "", thumbnailUrl: "", hotel: "es", category: "social", isActive: true, featured: false };
   const [form, setForm] = useState({ ...emptyForm });
 
   const { data: rooms = [], refetch } = useQuery<any[]>({
@@ -1186,7 +1186,7 @@ function RoomsAdmin() {
 
   const openEdit = (room: any) => {
     setEditRoom(room);
-    setForm({ name: room.name, description: room.description || "", ownerName: room.ownerName || "", roomCode: room.roomCode || "", imageUrl: room.imageUrl || "", category: room.category || "social", isActive: room.isActive !== false, isFeatured: !!room.isFeatured });
+    setForm({ name: room.name, description: room.description || "", ownerHabbo: room.ownerHabbo || "", roomCode: room.roomCode || "", thumbnailUrl: room.thumbnailUrl || "", hotel: room.hotel || "es", category: room.category || "social", isActive: room.isActive !== false, featured: !!room.featured });
     setOpen(true);
   };
 
@@ -1209,21 +1209,21 @@ function RoomsAdmin() {
             <div><Label className="text-xs">Nombre de la Sala</Label><Input className="mt-1 text-xs" placeholder="Mi Sala Habbo" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} /></div>
             <div><Label className="text-xs">Descripción</Label><Textarea className="mt-1 text-xs resize-none" rows={2} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
             <div className="grid grid-cols-2 gap-2">
-              <div><Label className="text-xs">Dueño (Habbo Nick)</Label><Input className="mt-1 text-xs" value={form.ownerName} onChange={e => setForm(p => ({ ...p, ownerName: e.target.value }))} /></div>
+              <div><Label className="text-xs">Dueño (Habbo Nick)</Label><Input className="mt-1 text-xs" value={form.ownerHabbo} onChange={e => setForm(p => ({ ...p, ownerHabbo: e.target.value }))} /></div>
               <div><Label className="text-xs">Código de Sala</Label><Input className="mt-1 text-xs font-mono" placeholder="r-xxxxxx" value={form.roomCode} onChange={e => setForm(p => ({ ...p, roomCode: e.target.value }))} /></div>
             </div>
-            <div><Label className="text-xs">URL de Imagen (opcional)</Label><Input className="mt-1 text-xs" placeholder="https://..." value={form.imageUrl} onChange={e => setForm(p => ({ ...p, imageUrl: e.target.value }))} /></div>
+            <div><Label className="text-xs">URL de Imagen (opcional)</Label><Input className="mt-1 text-xs" placeholder="https://..." value={form.thumbnailUrl} onChange={e => setForm(p => ({ ...p, thumbnailUrl: e.target.value }))} /></div>
             <div><Label className="text-xs">Categoría</Label>
               <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v }))}>
                 <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["social", "juegos", "eventos", "radio", "otro"].map(c => <SelectItem key={c} value={c} className="text-xs capitalize">{c}</SelectItem>)}
+              <SelectContent>
+                  {["social", "oficial", "musica", "vip", "evento", "otro"].map(c => <SelectItem key={c} value={c} className="text-xs capitalize">{c}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="flex gap-3">
               <button type="button" onClick={() => setForm(p => ({ ...p, isActive: !p.isActive }))} className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${form.isActive ? "border-green-500/50 bg-green-500/10 text-green-400" : "border-border bg-secondary/30 text-muted-foreground"}`}>Activa</button>
-              <button type="button" onClick={() => setForm(p => ({ ...p, isFeatured: !p.isFeatured }))} className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${form.isFeatured ? "border-yellow-500/50 bg-yellow-500/10 text-yellow-400" : "border-border bg-secondary/30 text-muted-foreground"}`}>Destacada ⭐</button>
+              <button type="button" onClick={() => setForm(p => ({ ...p, featured: !p.featured }))} className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${form.featured ? "border-yellow-500/50 bg-yellow-500/10 text-yellow-400" : "border-border bg-secondary/30 text-muted-foreground"}`}>Destacada ⭐</button>
             </div>
             <Button className="w-full bg-primary text-white text-xs" disabled={!form.name} onClick={() => editRoom ? updateMutation.mutate({ id: editRoom.id, data: form }) : createMutation.mutate(form)}>
               {editRoom ? "Guardar Cambios" : "Crear Sala"}
@@ -1252,12 +1252,12 @@ function RoomsAdmin() {
                   <p className="text-xs font-semibold text-white">{room.name}</p>
                   <p className="text-[10px] text-muted-foreground truncate max-w-[180px]">{room.description}</p>
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground">{room.ownerName || "—"}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">{room.ownerHabbo || "—"}</TableCell>
                 <TableCell><Badge variant="outline" className="text-[10px] capitalize">{room.category}</Badge></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
                     <span className={`w-1.5 h-1.5 rounded-full ${room.isActive ? "bg-green-400" : "bg-zinc-500"}`}></span>
-                    {room.isFeatured && <span className="text-yellow-400 text-[10px]">⭐</span>}
+                    {room.featured && <span className="text-yellow-400 text-[10px]">⭐</span>}
                   </div>
                 </TableCell>
                 <TableCell>
