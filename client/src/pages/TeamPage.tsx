@@ -114,6 +114,24 @@ export default function TeamPage() {
                       {ROLE_LABELS[member.role]?.label || member.role}
                     </Badge>
 
+                    {/* Placas y Estampas del Staff / DJ */}
+                    <div className="flex gap-1.5 justify-center py-1">
+                      <img
+                        src="/habbo-radio/estampa_staff.png"
+                        alt="Placa Staff HSpeed"
+                        className="w-5 h-5 object-contain hover:scale-110 transition-transform cursor-help"
+                        title="Staff HSpeed: Placa Oficial de Miembro del Equipo"
+                      />
+                      {(member.role === "admin" || member.role === "dj") && (
+                        <img
+                          src="/habbo-radio/estampa_audifonos_dj.png"
+                          alt="Audífonos DJ Locutor"
+                          className="w-5 h-5 object-contain hover:scale-110 transition-transform cursor-help"
+                          title="DJ Locutor HSpeed: Placa de Locución de Radio"
+                        />
+                      )}
+                    </div>
+
                     {member.motto && (
                       <p className="text-[10px] text-muted-foreground italic line-clamp-2">
                         &ldquo;{member.motto}&rdquo;
