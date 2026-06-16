@@ -774,7 +774,9 @@ export async function registerRoutes(server: Server, app: Express) {
           Revision: f.revision,
           avgPrice: mData.averagePrice,
           avg_price: mData.averagePrice,
-          marketData: mData
+          marketData: {
+            averagePrice: mData.averagePrice
+          }
         };
       });
 
@@ -792,14 +794,18 @@ export async function registerRoutes(server: Server, app: Express) {
           Revision: r.revision,
           avgPrice: mData.averagePrice,
           avg_price: mData.averagePrice,
-          marketData: mData
+          marketData: {
+            averagePrice: mData.averagePrice
+          }
         };
       });
 
       const classicClassnames = new Set(mappedClassic.map(c => c.classname));
       const filteredOfficial = mappedOfficial.filter(o => !classicClassnames.has(o.classname));
 
-      const officialToReturn = limit > 0 ? filteredOfficial.slice(-limit).reverse() : [...filteredOfficial].reverse();
+      // Limit official items returned to avoid freezing client
+      const maxOfficial = limit > 0 ? limit : 2000;
+      const officialToReturn = filteredOfficial.slice(-maxOfficial).reverse();
       const combined = [...mappedClassic, ...officialToReturn];
       
       res.json(combined);
@@ -818,7 +824,9 @@ export async function registerRoutes(server: Server, app: Express) {
           Revision: r.revision,
           avgPrice: mData.averagePrice,
           avg_price: mData.averagePrice,
-          marketData: mData
+          marketData: {
+            averagePrice: mData.averagePrice
+          }
         };
       });
       res.json(fallbackList); 
@@ -1213,9 +1221,31 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const cfg = await storage.getConfig();
       if (!cfg || !cfg.apiUrl) return res.status(400).json({ message: "Radio no configurada" });
-      const r = await fetch(cfg.apiUrl);
-      if (!r.ok) return res.status(500).json({ message: "Error al consultar radio" });
-      const data = await r.json();
+      
+      let data: any = null;
+      try {
+        const r = await fetch(cfg.apiUrl, { signal: AbortSignal.timeout(3000) });
+        if (r.ok) {
+          data = await r.json();
+        }
+      } catch (fetchErr) {
+        console.warn("Could not fetch radio api url, using fallback metadata:", fetchErr);
+      }
+
+      // If fetch failed or returned invalid data, use fallback
+      if (!data) {
+        data = {
+          now_playing: {
+            song: {
+              title: "Sintonía de HSpeed",
+              artist: "AutoDJ",
+              album: "Radio HSpeed",
+              art: "https://www.habbo.es/habbo-imaging/avatarimage?user=Staff&size=b"
+            },
+            duration: 180
+          }
+        };
+      }
       
       const np = Array.isArray(data) ? data[0]?.now_playing : data?.now_playing;
       const songInfo = np?.song;
@@ -1837,6 +1867,71 @@ export async function registerRoutes(server: Server, app: Express) {
       const ticket = await storage.updateTicketStatus(parseInt(req.params.id), status);
       if (!ticket) return res.status(404).json({ message: "Ticket no encontrado" });
       res.json(ticket);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  // ============ ALLIANCES ============
+  app.get("/api/alliances", async (_req, res) => {
+    try {
+      res.json(await storage.getAllAlliances());
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.post("/api/alliances", adminMiddleware, async (req: any, res) => {
+    try {
+      const alliance = await storage.createAlliance(req.body);
+      res.status(201).json(alliance);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.put("/api/alliances/:id", adminMiddleware, async (req, res) => {
+    try {
+      const alliance = await storage.updateAlliance(parseInt(req.params.id), req.body);
+      if (!alliance) return res.status(404).json({ message: "Alianza no encontrada" });
+      res.json(alliance);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.delete("/api/alliances/:id", adminMiddleware, async (req, res) => {
+    try {
+      const success = await storage.deleteAlliance(parseInt(req.params.id));
+      if (!success) return res.status(404).json({ message: "Alianza no encontrada" });
+      res.json({ message: "Alianza eliminada" });
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  // ============ RANKINGS ============
+  app.get("/api/rankings", async (_req, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      const approved = allUsers.filter((u: any) => u.approved && u.role !== "pending");
+
+      // Top Oyentes (más peticiones de canciones)
+      const topListeners = [...approved]
+        .sort((a: any, b: any) => (b.totalRequests || 0) - (a.totalRequests || 0))
+        .slice(0, 5)
+        .map((u: any) => ({ id: u.id, displayName: u.displayName, habboUsername: u.habboUsername, avatarUrl: u.avatarUrl, value: u.totalRequests || 0 }));
+
+      // Top SpeedPoints
+      const topPoints = [...approved]
+        .sort((a: any, b: any) => (b.speedPoints || 0) - (a.speedPoints || 0))
+        .slice(0, 5)
+        .map((u: any) => ({ id: u.id, displayName: u.displayName, habboUsername: u.habboUsername, avatarUrl: u.avatarUrl, value: u.speedPoints || 0 }));
+
+      // Top DJs
+      const djs = approved.filter((u: any) => u.role === "dj" || u.role === "admin");
+      const topDJs = [...djs]
+        .sort((a: any, b: any) => (b.speedPoints || 0) - (a.speedPoints || 0))
+        .slice(0, 5)
+        .map((u: any) => ({ id: u.id, displayName: u.displayName, habboUsername: u.habboUsername, avatarUrl: u.avatarUrl, value: u.speedPoints || 0, role: u.role }));
+
+      // Staff team
+      const staff = approved
+        .filter((u: any) => u.role === "admin" || u.role === "dj")
+        .slice(0, 5)
+        .map((u: any) => ({ id: u.id, displayName: u.displayName, habboUsername: u.habboUsername, avatarUrl: u.avatarUrl, role: u.role }));
+
+      res.json({ topListeners, topPoints, topDJs, staff });
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 }

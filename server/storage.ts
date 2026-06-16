@@ -29,6 +29,8 @@ import {
   type VipPerkLog, type InsertVipPerkLog,
   type HSpeedRoom, type InsertHSpeedRoom,
   type SupportTicket, type InsertSupportTicket,
+  type Alliance, type InsertAlliance,
+
 } from "@shared/schema";
 
 export interface IStorage {
@@ -219,7 +221,14 @@ export interface IStorage {
   createTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
   updateTicketStatus(id: number, status: string): Promise<SupportTicket | undefined>;
   getAllTickets(): Promise<SupportTicket[]>;
+
+  // Alliances
+  getAllAlliances(): Promise<Alliance[]>;
+  createAlliance(data: InsertAlliance): Promise<Alliance>;
+  updateAlliance(id: number, data: Partial<InsertAlliance>): Promise<Alliance | undefined>;
+  deleteAlliance(id: number): Promise<boolean>;
 }
+
 
 // Helper to map snake_case DB rows to camelCase TypeScript objects
 function mapUser(row: any): User {
@@ -441,6 +450,20 @@ function mapSupportTicket(row: any): SupportTicket {
     createdAt: row.created_at,
   };
 }
+
+function mapAlliance(row: any): Alliance {
+  return {
+    id: row.id,
+    name: row.name,
+    logoUrl: row.logo_url,
+    websiteUrl: row.website_url,
+    description: row.description,
+    isActive: row.is_active,
+    sortOrder: row.sort_order,
+    createdAt: row.created_at,
+  };
+}
+
 
 export class SupabaseStorage implements IStorage {
   private pool: any;
@@ -1538,5 +1561,49 @@ export class SupabaseStorage implements IStorage {
   async getAllTickets(): Promise<SupportTicket[]> {
     const r = await this.query("SELECT * FROM support_tickets ORDER BY created_at DESC");
     return r.rows.map(mapSupportTicket);
+  }
+
+  // Alliances
+  async getAllAlliances(): Promise<Alliance[]> {
+    const r = await this.query("SELECT * FROM alliances WHERE is_active = true ORDER BY sort_order ASC");
+    return r.rows.map(mapAlliance);
+  }
+
+  async createAlliance(alliance: InsertAlliance): Promise<Alliance> {
+    const r = await this.query(
+      `INSERT INTO alliances (name, logo_url, website_url, description, is_active, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [alliance.name, alliance.logoUrl, alliance.websiteUrl || null, alliance.description || null, alliance.isActive ?? true, alliance.sortOrder ?? 0]
+    );
+    return mapAlliance(r.rows[0]);
+  }
+
+  async updateAlliance(id: number, data: Partial<InsertAlliance>): Promise<Alliance | undefined> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
+    if (data.logoUrl !== undefined) { fields.push(`logo_url = $${i++}`); values.push(data.logoUrl); }
+    if (data.websiteUrl !== undefined) { fields.push(`website_url = $${i++}`); values.push(data.websiteUrl); }
+    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
+    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
+    if (data.sortOrder !== undefined) { fields.push(`sort_order = $${i++}`); values.push(data.sortOrder); }
+
+    if (fields.length === 0) {
+      const r = await this.query("SELECT * FROM alliances WHERE id = $1", [id]);
+      return r.rows[0] ? mapAlliance(r.rows[0]) : undefined;
+    }
+
+    values.push(id);
+    const r = await this.query(
+      `UPDATE alliances SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values
+    );
+    return r.rows[0] ? mapAlliance(r.rows[0]) : undefined;
+  }
+
+  async deleteAlliance(id: number): Promise<boolean> {
+    const r = await this.query("DELETE FROM alliances WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
   }
 }

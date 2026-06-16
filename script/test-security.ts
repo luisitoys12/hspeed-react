@@ -4,20 +4,37 @@ import bcrypt from "bcryptjs";
 
 // Force MemStorage for isolation during testing so we don't pollute the cloud Neon DB
 process.env.DATABASE_URL = "";
+process.env.USE_MEMSTORAGE = "true";
 process.env.JWT_SECRET = "test_jwt_secret_key_for_security_suite";
-
-import { registerRoutes } from "../server/routes";
 
 async function runSecurityTests() {
   console.log("\n=======================================================");
   console.log("🛡️  HABBOSPEED SECURITY SUITE: PANEL PROTECTION TESTS  🛡️");
   console.log("=======================================================\n");
 
+  // Mock Habbo API fetch calls
+  const originalFetch = global.fetch;
+  global.fetch = async (input: any, init?: any) => {
+    const url = typeof input === "string" ? input : input.toString();
+    if (url.includes("https://www.habbo.es/api/public/users")) {
+      return new Response(JSON.stringify({
+        name: "HabboUser1",
+        motto: "VERIFY_ME",
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    return originalFetch(input, init);
+  };
+
+
   const app = express();
   app.use(express.json());
   const httpServer = createServer(app);
 
-  // Register all server routes
+  // Register all server routes dynamically to prevent ESM hoisting from overriding env vars
+  const { registerRoutes } = await import("../server/routes");
   await registerRoutes(httpServer, app);
 
   // Start temporary test server on port 5051
@@ -90,6 +107,7 @@ async function runSecurityTests() {
         password: testUserPassword,
         displayName: "Regular User",
         habboUsername: "HabboUser1",
+        verificationCode: "VERIFY_ME",
       }),
     });
     
@@ -195,6 +213,8 @@ async function runSecurityTests() {
     console.error("An error occurred during security tests:", error);
     testsFailed++;
   } finally {
+    // Restore original fetch
+    global.fetch = originalFetch;
     // Terminate server cleanly
     server.close();
     console.log("\n=======================================================");

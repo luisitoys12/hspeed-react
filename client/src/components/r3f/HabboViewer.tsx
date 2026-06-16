@@ -12,11 +12,10 @@ function HabboViewer({ furnitureId, avatarFigure, size = 5 }: HabboViewerProps) 
   return (
     <Canvas style={{ height: '100vh', width: '100%' }} camera={{ position: [0, size, size], fov: 60 }}>
       <Suspense fallback={null}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1.5} />
-        
-        {/* Environment */}
-        <Environment preset='studio' />
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[10, 10, 5]} intensity={1.2} />
+        <directionalLight position={[-10, 8, -5]} intensity={0.6} />
+        <pointLight position={[0, 4, 0]} intensity={0.5} />
         
         {/* Controls */}
         <OrbitControls enableZoom enablePan enableRotate />

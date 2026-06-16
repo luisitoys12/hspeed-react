@@ -25,6 +25,7 @@ import {
   type VipPerkLog, type InsertVipPerkLog,
   type HSpeedRoom, type InsertHSpeedRoom,
   type SupportTicket, type InsertSupportTicket,
+  type Alliance, type InsertAlliance,
 } from "@shared/schema";
 import { type IStorage } from "./storage";
 import bcrypt from "bcryptjs";
@@ -354,6 +355,38 @@ export class MemStorage implements IStorage {
       this.hspeedRoomsList.set(r.id, { ...r, createdAt: new Date() });
       if (r.id > this._hspeedRoomId) this._hspeedRoomId = r.id;
     });
+
+    // Seed productos de tienda
+    const shopSeedProducts = [
+      // Decoración
+      { name: "Fondo Galaxia", description: "Un fondo cósmico para tu perfil con estrellas animadas.", category: "decoracion", price: 150, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png", isActive: true, isLimited: false, stock: 0 },
+      { name: "Marco Dorado VIP", description: "Marco elegante dorado para resaltar tu avatar.", category: "decoracion", price: 300, imageUrl: "https://images.habbo.com/c_images/album1584/ADM.gif", isActive: true, isLimited: false, stock: 0 },
+      { name: "Fondo Neón Retro", description: "Fondo estilo synthwave con luces de neón.", category: "decoracion", price: 200, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png", isActive: true, isLimited: false, stock: 0 },
+      { name: "Banner Personalizado", description: "Banner animado para la cabecera de tu perfil.", category: "decoracion", price: 250, imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png", isActive: true, isLimited: false, stock: 0 },
+      // Objetos
+      { name: "Sticker Pack Habbo", description: "Pack de 20 stickers exclusivos para chat.", category: "objeto", price: 100, imageUrl: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif", isActive: true, isLimited: false, stock: 0 },
+      { name: "Badge Coleccionista", description: "Insignia especial de coleccionista en tu perfil.", category: "objeto", price: 500, imageUrl: "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif", isActive: true, isLimited: true, stock: 50 },
+      { name: "Emoji Pack Premium", description: "Emojis animados exclusivos para mensajes.", category: "objeto", price: 75, imageUrl: "https://images.habbo.com/c_images/album1584/ADM.gif", isActive: true, isLimited: false, stock: 0 },
+      { name: "Título Personalizado", description: "Elige un título único que aparece bajo tu nombre.", category: "objeto", price: 400, imageUrl: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif", isActive: true, isLimited: false, stock: 0 },
+      // Temas
+      { name: "Tema Sakura", description: "Tema con tonos rosa pastel y flores de cerezo.", category: "tema", price: 350, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png", isActive: true, isLimited: false, stock: 0 },
+      { name: "Tema Cyberpunk", description: "Estilo futurista con neones azul y magenta.", category: "tema", price: 400, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png", isActive: true, isLimited: false, stock: 0 },
+      { name: "Tema Bosque Encantado", description: "Paleta natural con verdes musgo y dorados suaves.", category: "tema", price: 300, imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png", isActive: true, isLimited: false, stock: 0 },
+      { name: "Tema Obsidiana", description: "Negro profundo con acentos plateados y azules.", category: "tema", price: 350, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png", isActive: true, isLimited: true, stock: 100 },
+      // Fondos
+      { name: "Wallpaper Playa Tropical", description: "Fondo animado de playa con olas y palmeras.", category: "fondo", price: 200, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png", isActive: true, isLimited: false, stock: 0 },
+      { name: "Wallpaper Ciudad Nocturna", description: "Skyline nocturno con luces de ciudad.", category: "fondo", price: 250, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png", isActive: true, isLimited: false, stock: 0 },
+      { name: "Wallpaper Aurora Boreal", description: "Espectáculo de luces nórdicas en el cielo nocturno.", category: "fondo", price: 300, imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png", isActive: true, isLimited: false, stock: 0 },
+    ];
+    shopSeedProducts.forEach(p => this.createShopProduct(p));
+
+    // Seed alianzas por defecto
+    const defaultAlliances = [
+      { name: "HabNubis", logoUrl: "https://images.habbo.com/c_images/album1584/ADM.gif", websiteUrl: "https://habnubis.es", description: "Fansite oficial aliada de Habbo.es" },
+      { name: "HabboBites", logoUrl: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif", websiteUrl: "https://habbobites.com", description: "Comunidad de noticias y guías" },
+      { name: "HabboRPG", logoUrl: "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif", websiteUrl: "https://habborpg.net", description: "La comunidad de rol de Habbo" },
+    ];
+    defaultAlliances.forEach(a => this.createAlliance(a as InsertAlliance));
   }
 
   // Users
@@ -1197,4 +1230,23 @@ export class MemStorage implements IStorage {
     return Array.from(this.supportTicketsList.values())
       .sort((a, b) => (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0));
   }
+
+  // Alliances
+  private alliancesList: Map<number, Alliance> = new Map();
+  private _allianceId = 0;
+  async getAllAlliances(): Promise<Alliance[]> { return Array.from(this.alliancesList.values()).filter((a) => a.isActive).sort((a, b) => a.sortOrder - b.sortOrder); }
+  async createAlliance(data: InsertAlliance): Promise<Alliance> {
+    const id = ++this._allianceId;
+    const item: Alliance = { id, name: data.name, logoUrl: data.logoUrl, websiteUrl: data.websiteUrl ?? null, description: data.description ?? null, isActive: data.isActive ?? true, sortOrder: data.sortOrder ?? 0, createdAt: new Date() };
+    this.alliancesList.set(id, item);
+    return item;
+  }
+  async updateAlliance(id: number, data: Partial<InsertAlliance>): Promise<Alliance | undefined> {
+    const item = this.alliancesList.get(id);
+    if (!item) return undefined;
+    Object.assign(item, data);
+    this.alliancesList.set(id, item);
+    return item;
+  }
+  async deleteAlliance(id: number): Promise<boolean> { return this.alliancesList.delete(id); }
 }

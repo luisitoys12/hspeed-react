@@ -539,3 +539,19 @@ export const supportTickets = pgTable("support_tickets", {
 export const insertSupportTicketSchema = createInsertSchema(supportTickets).omit({ id: true, createdAt: true });
 export type InsertSupportTicket = z.infer<typeof insertSupportTicketSchema>;
 export type SupportTicket = typeof supportTickets.$inferSelect;
+
+// ============ ALLIANCES ============
+export const alliances = pgTable("alliances", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  logoUrl: text("logo_url").notNull(),
+  websiteUrl: text("website_url"),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAllianceSchema = createInsertSchema(alliances).omit({ id: true, createdAt: true });
+export type InsertAlliance = z.infer<typeof insertAllianceSchema>;
+export type Alliance = typeof alliances.$inferSelect;

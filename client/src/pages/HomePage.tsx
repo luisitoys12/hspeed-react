@@ -667,6 +667,8 @@ export default function HomePage() {
   const { data: news, isLoading: newsLoading } = useQuery<News[]>({ queryKey: ["/api/news"] });
   const { data: events, isLoading: eventsLoading } = useQuery<Event[]>({ queryKey: ["/api/events"] });
   const { data: polls } = useQuery<Poll[]>({ queryKey: ["/api/polls"] });
+  const { data: alliances = [] } = useQuery<any[]>({ queryKey: ["/api/alliances"], retry: false });
+  const { data: rankings } = useQuery<any>({ queryKey: ["/api/rankings"], retry: false });
 
   const latestNews = (news || []).slice(0, 5);
   const activePolls = (polls || []).filter((p) => p.isActive).slice(0, 1);
@@ -694,6 +696,114 @@ export default function HomePage() {
         <FurniStrip />
         <RecentBadgesGrid />
 
+        {/* Rankings Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Top Oyente */}
+          <Card className="border border-border bg-card/60 backdrop-blur-md shadow-lg flex flex-col justify-between">
+            <CardContent className="p-4 space-y-3">
+              <h3 className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5 border-b border-border pb-2">
+                <i className="fa-solid fa-microphone text-orange-400 text-sm"></i>
+                Mejor Oyente
+              </h3>
+              <div className="space-y-2">
+                {!(rankings?.topListeners?.length) ? (
+                  <p className="text-[11px] text-muted-foreground text-center py-4">Sin datos</p>
+                ) : rankings.topListeners.map((u: any, idx: number) => (
+                  <div key={u.id} className="flex items-center gap-2 bg-black/10 rounded-lg p-1.5 border border-border/40">
+                    <span className={`text-[10px] font-black w-4 text-center ${idx === 0 ? "text-yellow-500" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-slate-500"}`}>#{idx + 1}</span>
+                    <div className="w-8 h-8 rounded bg-primary/10 overflow-hidden flex items-center justify-center relative flex-shrink-0">
+                      <img src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(u.habboUsername || u.displayName)}&headonly=1&size=s`} alt={u.displayName} className="absolute top-0 w-8 h-10 object-contain" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-bold text-white truncate leading-tight">{u.displayName}</p>
+                      <p className="text-[9px] text-muted-foreground leading-none">{u.value} pedidos</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Mejor DJ */}
+          <Card className="border border-border bg-card/60 backdrop-blur-md shadow-lg flex flex-col justify-between">
+            <CardContent className="p-4 space-y-3">
+              <h3 className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5 border-b border-border pb-2">
+                <i className="fa-solid fa-radio text-purple-400 text-sm"></i>
+                Mejor DJ
+              </h3>
+              <div className="space-y-2">
+                {!(rankings?.topDJs?.length) ? (
+                  <p className="text-[11px] text-muted-foreground text-center py-4">Sin datos</p>
+                ) : rankings.topDJs.map((u: any, idx: number) => (
+                  <div key={u.id} className="flex items-center gap-2 bg-black/10 rounded-lg p-1.5 border border-border/40">
+                    <span className={`text-[10px] font-black w-4 text-center ${idx === 0 ? "text-yellow-500" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-slate-500"}`}>#{idx + 1}</span>
+                    <div className="w-8 h-8 rounded bg-primary/10 overflow-hidden flex items-center justify-center relative flex-shrink-0">
+                      <img src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(u.habboUsername || u.displayName)}&headonly=1&size=s`} alt={u.displayName} className="absolute top-0 w-8 h-10 object-contain" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-bold text-white truncate leading-tight">{u.displayName}</p>
+                      <p className="text-[9px] text-muted-foreground leading-none">{u.value} SP</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Top HSpeed Points */}
+          <Card className="border border-border bg-card/60 backdrop-blur-md shadow-lg flex flex-col justify-between">
+            <CardContent className="p-4 space-y-3">
+              <h3 className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5 border-b border-border pb-2">
+                <i className="fa-solid fa-trophy text-yellow-500 text-sm"></i>
+                Top SpeedPoints
+              </h3>
+              <div className="space-y-2">
+                {!(rankings?.topPoints?.length) ? (
+                  <p className="text-[11px] text-muted-foreground text-center py-4">Sin datos</p>
+                ) : rankings.topPoints.map((u: any, idx: number) => (
+                  <div key={u.id} className="flex items-center gap-2 bg-black/10 rounded-lg p-1.5 border border-border/40">
+                    <span className={`text-[10px] font-black w-4 text-center ${idx === 0 ? "text-yellow-500" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-slate-500"}`}>#{idx + 1}</span>
+                    <div className="w-8 h-8 rounded bg-primary/10 overflow-hidden flex items-center justify-center relative flex-shrink-0">
+                      <img src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(u.habboUsername || u.displayName)}&headonly=1&size=s`} alt={u.displayName} className="absolute top-0 w-8 h-10 object-contain" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-bold text-white truncate leading-tight">{u.displayName}</p>
+                      <p className="text-[9px] text-muted-foreground leading-none">{u.value} SP</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Equipo Admin */}
+          <Card className="border border-border bg-card/60 backdrop-blur-md shadow-lg flex flex-col justify-between">
+            <CardContent className="p-4 space-y-3">
+              <h3 className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5 border-b border-border pb-2">
+                <i className="fa-solid fa-user-shield text-red-400 text-sm"></i>
+                Equipo Staff
+              </h3>
+              <div className="space-y-2">
+                {!(rankings?.staff?.length) ? (
+                  <p className="text-[11px] text-muted-foreground text-center py-4">Sin datos</p>
+                ) : rankings.staff.map((u: any) => (
+                  <div key={u.id} className="flex items-center gap-2 bg-black/10 rounded-lg p-1.5 border border-border/40">
+                    <div className="w-8 h-8 rounded bg-primary/10 overflow-hidden flex items-center justify-center relative flex-shrink-0">
+                      <img src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(u.habboUsername || u.displayName)}&headonly=1&size=s`} alt={u.displayName} className="absolute top-0 w-8 h-10 object-contain" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-bold text-white truncate leading-tight">{u.displayName}</p>
+                      <p className="text-[9px] text-primary/80 capitalize font-bold leading-none">{u.role}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 font-sans">
           <div className="lg:col-span-2 space-y-3">
             <div className="site-panel px-4 py-3 flex items-center justify-between">
@@ -713,6 +823,40 @@ export default function HomePage() {
             <QuickTools />
           </div>
         </div>
+
+        {/* Alliances Section */}
+        {alliances.length > 0 && (
+          <div className="space-y-3 font-sans">
+            <div className="site-panel px-4 py-3">
+              <p className="site-kicker font-black">Comunidad</p>
+              <h2 className="site-title flex items-center gap-2 mt-1">
+                <i className="fa-solid fa-handshake text-primary text-sm mr-1"></i> Nuestras Alianzas
+              </h2>
+            </div>
+            <div className="flex gap-4 overflow-x-auto py-3 px-1 scrollbar-thin">
+              {alliances.map((alliance: any) => (
+                <a
+                  key={alliance.id}
+                  href={alliance.websiteUrl || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-shrink-0 bg-card/60 border border-border hover:border-primary/80 hover:bg-card rounded-xl p-4 flex items-center gap-3 transition-all duration-300 w-60 shadow hover:shadow-primary/10 hover:scale-[1.02] group"
+                >
+                  <img
+                    src={alliance.logoUrl}
+                    alt={alliance.name}
+                    className="w-12 h-12 object-contain bg-black/20 rounded-lg border border-border/30 p-1 group-hover:scale-105 transition-all"
+                    onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
+                  />
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-black text-white truncate group-hover:text-primary transition-colors">{alliance.name}</h4>
+                    <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight mt-0.5">{alliance.description || "Web amiga de la comunidad."}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-4 space-y-4">
           <WorldCupPanel />

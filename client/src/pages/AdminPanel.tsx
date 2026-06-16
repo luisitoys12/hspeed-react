@@ -1372,6 +1372,216 @@ function VipAdmin() {
   );
 }
 
+// ============ ALLIANCES ADMIN ============
+function AlliancesAdmin() {
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState({
+    name: "",
+    logoUrl: "",
+    websiteUrl: "",
+    description: "",
+    isActive: true,
+    sortOrder: 0
+  });
+
+  const { data: alliances = [], isLoading } = useQuery<any[]>({
+    queryKey: ["/api/alliances"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/alliances");
+      return res.json();
+    }
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/alliances", data, token ? `Bearer ${token}` : undefined);
+      if (!res.ok) throw new Error("Error al crear alianza");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/alliances"] });
+      setOpen(false);
+      resetForm();
+      toast({ title: "Alianza creada" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const res = await apiRequest("PUT", `/api/alliances/${id}`, data, token ? `Bearer ${token}` : undefined);
+      if (!res.ok) throw new Error("Error al actualizar alianza");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/alliances"] });
+      setOpen(false);
+      resetForm();
+      toast({ title: "Alianza actualizada" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await apiRequest("DELETE", `/api/alliances/${id}`, undefined, token ? `Bearer ${token}` : undefined);
+      if (!res.ok) throw new Error("Error al eliminar alianza");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/alliances"] });
+      toast({ title: "Alianza eliminada" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const resetForm = () => {
+    setForm({ name: "", logoUrl: "", websiteUrl: "", description: "", isActive: true, sortOrder: 0 });
+    setEditingId(null);
+  };
+
+  const handleEdit = (alliance: any) => {
+    setEditingId(alliance.id);
+    setForm({
+      name: alliance.name,
+      logoUrl: alliance.logoUrl,
+      websiteUrl: alliance.websiteUrl || "",
+      description: alliance.description || "",
+      isActive: alliance.isActive,
+      sortOrder: alliance.sortOrder
+    });
+    setOpen(true);
+  };
+
+  const handleSubmit = () => {
+    if (!form.name || !form.logoUrl) {
+      toast({ title: "Error", description: "El nombre y el logo son requeridos", variant: "destructive" });
+      return;
+    }
+    if (editingId) {
+      updateMutation.mutate({ id: editingId, data: form });
+    } else {
+      createMutation.mutate(form);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-white">Nuestras Alianzas ({alliances.length})</h2>
+          <p className="text-xs text-muted-foreground">Gestiona las webs amigas y alianzas del portal de radio.</p>
+        </div>
+        <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); setOpen(v); }}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="bg-primary hover:bg-primary/80 text-white text-xs">
+              <Plus className="w-3.5 h-3.5 mr-1" /> Nueva Alianza
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card border-border max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-sm font-bold text-white">
+                {editingId ? "Editar Alianza" : "Nueva Alianza"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">Nombre de la Alianza *</Label>
+                <Input className="mt-1" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
+              </div>
+              <div>
+                <Label className="text-xs">Descripción</Label>
+                <Textarea className="mt-1" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+              </div>
+              <div>
+                <Label className="text-xs">URL del Logo (imgur, beeimg, habbo) *</Label>
+                <Input className="mt-1" placeholder="https://..." value={form.logoUrl} onChange={e => setForm(p => ({ ...p, logoUrl: e.target.value }))} />
+                {form.logoUrl && (
+                  <div className="mt-2 p-2 bg-black/30 rounded border border-border flex items-center justify-center h-20">
+                    <img src={form.logoUrl} alt="Preview Logo" className="max-h-16 object-contain" onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }} />
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label className="text-xs">URL de la Web</Label>
+                <Input className="mt-1" placeholder="https://..." value={form.websiteUrl} onChange={e => setForm(p => ({ ...p, websiteUrl: e.target.value }))} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Orden (menor primero)</Label>
+                  <Input className="mt-1" type="number" value={form.sortOrder} onChange={e => setForm(p => ({ ...p, sortOrder: parseInt(e.target.value) || 0 }))} />
+                </div>
+                <div>
+                  <Label className="text-xs">Estado</Label>
+                  <Select value={form.isActive ? "true" : "false"} onValueChange={v => setForm(p => ({ ...p, isActive: v === "true" }))}>
+                    <SelectTrigger className="mt-1 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Activa</SelectItem>
+                      <SelectItem value="false">Inactiva</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Button className="w-full bg-primary hover:bg-primary/80 text-white text-xs mt-2" onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
+                {editingId ? "Actualizar Alianza" : "Crear Alianza"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="rounded-xl border border-border overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground w-16">Logo</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Nombre</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground">Web</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground w-20">Orden</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground w-24">Estado</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground w-24">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={6} className="text-center text-xs py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
+            ) : alliances.length === 0 ? (
+              <TableRow><TableCell colSpan={6} className="text-center text-xs py-8 text-muted-foreground">No hay alianzas registradas</TableCell></TableRow>
+            ) : alliances.map((a: any) => (
+              <TableRow key={a.id} className="border-border hover:bg-zinc-800/40">
+                <TableCell>
+                  <img src={a.logoUrl} alt={a.name} className="h-8 w-8 object-contain bg-black/10 rounded" onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }} />
+                </TableCell>
+                <TableCell className="font-bold text-white text-xs">{a.name}</TableCell>
+                <TableCell className="text-xs font-mono text-muted-foreground max-w-[150px] truncate">{a.websiteUrl || "—"}</TableCell>
+                <TableCell className="text-xs text-muted-foreground font-bold">{a.sortOrder}</TableCell>
+                <TableCell>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${a.isActive ? "bg-green-500/10 text-green-400 border-green-500/30" : "bg-zinc-500/10 text-zinc-400 border-zinc-500/30"}`}>
+                    {a.isActive ? "Activa" : "Inactiva"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-primary/80 hover:text-primary" onClick={() => handleEdit(a)}>
+                      <Edit className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/60 hover:text-destructive" onClick={() => deleteMutation.mutate(a.id)}>
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
 // ============ MAIN PANEL ============
 export default function AdminPanel() {
   const { section } = useParams<{ section?: string }>();
@@ -1437,6 +1647,7 @@ export default function AdminPanel() {
         { id: "rooms", label: "Salas", icon: "fa-solid fa-hotel" },
         { id: "vip", label: "Membresías VIP", icon: "fa-solid fa-crown" },
         { id: "tickets", label: "Tickets Soporte", icon: "fa-solid fa-ticket" },
+        { id: "alliances", label: "Alianzas", icon: "fa-solid fa-handshake" },
       ]
     },
     {
@@ -1590,6 +1801,7 @@ export default function AdminPanel() {
                 {activeTab === "tickets" && <TicketsAdmin />}
                 {activeTab === "rooms" && <RoomsAdmin />}
                 {activeTab === "vip" && <VipAdmin />}
+                {activeTab === "alliances" && <AlliancesAdmin />}
               </CardContent>
             </Card>
           )}
