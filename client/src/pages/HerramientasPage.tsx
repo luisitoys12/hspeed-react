@@ -23,7 +23,88 @@ import {
   Shield,
   Globe,
   Activity,
+  Trophy
 } from "lucide-react";
+
+// ─────────────────────────────────────────────
+// Custom Search Components
+// ─────────────────────────────────────────────
+
+function SearchBar({
+  placeholder,
+  value,
+  onChange,
+  onSearch,
+  disabled,
+  icon: Icon,
+  description
+}: {
+  placeholder: string;
+  value: string;
+  onChange: (val: string) => void;
+  onSearch: () => void;
+  disabled: boolean;
+  icon: any;
+  description: string;
+}) {
+  return (
+    <div className="py-12 flex flex-col items-center justify-center text-center">
+      <Icon className="w-16 h-16 text-slate-500 mb-2.5" />
+      <p className="text-sm text-slate-400 font-medium mb-6">
+        {description}
+      </p>
+      <div className="flex items-center w-full max-w-xl border border-zinc-700 rounded-lg overflow-hidden bg-zinc-900 shadow-lg">
+        <Button
+          onClick={onSearch}
+          disabled={disabled}
+          className="rounded-none bg-[#7c3aed] hover:bg-[#6d28d9] text-white px-5 h-10 border-r border-zinc-700 font-black"
+        >
+          Buscar
+        </Button>
+        <Input
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && onSearch()}
+          className="border-0 bg-transparent text-white focus-visible:ring-0 focus-visible:ring-offset-0 h-10 flex-1 placeholder:text-zinc-500 text-xs px-3"
+        />
+      </div>
+    </div>
+  );
+}
+
+function ActiveSearchBar({
+  placeholder,
+  value,
+  onChange,
+  onSearch,
+  disabled
+}: {
+  placeholder: string;
+  value: string;
+  onChange: (val: string) => void;
+  onSearch: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <div className="flex items-center w-full border border-zinc-700 rounded-lg overflow-hidden bg-zinc-900 shadow-md">
+      <Button
+        onClick={onSearch}
+        disabled={disabled}
+        className="rounded-none bg-[#7c3aed] hover:bg-[#6d28d9] text-white px-5 h-10 border-r border-zinc-700 font-black"
+      >
+        Buscar
+      </Button>
+      <Input
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && onSearch()}
+        className="border-0 bg-transparent text-white focus-visible:ring-0 focus-visible:ring-offset-0 h-10 flex-1 placeholder:text-zinc-500 text-xs px-3"
+      />
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────
 // Shared helpers
@@ -157,30 +238,29 @@ function BuscarUsuarioTab() {
 
   const selectedBadges: any[] = profileData?.selectedBadges || user?.selectedBadges || [];
 
+  const hasSearched = !!searchedUsername;
+
   return (
     <div className="space-y-4">
-      {/* Search bar */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Nombre de usuario de Habbo..."
-            className="pl-9"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            data-testid="input-user-search"
-          />
-        </div>
-        <Button
-          onClick={handleSearch}
+      {!hasSearched ? (
+        <SearchBar
+          placeholder="Nombre de usuario de Habbo..."
+          value={inputValue}
+          onChange={setInputValue}
+          onSearch={handleSearch}
           disabled={!inputValue.trim()}
-          className="bg-primary hover:bg-primary/80 text-white"
-          data-testid="button-user-search"
-        >
-          Buscar
-        </Button>
-      </div>
+          icon={User}
+          description="Introduce un nombre de usuario para buscar"
+        />
+      ) : (
+        <>
+          <ActiveSearchBar
+            placeholder="Nombre de usuario de Habbo..."
+            value={inputValue}
+            onChange={setInputValue}
+            onSearch={handleSearch}
+            disabled={!inputValue.trim()}
+          />
 
       {/* Loading */}
       {isLoading && (
@@ -449,12 +529,7 @@ function BuscarUsuarioTab() {
         </div>
       )}
 
-      {/* Empty state */}
-      {!searchedUsername && (
-        <div className="text-center py-16 text-muted-foreground">
-          <User className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="text-sm">Introduce un nombre de usuario para buscar</p>
-        </div>
+        </>
       )}
     </div>
   );
@@ -593,29 +668,29 @@ function BuscarSalaTab() {
 
   const owner = room?.ownerName || room?.owner?.name || room?.owner || "";
 
+  const hasSearched = !!searchedId;
+
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="ID de sala (ej: 12345)..."
-            className="pl-9"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            data-testid="input-room-search"
-          />
-        </div>
-        <Button
-          onClick={handleSearch}
+      {!hasSearched ? (
+        <SearchBar
+          placeholder="ID de sala (ej: 12345)..."
+          value={inputValue}
+          onChange={setInputValue}
+          onSearch={handleSearch}
           disabled={!inputValue.trim()}
-          className="bg-primary hover:bg-primary/80 text-white"
-          data-testid="button-room-search"
-        >
-          Buscar
-        </Button>
-      </div>
+          icon={DoorOpen}
+          description="Introduce un ID de sala para buscar"
+        />
+      ) : (
+        <>
+          <ActiveSearchBar
+            placeholder="ID de sala (ej: 12345)..."
+            value={inputValue}
+            onChange={setInputValue}
+            onSearch={handleSearch}
+            disabled={!inputValue.trim()}
+          />
 
       {isLoading && (
         <Card className="bg-card border-border">
@@ -708,11 +783,7 @@ function BuscarSalaTab() {
         </Card>
       )}
 
-      {!searchedId && (
-        <div className="text-center py-16 text-muted-foreground">
-          <DoorOpen className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="text-sm">Introduce un ID de sala para buscar</p>
-        </div>
+        </>
       )}
     </div>
   );
@@ -760,29 +831,29 @@ function BuscarGrupoTab() {
   const memberCount = group?.memberCount || group?.membersCount || group?.members_count;
   const roomInfo = group?.room || group?.homeRoom;
 
+  const hasSearched = !!searchedId;
+
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="ID de grupo (ej: g-hhus-00xxxxxx)..."
-            className="pl-9"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            data-testid="input-group-search"
-          />
-        </div>
-        <Button
-          onClick={handleSearch}
+      {!hasSearched ? (
+        <SearchBar
+          placeholder="ID de grupo (ej: g-hhus-00xxxxxx)..."
+          value={inputValue}
+          onChange={setInputValue}
+          onSearch={handleSearch}
           disabled={!inputValue.trim()}
-          className="bg-primary hover:bg-primary/80 text-white"
-          data-testid="button-group-search"
-        >
-          Buscar
-        </Button>
-      </div>
+          icon={Shield}
+          description="Introduce un ID de grupo para buscar"
+        />
+      ) : (
+        <>
+          <ActiveSearchBar
+            placeholder="ID de grupo (ej: g-hhus-00xxxxxx)..."
+            value={inputValue}
+            onChange={setInputValue}
+            onSearch={handleSearch}
+            disabled={!inputValue.trim()}
+          />
 
       {isLoading && (
         <Card className="bg-card border-border">
@@ -912,11 +983,7 @@ function BuscarGrupoTab() {
         </div>
       )}
 
-      {!searchedId && (
-        <div className="text-center py-16 text-muted-foreground">
-          <Shield className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="text-sm">Introduce el ID de un grupo para buscar</p>
-        </div>
+        </>
       )}
     </div>
   );
@@ -949,29 +1016,29 @@ function PropietariosPlacaTab() {
     ? data
     : data?.owners || data?.users || data?.members || [];
 
+  const hasSearched = !!searchedCode;
+
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Código de placa (ej: ADM, ACH_Basic1)..."
-            className="pl-9"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            data-testid="input-badge-code-search"
-          />
-        </div>
-        <Button
-          onClick={handleSearch}
+      {!hasSearched ? (
+        <SearchBar
+          placeholder="Código de placa (ej: ADM, ACH_Basic1)..."
+          value={inputValue}
+          onChange={setInputValue}
+          onSearch={handleSearch}
           disabled={!inputValue.trim()}
-          className="bg-primary hover:bg-primary/80 text-white"
-          data-testid="button-badge-owners-search"
-        >
-          Buscar
-        </Button>
-      </div>
+          icon={Award}
+          description="Introduce un código de placa para buscar propietarios"
+        />
+      ) : (
+        <>
+          <ActiveSearchBar
+            placeholder="Código de placa (ej: ADM, ACH_Basic1)..."
+            value={inputValue}
+            onChange={setInputValue}
+            onSearch={handleSearch}
+            disabled={!inputValue.trim()}
+          />
 
       {isLoading && (
         <div className="space-y-3">
@@ -1053,12 +1120,7 @@ function PropietariosPlacaTab() {
         </div>
       )}
 
-      {!searchedCode && (
-        <div className="text-center py-16 text-muted-foreground">
-          <Award className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="text-sm">Introduce un código de placa para buscar propietarios</p>
-          <p className="text-xs mt-1 opacity-60">Ejemplos: ADM, HC1, ACH_Basic1</p>
-        </div>
+        </>
       )}
     </div>
   );
@@ -1087,30 +1149,29 @@ function OriginsLookupTab() {
     if (inputValue.trim()) setSearchedUsername(inputValue.trim());
   };
 
+  const hasSearched = !!searchedUsername;
+
   return (
     <div className="space-y-4">
-      {/* Search bar */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Nombre de usuario en Habbo Origins..."
-            className="pl-9"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            data-testid="input-origins-search"
-          />
-        </div>
-        <Button
-          onClick={handleSearch}
+      {!hasSearched ? (
+        <SearchBar
+          placeholder="Nombre de usuario en Habbo Origins..."
+          value={inputValue}
+          onChange={setInputValue}
+          onSearch={handleSearch}
           disabled={!inputValue.trim()}
-          className="bg-primary hover:bg-primary/80 text-white"
-          data-testid="button-origins-search"
-        >
-          Buscar en Origins
-        </Button>
-      </div>
+          icon={Globe}
+          description="Introduce un nombre de usuario de Origins para buscar"
+        />
+      ) : (
+        <>
+          <ActiveSearchBar
+            placeholder="Nombre de usuario en Habbo Origins..."
+            value={inputValue}
+            onChange={setInputValue}
+            onSearch={handleSearch}
+            disabled={!inputValue.trim()}
+          />
 
       {/* Loading */}
       {isLoading && (
@@ -1231,13 +1292,7 @@ function OriginsLookupTab() {
         </div>
       )}
 
-      {/* Empty state */}
-      {!searchedUsername && (
-        <div className="text-center py-16 text-muted-foreground">
-          <Globe className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="text-sm">Introduce un nombre de usuario de Origins para buscar</p>
-          <p className="text-xs mt-1 opacity-50">Nota: Origins es la versión clásica oficial de Habbo lanzada recientemente.</p>
-        </div>
+        </>
       )}
     </div>
   );
@@ -1568,88 +1623,113 @@ function CalculadoraTradeoTab() {
 // ─────────────────────────────────────────────
 
 export default function HerramientasPage() {
+  const [activeTab, setActiveTab] = useState("usuario");
+  const [toolsExpanded, setToolsExpanded] = useState(true);
+
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-5">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
-        <Wrench className="w-5 h-5 text-primary" />
-        <h1 className="text-xl font-bold">Herramientas Habbo</h1>
+    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-5 font-sans">
+      
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        
+        {/* Left column: Content Area (flex-1) */}
+        <div className="w-full lg:flex-1 min-w-0 bg-[#1e293b]/20 border border-zinc-800 rounded-2xl p-6 shadow-xl relative min-h-[450px]">
+          {activeTab === "usuario" && <BuscarUsuarioTab />}
+          {activeTab === "origins" && <OriginsLookupTab />}
+          {activeTab === "logros" && <LogrosTab />}
+          {activeTab === "hotlooks" && <HotLooksTab />}
+          {activeTab === "sala" && <BuscarSalaTab />}
+          {activeTab === "grupo" && <BuscarGrupoTab />}
+          {activeTab === "placa" && <PropietariosPlacaTab />}
+          {activeTab === "calculadora" && <CalculadoraTradeoTab />}
+        </div>
+
+        {/* Right column: Sidebar (w-full lg:w-80) */}
+        <aside className="w-full lg:w-80 flex-shrink-0 space-y-4">
+          
+          {/* Header Card */}
+          <div className="bg-[#1e293b]/20 border border-zinc-800 rounded-2xl p-4 shadow-xl space-y-2">
+            <h2 className="text-sm font-extrabold text-white flex items-center gap-2 uppercase tracking-wider font-cabinet">
+              <Wrench className="w-4 h-4 text-primary animate-pulse" /> Herramientas Habbo
+            </h2>
+            <p className="text-[11px] text-muted-foreground leading-normal">
+              Consulta información pública de la API oficial de Habbo: usuarios, salas, grupos, Hot Looks y placas.
+            </p>
+          </div>
+
+          {/* Tools Collapsible Card */}
+          <div className="bg-[#18181b] border border-zinc-850 rounded-2xl p-4 shadow-2xl space-y-3">
+            
+            {/* Header Accordion button */}
+            <button 
+              onClick={() => setToolsExpanded(!toolsExpanded)}
+              className="w-full flex items-center justify-between text-left focus:outline-none"
+            >
+              <span className="text-xs font-black uppercase text-slate-300 flex items-center gap-2">
+                <i className="fa-solid fa-toolbox text-primary" /> Herramientas
+              </span>
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${toolsExpanded ? "rotate-180" : ""}`} />
+            </button>
+
+            {toolsExpanded && (
+              <div className="flex flex-col gap-1.5 pt-2 border-t border-zinc-800/50">
+                {[
+                  { id: "usuario", label: "Buscar Usuario", icon: User, img: "https://www.habbo.es/habbo-imaging/avatarimage?user=Staff&size=s&headonly=1" },
+                  { id: "origins", label: "Habbo Origins", icon: Globe },
+                  { id: "logros", label: "Logros Habbo", icon: Trophy },
+                  { id: "hotlooks", label: "Hot Looks", icon: Flame },
+                  { id: "sala", label: "Buscar Sala", icon: DoorOpen },
+                  { id: "grupo", label: "Buscar Grupo", icon: Shield },
+                  { id: "placa", label: "Propietarios de Placa", icon: Award },
+                ].map((item) => {
+                  const isActive = activeTab === item.id;
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all relative border text-left ${
+                        isActive
+                          ? "bg-[#27272a]/60 text-white border-primary shadow-[0_0_12px_rgba(245,158,11,0.25)] ring-1 ring-primary/30"
+                          : "bg-zinc-950/45 text-slate-400 border-zinc-800/60 hover:text-white hover:bg-zinc-900/40"
+                      }`}
+                    >
+                      {item.img ? (
+                        <img 
+                          src={item.img} 
+                          alt="avatar" 
+                          className="w-4 h-4 object-contain rounded-full flex-shrink-0 scale-125 mr-0.5" 
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-primary" : "text-slate-500"}`} />
+                      )}
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+
+                {/* Calculadora Tradeo (Independent bottom button) */}
+                <div className="pt-2 mt-2 border-t border-zinc-805">
+                  <button
+                    onClick={() => setActiveTab("calculadora")}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border text-left ${
+                      activeTab === "calculadora"
+                        ? "bg-[#27272a]/60 text-white border-primary shadow-[0_0_12px_rgba(245,158,11,0.25)] ring-1 ring-primary/30"
+                        : "bg-zinc-950/45 text-slate-400 border-zinc-800/60 hover:text-white hover:bg-zinc-900/40"
+                    }`}
+                  >
+                    <Activity className={`w-4 h-4 flex-shrink-0 ${activeTab === "calculadora" ? "text-primary" : "text-slate-500"}`} />
+                    <span>Calculadora Tradeo</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
+
       </div>
-      <p className="text-sm text-muted-foreground">
-        Consulta información pública de la API oficial de Habbo: usuarios, salas, grupos, Hot Looks y placas.
-      </p>
-
-      <Tabs defaultValue="usuario" className="w-full">
-        <TabsList
-          className="flex flex-wrap gap-1 h-auto bg-secondary/40 p-1 mb-2"
-          data-testid="tabs-herramientas"
-        >
-          <TabsTrigger value="usuario" className="text-xs" data-testid="tab-usuario">
-            <User className="w-3.5 h-3.5 mr-1.5" />
-            Buscar Usuario
-          </TabsTrigger>
-          <TabsTrigger value="origins" className="text-xs" data-testid="tab-origins">
-            <Globe className="w-3.5 h-3.5 mr-1.5" />
-            Habbo Origins
-          </TabsTrigger>
-          <TabsTrigger value="logros" className="text-xs" data-testid="tab-logros">
-            <Activity className="w-3.5 h-3.5 mr-1.5" />
-            Logros Habbo
-          </TabsTrigger>
-          <TabsTrigger value="hotlooks" className="text-xs" data-testid="tab-hotlooks">
-            <Flame className="w-3.5 h-3.5 mr-1.5" />
-            Hot Looks
-          </TabsTrigger>
-          <TabsTrigger value="sala" className="text-xs" data-testid="tab-sala">
-            <DoorOpen className="w-3.5 h-3.5 mr-1.5" />
-            Buscar Sala
-          </TabsTrigger>
-          <TabsTrigger value="grupo" className="text-xs" data-testid="tab-grupo">
-            <Shield className="w-3.5 h-3.5 mr-1.5" />
-            Buscar Grupo
-          </TabsTrigger>
-          <TabsTrigger value="placa" className="text-xs" data-testid="tab-placa">
-            <Award className="w-3.5 h-3.5 mr-1.5" />
-            Propietarios de Placa
-          </TabsTrigger>
-          <TabsTrigger value="calculadora" className="text-xs" data-testid="tab-calculadora">
-            <Activity className="w-3.5 h-3.5 mr-1.5" />
-            Calculadora Tradeo
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="usuario" className="mt-4">
-          <BuscarUsuarioTab />
-        </TabsContent>
-
-        <TabsContent value="origins" className="mt-4">
-          <OriginsLookupTab />
-        </TabsContent>
-
-        <TabsContent value="logros" className="mt-4">
-          <LogrosTab />
-        </TabsContent>
-
-        <TabsContent value="hotlooks" className="mt-4">
-          <HotLooksTab />
-        </TabsContent>
-
-        <TabsContent value="sala" className="mt-4">
-          <BuscarSalaTab />
-        </TabsContent>
-
-        <TabsContent value="grupo" className="mt-4">
-          <BuscarGrupoTab />
-        </TabsContent>
-
-        <TabsContent value="placa" className="mt-4">
-          <PropietariosPlacaTab />
-        </TabsContent>
-
-        <TabsContent value="calculadora" className="mt-4">
-          <CalculadoraTradeoTab />
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }

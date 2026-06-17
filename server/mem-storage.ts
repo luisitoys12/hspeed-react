@@ -79,7 +79,7 @@ export class MemStorage implements IStorage {
     this.configItem = {
       id: 1,
       radioService: "azuracast",
-      apiUrl: "https://radio.kusmedios.lat/api/nowplaying/runa-fm",
+      apiUrl: "https://radio.kusmedios.lat/api/nowplaying",
       listenUrl: "https://radio.kusmedios.lat/listen/runa-fm/radio.mp3",
       homePlayerBgUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       slideshow: [

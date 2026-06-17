@@ -36,6 +36,7 @@ import MaintenancePage from "@/pages/MaintenancePage";
 import ProfilePage from "@/pages/ProfilePage";
 import MundialPage from "@/pages/MundialPage";
 import SongHistoryPage from "@/pages/SongHistoryPage";
+import RadioPage from "@/pages/RadioPage";
 import VipPage from "@/pages/VipPage";
 import RoomsPage from "@/pages/RoomsPage";
 import SupportPage from "@/pages/SupportPage";
@@ -98,6 +99,7 @@ function AppContent() {
 						<Route path="/mundial" component={MundialPage} />
 						<Route path="/mundial/*" component={MundialPage} />
 						<Route path="/song-history" component={SongHistoryPage} />
+						<Route path="/radio" component={RadioPage} />
 						<Route path="/vip" component={VipPage} />
 						<Route path="/rooms" component={RoomsPage} />
 						<Route path="/soporte" component={SupportPage} />

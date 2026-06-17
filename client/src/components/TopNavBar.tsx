@@ -319,6 +319,7 @@ export default function TopNavBar() {
   ];
 
   const radioItems: DropdownItem[] = [
+    { href: "/radio", label: "Sintonizar Radio", iconClass: "fa-solid fa-radio" },
     { href: "/schedule", label: "Horarios", iconClass: "fa-solid fa-calendar-week" },
     { href: "/song-history", label: "Historial de Temas", iconClass: "fa-solid fa-compact-disc" },
     { label: "Peticiones", iconClass: "fa-solid fa-bullhorn", onClick: () => setShowPeticionesModal(true) },
@@ -366,7 +367,7 @@ export default function TopNavBar() {
             <div className="hidden md:flex items-center gap-6">
               <DirectNavLink href="/" label="INICIO" />
               <NavDropdown label="COMUNIDAD" items={comunidadItems} activePrefixes={["/news", "/events", "/forum", "/team", "/contact", "/rooms"]} />
-              <NavDropdown label="RADIO" items={radioItems} activePrefixes={["/schedule", "/song-history"]} />
+              <NavDropdown label="RADIO" items={radioItems} activePrefixes={["/radio", "/schedule", "/song-history"]} />
               <NavDropdown label="HERRAMIENTAS" items={habboItems} activePrefixes={["/herramientas", "/armario", "/imager", "/catalog", "/badges"]} />
               <NavDropdown label="TIENDA" items={tiendaItems} activePrefixes={["/tienda", "/shop", "/vip", "/marketplace"]} />
               <NavDropdown label="MUNDIAL 2026" items={mundialItems} activePrefixes={["/mundial"]} />
@@ -735,6 +736,40 @@ export default function TopNavBar() {
                     <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
                   </Link>
                 ))}
+              </div>
+            </div>
+
+            {/* Sección Radio */}
+            <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
+              <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Radio HSpeed
+              </p>
+              <div className="grid grid-cols-1 gap-1">
+                <Link href="/radio" className="flex items-center gap-2.5 px-3 py-2 text-xs font-black text-primary bg-primary/5 border border-primary/10 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  <i className="fa-solid fa-radio w-4 text-center text-primary"></i> Sintonizar Radio
+                </Link>
+                {radioItems.slice(1).map((item, idx) => {
+                  if (item.href) {
+                    return (
+                      <Link key={idx} href={item.href} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
+                        <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                      </Link>
+                    );
+                  } else {
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          if (item.onClick) item.onClick();
+                        }}
+                        className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all text-left w-full"
+                      >
+                        <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                      </button>
+                    );
+                  }
+                })}
               </div>
             </div>
 
