@@ -21,7 +21,8 @@ import {
   Footprints,
   Crown,
   Glasses,
-  Smile
+  Smile,
+  Search
 } from "lucide-react";
 
 import setsData from "@/data/sets.json";
@@ -103,11 +104,52 @@ export default function ArmarioPage() {
   const [activeCategoryKey, setActiveCategoryKey] = useState("hr");
   const [colorTarget, setColorTarget] = useState<"color1" | "color2">("color1");
 
+  // Habbo import state
+  const [habboUsername, setHabboUsername] = useState("");
+  const [habboHotel, setHabboHotel] = useState("es");
+  const [isFetchingUser, setIsFetchingUser] = useState(false);
+
   // Initial figure logic
   const [figureParts, setFigureParts] = useState<FigurePart[]>(() => {
     const defaultFig = "hr-83-61.hd-180-1.ch-210-66.lg-270-82.sh-290-80";
     return parseFigureString(defaultFig);
   });
+
+  const handleFetchHabboUser = async () => {
+    if (!habboUsername.trim()) return;
+    setIsFetchingUser(true);
+    try {
+      const res = await fetch(`/api/habbo/user/${encodeURIComponent(habboUsername.trim())}?hotel=${habboHotel}`);
+      if (!res.ok) {
+        throw new Error("Usuario no encontrado en el hotel seleccionado");
+      }
+      const data = await res.json();
+      if (data && data.figureString) {
+        const parsed = parseFigureString(data.figureString);
+        if (parsed.length > 0) {
+          setFigureParts(parsed);
+          const g = data.gender || "M";
+          setGender(g === "M" || g === "Male" ? "M" : "F");
+          toast({
+            title: "Avatar Importado",
+            description: `Se ha cargado con éxito el look de ${data.name}.`,
+          });
+        } else {
+          throw new Error("La figura devuelta no es válida");
+        }
+      } else {
+        throw new Error("No se pudo obtener la figura del usuario");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "No se pudo importar el usuario",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFetchingUser(false);
+    }
+  };
 
   const [direction, setDirection] = useState(2);
   const [headDirection, setHeadDirection] = useState(2);
@@ -354,8 +396,49 @@ export default function ArmarioPage() {
                 Vista Previa
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 flex flex-col items-center">
+            <CardContent className="p-6 flex flex-col items-center w-full space-y-4">
               
+              {/* Cargar desde Habbo Form */}
+              <div className="w-full space-y-1.5 bg-black/20 p-3 rounded-xl border border-border/40">
+                <Label className="text-[10px] uppercase font-black tracking-wider text-primary flex items-center gap-1.5">
+                  <Search className="w-3.5 h-3.5 text-primary" /> Cargar Avatar Real
+                </Label>
+                <div className="flex gap-1">
+                  <Input
+                    placeholder="Usuario Habbo..."
+                    value={habboUsername}
+                    onChange={(e) => setHabboUsername(e.target.value)}
+                    className="h-8 text-xs bg-zinc-950 border-border"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleFetchHabboUser();
+                      }
+                    }}
+                  />
+                  <select
+                    value={habboHotel}
+                    onChange={(e) => setHabboHotel(e.target.value)}
+                    className="h-8 text-xs bg-zinc-950 border border-border rounded-md px-1.5 text-white font-medium focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="es">ES</option>
+                    <option value="com">COM</option>
+                    <option value="br">BR</option>
+                    <option value="it">IT</option>
+                    <option value="fr">FR</option>
+                    <option value="de">DE</option>
+                    <option value="nl">NL</option>
+                  </select>
+                  <Button
+                    size="sm"
+                    disabled={isFetchingUser || !habboUsername.trim()}
+                    onClick={handleFetchHabboUser}
+                    className="h-8 text-xs bg-primary text-black font-black hover:bg-primary/95 transition-all shadow-sm"
+                  >
+                    {isFetchingUser ? "..." : "Cargar"}
+                  </Button>
+                </div>
+              </div>
+
               {/* Live Image Box */}
               <div className="w-48 h-64 relative bg-zinc-950/40 rounded-2xl border border-border/80 flex items-center justify-center overflow-hidden group shadow-inner">
                 

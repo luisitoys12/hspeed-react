@@ -749,14 +749,57 @@ export async function registerRoutes(server: Server, app: Express) {
       const hotel = (req.query.hotel as string) || "es";
       
       let items: any[] = [];
-      try {
-        const r = await fetch(`${getHabboHost(hotel)}/gamedata/furnidata_json/0`, { headers: HABBO_HEADERS });
-        if (r.ok) {
-          const data = await r.json() as any;
-          items = data?.roomitemtypes?.furnitype || [];
+      let fetchSuccess = false;
+
+      // 1. Try official Habbo API with host-specific suffixes (/1 for .com, /0 for others)
+      const host = getHabboHost(hotel);
+      const suffixes = host.includes(".com") ? ["1", "0"] : ["0", "1"];
+      
+      for (const suffix of suffixes) {
+        try {
+          const officialUrl = `${host}/gamedata/furnidata_json/${suffix}`;
+          console.log(`[Furni API] Trying official Habbo URL: ${officialUrl}`);
+          const r = await fetch(officialUrl, { headers: HABBO_HEADERS, signal: AbortSignal.timeout(4000) });
+          if (r.ok) {
+            const data = await r.json() as any;
+            items = data?.roomitemtypes?.furnitype || [];
+            if (items.length > 0) {
+              fetchSuccess = true;
+              console.log(`[Furni API] Successfully fetched ${items.length} items from official Habbo API (${officialUrl})`);
+              break;
+            }
+          }
+        } catch (err: any) {
+          console.warn(`[Furni API] Failed to fetch official URL suffix ${suffix}: ${err.message}`);
         }
-      } catch (err) {
-        console.error("[Furni API] Error fetching furnidata from Habbo, using classic rares only.");
+      }
+
+      // 2. Fallback to HabboAssets API if official fetch failed
+      if (!fetchSuccess) {
+        try {
+          const assetsHotel = hotel === "es" ? "es" : "com";
+          const assetsUrl = `https://www.habboassets.com/api/v1/furniture?limit=1000&hotel=${assetsHotel}`;
+          console.log(`[Furni API] Official failed. Trying HabboAssets fallback: ${assetsUrl}`);
+          const r = await fetch(assetsUrl, { signal: AbortSignal.timeout(5000) });
+          if (r.ok) {
+            const data = await r.json() as any;
+            const fetchedFurniture = data?.furniture || [];
+            if (fetchedFurniture.length > 0) {
+              items = fetchedFurniture.map((f: any) => ({
+                id: f.id,
+                classname: f.classname,
+                revision: f.revision || 0,
+                name: f.name || f.classname || "",
+                description: f.description || "",
+                iconUrl: f.url_icon_habboassets || f.url_icon_habbo || null
+              }));
+              fetchSuccess = true;
+              console.log(`[Furni API] Successfully fetched ${items.length} items from HabboAssets API`);
+            }
+          }
+        } catch (err: any) {
+          console.error(`[Furni API] Failed to fetch from HabboAssets fallback: ${err.message}`);
+        }
       }
 
       const mappedOfficial = items.map((f: any) => {
@@ -766,7 +809,7 @@ export async function registerRoutes(server: Server, app: Express) {
           name: cleanName,
           classname: f.classname,
           revision: f.revision,
-          iconUrl: `https://images.habbo.com/dcr/hof_furni/${f.revision}/${f.classname}_icon.png`,
+          iconUrl: f.iconUrl || `https://images.habbo.com/dcr/hof_furni/${f.revision}/${f.classname}_icon.png`,
           FurniName: cleanName,
           itemName: cleanName,
           ClassName: f.classname,

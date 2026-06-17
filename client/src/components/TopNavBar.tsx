@@ -331,7 +331,6 @@ export default function TopNavBar() {
     { href: "/imager", label: "Generador de Avatar (Imager)", iconClass: "fa-solid fa-image" },
     { href: "/catalog", label: "Catálogo de Furnis", iconClass: "fa-solid fa-cubes" },
     { href: "/badges", label: "Buscador de Placas", iconClass: "fa-solid fa-award" },
-    { href: "/habbo3d", label: "Sala Habbo 3D", iconClass: "fa-solid fa-cube" },
   ];
 
   const tiendaItems: DropdownItem[] = [
@@ -359,11 +358,8 @@ export default function TopNavBar() {
           
           {/* Logo y Dropdowns de Navegación */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center">
               <img src="/logo.png" alt="hSpeed Logo" className="h-9 w-auto object-contain" />
-              <span className="hidden sm:inline-block text-xs uppercase tracking-widest font-black text-slate-900">
-                HabboSpeed
-              </span>
             </Link>
 
             {/* Links Escritorio en Dropdowns */}
@@ -371,7 +367,7 @@ export default function TopNavBar() {
               <DirectNavLink href="/" label="INICIO" />
               <NavDropdown label="COMUNIDAD" items={comunidadItems} activePrefixes={["/news", "/events", "/forum", "/team", "/contact", "/rooms"]} />
               <NavDropdown label="RADIO" items={radioItems} activePrefixes={["/schedule", "/song-history"]} />
-              <NavDropdown label="HERRAMIENTAS" items={habboItems} activePrefixes={["/herramientas", "/armario", "/imager", "/catalog", "/badges", "/habbo3d"]} />
+              <NavDropdown label="HERRAMIENTAS" items={habboItems} activePrefixes={["/herramientas", "/armario", "/imager", "/catalog", "/badges"]} />
               <NavDropdown label="TIENDA" items={tiendaItems} activePrefixes={["/tienda", "/shop", "/vip", "/marketplace"]} />
               <NavDropdown label="MUNDIAL 2026" items={mundialItems} activePrefixes={["/mundial"]} />
             </div>
@@ -672,20 +668,26 @@ export default function TopNavBar() {
 
       {/* MENÚ MÓVIL TOTALMENTE COMPLETO */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white shadow-xl animate-fade-in-up max-h-[75vh] overflow-y-auto">
-          <div className="px-4 py-4 space-y-4">
+        <div className="md:hidden border-t border-slate-100 bg-slate-50/98 backdrop-blur-md shadow-2xl animate-fade-in-up max-h-[80vh] overflow-y-auto rounded-b-2xl">
+          <div className="px-4 py-5 space-y-4">
             
             {/* Inicio */}
-            <Link href="/" className="flex items-center gap-2 px-3 py-2 text-xs font-black uppercase text-slate-900 hover:bg-slate-50 rounded" onClick={() => setMobileMenuOpen(false)}>
-              <i className="fa-solid fa-house w-4 text-center"></i> INICIO
+            <Link 
+              href="/" 
+              className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-black uppercase text-slate-900 bg-white border border-slate-100 hover:bg-slate-50 rounded-xl transition-all shadow-sm" 
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <i className="fa-solid fa-house w-4 text-center text-primary"></i> INICIO
             </Link>
 
             {/* Sección Comunidad */}
-            <div>
-              <p className="px-3 text-[10px] font-black tracking-wider text-slate-400 uppercase">Comunidad</p>
-              <div className="pl-3 mt-1 space-y-0.5">
+            <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
+              <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Comunidad
+              </p>
+              <div className="grid grid-cols-1 gap-1">
                 {comunidadItems.map((item, idx) => (
-                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded" onClick={() => setMobileMenuOpen(false)}>
+                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
                     <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
                   </Link>
                 ))}
@@ -693,23 +695,25 @@ export default function TopNavBar() {
             </div>
 
             {/* Sección Radio */}
-            <div>
-              <p className="px-3 text-[10px] font-black tracking-wider text-slate-400 uppercase">Radio</p>
-              <div className="pl-3 mt-1 space-y-0.5">
+            <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
+              <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Radio & Programación
+              </p>
+              <div className="grid grid-cols-1 gap-1">
                 {radioItems.map((item, idx) => {
                   if (item.onClick) {
                     return (
                       <button
                         key={idx}
                         onClick={() => { item.onClick?.(); setMobileMenuOpen(false); }}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded text-left"
+                        className="w-full flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg text-left transition-all"
                       >
                         <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
                       </button>
                     );
                   }
                   return (
-                    <Link key={idx} href={item.href || "#"} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded" onClick={() => setMobileMenuOpen(false)}>
+                    <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
                       <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
                     </Link>
                   );
@@ -718,14 +722,16 @@ export default function TopNavBar() {
             </div>
 
             {/* Sección Herramientas */}
-            <div>
-              <p className="px-3 text-[10px] font-black tracking-wider text-slate-400 uppercase">Herramientas Habbo</p>
-              <div className="pl-3 mt-1 space-y-0.5">
-                <Link href="/herramientas" className="flex items-center gap-2 px-3 py-2 text-xs font-black text-primary bg-primary/5 rounded" onClick={() => setMobileMenuOpen(false)}>
+            <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
+              <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Herramientas HSpeed
+              </p>
+              <div className="grid grid-cols-1 gap-1">
+                <Link href="/herramientas" className="flex items-center gap-2.5 px-3 py-2 text-xs font-black text-primary bg-primary/5 border border-primary/10 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
                   <i className="fa-solid fa-screwdriver-wrench w-4 text-center text-primary"></i> Centro de Herramientas
                 </Link>
                 {habboItems.slice(1).map((item, idx) => (
-                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded" onClick={() => setMobileMenuOpen(false)}>
+                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
                     <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
                   </Link>
                 ))}
@@ -733,11 +739,13 @@ export default function TopNavBar() {
             </div>
 
             {/* Sección Tienda */}
-            <div>
-              <p className="px-3 text-[10px] font-black tracking-wider text-slate-400 uppercase">Tienda & Economía</p>
-              <div className="pl-3 mt-1 space-y-0.5">
+            <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
+              <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Tienda & Economía
+              </p>
+              <div className="grid grid-cols-1 gap-1">
                 {tiendaItems.map((item, idx) => (
-                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded" onClick={() => setMobileMenuOpen(false)}>
+                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
                     <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
                   </Link>
                 ))}
@@ -745,11 +753,13 @@ export default function TopNavBar() {
             </div>
 
             {/* Sección Mundial */}
-            <div>
-              <p className="px-3 text-[10px] font-black tracking-wider text-slate-400 uppercase">Mundial 2026</p>
-              <div className="pl-3 mt-1 space-y-0.5">
+            <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
+              <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Mundial 2026
+              </p>
+              <div className="grid grid-cols-1 gap-1">
                 {mundialItems.map((item, idx) => (
-                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded" onClick={() => setMobileMenuOpen(false)}>
+                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
                     <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
                   </Link>
                 ))}

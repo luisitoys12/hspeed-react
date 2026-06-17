@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 
-const base = 'http://127.0.0.1:5002';
+const base = 'http://127.0.0.1:5000';
 const pages = ['/', '/armario', '/catalog', '/marketplace', '/badges'];
 
 (async () => {

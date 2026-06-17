@@ -41,7 +41,7 @@ import RoomsPage from "@/pages/RoomsPage";
 import SupportPage from "@/pages/SupportPage";
 import NotFound from "@/pages/not-found";
 
-const Habbo3D = lazy(() => import("@/pages/Habbo3D"));
+
 
 function AppContent() {
 	const [location] = useLocation();
@@ -90,7 +90,7 @@ function AppContent() {
 						<Route path="/tienda" component={ShopPage} />
 						<Route path="/shop" component={ShopPage} />
 						<Route path="/catalog" component={CatalogPage} />
-						<Route path="/habbo3d" component={Habbo3D} />
+
 						<Route path="/legal" component={LegalPage} />
 						<Route path="/privacy" component={LegalPage} />
 						<Route path="/maintenance" component={MaintenancePage} />
