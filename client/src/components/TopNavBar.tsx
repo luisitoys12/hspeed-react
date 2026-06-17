@@ -341,13 +341,13 @@ export default function TopNavBar() {
   ];
 
   const mundialItems: DropdownItem[] = [
-    { href: "/mundial", label: "Mundial 2026 Home", iconClass: "fa-solid fa-trophy" },
-    { href: "/mundial/pronosticos", label: "Pronósticos", iconClass: "fa-solid fa-chart-bar" },
-    { href: "/mundial/ranking", label: "Ranking Pronosticadores", iconClass: "fa-solid fa-ranking-star" },
-    { href: "/mundial/equipos", label: "Equipos", iconClass: "fa-solid fa-users-gear" },
-    { href: "/mundial/aventura", label: "Aventura Mundialista", iconClass: "fa-solid fa-compass" },
-    { href: "/mundial/mini/rapido", label: "Minijuego Rápido", iconClass: "fa-solid fa-gamepad" },
-    { href: "/mundial/mini/sorteos", label: "Sorteos Especiales", iconClass: "fa-solid fa-gift" },
+    { href: "/futbol-hub", label: "Fútbol Hub Home", iconClass: "fa-solid fa-trophy" },
+    { href: "/futbol-hub/pronosticos", label: "Pronósticos", iconClass: "fa-solid fa-chart-bar" },
+    { href: "/futbol-hub/ranking", label: "Ranking de Expertos", iconClass: "fa-solid fa-ranking-star" },
+    { href: "/futbol-hub/equipos", label: "Equipos", iconClass: "fa-solid fa-users-gear" },
+    { href: "/futbol-hub/aventura", label: "Aventura Futbolística", iconClass: "fa-solid fa-compass" },
+    { href: "/futbol-hub/mini/rapido", label: "Juego de Penales", iconClass: "fa-solid fa-gamepad" },
+    { href: "/futbol-hub/mini/sorteos", label: "Sorteos Especiales", iconClass: "fa-solid fa-gift" },
   ];
 
   return (
@@ -370,7 +370,7 @@ export default function TopNavBar() {
               <NavDropdown label="RADIO" items={radioItems} activePrefixes={["/radio", "/schedule", "/song-history"]} />
               <NavDropdown label="HERRAMIENTAS" items={habboItems} activePrefixes={["/herramientas", "/armario", "/imager", "/catalog", "/badges"]} />
               <NavDropdown label="TIENDA" items={tiendaItems} activePrefixes={["/tienda", "/shop", "/vip", "/marketplace"]} />
-              <NavDropdown label="MUNDIAL 2026" items={mundialItems} activePrefixes={["/mundial"]} />
+              <NavDropdown label="FÚTBOL HUB" items={mundialItems} activePrefixes={["/futbol-hub"]} />
             </div>
           </div>
 
@@ -790,7 +790,7 @@ export default function TopNavBar() {
             {/* Sección Mundial */}
             <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
               <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Mundial 2026
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Fútbol Hub
               </p>
               <div className="grid grid-cols-1 gap-1">
                 {mundialItems.map((item, idx) => (

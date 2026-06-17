@@ -317,10 +317,10 @@ const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "s
   }
 };
 
-export default function MundialPage() {
+export default function FutbolHubPage() {
   const [location] = useLocation();
   const section = getSection(location);
-  const { user, refetchUser } = useAuth();
+  const { user, token, refetchUser } = useAuth();
   const { toast } = useToast();
 
   // 1. Estados Derivados de la DB
@@ -433,7 +433,7 @@ export default function MundialPage() {
     }
 
     try {
-      const res = await apiRequest("POST", "/api/mundial/buy-stamp", { stampId: stamp.id, cost: stamp.cost });
+      const res = await apiRequest("POST", "/api/futbol-hub/buy-stamp", { stampId: stamp.id, cost: stamp.cost }, token ? `Bearer ${token}` : undefined);
       if (res.ok) {
         playSynthSound("purchase");
         await refetchUser();
@@ -468,7 +468,7 @@ export default function MundialPage() {
     }, 450);
 
     try {
-      const res = await apiRequest("POST", "/api/mundial/buy-pack");
+      const res = await apiRequest("POST", "/api/futbol-hub/buy-pack", undefined, token ? `Bearer ${token}` : undefined);
       clearInterval(interval);
       if (res.ok) {
         const data = await res.json();
@@ -528,7 +528,7 @@ export default function MundialPage() {
     }
 
     try {
-      const res = await apiRequest("POST", "/api/mundial/claim-logro", { logroId });
+      const res = await apiRequest("POST", "/api/futbol-hub/claim-logro", { logroId }, token ? `Bearer ${token}` : undefined);
       if (res.ok) {
         playSynthSound("logro");
         await refetchUser();
@@ -549,7 +549,7 @@ export default function MundialPage() {
       return;
     }
     try {
-      const res = await apiRequest("POST", "/api/mundial/predict", { matchId, t1: pred.t1, t2: pred.t2 });
+      const res = await apiRequest("POST", "/api/futbol-hub/predict", { matchId, t1: pred.t1, t2: pred.t2 }, token ? `Bearer ${token}` : undefined);
       if (res.ok) {
         playSynthSound("logro");
         await refetchUser();
@@ -565,7 +565,7 @@ export default function MundialPage() {
 
   const handleJoinClan = async (clanName: string) => {
     try {
-      const res = await apiRequest("POST", "/api/mundial/join-clan", { clanName });
+      const res = await apiRequest("POST", "/api/futbol-hub/join-clan", { clanName }, token ? `Bearer ${token}` : undefined);
       if (res.ok) {
         playSynthSound("click");
         await refetchUser();
@@ -578,7 +578,7 @@ export default function MundialPage() {
 
   const handleCompleteMission = async (misId: string, title: string) => {
     try {
-      const res = await apiRequest("POST", "/api/mundial/complete-mission", { missionId: misId });
+      const res = await apiRequest("POST", "/api/futbol-hub/complete-mission", { missionId: misId }, token ? `Bearer ${token}` : undefined);
       if (res.ok) {
         playSynthSound("logro");
         await refetchUser();
@@ -611,7 +611,7 @@ export default function MundialPage() {
 
   const submitPenaltyResult = async (finalScore: number) => {
     try {
-      const res = await apiRequest("POST", "/api/mundial/penalty-result", { score: finalScore });
+      const res = await apiRequest("POST", "/api/futbol-hub/penalty-result", { score: finalScore }, token ? `Bearer ${token}` : undefined);
       if (res.ok) {
         const data = await res.json();
         playSynthSound("win");
@@ -702,7 +702,7 @@ export default function MundialPage() {
       return;
     }
     try {
-      const res = await apiRequest("POST", "/api/mundial/buy-ticket");
+      const res = await apiRequest("POST", "/api/futbol-hub/buy-ticket", undefined, token ? `Bearer ${token}` : undefined);
       if (res.ok) {
         playSynthSound("purchase");
         await refetchUser();
@@ -772,11 +772,11 @@ export default function MundialPage() {
     section === "forecast"
       ? "Pronósticos Habbo"
       : section === "ranking"
-        ? "Ranking Mundial"
+        ? "Ranking de Expertos"
         : section === "teams"
           ? "Equipos y clanes"
           : section === "adventure"
-            ? "Aventura Mundial"
+            ? "Aventura de Fútbol"
             : section === "mini-rapid"
               ? "Tanda de Penales"
               : section === "mini-draw"
@@ -785,7 +785,7 @@ export default function MundialPage() {
                   ? "Fuente seleccionada"
                   : section === "album"
                     ? "Álbum de Estampas"
-                    : "Mundial 2026 Hub";
+                    : "Fútbol Hub 2026";
 
   const activeCopy =
     section === "forecast"
@@ -804,7 +804,7 @@ export default function MundialPage() {
                   ? "Gestiona fuentes externas del Mundial y mantén visible el disclaimer."
                   : section === "album"
                     ? "Compra sobres con tus SpeedPoints, colecciona estampas oficiales y completa tu álbum."
-                    : "Zona temática para seguir el Mundial 2026 con pronósticos, aventura y colección de estampas.";
+                    : "Zona temática para seguir el Fútbol Hub con pronósticos, aventura y colección de estampas.";
 
   if (!user) {
     return (
@@ -816,7 +816,7 @@ export default function MundialPage() {
             </div>
             <h2 className="text-lg font-black uppercase text-foreground">Acceso de Aficionados</h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              La sección especial del <strong>Mundial 2026</strong> requiere tener una sesión iniciada para participar en los pronósticos, aventuras, y coleccionar estampas.
+              La sección especial del <strong>Fútbol Hub</strong> requiere tener una sesión iniciada para participar en los pronósticos, aventuras, y coleccionar estampas.
             </p>
             <div className="pt-2">
               <Link href="/login">
@@ -850,7 +850,7 @@ export default function MundialPage() {
                 </Link>
               </Button>
               <Badge className="bg-emerald-500/15 text-emerald-200 border-emerald-400/20 text-[10px] font-bold">
-                Mundial 2026
+                Fútbol Hub
               </Badge>
               <Badge className="bg-white/10 text-white border-white/10 text-[10px] font-bold">Modo Habbo</Badge>
             </div>
@@ -900,31 +900,31 @@ export default function MundialPage() {
 
       {/* Sub-Navegación del Mundial (Pestañas Rápidas) */}
       <div className="grid gap-2 grid-cols-4 md:grid-cols-9">
-        <Link href="/mundial" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "home" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link href="/futbol-hub" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "home" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-house text-xs"></i> INICIO
         </Link>
-        <Link href="/mundial/album" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "album" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link href="/futbol-hub/album" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "album" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-trophy text-xs"></i> ÁLBUM
         </Link>
-        <Link href="/mundial/pronosticos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "forecast" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link href="/futbol-hub/pronosticos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "forecast" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-chart-line text-xs"></i> PRONÓSTICOS
         </Link>
-        <Link href="/mundial/ranking" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "ranking" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link href="/futbol-hub/ranking" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "ranking" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-ranking-star text-xs"></i> RANKING
         </Link>
-        <Link href="/mundial/equipos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "teams" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link href="/futbol-hub/equipos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "teams" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-users-gear text-xs"></i> CLANES
         </Link>
-        <Link href="/mundial/aventura" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "adventure" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link href="/futbol-hub/aventura" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "adventure" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-compass text-xs"></i> AVENTURA
         </Link>
-        <Link href="/mundial/mini/rapido" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "mini-rapid" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link href="/futbol-hub/mini/rapido" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "mini-rapid" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-futbol text-xs"></i> PENALES
         </Link>
-        <Link href="/mundial/mini/sorteos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "mini-draw" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link href="/futbol-hub/mini/sorteos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "mini-draw" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-gift text-xs"></i> SORTEOS
         </Link>
-        <Link href="/mundial/sources" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "source" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link href="/futbol-hub/sources" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "source" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-newspaper text-xs"></i> FUENTES
         </Link>
       </div>
@@ -1109,7 +1109,7 @@ export default function MundialPage() {
                       <i className="fa-solid fa-star-of-life animate-spin-slow"></i>
                     </div>
                     <div>
-                      <h3 className="text-sm font-black uppercase text-white">¡Bienvenido al Centro Mundialista!</h3>
+                      <h3 className="text-sm font-black uppercase text-white">¡Bienvenido al Fútbol Hub!</h3>
                       <p className="text-[11px] text-muted-foreground">Tu espacio de entretenimiento, juego y pasión por el fútbol.</p>
                     </div>
                   </div>
@@ -1117,12 +1117,12 @@ export default function MundialPage() {
                     Usa los <strong>SpeedPoints (SP)</strong> que ganas escuchando la radio o comentando en el foro para abrir sobres de estampas, jugar a los penales o participar en los sorteos especiales de placas en el hotel.
                   </p>
                   <div className="pt-2 flex flex-wrap gap-2.5">
-                    <Link href="/mundial/album">
+                    <Link href="/futbol-hub/album">
                       <Button className="bg-primary hover:bg-primary/95 text-white font-extrabold text-[10px] h-8.5 uppercase tracking-wider px-4">
                         Colección de Estampas
                       </Button>
                     </Link>
-                    <Link href="/mundial/mini/rapido">
+                    <Link href="/futbol-hub/mini/rapido">
                       <Button variant="outline" className="border-border hover:bg-secondary/40 text-slate-300 font-extrabold text-[10px] h-8.5 uppercase tracking-wider px-4">
                         Patear Penales
                       </Button>
@@ -1182,7 +1182,7 @@ export default function MundialPage() {
                       Consigue las 4 estampas oficiales o desbloquea estampas de logros gratis completando actividades.
                     </p>
                   </div>
-                  <Link href="/mundial/album" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                  <Link href="/futbol-hub/album" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
                     Ver mi álbum <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
@@ -1203,7 +1203,7 @@ export default function MundialPage() {
                       Apuesta tus predicciones de los partidos internacionales y gana SpeedPoints gratis por tus aciertos exactos.
                     </p>
                   </div>
-                  <Link href="/mundial/pronosticos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                  <Link href="/futbol-hub/pronosticos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
                     Pronosticar partidos <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
@@ -1224,7 +1224,7 @@ export default function MundialPage() {
                       Desafía a Frank el portero. Cada gol anotado te otorga SpeedPoints directamente en tu saldo.
                     </p>
                   </div>
-                  <Link href="/mundial/mini/rapido" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                  <Link href="/futbol-hub/mini/rapido" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
                     Jugar ahora <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
@@ -1245,7 +1245,7 @@ export default function MundialPage() {
                       Compite contra otros usuarios de la comunidad para alcanzar el Top de pronósticos y liderar el Fansite.
                     </p>
                   </div>
-                  <Link href="/mundial/ranking" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                  <Link href="/futbol-hub/ranking" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
                     Ver clasificación <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
@@ -1266,7 +1266,7 @@ export default function MundialPage() {
                       Únete a una facción de fanáticos en el hotel y demuestra qué hinchada es la más comprometida.
                     </p>
                   </div>
-                  <Link href="/mundial/equipos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                  <Link href="/futbol-hub/equipos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
                     Elegir mi clan <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
@@ -1282,12 +1282,12 @@ export default function MundialPage() {
                     <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-pink-500/5 text-pink-300 border-pink-500/20">Aventura</Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Aventura Mundialista</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Aventura Futbolística</h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
                       Explora pistas, responde preguntas sobre la radio y completa misiones temáticas con recompensas.
                     </p>
                   </div>
-                  <Link href="/mundial/aventura" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                  <Link href="/futbol-hub/aventura" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
                     Iniciar aventura <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
@@ -1308,7 +1308,7 @@ export default function MundialPage() {
                       Compra boletos de rifa por 15 SP y participa para ganar insignias y placas exclusivas del Fansite.
                     </p>
                   </div>
-                  <Link href="/mundial/mini/sorteos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                  <Link href="/futbol-hub/mini/sorteos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
                     Participar en rifas <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
@@ -1329,7 +1329,7 @@ export default function MundialPage() {
                       Revisa las fuentes oficiales externas o añade las tuyas personalizadas para seguir las novedades.
                     </p>
                   </div>
-                  <Link href="/mundial/sources" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                  <Link href="/futbol-hub/sources" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
                     Ver fuentes de noticias <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
@@ -1539,7 +1539,7 @@ export default function MundialPage() {
             <CardContent className="p-4 sm:p-5 space-y-4">
               <div className="flex items-center gap-2">
                 <i className="fa-solid fa-compass text-primary text-sm"></i>
-                <h3 className="text-sm font-extrabold uppercase">Aventura Mundialista: Misiones Activas</h3>
+                <h3 className="text-sm font-extrabold uppercase">Aventura Futbolística: Misiones Activas</h3>
               </div>
               <p className="text-xs text-muted-foreground">
                 Completa estas misiones interactivas para acumular SpeedPoints adicionales de manera definitiva.
@@ -1810,7 +1810,7 @@ export default function MundialPage() {
                 <h3 className="text-sm font-extrabold uppercase">Fuentes Oficiales y Noticias Externas</h3>
               </div>
               <p className="text-xs text-muted-foreground">
-                Agrega y gestiona tus propios enlaces o fuentes de noticias para estar al tanto de todo lo que ocurre en el Mundial 2026.
+                Agrega y gestiona tus propios enlaces o fuentes de noticias para estar al tanto de todo lo que ocurre en el Fútbol Hub.
               </p>
 
               {/* Form to add custom sources */}

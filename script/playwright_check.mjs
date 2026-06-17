@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const base = 'http://127.0.0.1:5000';
-const pages = ['/', '/armario', '/catalog', '/marketplace', '/badges'];
+const pages = ['/', '/armario', '/catalog', '/marketplace', '/badges', '/futbol-hub', '/radio'];
 
 (async () => {
   const browser = await chromium.launch();

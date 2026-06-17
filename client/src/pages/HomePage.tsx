@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import WorldCupPanel from "@/components/WorldCupPanel";
+import FutbolHubPanel from "@/components/FutbolHubPanel";
 import type { News, Event, Poll } from "@shared/schema";
 
 /* ============================================================
@@ -859,7 +859,7 @@ export default function HomePage() {
         )}
 
         <div className="mt-4 space-y-4">
-          <WorldCupPanel />
+          <FutbolHubPanel />
         </div>
       </div>
     </div>

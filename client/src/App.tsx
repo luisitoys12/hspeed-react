@@ -34,7 +34,7 @@ import CatalogPage from "@/pages/CatalogPage";
 import LegalPage from "@/pages/LegalPage";
 import MaintenancePage from "@/pages/MaintenancePage";
 import ProfilePage from "@/pages/ProfilePage";
-import MundialPage from "@/pages/MundialPage";
+import FutbolHubPage from "@/pages/FutbolHubPage";
 import SongHistoryPage from "@/pages/SongHistoryPage";
 import RadioPage from "@/pages/RadioPage";
 import VipPage from "@/pages/VipPage";
@@ -96,8 +96,8 @@ function AppContent() {
 						<Route path="/privacy" component={LegalPage} />
 						<Route path="/maintenance" component={MaintenancePage} />
 						<Route path="/profile/:username" component={ProfilePage} />
-						<Route path="/mundial" component={MundialPage} />
-						<Route path="/mundial/*" component={MundialPage} />
+						<Route path="/futbol-hub" component={FutbolHubPage} />
+						<Route path="/futbol-hub/*" component={FutbolHubPage} />
 						<Route path="/song-history" component={SongHistoryPage} />
 						<Route path="/radio" component={RadioPage} />
 						<Route path="/vip" component={VipPage} />

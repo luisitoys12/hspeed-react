@@ -1484,7 +1484,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ MUNDIAL 2026 ENDPOINTS ============
-  app.post("/api/mundial/buy-pack", authMiddleware, async (req: any, res) => {
+  app.post(["/api/mundial/buy-pack", "/api/futbol-hub/buy-pack"], authMiddleware, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.userId);
       if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
@@ -1504,7 +1504,7 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
-  app.post("/api/mundial/buy-stamp", authMiddleware, async (req: any, res) => {
+  app.post(["/api/mundial/buy-stamp", "/api/futbol-hub/buy-stamp"], authMiddleware, async (req: any, res) => {
     try {
       const { stampId, cost } = req.body;
       if (!stampId || cost === undefined) return res.status(400).json({ message: "stampId y cost son requeridos" });
@@ -1524,7 +1524,7 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
-  app.post("/api/mundial/claim-logro", authMiddleware, async (req: any, res) => {
+  app.post(["/api/mundial/claim-logro", "/api/futbol-hub/claim-logro"], authMiddleware, async (req: any, res) => {
     try {
       const { logroId } = req.body;
       if (!logroId) return res.status(400).json({ message: "logroId es requerido" });
@@ -1542,7 +1542,7 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
-  app.post("/api/mundial/predict", authMiddleware, async (req: any, res) => {
+  app.post(["/api/mundial/predict", "/api/futbol-hub/predict"], authMiddleware, async (req: any, res) => {
     try {
       const { matchId, t1, t2 } = req.body;
       if (!matchId || t1 === undefined || t2 === undefined) return res.status(400).json({ message: "matchId, t1 y t2 son requeridos" });
@@ -1564,7 +1564,7 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
-  app.post("/api/mundial/join-clan", authMiddleware, async (req: any, res) => {
+  app.post(["/api/mundial/join-clan", "/api/futbol-hub/join-clan"], authMiddleware, async (req: any, res) => {
     try {
       const { clanName } = req.body;
       if (!clanName) return res.status(400).json({ message: "clanName es requerido" });
@@ -1579,7 +1579,7 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
-  app.post("/api/mundial/complete-mission", authMiddleware, async (req: any, res) => {
+  app.post(["/api/mundial/complete-mission", "/api/futbol-hub/complete-mission"], authMiddleware, async (req: any, res) => {
     try {
       const { missionId } = req.body;
       if (!missionId) return res.status(400).json({ message: "missionId es requerido" });
@@ -1606,7 +1606,7 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
-  app.post("/api/mundial/buy-ticket", authMiddleware, async (req: any, res) => {
+  app.post(["/api/mundial/buy-ticket", "/api/futbol-hub/buy-ticket"], authMiddleware, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.userId);
       if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
@@ -1620,7 +1620,7 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch (e: any) { res.status(500).json({ message: e.message }); }
   });
 
-  app.post("/api/mundial/penalty-result", authMiddleware, async (req: any, res) => {
+  app.post(["/api/mundial/penalty-result", "/api/futbol-hub/penalty-result"], authMiddleware, async (req: any, res) => {
     try {
       const { score } = req.body;
       if (score === undefined || isNaN(Number(score))) return res.status(400).json({ message: "score es requerido" });
