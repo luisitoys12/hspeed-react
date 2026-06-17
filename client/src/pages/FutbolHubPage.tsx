@@ -10,10 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const DEFAULT_SOURCES = [
-  { id: "fifa", name: "FIFA Oficial", url: "https://www.fifa.com/", note: "Calendario, sede y anuncios oficiales de la copa mundial." },
-  { id: "marca", name: "Marca", url: "https://www.marca.com/", note: "Noticias, previas, resultados y análisis diario de fútbol internacional." },
-];
+
 
 const TEAMS = [
   { name: "México", flag: "🇲🇽", group: "A" },
@@ -174,7 +171,7 @@ const LOGROS = [
 ];
 
 function getSection(pathname: string) {
-  if (pathname.includes("/source")) return "source";
+  if (pathname.includes("/torneos")) return "torneos";
   if (pathname.includes("/pronosticos")) return "forecast";
   if (pathname.includes("/ranking")) return "ranking";
   if (pathname.includes("/equipos")) return "teams";
@@ -364,62 +361,60 @@ export default function FutbolHubPage() {
     setPredictionsInput(initialInput);
   }, [user, todayMatches]);
 
-  // 3. Noticias & Fuentes
-  const [sources, setSources] = useState<{ id: string; name: string; url: string; note?: string }[]>(() => {
+  // 3. HSpeed Torneos States & Form
+  const [registeredTeams, setRegisteredTeams] = useState<{
+    id: string;
+    teamName: string;
+    captain: string;
+    members: string;
+    color: string;
+    createdAt: string;
+  }[]>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("mundial_custom_sources");
+      const saved = localStorage.getItem("hspeed_torneos_registered");
       if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Error parsing saved sources", e);
-        }
+        try { return JSON.parse(saved); } catch { return []; }
       }
     }
-    return DEFAULT_SOURCES;
+    return [
+      { id: "1", teamName: "Hapoel Píxeles", captain: "Staff_Habbo", members: "Staff_Habbo, Frank_D, Locutor_A", color: "Púrpura", createdAt: new Date().toLocaleDateString() },
+      { id: "2", teamName: "Golden Striker FC", captain: "luisitoys12", members: "luisitoys12, AlexPro, HabboMaster", color: "Oro", createdAt: new Date().toLocaleDateString() }
+    ];
   });
 
-  const [sourceName, setSourceName] = useState("");
-  const [sourceUrl, setSourceUrl] = useState("");
+  const [regTeamName, setRegTeamName] = useState("");
+  const [regCaptainName, setRegCaptainName] = useState("");
+  const [regMembers, setRegMembers] = useState("");
+  const [regColor, setRegColor] = useState("Púrpura");
 
-  const handleAddSource = () => {
-    if (!sourceName.trim() || !sourceUrl.trim()) {
-      toast({ title: "Error", description: "Rellena el nombre y la dirección URL.", variant: "destructive" });
+  const handleRegisterTeam = () => {
+    if (!regTeamName.trim() || !regCaptainName.trim() || !regMembers.trim()) {
+      toast({ title: "Error", description: "Por favor, completa todos los campos del registro.", variant: "destructive" });
       return;
     }
-
-    let formattedUrl = sourceUrl.trim();
-    if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
-      formattedUrl = "https://" + formattedUrl;
-    }
-
-    const newSource = {
-      id: "src_" + Date.now().toString(),
-      name: sourceName.trim(),
-      url: formattedUrl,
-      note: "Fuente externa agregada por el usuario."
+    const newTeam = {
+      id: "team_" + Date.now().toString(),
+      teamName: regTeamName.trim(),
+      captain: regCaptainName.trim(),
+      members: regMembers.trim(),
+      color: regColor,
+      createdAt: new Date().toLocaleDateString()
     };
-
-    const updated = [newSource, ...sources];
-    setSources(updated);
-    localStorage.setItem("mundial_custom_sources", JSON.stringify(updated));
-    setSourceName("");
-    setSourceUrl("");
-    playSynthSound("click");
-    toast({ title: "Fuente agregada", description: `Has registrado "${newSource.name}" como fuente de noticias.` });
+    const updated = [newTeam, ...registeredTeams];
+    setRegisteredTeams(updated);
+    localStorage.setItem("hspeed_torneos_registered", JSON.stringify(updated));
+    setRegTeamName("");
+    setRegCaptainName("");
+    setRegMembers("");
+    setRegColor("Púrpura");
+    playSynthSound("purchase");
+    toast({
+      title: "¡Equipo Registrado!",
+      description: `El equipo "${newTeam.teamName}" se ha inscrito correctamente en HSpeed Torneos.`,
+    });
   };
 
-  const handleRemoveSource = (id: string) => {
-    if (id === "fifa" || id === "marca") {
-      toast({ title: "Acción no permitida", description: "No puedes borrar las fuentes oficiales predeterminadas.", variant: "destructive" });
-      return;
-    }
-    const updated = sources.filter(s => s.id !== id);
-    setSources(updated);
-    localStorage.setItem("mundial_custom_sources", JSON.stringify(updated));
-    playSynthSound("click");
-    toast({ title: "Fuente eliminada", description: "La fuente ha sido retirada del listado." });
-  };
+
 
   // API Call Handlers
   const handleClaimStamp = async (stamp: typeof ESTAMPAS[0]) => {
@@ -781,8 +776,8 @@ export default function FutbolHubPage() {
               ? "Tanda de Penales"
               : section === "mini-draw"
                 ? "Sorteos y premios"
-                : section === "source"
-                  ? "Fuente seleccionada"
+                : section === "torneos"
+                  ? "HSpeed Torneos"
                   : section === "album"
                     ? "Álbum de Estampas"
                     : "Fútbol Hub 2026";
@@ -800,8 +795,8 @@ export default function FutbolHubPage() {
               ? "¡Patea penales contra el portero Frank y suma puntos a tu perfil!"
               : section === "mini-draw"
                 ? "Compra boletos usando SpeedPoints y participa en el gran sorteo de raras y estampas."
-                : section === "source"
-                  ? "Gestiona fuentes externas del Mundial y mantén visible el disclaimer."
+                : section === "torneos"
+                  ? "Registra tu equipo, conoce las bases del torneo y lee las reglas de Habbo Fútbol."
                   : section === "album"
                     ? "Compra sobres con tus SpeedPoints, colecciona estampas oficiales y completa tu álbum."
                     : "Zona temática para seguir el Fútbol Hub con pronósticos, aventura y colección de estampas.";
@@ -924,8 +919,8 @@ export default function FutbolHubPage() {
         <Link href="/futbol-hub/mini/sorteos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "mini-draw" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
           <i className="fa-solid fa-gift text-xs"></i> SORTEOS
         </Link>
-        <Link href="/futbol-hub/sources" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "source" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
-          <i className="fa-solid fa-newspaper text-xs"></i> FUENTES
+        <Link href="/futbol-hub/torneos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "torneos" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+          <i className="fa-solid fa-medal text-xs"></i> TORNEOS
         </Link>
       </div>
 
@@ -1314,23 +1309,23 @@ export default function FutbolHubPage() {
                 </CardContent>
               </Card>
 
-              {/* Card 8: Fuentes */}
+              {/* Card 8: Torneos */}
               <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
                 <CardContent className="p-4.5 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-slate-500/10 flex items-center justify-center text-slate-400">
-                      <i className="fa-solid fa-newspaper group-hover:scale-110 transition-transform"></i>
+                    <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-400">
+                      <i className="fa-solid fa-medal group-hover:scale-110 transition-transform"></i>
                     </div>
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-slate-500/5 text-slate-300 border-slate-500/20">Información</Badge>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-yellow-500/5 text-yellow-300 border-yellow-500/20">Competición</Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Fuentes & Noticias</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">HSpeed Torneos</h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      Revisa las fuentes oficiales externas o añade las tuyas personalizadas para seguir las novedades.
+                      Inscribe tu equipo de fútbol, consulta las bases oficiales y repasa el reglamento de Habbo Fútbol.
                     </p>
                   </div>
-                  <Link href="/futbol-hub/sources" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
-                    Ver fuentes de noticias <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  <Link href="/futbol-hub/torneos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
+                    Inscribirse / Ver bases <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
               </Card>
@@ -1801,99 +1796,175 @@ export default function FutbolHubPage() {
       )}
 
       {/* 8. FUENTE EXTERNA SELECCIONADA */}
-      {section === "source" && (
-        <div className="space-y-4 animate-fade-in">
-          <Card className="bg-card border-border">
-            <CardContent className="p-4 sm:p-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <i className="fa-solid fa-newspaper text-primary text-sm"></i>
-                <h3 className="text-sm font-extrabold uppercase">Fuentes Oficiales y Noticias Externas</h3>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Agrega y gestiona tus propios enlaces o fuentes de noticias para estar al tanto de todo lo que ocurre en el Fútbol Hub.
-              </p>
-
-              {/* Form to add custom sources */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-secondary/15 border border-border/40 rounded-2xl p-4 mt-2">
-                <div className="sm:col-span-2 space-y-2">
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Input 
-                      placeholder="Nombre de la fuente (Ej: FIFA Oficial)" 
-                      value={sourceName} 
-                      onChange={(e) => setSourceName(e.target.value)}
-                      className="bg-background/80 border-border/60 text-xs h-9"
-                    />
-                    <Input 
-                      placeholder="Dirección URL (Ej: www.fifa.com)" 
-                      value={sourceUrl} 
-                      onChange={(e) => setSourceUrl(e.target.value)}
-                      className="bg-background/80 border-border/60 text-xs h-9"
-                    />
+      {/* 8. HSPEED TORNEOS */}
+      {section === "torneos" && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Columna Izquierda: Formulario e Inscripciones */}
+            <div className="lg:col-span-2 space-y-6">
+              
+              {/* Formulario de Inscripción */}
+              <Card className="bg-card border-border shadow-md">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
+                    <i className="fa-solid fa-file-signature text-primary text-sm"></i>
+                    <h3 className="text-xs font-black uppercase tracking-wider">Inscripción Oficial de Equipos</h3>
                   </div>
-                </div>
-                <div className="flex items-end sm:justify-start">
-                  <Button 
-                    onClick={handleAddSource} 
-                    className="w-full bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 flex items-center justify-center gap-1.5"
-                  >
-                    <i className="fa-solid fa-plus text-[10px]"></i>
-                    Agregar Fuente
-                  </Button>
-                </div>
-                <div className="sm:col-span-3 text-[10px] text-muted-foreground pt-1 border-t border-border/20 flex flex-wrap gap-x-4 gap-y-1">
-                  <span><strong>Reglas:</strong> Solo fuentes verificadas.</span>
-                  <span>Links públicos y respetuosos.</span>
-                </div>
-              </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Completa la ficha técnica para registrar a tu equipo de fútbol sala. Una vez enviado, tu equipo aparecerá en la cartelera general.
+                  </p>
 
-              {/* List of sources */}
-              <div className="space-y-3 pt-2">
-                {sources.map((source) => {
-                  const isDefault = source.id === "fifa" || source.id === "marca";
-                  return (
-                    <div key={source.id} className="rounded-xl border border-border/60 bg-background/40 p-4 flex items-start justify-between gap-3 hover:border-primary/30 transition-colors">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <a href={source.url} target="_blank" rel="noreferrer" className="text-xs font-black text-primary hover:underline inline-flex items-center gap-1">
-                            {source.name}
-                            <i className="fa-solid fa-up-right-from-square text-[9px]"></i>
-                          </a>
-                          {isDefault && (
-                            <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] px-1.5 py-0">
-                              Oficial
-                            </Badge>
-                          )}
-                        </div>
-                        {source.note && <p className="text-[11px] text-muted-foreground">{source.note}</p>}
-                        <p className="text-[9px] text-muted-foreground/80 font-mono break-all">{source.url}</p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <a 
-                          href={source.url} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="text-xs text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors font-bold"
-                        >
-                          Ver
-                        </a>
-                        {!isDefault && (
-                          <Button
-                            onClick={() => handleRemoveSource(source.id)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 w-8 p-0"
-                          >
-                            <i className="fa-solid fa-trash-can text-xs"></i>
-                          </Button>
-                        )}
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400">Nombre de tu Equipo</label>
+                      <Input 
+                        placeholder="Ej: Manchester Píxel FC" 
+                        value={regTeamName} 
+                        onChange={(e) => setRegTeamName(e.target.value)}
+                        className="bg-background/80 border-border/60 text-xs h-9"
+                      />
                     </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400">Nombre del Capitán (Habbo)</label>
+                      <Input 
+                        placeholder="Ej: luisitoys12" 
+                        value={regCaptainName} 
+                        onChange={(e) => setRegCaptainName(e.target.value)}
+                        className="bg-background/80 border-border/60 text-xs h-9"
+                      />
+                    </div>
+                    <div className="space-y-1 sm:col-span-2">
+                      <label className="text-[10px] font-black uppercase text-slate-400">Integrantes del Equipo (Nombres separados por comas)</label>
+                      <Input 
+                        placeholder="Ej: AlexPro, MasterHabbo, DJ_Pixel, GamerX" 
+                        value={regMembers} 
+                        onChange={(e) => setRegMembers(e.target.value)}
+                        className="bg-background/80 border-border/60 text-xs h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400">Color del Uniforme</label>
+                      <select
+                        value={regColor}
+                        onChange={(e) => setRegColor(e.target.value)}
+                        className="w-full bg-background border border-border/60 rounded-md text-xs h-9 px-3 text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        <option value="Púrpura">Púrpura</option>
+                        <option value="Oro">Oro (VIP)</option>
+                        <option value="Rojo">Rojo Fuego</option>
+                        <option value="Verde">Verde Jade</option>
+                        <option value="Azul">Azul Lapis</option>
+                        <option value="Blanco">Blanco Hielo</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end">
+                      <Button 
+                        onClick={handleRegisterTeam} 
+                        className="w-full bg-primary hover:bg-primary/90 text-white font-extrabold text-[10px] h-9 uppercase tracking-wider"
+                      >
+                        Registrar Equipo
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Cartelera de Equipos Registrados */}
+              <Card className="bg-card border-border shadow-md">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
+                    <i className="fa-solid fa-list-check text-primary text-sm"></i>
+                    <h3 className="text-xs font-black uppercase tracking-wider">Cartelera de Equipos Inscritos</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {registeredTeams.map((team) => (
+                      <div key={team.id} className="rounded-xl border border-border/60 bg-background/30 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-primary/25 transition-colors">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-extrabold text-xs text-white uppercase">{team.teamName}</span>
+                            <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] font-bold px-1.5 py-0">
+                              Uniforme: {team.color}
+                            </Badge>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            <strong>Capitán:</strong> {team.captain} | <strong>Integrantes:</strong> {team.members}
+                          </p>
+                        </div>
+                        <div className="text-[9px] text-muted-foreground font-mono bg-black/25 px-2 py-1 rounded border border-border/20 self-start sm:self-center">
+                          Inscrito: {team.createdAt}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+            </div>
+
+            {/* Columna Derecha: Bases y Reglas de Habbo Fútbol */}
+            <div className="space-y-6">
+              
+              {/* Bases del Torneo */}
+              <Card className="bg-card border-border shadow-md">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
+                    <i className="fa-solid fa-scroll text-yellow-400 text-sm"></i>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-yellow-400">Bases del Torneo</h3>
+                  </div>
+
+                  <ul className="space-y-3 text-[11px] text-slate-300 list-none pl-0">
+                    <li className="flex gap-2 items-start">
+                      <span className="text-yellow-400 font-bold">1.</span>
+                      <span><strong>Inscripción Gratuita:</strong> Registrar tu equipo es gratis y otorga 15 SP al capitán.</span>
+                    </li>
+                    <li className="flex gap-2 items-start">
+                      <span className="text-yellow-400 font-bold">2.</span>
+                      <span><strong>Fase de Grupos:</strong> Se organizan 4 grupos de 4 equipos cada uno. Clasifican los 2 mejores.</span>
+                    </li>
+                    <li className="flex gap-2 items-start">
+                      <span className="text-yellow-400 font-bold">3.</span>
+                      <span><strong>Gran Premio:</strong> 500 SpeedPoints + Placa de Oro para el equipo ganador.</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              {/* Reglamento Habbo Fútbol */}
+              <Card className="bg-card border-border shadow-md">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
+                    <i className="fa-solid fa-scale-balanced text-red-400 text-sm"></i>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-red-400">Reglas Habbo Fútbol</h3>
+                  </div>
+
+                  <ul className="space-y-3.5 text-[11px] text-slate-300">
+                    <li className="space-y-1">
+                      <h5 className="font-bold text-white uppercase text-[10px]">🚫 Prohibido Bloquear</h5>
+                      <p className="text-muted-foreground leading-normal">
+                        No se permite colocarse frente al portero para bloquear el saque de puerta o empujar con clicks en momentos de saque.
+                      </p>
+                    </li>
+                    <li className="space-y-1">
+                      <h5 className="font-bold text-white uppercase text-[10px]">🤝 Fair Play Obligatorio</h5>
+                      <p className="text-muted-foreground leading-normal">
+                        Insultar a los rivales o al árbitro oficial del torneo provocará la expulsión inmediata del infractor y la derrota del equipo.
+                      </p>
+                    </li>
+                    <li className="space-y-1">
+                      <h5 className="font-bold text-white uppercase text-[10px]">⏱️ Tiempo de Juego</h5>
+                      <p className="text-muted-foreground leading-normal">
+                        Los partidos duran 2 tiempos de 5 minutos. En caso de empate en eliminatorias directas, se decide por tanda de 3 penales.
+                      </p>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+            </div>
+
+          </div>
         </div>
       )}
 

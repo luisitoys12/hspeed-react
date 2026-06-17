@@ -348,6 +348,7 @@ export default function TopNavBar() {
     { href: "/futbol-hub/aventura", label: "Aventura Futbolística", iconClass: "fa-solid fa-compass" },
     { href: "/futbol-hub/mini/rapido", label: "Juego de Penales", iconClass: "fa-solid fa-gamepad" },
     { href: "/futbol-hub/mini/sorteos", label: "Sorteos Especiales", iconClass: "fa-solid fa-gift" },
+    { href: "/futbol-hub/torneos", label: "HSpeed Torneos", iconClass: "fa-solid fa-medal" },
   ];
 
   return (
