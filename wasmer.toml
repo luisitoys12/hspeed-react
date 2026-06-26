@@ -1,0 +1,12 @@
+[app]
+name = "hspeed-react"
+owner = "luisitoys12"
+
+[[command]]
+name = "server"
+module = "/app/dist/index.cjs"
+runner = "https://webc.org/runner/wasi"
+
+[command.annotations.wasi]
+env = ["NODE_ENV=production"]
+main_args = []
