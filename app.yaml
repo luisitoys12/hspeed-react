@@ -1,0 +1,7 @@
+kind: wasmer.io/App.v0
+name: hspeed-react
+owner: luisitoys12
+package: luisitoys12/hspeed-react
+
+capabilities:
+  instaboot: true
