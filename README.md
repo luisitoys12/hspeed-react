@@ -176,3 +176,64 @@ HabboSpeed es un fansite no oficial. No está afiliado, respaldado ni conectado 
 © 2026 HabboSpeed. Todos los derechos reservados.
 
 ¡Gracias por tu interés en Habbospeed! ⚡
+
+## 🐳 Docker Setup
+
+The project can be run entirely using Docker with a local PostgreSQL database.
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+
+### Development (with hot-reload)
+
+```bash
+docker compose --profile dev up --build
+```
+
+This will start:
+- Postgres database on port 5432
+- The application on port 5000 (with hot-reload via Vite)
+
+The application will be available at http://localhost:5000
+
+### Production (optimized build)
+
+```bash
+docker compose --profile prod up --build
+```
+
+This will build a production-ready image and run it.
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and adjust the values.
+
+The following environment variables are used:
+
+- `NODE_ENV`: development or production
+- `PORT`: Port to run the app on (default: 5000)
+- `HOST`: Host to bind to (default: 0.0.0.0)
+- `DATABASE_URL`: PostgreSQL connection string (format: postgresql://user:password@host:port/db)
+- `PGSSL`: Set to `false` to disable SSL for local Docker connections
+- `JWT_SECRET`: Secret for signing JWT tokens
+- `SESSION_SECRET`: Secret for session encryption
+- `AZURACAST_URL`: Optional URL to your AzuraCast instance
+- `AZURACAST_API_KEY`: Optional API key for AzuraCast
+
+### Database Initialization
+
+On first startup, the entrypoint script will:
+1. Wait for PostgreSQL to be ready
+2. Run any pending migrations
+3. Seed an admin user (email: admin@habbospeed.com, password: admin123)
+
+### Health Check
+
+A healthcheck endpoint is available at `GET /api/health` which returns 200 when the service is ready.
+
+### Notes
+
+- The AzuraCast integration is optional and requires the external service to be running.
+- The Docker setup uses a multi-stage build for production to minimize image size.
+- The application runs as a non-root user for security.

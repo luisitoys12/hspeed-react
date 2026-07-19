@@ -1,0 +1,13 @@
+title: Habbospeed Documentation
+description: Documentation for Habbospeed Docker setup
+theme: minima
+plugins:
+  - jekyll-feed
+
+defaults:
+  -
+    scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"

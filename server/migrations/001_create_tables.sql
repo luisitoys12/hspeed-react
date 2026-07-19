@@ -237,6 +237,9 @@ CREATE TABLE IF NOT EXISTS verified_badges (
 -- DJ panel storage
 CREATE TABLE IF NOT EXISTS dj_panel (
   id SERIAL PRIMARY KEY,
+  current_dj TEXT,
+  next_dj TEXT,
+  dj_message TEXT,
   data JSONB DEFAULT '{}'::jsonb,
   updated_at TIMESTAMPTZ DEFAULT now()
 );
