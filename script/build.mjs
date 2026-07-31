@@ -1,24 +1,40 @@
 import { createRequire } from "module";
 import { rm, readFile } from "fs/promises";
+import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(import.meta.url);
+const projectRoot = resolve(__dirname, "..");
 
-// Usar esbuild desde donde esté disponible: local o dentro de tsx
-let esbuildModule;
-try {
-  esbuildModule = await import(resolve(__dirname, "../node_modules/esbuild/lib/main.js"));
-} catch {
-  esbuildModule = await import(resolve(__dirname, "../node_modules/tsx/node_modules/esbuild/lib/main.js"));
+// Posibles ubicaciones de node_modules en cPanel nodevenv
+const searchPaths = [
+  resolve(projectRoot, "node_modules"),
+  "/home/mtyhurjnqk/nodevenv/habbospeed.tech/20/lib/node_modules",
+];
+
+function findModule(name) {
+  for (const base of searchPaths) {
+    const p = resolve(base, name);
+    if (existsSync(p)) return p;
+    // nested inside tsx
+    const nested = resolve(base, "tsx", "node_modules", name);
+    if (existsSync(nested)) return nested;
+  }
+  throw new Error(`Cannot find module '${name}' in any of: ${searchPaths.join(", ")}`);
 }
-const { build: esbuild } = esbuildModule;
 
-// Vite
-const { build: viteBuild } = await import("vite");
+// Cargar esbuild
+const esbuildPath = findModule("esbuild");
+console.log("[build] using esbuild from:", esbuildPath);
+const { build: esbuild } = await import(resolve(esbuildPath, "lib", "main.js"));
 
-// server deps to bundle to reduce openat(2) syscalls
+// Cargar vite
+const vitePath = findModule("vite");
+console.log("[build] using vite from:", vitePath);
+const { build: viteBuild } = await import(resolve(vitePath, "dist", "node", "index.js"));
+
+// server deps to bundle
 const allowlist = [
   "@google/generative-ai",
   "axios",
