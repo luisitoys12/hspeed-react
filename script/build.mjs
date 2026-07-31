@@ -1,9 +1,21 @@
-import { build as esbuild } from "esbuild";
 import { createRequire } from "module";
 import { rm, readFile } from "fs/promises";
-import { createServer } from "vite";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 
-// Re-export vite build via dynamic import (avoids tsx/ESM issues)
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+
+// Usar esbuild desde donde esté disponible: local o dentro de tsx
+let esbuildModule;
+try {
+  esbuildModule = await import(resolve(__dirname, "../node_modules/esbuild/lib/main.js"));
+} catch {
+  esbuildModule = await import(resolve(__dirname, "../node_modules/tsx/node_modules/esbuild/lib/main.js"));
+}
+const { build: esbuild } = esbuildModule;
+
+// Vite
 const { build: viteBuild } = await import("vite");
 
 // server deps to bundle to reduce openat(2) syscalls
