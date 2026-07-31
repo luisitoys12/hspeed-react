@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🎥 Grabar un Bug con Jam
+    url: https://recorder.jam.dev/th2ntbe
+    about: Abre el grabador de Jam para capturar el bug con video, consola y red
+  - name: 📖 Documentación del proyecto
+    url: https://github.com/luisitoys12/hspeed-react/tree/main/docs
+    about: Revisa la documentación existente antes de abrir un issue
