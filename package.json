@@ -9,7 +9,16 @@
     "build": "node script/build.mjs",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -105,7 +114,10 @@
     "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.8",
     "esbuild": "^0.25.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
     "postcss": "^8.4.47",
+    "prettier": "^3.5.3",
     "rollup": "^4.0.0",
     "@rollup/rollup-linux-x64-gnu": "*",
     "tailwindcss": "^3.4.17",

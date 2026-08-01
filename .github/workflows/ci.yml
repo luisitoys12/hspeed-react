@@ -1,0 +1,35 @@
+name: CI — Type Check & Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Type Check & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check (TypeScript)
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+        env:
+          # La build no necesita DB real; estas vars evitan crash por env faltante
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+          NODE_ENV: production
