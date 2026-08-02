@@ -1,0 +1,17 @@
+---
+# ============================================================
+#  hspeed-react — Deploy automático desde cPanel Git
+#  Reemplaza TU_USUARIO por tu usuario real de cPanel.
+# ============================================================
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/TU_USUARIO/public_html/hspeed
+    - export REPOPATH=/home/TU_USUARIO/repos/hspeed-react
+    # Limpiar destino (excepto .env y node_modules)
+    - /bin/rm -rf $DEPLOYPATH/public $DEPLOYPATH/index.html $DEPLOYPATH/index.cjs
+    # Copiar archivos compilados
+    - /bin/cp -R $REPOPATH/cpanel-deploy/. $DEPLOYPATH/
+    # Instalar dependencias de producción
+    - cd $DEPLOYPATH && npm install --production --no-audit --no-fund
+    # Reiniciar la app Node.js (requiere Phusion Passenger)
+    - /bin/mkdir -p $DEPLOYPATH/tmp && /bin/touch $DEPLOYPATH/tmp/restart.txt

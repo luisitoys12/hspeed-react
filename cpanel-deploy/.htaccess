@@ -1,0 +1,48 @@
+# ============================================================
+#  hspeed-react — Configuración Apache / cPanel
+#  Sirve la SPA (React Router) y hace proxy al backend Node.js
+# ============================================================
+
+Options -MultiViews
+RewriteEngine On
+
+# --- Seguridad básica ---
+Options -Indexes
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# --- Compresión GZIP ---
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# --- Caché de assets estáticos ---
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# --- Proxy de la API al servidor Node.js (Phusion Passenger) ---
+# Si usas "Setup Node.js App" de cPanel, Passenger maneja el servidor
+# automáticamente. Estas reglas solo aplican si el backend corre en
+# otro puerto y quieres redirigir /api/* hacia él.
+#
+# <IfModule mod_proxy.c>
+#   ProxyPreserveHost On
+#   ProxyPass /api http://127.0.0.1:3000/api
+#   ProxyPassReverse /api http://127.0.0.1:3000/api
+# </IfModule>
+
+# --- SPA fallback: toda ruta que no sea archivo/carpeta real va a index.html ---
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteRule ^ index.html [QSA,L]
