@@ -3,9 +3,13 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Install build deps
-COPY package.json package-lock.json ./
-RUN npm ci
+# Skip git-hook setup (husky) and Playwright browser download during install
+ENV HUSKY=0
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+# Install build deps (.npmrc needed for legacy-peer-deps=true)
+COPY package.json package-lock.json .npmrc ./
+RUN npm ci --no-audit --no-fund
 
 # Copy sources and build
 COPY . .
@@ -16,15 +20,22 @@ FROM node:22-alpine
 WORKDIR /app
 
 ENV NODE_ENV=production
+# Bind to all interfaces so the port is reachable from the host
+ENV HOST=0.0.0.0
+ENV HUSKY=0
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 # Install only production deps
-COPY package.json package-lock.json ./
-RUN npm ci --production --no-audit --no-fund
+COPY package.json package-lock.json .npmrc ./
+RUN npm ci --omit=dev --no-audit --no-fund
 
 # Copy built artifacts
 COPY --from=builder /app/dist ./dist
 
+# Copy migration/seed tooling for the entrypoint
+COPY docker/migrate-and-seed.cjs ./docker/migrate-and-seed.cjs
+COPY server/migrations ./server/migrations
+
 EXPOSE 5000
 
 CMD ["node", "dist/index.cjs"]
-
