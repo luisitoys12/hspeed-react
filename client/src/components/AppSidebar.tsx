@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   Home, Newspaper, Calendar, Clock, Users, MessageCircle,
   Award, ShoppingBag, Image, MessageSquare, Mail, LogIn,
-  UserPlus, User, Settings, Radio, ChevronRight, LogOut
+  UserPlus, User, Settings, Radio, ChevronRight, LogOut, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ const navItems = [
 ];
 
 const toolItems = [
+  { href: "/feria", icon: Sparkles, label: "Feria" },
   { href: "/badges", icon: Award, label: "Placas" },
   { href: "/marketplace", icon: ShoppingBag, label: "Marketplace" },
   { href: "/imager", icon: Image, label: "Imager" },

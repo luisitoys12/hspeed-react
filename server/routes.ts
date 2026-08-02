@@ -1103,14 +1103,85 @@ export async function registerRoutes(server: Server, app: Express) {
       { name: "Street Funk", gender: "M", figure: "hd-180-1.hr-177-61.ch-255-92.lg-290-82.sh-290-80.ha-1002-0" }
     ];
 
+    // Habbo devuelve XML (text/xml) en este endpoint, no JSON. Se parsea con regex
+    // sobre las etiquetas <habbo gender="..." figure="..." hash="..."/>.
+    function parseHotLooksXml(xml: string) {
+      const items: { gender: string; figure: string; hash: string }[] = [];
+      const re = /<habbo\s+gender="([^"]*)"\s+figure="([^"]*)"\s+hash="([^"]*)"\s*\/>/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(xml)) !== null) {
+        items.push({ gender: m[1], figure: m[2], hash: m[3] });
+      }
+      return items;
+    }
+
     try {
       const r = await fetch("https://www.habbo.es/api/public/lists/hotlooks", { headers: HABBO_HEADERS });
       if (!r.ok) return res.json(fallbackHotLooks);
-      const data = await r.json();
-      const list = Array.isArray(data) ? data : (data?.hotLooks || data?.hotlooks || []);
+      const contentType = r.headers.get("content-type") || "";
+      let list: any[] = [];
+      if (contentType.includes("xml")) {
+        const xml = await r.text();
+        list = parseHotLooksXml(xml);
+      } else {
+        const data = await r.json().catch(() => null);
+        list = Array.isArray(data) ? data : (data?.hotLooks || data?.hotlooks || []);
+      }
       res.json(list.length ? list : fallbackHotLooks);
     } catch {
       res.json(fallbackHotLooks);
+    }
+  });
+
+  // Precios de mercado en lote (roomItems / wallItems)
+  app.post("/api/habbo/marketplace-stats", async (req, res) => {
+    const hotel = (req.query.hotel as string) || "es";
+    try {
+      const host = getHabboHost(hotel);
+      const body = {
+        roomItems: Array.isArray(req.body?.roomItems) ? req.body.roomItems : [],
+        wallItems: Array.isArray(req.body?.wallItems) ? req.body.wallItems : [],
+      };
+      const r = await fetch(`${host}/api/public/marketplace/stats/batch`, {
+        method: "POST",
+        headers: { ...HABBO_HEADERS, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) return res.status(r.status).json({ message: "Error al consultar precios" });
+      res.json(await r.json());
+    } catch {
+      res.status(500).json({ message: "Error al consultar precios" });
+    }
+  });
+
+  // Ranking de habilidades (Origins) - actualmente solo pesca (FISHING)
+  app.get("/api/habbo/skills-leaderboard", async (req, res) => {
+    const hotel = (req.query.hotel as string) || "es";
+    const skillType = (req.query.skillType as string) || "FISHING";
+    const page = (req.query.page as string) || "1";
+    try {
+      const host = getHabboHost(hotel);
+      const r = await fetch(
+        `${host}/api/public/skills/leaderboard?skillType=${encodeURIComponent(skillType)}&page=${encodeURIComponent(page)}`,
+        { headers: HABBO_HEADERS }
+      );
+      if (!r.ok) return res.status(r.status).json({ message: "Error al obtener el ranking" });
+      res.json(await r.json());
+    } catch {
+      res.status(500).json({ message: "Error al obtener el ranking" });
+    }
+  });
+
+  // Estado del derby de pesca (Origins)
+  app.get("/api/habbo/derby-status", async (req, res) => {
+    const hotel = (req.query.hotel as string) || "es";
+    try {
+      const host = getHabboHost(hotel);
+      const r = await fetch(`${host}/api/public/minigame/derby/v1/status`, { headers: HABBO_HEADERS });
+      if (!r.ok) return res.status(r.status).json({ message: "No hay derby activo" });
+      res.json(await r.json());
+    } catch {
+      res.status(500).json({ message: "Error al consultar el derby" });
     }
   });
 

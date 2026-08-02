@@ -39,6 +39,7 @@ import SongHistoryPage from "@/pages/SongHistoryPage";
 import RadioPage from "@/pages/RadioPage";
 import VipPage from "@/pages/VipPage";
 import RoomsPage from "@/pages/RoomsPage";
+import FeriaPage from "@/pages/FeriaPage";
 import SupportPage from "@/pages/SupportPage";
 import NotFound from "@/pages/not-found";
 
@@ -102,6 +103,7 @@ function AppContent() {
 						<Route path="/radio" component={RadioPage} />
 						<Route path="/vip" component={VipPage} />
 						<Route path="/rooms" component={RoomsPage} />
+						<Route path="/feria" component={FeriaPage} />
 						<Route path="/soporte" component={SupportPage} />
 						<Route component={NotFound} />
 					</Switch>
