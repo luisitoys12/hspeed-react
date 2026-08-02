@@ -29,7 +29,8 @@ function authMiddleware(req: any, res: any, next: any) {
 function adminMiddleware(req: any, res: any, next: any) {
   authMiddleware(req, res, async () => {
     const user = await storage.getUser(req.userId);
-    if (!user || user.role !== "admin") return res.status(403).json({ message: "Acceso denegado" });
+    if (!user || user.role !== "admin")
+      return res.status(403).json({ message: "Acceso denegado" });
     req.user = user;
     next();
   });
@@ -39,7 +40,9 @@ function djMiddleware(req: any, res: any, next: any) {
   authMiddleware(req, res, async () => {
     const user = await storage.getUser(req.userId);
     if (!user || (user.role !== "admin" && user.role !== "dj")) {
-      return res.status(403).json({ message: "Acceso denegado - solo DJs y admins" });
+      return res
+        .status(403)
+        .json({ message: "Acceso denegado - solo DJs y admins" });
     }
     req.user = user;
     next();
@@ -86,12 +89,15 @@ export async function registerRoutes(server: Server, app: Express) {
           passwordHash,
           displayName: "Admin Habbospeed",
           habboUsername: "AdminHS",
-          avatarUrl: "https://www.habbo.es/habbo-imaging/avatarimage?user=AdminHS&size=b",
+          avatarUrl:
+            "https://www.habbo.es/habbo-imaging/avatarimage?user=AdminHS&size=b",
           role: "admin",
           approved: true,
           speedPoints: 1000,
         });
-        console.log(`[Init] Default admin user created successfully: ${adminEmail} / admin123`);
+        console.log(
+          `[Init] Default admin user created successfully: ${adminEmail} / admin123`,
+        );
       } else {
         console.log(`[Init] Default admin user already exists: ${adminEmail}`);
       }
@@ -121,9 +127,12 @@ export async function registerRoutes(server: Server, app: Express) {
           }
 
           // Check if news article exists
-          const newsCheck = await client.query("SELECT COUNT(*) FROM news WHERE title = 'Mega Actualización HSpeed: Nueva Era Noir + Gold y Roadmap'");
+          const newsCheck = await client.query(
+            "SELECT COUNT(*) FROM news WHERE title = 'Mega Actualización HSpeed: Nueva Era Noir + Gold y Roadmap'",
+          );
           if (parseInt(newsCheck.rows[0].count) === 0) {
-            await client.query(`
+            await client.query(
+              `
               INSERT INTO news (title, summary, content, image_url, image_hint, category, date, reactions, author_id)
               VALUES (
                 'Mega Actualización HSpeed: Nueva Era Noir + Gold y Roadmap',
@@ -136,12 +145,16 @@ export async function registerRoutes(server: Server, app: Express) {
                 '{"🔥": 15, "❤️": 22}',
                 1
               )
-            `, [new Date().toLocaleDateString("es-ES")]);
+            `,
+              [new Date().toLocaleDateString("es-ES")],
+            );
             console.log("[Seed] News article inserted successfully");
           }
 
           // Check if categories exists
-          const catCheck = await client.query("SELECT COUNT(*) FROM forum_categories");
+          const catCheck = await client.query(
+            "SELECT COUNT(*) FROM forum_categories",
+          );
           if (parseInt(catCheck.rows[0].count) === 0) {
             await client.query(`
               INSERT INTO forum_categories (name, description, sort_order)
@@ -151,38 +164,54 @@ export async function registerRoutes(server: Server, app: Express) {
               ('Radio', 'Peticiones, críticas de DJ y comentarios de sintonía', 2),
               ('Juegos & Concursos', 'Participa en sorteos, actividades y eventos especiales', 3)
             `);
-            console.log("[Seed] Default forum categories inserted successfully");
+            console.log(
+              "[Seed] Default forum categories inserted successfully",
+            );
           }
 
           // Check if threads exist
-          const threadCheck = await client.query("SELECT COUNT(*) FROM forum_threads");
+          const threadCheck = await client.query(
+            "SELECT COUNT(*) FROM forum_threads",
+          );
           if (parseInt(threadCheck.rows[0].count) === 0) {
-            const catRes = await client.query("SELECT id FROM forum_categories WHERE name = 'General'");
+            const catRes = await client.query(
+              "SELECT id FROM forum_categories WHERE name = 'General'",
+            );
             if (catRes.rows.length > 0) {
               const catId = catRes.rows[0].id;
-              const threadRes = await client.query(`
+              const threadRes = await client.query(
+                `
                 INSERT INTO forum_threads (category_id, title, author_id, author_name, is_pinned, is_locked, views)
                 VALUES 
                 ($1, '¡Bienvenidos a HabboSpeed Fansite Oficial!', 1, 'Administrador', true, false, 45),
                 ($1, 'Roadmap: 10 Funciones Únicas de HabboSpeed en Desarrollo', 1, 'Administrador', true, false, 82)
                 RETURNING id
-              `, [catId]);
+              `,
+                [catId],
+              );
 
               const threadId1 = threadRes.rows[0].id;
               const threadId2 = threadRes.rows[1].id;
 
-              await client.query(`
+              await client.query(
+                `
                 INSERT INTO forum_posts (thread_id, author_id, author_name, content)
                 VALUES 
                 ($1, 1, 'Administrador', 'Bienvenidos a la fansite oficial. Este foro es para compartir ideas, charlar sobre Habbo y convivir con toda la comunidad. ¡Sintoniza la radio y a divertirse!'),
                 ($2, 1, 'Administrador', 'Aquí les presentamos la hoja de ruta de lo que se viene próximamente en HSpeed:\n\n1. Álbum de Estampas Interactivo en Tiempo Real.\n2. Conexión Directa de Inventario con Habbo.\n3. Sistema de Misiones de Aventura Diarias.\n4. Competiciones de Clanes y SpeedPoints.\n5. Minijuegos Integrados (Penales 8-Bit, Lotería, etc.).\n6. Consola de DJ y Transmisiones de Voz en Vivo.\n7. Chat de Mensajería Directa Encriptado.\n8. Canjes de Placas Exclusivas y Regalos en Habbo.\n9. Centro de Tickets de Soporte Directo.\n10. Integración Avanzada con Discord y Bot de Radio.\n\nComenta cuál es la que más esperas.')
-              `, [threadId1, threadId2]);
-              console.log("[Seed] Default forum threads and posts inserted successfully");
+              `,
+                [threadId1, threadId2],
+              );
+              console.log(
+                "[Seed] Default forum threads and posts inserted successfully",
+              );
             }
           }
 
           // Seed default rooms
-          const roomsCheck = await client.query("SELECT COUNT(*) FROM hspeed_rooms");
+          const roomsCheck = await client.query(
+            "SELECT COUNT(*) FROM hspeed_rooms",
+          );
           if (parseInt(roomsCheck.rows[0].count) === 0) {
             await client.query(`
               INSERT INTO hspeed_rooms (name, description, room_code, owner_habbo, hotel, category, current_visitors, is_active, featured)
@@ -206,71 +235,103 @@ export async function registerRoutes(server: Server, app: Express) {
   // ============ AUTH ============
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { email, password, displayName, habboUsername, verificationCode } = req.body;
+      const { email, password, displayName, habboUsername, verificationCode } =
+        req.body;
 
       if (!habboUsername || !verificationCode) {
-        return res.status(400).json({ message: "El usuario de Habbo y el código de verificación son obligatorios para evitar robos de identidad." });
+        return res
+          .status(400)
+          .json({
+            message:
+              "El usuario de Habbo y el código de verificación son obligatorios para evitar robos de identidad.",
+          });
       }
 
       // Verify the user in Habbo API
       try {
-        const r = await fetch(`https://www.habbo.es/api/public/users?name=${encodeURIComponent(habboUsername)}`, {
-          headers: { "User-Agent": "HabboSpeed/1.0" }
-        });
+        const r = await fetch(
+          `https://www.habbo.es/api/public/users?name=${encodeURIComponent(habboUsername)}`,
+          {
+            headers: { "User-Agent": "HabboSpeed/1.0" },
+          },
+        );
         if (!r.ok) {
-          return res.status(400).json({ message: `El usuario de Habbo '${habboUsername}' no fue encontrado en Habbo.es.` });
+          return res
+            .status(400)
+            .json({
+              message: `El usuario de Habbo '${habboUsername}' no fue encontrado en Habbo.es.`,
+            });
         }
         const profile = await r.json();
-        
+
         const mottoClean = (profile.motto || "").trim().toUpperCase();
         const codeClean = verificationCode.trim().toUpperCase();
-        
+
         if (mottoClean !== codeClean) {
-          return res.status(400).json({ 
-            message: `Verificación fallida. Cambia tu misión en Habbo a '${codeClean}'. Tu misión actual detectada es: '${profile.motto || "[Vacío]"}'` 
+          return res.status(400).json({
+            message: `Verificación fallida. Cambia tu misión en Habbo a '${codeClean}'. Tu misión actual detectada es: '${profile.motto || "[Vacío]"}'`,
           });
         }
       } catch (err: any) {
-        return res.status(400).json({ message: "Error de conexión al verificar tu cuenta con la API oficial de Habbo. Inténtalo de nuevo." });
+        return res
+          .status(400)
+          .json({
+            message:
+              "Error de conexión al verificar tu cuenta con la API oficial de Habbo. Inténtalo de nuevo.",
+          });
       }
 
       const existing = await storage.getUserByEmail(email);
-      if (existing) return res.status(400).json({ message: "El email ya está registrado" });
+      if (existing)
+        return res.status(400).json({ message: "El email ya está registrado" });
       const passwordHash = await bcrypt.hash(password, 10);
       const user = await storage.createUser({
-        email, passwordHash, displayName,
+        email,
+        passwordHash,
+        displayName,
         habboUsername: habboUsername || null,
-        avatarUrl: habboUsername ? `https://www.habbo.es/habbo-imaging/avatarimage?user=${habboUsername}&size=b` : null,
-        role: "pending", approved: false, speedPoints: 0,
+        avatarUrl: habboUsername
+          ? `https://www.habbo.es/habbo-imaging/avatarimage?user=${habboUsername}&size=b`
+          : null,
+        role: "pending",
+        approved: false,
+        speedPoints: 0,
       });
       const token = generateToken(user.id);
       res.status(201).json({ ...user, passwordHash: undefined, token });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
-
 
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
       const user = await storage.getUserByEmail(email);
-      if (!user) return res.status(401).json({ message: "Credenciales inválidas" });
+      if (!user)
+        return res.status(401).json({ message: "Credenciales inválidas" });
       const match = await bcrypt.compare(password, user.passwordHash);
-      if (!match) return res.status(401).json({ message: "Credenciales inválidas" });
+      if (!match)
+        return res.status(401).json({ message: "Credenciales inválidas" });
       const token = generateToken(user.id);
       res.json({ ...user, passwordHash: undefined, token });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.get("/api/auth/me", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
     res.json({ ...user, passwordHash: undefined });
   });
 
   // ============ PROFILE WALL / MURO ============
   app.get("/api/wall/:userId", async (req, res) => {
     const userId = parseInt(req.params.userId, 10);
-    if (!Number.isFinite(userId)) return res.status(400).json({ message: "ID inválido" });
+    if (!Number.isFinite(userId))
+      return res.status(400).json({ message: "ID inválido" });
 
     const profileUser = await storage.getUser(userId);
     if (!profileUser || !profileUser.approved) {
@@ -283,7 +344,8 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.post("/api/wall/:userId", authMiddleware, async (req: any, res) => {
     const profileUserId = parseInt(req.params.userId, 10);
-    if (!Number.isFinite(profileUserId)) return res.status(400).json({ message: "ID inválido" });
+    if (!Number.isFinite(profileUserId))
+      return res.status(400).json({ message: "ID inválido" });
 
     const profileUser = await storage.getUser(profileUserId);
     if (!profileUser || !profileUser.approved) {
@@ -322,7 +384,8 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.delete("/api/wall/:id", authMiddleware, async (req: any, res) => {
     const messageId = parseInt(req.params.id, 10);
-    if (!Number.isFinite(messageId)) return res.status(400).json({ message: "ID inválido" });
+    if (!Number.isFinite(messageId))
+      return res.status(400).json({ message: "ID inválido" });
 
     const user = await storage.getUser(req.userId);
     if (!user) {
@@ -343,18 +406,24 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ NEWS ============
-  app.get("/api/news", async (_req, res) => { res.json(await storage.getAllNews()); });
+  app.get("/api/news", async (_req, res) => {
+    res.json(await storage.getAllNews());
+  });
   app.get("/api/news/:id", async (req, res) => {
     const item = await storage.getNewsById(parseInt(req.params.id));
-    if (!item) return res.status(404).json({ message: "Noticia no encontrada" });
+    if (!item)
+      return res.status(404).json({ message: "Noticia no encontrada" });
     res.json(item);
   });
   app.post("/api/news", adminMiddleware, async (req: any, res) => {
-    res.status(201).json(await storage.createNews({ ...req.body, authorId: req.user.id }));
+    res
+      .status(201)
+      .json(await storage.createNews({ ...req.body, authorId: req.user.id }));
   });
   app.put("/api/news/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateNews(parseInt(req.params.id), req.body);
-    if (!item) return res.status(404).json({ message: "Noticia no encontrada" });
+    if (!item)
+      return res.status(404).json({ message: "Noticia no encontrada" });
     res.json(item);
   });
   app.delete("/api/news/:id", adminMiddleware, async (req, res) => {
@@ -363,13 +432,17 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ EVENTS ============
-  app.get("/api/events", async (_req, res) => { res.json(await storage.getAllEvents()); });
+  app.get("/api/events", async (_req, res) => {
+    res.json(await storage.getAllEvents());
+  });
   app.get("/api/events/:id", async (req, res) => {
     const item = await storage.getEventById(parseInt(req.params.id));
     if (!item) return res.status(404).json({ message: "Evento no encontrado" });
     res.json(item);
   });
-  app.post("/api/events", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createEvent(req.body)); });
+  app.post("/api/events", adminMiddleware, async (req, res) => {
+    res.status(201).json(await storage.createEvent(req.body));
+  });
   app.put("/api/events/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateEvent(parseInt(req.params.id), req.body);
     if (!item) return res.status(404).json({ message: "Evento no encontrado" });
@@ -381,11 +454,19 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ SCHEDULE ============
-  app.get("/api/schedule", async (_req, res) => { res.json(await storage.getAllSchedule()); });
-  app.post("/api/schedule", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createScheduleItem(req.body)); });
+  app.get("/api/schedule", async (_req, res) => {
+    res.json(await storage.getAllSchedule());
+  });
+  app.post("/api/schedule", adminMiddleware, async (req, res) => {
+    res.status(201).json(await storage.createScheduleItem(req.body));
+  });
   app.put("/api/schedule/:id", adminMiddleware, async (req, res) => {
-    const item = await storage.updateScheduleItem(parseInt(req.params.id), req.body);
-    if (!item) return res.status(404).json({ message: "Horario no encontrado" });
+    const item = await storage.updateScheduleItem(
+      parseInt(req.params.id),
+      req.body,
+    );
+    if (!item)
+      return res.status(404).json({ message: "Horario no encontrado" });
     res.json(item);
   });
   app.delete("/api/schedule/:id", adminMiddleware, async (req, res) => {
@@ -395,13 +476,21 @@ export async function registerRoutes(server: Server, app: Express) {
 
   // ============ COMMENTS ============
   app.get("/api/comments/article/:articleId", async (req, res) => {
-    res.json(await storage.getCommentsByArticle(parseInt(req.params.articleId)));
+    res.json(
+      await storage.getCommentsByArticle(parseInt(req.params.articleId)),
+    );
   });
   app.post("/api/comments", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
     if (!user) return res.status(401).json({ message: "No autorizado" });
-    const comment = await storage.createComment({ ...req.body, authorId: user.id, authorName: user.displayName });
-    res.status(201).json({ ...comment, habboUsername: user.habboUsername || null });
+    const comment = await storage.createComment({
+      ...req.body,
+      authorId: user.id,
+      authorName: user.displayName,
+    });
+    res
+      .status(201)
+      .json({ ...comment, habboUsername: user.habboUsername || null });
   });
   app.delete("/api/comments/:id", adminMiddleware, async (req, res) => {
     await storage.deleteComment(parseInt(req.params.id));
@@ -409,20 +498,31 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ POLLS ============
-  app.get("/api/polls", async (_req, res) => { res.json(await storage.getAllPolls()); });
-  app.post("/api/polls", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createPoll(req.body)); });
+  app.get("/api/polls", async (_req, res) => {
+    res.json(await storage.getAllPolls());
+  });
+  app.post("/api/polls", adminMiddleware, async (req, res) => {
+    res.status(201).json(await storage.createPoll(req.body));
+  });
   app.put("/api/polls/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updatePoll(parseInt(req.params.id), req.body);
-    if (!item) return res.status(404).json({ message: "Encuesta no encontrada" });
+    if (!item)
+      return res.status(404).json({ message: "Encuesta no encontrada" });
     res.json(item);
   });
 
   // ============ CONFIG ============
-  app.get("/api/config", async (_req, res) => { res.json(await storage.getConfig()); });
-  app.put("/api/config", adminMiddleware, async (req, res) => { res.json(await storage.updateConfig(req.body)); });
+  app.get("/api/config", async (_req, res) => {
+    res.json(await storage.getConfig());
+  });
+  app.put("/api/config", adminMiddleware, async (req, res) => {
+    res.json(await storage.updateConfig(req.body));
+  });
 
   // ============ FORUM ============
-  app.get("/api/forum/categories", async (_req, res) => { res.json(await storage.getAllForumCategories()); });
+  app.get("/api/forum/categories", async (_req, res) => {
+    res.json(await storage.getAllForumCategories());
+  });
   app.post("/api/forum/categories", adminMiddleware, async (req, res) => {
     res.status(201).json(await storage.createForumCategory(req.body));
   });
@@ -438,8 +538,21 @@ export async function registerRoutes(server: Server, app: Express) {
   app.post("/api/forum/threads", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
     if (!user) return res.status(401).json({ message: "No autorizado" });
-    const thread = await storage.createThread({ ...req.body, authorId: user.id, authorName: user.displayName, isPinned: false, isLocked: false, views: 0 });
-    if (req.body.content) await storage.createPost({ threadId: thread.id, authorId: user.id, authorName: user.displayName, content: req.body.content });
+    const thread = await storage.createThread({
+      ...req.body,
+      authorId: user.id,
+      authorName: user.displayName,
+      isPinned: false,
+      isLocked: false,
+      views: 0,
+    });
+    if (req.body.content)
+      await storage.createPost({
+        threadId: thread.id,
+        authorId: user.id,
+        authorName: user.displayName,
+        content: req.body.content,
+      });
     res.status(201).json(thread);
   });
   app.get("/api/forum/threads/:id/posts", async (req, res) => {
@@ -448,11 +561,21 @@ export async function registerRoutes(server: Server, app: Express) {
   app.post("/api/forum/posts", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
     if (!user) return res.status(401).json({ message: "No autorizado" });
-    res.status(201).json(await storage.createPost({ ...req.body, authorId: user.id, authorName: user.displayName }));
+    res
+      .status(201)
+      .json(
+        await storage.createPost({
+          ...req.body,
+          authorId: user.id,
+          authorName: user.displayName,
+        }),
+      );
   });
 
   // ============ MARKETPLACE ============
-  app.get("/api/marketplace", async (_req, res) => { res.json(await storage.getAllMarketplaceItems()); });
+  app.get("/api/marketplace", async (_req, res) => {
+    res.json(await storage.getAllMarketplaceItems());
+  });
   app.get("/api/marketplace/:className", async (req, res) => {
     const item = await storage.getMarketplaceItemByClass(req.params.className);
     if (!item) return res.status(404).json({ message: "Item no encontrado" });
@@ -462,13 +585,16 @@ export async function registerRoutes(server: Server, app: Express) {
   // ============ BADGES ============
   app.get("/api/badges", async (req, res) => {
     const query = req.query.q as string;
-    res.json(query ? await storage.searchBadges(query) : await storage.getAllBadges());
+    res.json(
+      query ? await storage.searchBadges(query) : await storage.getAllBadges(),
+    );
   });
 
   // ============ HABBO API PROXY ============
   const HABBO_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "application/json, text/plain, */*",
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    Accept: "application/json, text/plain, */*",
     "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
   };
 
@@ -477,14 +603,22 @@ export async function registerRoutes(server: Server, app: Express) {
     return `https://www.habbo.${safeHotel}`;
   }
 
-  async function resolveHabboUserId(username: string, hotel: string = "es"): Promise<string | null> {
+  async function resolveHabboUserId(
+    username: string,
+    hotel: string = "es",
+  ): Promise<string | null> {
     try {
       const host = getHabboHost(hotel);
-      const r = await fetch(`${host}/api/public/users?name=${encodeURIComponent(username)}`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `${host}/api/public/users?name=${encodeURIComponent(username)}`,
+        { headers: HABBO_HEADERS },
+      );
       if (!r.ok) return null;
-      const data = await r.json() as any;
+      const data = (await r.json()) as any;
       return data.uniqueId || null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   // User by name (básico: online, motto, level, etc.)
@@ -492,10 +626,16 @@ export async function registerRoutes(server: Server, app: Express) {
     const hotel = (req.query.hotel as string) || "es";
     try {
       const host = getHabboHost(hotel);
-      const r = await fetch(`${host}/api/public/users?name=${encodeURIComponent(req.params.username)}`, { headers: HABBO_HEADERS });
-      if (!r.ok) return res.status(404).json({ message: "Usuario no encontrado" });
+      const r = await fetch(
+        `${host}/api/public/users?name=${encodeURIComponent(req.params.username)}`,
+        { headers: HABBO_HEADERS },
+      );
+      if (!r.ok)
+        return res.status(404).json({ message: "Usuario no encontrado" });
       res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error al consultar Habbo API" }); }
+    } catch {
+      res.status(500).json({ message: "Error al consultar Habbo API" });
+    }
   });
 
   // Rooms del usuario (para ProfilePage)
@@ -505,10 +645,15 @@ export async function registerRoutes(server: Server, app: Express) {
       const uniqueId = await resolveHabboUserId(req.params.username, hotel);
       if (!uniqueId) return res.json([]);
       const host = getHabboHost(hotel);
-      const r = await fetch(`${host}/api/public/users/${encodeURIComponent(uniqueId)}/rooms`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `${host}/api/public/users/${encodeURIComponent(uniqueId)}/rooms`,
+        { headers: HABBO_HEADERS },
+      );
       if (!r.ok) return res.json([]);
       res.json(await r.json());
-    } catch { res.json([]); }
+    } catch {
+      res.json([]);
+    }
   });
 
   // Grupos del usuario (para ProfilePage)
@@ -518,10 +663,15 @@ export async function registerRoutes(server: Server, app: Express) {
       const uniqueId = await resolveHabboUserId(req.params.username, hotel);
       if (!uniqueId) return res.json([]);
       const host = getHabboHost(hotel);
-      const r = await fetch(`${host}/api/public/users/${encodeURIComponent(uniqueId)}/groups`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `${host}/api/public/users/${encodeURIComponent(uniqueId)}/groups`,
+        { headers: HABBO_HEADERS },
+      );
       if (!r.ok) return res.json([]);
       res.json(await r.json());
-    } catch { res.json([]); }
+    } catch {
+      res.json([]);
+    }
   });
 
   // Origins
@@ -529,27 +679,95 @@ export async function registerRoutes(server: Server, app: Express) {
     const hotel = (req.query.hotel as string) || "es";
     try {
       const host = `https://origins.habbo.${hotel}`;
-      const r = await fetch(`${host}/api/public/users?name=${encodeURIComponent(req.params.username)}`, { headers: HABBO_HEADERS });
-      if (!r.ok) return res.status(404).json({ message: "Usuario no encontrado en Origins" });
+      const r = await fetch(
+        `${host}/api/public/users?name=${encodeURIComponent(req.params.username)}`,
+        { headers: HABBO_HEADERS },
+      );
+      if (!r.ok)
+        return res
+          .status(404)
+          .json({ message: "Usuario no encontrado en Origins" });
       res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error al consultar Habbo Origins API" }); }
+    } catch {
+      res.status(500).json({ message: "Error al consultar Habbo Origins API" });
+    }
   });
 
   app.get("/api/habbo/badges/:hotel", async (req, res) => {
     const hotel = req.params.hotel || "es";
     const FALLBACK_BADGES = [
-      { code: "ADM", name: "Administrador", description: "Placa exclusiva de administrador", url_habbo: "https://images.habbo.com/c_images/album1584/ADM.gif" },
-      { code: "COM", name: "Staff HabboSpeed", description: "Staff de HabboSpeed", url_habbo: "https://images.habbo.com/c_images/album1584/COM.gif" },
-      { code: "Z53", name: "Placa de Oro", description: "Placa de oro brillante", url_habbo: "https://images.habbo.com/c_images/album1584/Z53.gif" },
-      { code: "ES992", name: "Micrófono de Oro", description: "DJs y Locutores estrella", url_habbo: "https://images.habbo.com/c_images/album1584/ES992.gif" },
-      { code: "UK084", name: "Radio Activa", description: "Oyente súper activo de la radio", url_habbo: "https://images.habbo.com/c_images/album1584/UK084.gif" },
-      { code: "IT128", name: "Trofeo de Platino", description: "Ganador de torneos y concursos", url_habbo: "https://images.habbo.com/c_images/album1584/IT128.gif" },
-      { code: "FI145", name: "Placa Aqua", description: "Edición especial de Placa Aqua", url_habbo: "https://images.habbo.com/c_images/album1584/FI145.gif" },
-      { code: "FR185", name: "Estrella Neón", description: "Tema Premium Nubis de HabboSpeed", url_habbo: "https://images.habbo.com/c_images/album1584/FR185.gif" },
-      { code: "NL453", name: "Habbo Speed Fan", description: "Miembro verificado de la Fansite", url_habbo: "https://images.habbo.com/c_images/album1584/NL453.gif" },
-      { code: "DE636", name: "Corona de Laureles", description: "Mención honorífica", url_habbo: "https://images.habbo.com/c_images/album1584/DE636.gif" },
-      { code: "HSC01", name: "Copa de Campeones", description: "Speed Cup Winner", url_habbo: "https://images.habbo.com/c_images/album1584/HSC01.gif" },
-      { code: "ES49C", name: "SpeedPoints Collector", description: "Coleccionista de SpeedPoints", url_habbo: "https://images.habbo.com/c_images/album1584/ES49C.gif" }
+      {
+        code: "ADM",
+        name: "Administrador",
+        description: "Placa exclusiva de administrador",
+        url_habbo: "https://images.habbo.com/c_images/album1584/ADM.gif",
+      },
+      {
+        code: "COM",
+        name: "Staff HabboSpeed",
+        description: "Staff de HabboSpeed",
+        url_habbo: "https://images.habbo.com/c_images/album1584/COM.gif",
+      },
+      {
+        code: "Z53",
+        name: "Placa de Oro",
+        description: "Placa de oro brillante",
+        url_habbo: "https://images.habbo.com/c_images/album1584/Z53.gif",
+      },
+      {
+        code: "ES992",
+        name: "Micrófono de Oro",
+        description: "DJs y Locutores estrella",
+        url_habbo: "https://images.habbo.com/c_images/album1584/ES992.gif",
+      },
+      {
+        code: "UK084",
+        name: "Radio Activa",
+        description: "Oyente súper activo de la radio",
+        url_habbo: "https://images.habbo.com/c_images/album1584/UK084.gif",
+      },
+      {
+        code: "IT128",
+        name: "Trofeo de Platino",
+        description: "Ganador de torneos y concursos",
+        url_habbo: "https://images.habbo.com/c_images/album1584/IT128.gif",
+      },
+      {
+        code: "FI145",
+        name: "Placa Aqua",
+        description: "Edición especial de Placa Aqua",
+        url_habbo: "https://images.habbo.com/c_images/album1584/FI145.gif",
+      },
+      {
+        code: "FR185",
+        name: "Estrella Neón",
+        description: "Tema Premium Nubis de HabboSpeed",
+        url_habbo: "https://images.habbo.com/c_images/album1584/FR185.gif",
+      },
+      {
+        code: "NL453",
+        name: "Habbo Speed Fan",
+        description: "Miembro verificado de la Fansite",
+        url_habbo: "https://images.habbo.com/c_images/album1584/NL453.gif",
+      },
+      {
+        code: "DE636",
+        name: "Corona de Laureles",
+        description: "Mención honorífica",
+        url_habbo: "https://images.habbo.com/c_images/album1584/DE636.gif",
+      },
+      {
+        code: "HSC01",
+        name: "Copa de Campeones",
+        description: "Speed Cup Winner",
+        url_habbo: "https://images.habbo.com/c_images/album1584/HSC01.gif",
+      },
+      {
+        code: "ES49C",
+        name: "SpeedPoints Collector",
+        description: "Coleccionista de SpeedPoints",
+        url_habbo: "https://images.habbo.com/c_images/album1584/ES49C.gif",
+      },
     ];
 
     try {
@@ -580,30 +798,56 @@ export async function registerRoutes(server: Server, app: Express) {
     const cleanClass = (classname || "").toLowerCase();
     const cleanName = (name || "").toLowerCase();
     let basePrice = 0;
-    
-    if (cleanClass.includes("throne") || cleanName.includes("throne") || cleanClass.includes("trono")) {
+
+    if (
+      cleanClass.includes("throne") ||
+      cleanName.includes("throne") ||
+      cleanClass.includes("trono")
+    ) {
       basePrice = 4500;
-    } else if (cleanClass.includes("dragon") || cleanName.includes("dragon") || cleanClass.includes("dragón")) {
+    } else if (
+      cleanClass.includes("dragon") ||
+      cleanName.includes("dragon") ||
+      cleanClass.includes("dragón")
+    ) {
       basePrice = 1800;
     } else if (cleanClass.includes("egg") || cleanName.includes("huevo")) {
       basePrice = 3000;
-    } else if (cleanClass.includes("crown") || cleanClass.includes("corona") || cleanClass.includes("tiara")) {
+    } else if (
+      cleanClass.includes("crown") ||
+      cleanClass.includes("corona") ||
+      cleanClass.includes("tiara")
+    ) {
       basePrice = 6500;
     } else if (cleanClass.includes("pillar") || cleanClass.includes("pilar")) {
       basePrice = 950;
     } else if (cleanClass.includes("laser") || cleanClass.includes("láser")) {
       basePrice = 320;
-    } else if (cleanClass.includes("fountain") || cleanClass.includes("fuente")) {
+    } else if (
+      cleanClass.includes("fountain") ||
+      cleanClass.includes("fuente")
+    ) {
       basePrice = 750;
-    } else if (cleanClass.includes("gold_bar") || cleanClass.includes("barradeoro") || cleanClass.includes("lingote")) {
+    } else if (
+      cleanClass.includes("gold_bar") ||
+      cleanClass.includes("barradeoro") ||
+      cleanClass.includes("lingote")
+    ) {
       basePrice = 500;
     } else if (cleanClass.includes("ltd")) {
       basePrice = 1200;
     } else if (cleanClass.includes("rare") || cleanClass.includes("raro")) {
       basePrice = 280;
-    } else if (cleanClass.includes("sofa") || cleanClass.includes("sillón") || cleanClass.includes("club")) {
+    } else if (
+      cleanClass.includes("sofa") ||
+      cleanClass.includes("sillón") ||
+      cleanClass.includes("club")
+    ) {
       basePrice = 25;
-    } else if (cleanClass.includes("pillow") || cleanClass.includes("almohada")) {
+    } else if (
+      cleanClass.includes("pillow") ||
+      cleanClass.includes("almohada")
+    ) {
       basePrice = 18;
     } else {
       const hash = getDeterministicHash(cleanClass || "default");
@@ -616,68 +860,247 @@ export async function registerRoutes(server: Server, app: Express) {
     let currentPrice = basePrice;
     for (let i = days; i >= 0; i--) {
       const daySeed = hashSeed + i;
-      const pct = ((daySeed % 17) - 8) / 100; 
+      const pct = ((daySeed % 17) - 8) / 100;
       currentPrice = Math.max(1, Math.round(currentPrice * (1 + pct)));
-      
-      const quantity = basePrice > 1000 
-        ? 1 + (daySeed % 3)
-        : basePrice > 100
-        ? 2 + (daySeed % 8)
-        : 10 + (daySeed % 40);
-        
+
+      const quantity =
+        basePrice > 1000
+          ? 1 + (daySeed % 3)
+          : basePrice > 100
+            ? 2 + (daySeed % 8)
+            : 10 + (daySeed % 40);
+
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split("T")[0];
-      
+
       history.push({
         price: currentPrice,
         amount: quantity,
-        date: dateStr
+        date: dateStr,
       });
     }
 
-    const averagePrice = Math.round(history.reduce((sum, item) => sum + item.price, 0) / history.length);
+    const averagePrice = Math.round(
+      history.reduce((sum, item) => sum + item.price, 0) / history.length,
+    );
 
     return {
       averagePrice,
-      history
+      history,
     };
   }
 
   const CLASSIC_RARES = [
-    { name: "Trono de Habbo", classname: "throne", revision: 231, iconUrl: "https://images.habbo.com/dcr/hof_furni/231/throne_icon.png" },
-    { name: "Lámpara Dragón Negro", classname: "rare_dragonlamp", revision: 141, iconUrl: "https://images.habbo.com/dcr/hof_furni/141/rare_dragonlamp_icon.png" },
-    { name: "Huevo de Dinosaurio", classname: "dino_egg", revision: 251, iconUrl: "https://images.habbo.com/dcr/hof_furni/251/dino_egg_icon.png" },
-    { name: "Sofá Club Habbo (Sillón HC)", classname: "club_sofa", revision: 12, iconUrl: "https://images.habbo.com/dcr/hof_furni/12/club_sofa_icon.png" },
-    { name: "Ventilador Láser Amarillo", classname: "laser_light", revision: 18, iconUrl: "https://images.habbo.com/dcr/hof_furni/18/laser_light_icon.png" },
-    { name: "Lingote de Oro (50c)", classname: "gold_bar", revision: 45, iconUrl: "https://images.habbo.com/dcr/hof_furni/45/gold_bar_icon.png" },
-    { name: "Heladera Roja", classname: "rare_icecream", revision: 5, iconUrl: "https://images.habbo.com/dcr/hof_furni/5/rare_icecream_icon.png" },
-    { name: "Pilar Dórico Azul", classname: "pillar", revision: 8, iconUrl: "https://images.habbo.com/dcr/hof_furni/8/pillar_icon.png" },
-    { name: "Corona Imperial de Diamantes", classname: "crown", revision: 99, iconUrl: "https://images.habbo.com/dcr/hof_furni/99/crown_icon.png" },
-    { name: "Huevo de Oro", classname: "gold_egg", revision: 251, iconUrl: "https://images.habbo.com/dcr/hof_furni/251/gold_egg_icon.png" },
-    { name: "Fontana de Oro", classname: "fountain", revision: 15, iconUrl: "https://images.habbo.com/dcr/hof_furni/15/fountain_icon.png" },
-    { name: "Almohada Celeste", classname: "pillow", revision: 22, iconUrl: "https://images.habbo.com/dcr/hof_furni/22/pillow_icon.png" },
-    { name: "Mamut de Oro", classname: "mammoth", revision: 40, iconUrl: "https://images.habbo.com/dcr/hof_furni/40/mammoth_icon.png" },
-    { name: "Lámpara Dragón Verde", classname: "rare_dragonlamp_green", revision: 141, iconUrl: "https://images.habbo.com/dcr/hof_furni/141/rare_dragonlamp_green_icon.png" },
-    { name: "Lámpara Dragón Celeste", classname: "rare_dragonlamp_blue", revision: 141, iconUrl: "https://images.habbo.com/dcr/hof_furni/141/rare_dragonlamp_blue_icon.png" },
-    { name: "Puerta Espacial", classname: "scifi_port", revision: 35, iconUrl: "https://images.habbo.com/dcr/hof_furni/35/scifi_port_icon.png" },
-    { name: "Holo Pod Azul", classname: "holo_pod", revision: 28, iconUrl: "https://images.habbo.com/dcr/hof_furni/28/holo_pod_icon.png" },
-    { name: "Máquina de Humo Roja", classname: "smoke_machine", revision: 12, iconUrl: "https://images.habbo.com/dcr/hof_furni/12/smoke_machine_icon.png" },
-    { name: "Estatua de Frank", classname: "frank_statue", revision: 50, iconUrl: "https://images.habbo.com/dcr/hof_furni/50/frank_statue_icon.png" },
-    { name: "Lámpara de Lava", classname: "lava_lamp", revision: 19, iconUrl: "https://images.habbo.com/dcr/hof_furni/19/lava_lamp_icon.png" },
-    { name: "Trofeo Copa de Oro", classname: "trophy_gold", revision: 8, iconUrl: "https://images.habbo.com/dcr/hof_furni/8/trophy_gold_icon.png" },
-    { name: "Sofá Plasto Azul", classname: "plasto_sofa", revision: 5, iconUrl: "https://images.habbo.com/dcr/hof_furni/5/plasto_sofa_icon.png" },
-    { name: "Heladera Verde", classname: "rare_icecream_green", revision: 5, iconUrl: "https://images.habbo.com/dcr/hof_furni/5/rare_icecream_green_icon.png" },
-    { name: "Pilar de Fuego", classname: "pillar_fire", revision: 8, iconUrl: "https://images.habbo.com/dcr/hof_furni/8/pillar_fire_icon.png" },
-    { name: "Puerta Láser Roja", classname: "laser_gate_red", revision: 18, iconUrl: "https://images.habbo.com/dcr/hof_furni/18/laser_gate_red_icon.png" },
-    { name: "Puerta Láser Azul", classname: "laser_gate_blue", revision: 18, iconUrl: "https://images.habbo.com/dcr/hof_furni/18/laser_gate_blue_icon.png" },
-    { name: "Silla Plasto Roja", classname: "plasto_chair", revision: 5, iconUrl: "https://images.habbo.com/dcr/hof_furni/5/plasto_chair_icon.png" },
-    { name: "Planta Yucca", classname: "yucca", revision: 6, iconUrl: "https://images.habbo.com/dcr/hof_furni/6/yucca_icon.png" },
-    { name: "Cactus Gigante", classname: "cactus", revision: 7, iconUrl: "https://images.habbo.com/dcr/hof_furni/7/cactus_icon.png" },
-    { name: "Alfombra Roja", classname: "red_rug", revision: 4, iconUrl: "https://images.habbo.com/dcr/hof_furni/4/red_rug_icon.png" },
-    { name: "Espejo Barroco", classname: "baroque_mirror", revision: 11, iconUrl: "https://images.habbo.com/dcr/hof_furni/11/baroque_mirror_icon.png" },
-    { name: "Ventana de Catedral", classname: "cathedral_window", revision: 25, iconUrl: "https://images.habbo.com/dcr/hof_furni/25/cathedral_window_icon.png" },
-    { name: "Estatua de León", classname: "lion_statue", revision: 14, iconUrl: "https://images.habbo.com/dcr/hof_furni/14/lion_statue_icon.png" }
+    {
+      name: "Trono de Habbo",
+      classname: "throne",
+      revision: 231,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/231/throne_icon.png",
+    },
+    {
+      name: "Lámpara Dragón Negro",
+      classname: "rare_dragonlamp",
+      revision: 141,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/141/rare_dragonlamp_icon.png",
+    },
+    {
+      name: "Huevo de Dinosaurio",
+      classname: "dino_egg",
+      revision: 251,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/251/dino_egg_icon.png",
+    },
+    {
+      name: "Sofá Club Habbo (Sillón HC)",
+      classname: "club_sofa",
+      revision: 12,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/12/club_sofa_icon.png",
+    },
+    {
+      name: "Ventilador Láser Amarillo",
+      classname: "laser_light",
+      revision: 18,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/18/laser_light_icon.png",
+    },
+    {
+      name: "Lingote de Oro (50c)",
+      classname: "gold_bar",
+      revision: 45,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/45/gold_bar_icon.png",
+    },
+    {
+      name: "Heladera Roja",
+      classname: "rare_icecream",
+      revision: 5,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/5/rare_icecream_icon.png",
+    },
+    {
+      name: "Pilar Dórico Azul",
+      classname: "pillar",
+      revision: 8,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/8/pillar_icon.png",
+    },
+    {
+      name: "Corona Imperial de Diamantes",
+      classname: "crown",
+      revision: 99,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/99/crown_icon.png",
+    },
+    {
+      name: "Huevo de Oro",
+      classname: "gold_egg",
+      revision: 251,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/251/gold_egg_icon.png",
+    },
+    {
+      name: "Fontana de Oro",
+      classname: "fountain",
+      revision: 15,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/15/fountain_icon.png",
+    },
+    {
+      name: "Almohada Celeste",
+      classname: "pillow",
+      revision: 22,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/22/pillow_icon.png",
+    },
+    {
+      name: "Mamut de Oro",
+      classname: "mammoth",
+      revision: 40,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/40/mammoth_icon.png",
+    },
+    {
+      name: "Lámpara Dragón Verde",
+      classname: "rare_dragonlamp_green",
+      revision: 141,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/141/rare_dragonlamp_green_icon.png",
+    },
+    {
+      name: "Lámpara Dragón Celeste",
+      classname: "rare_dragonlamp_blue",
+      revision: 141,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/141/rare_dragonlamp_blue_icon.png",
+    },
+    {
+      name: "Puerta Espacial",
+      classname: "scifi_port",
+      revision: 35,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/35/scifi_port_icon.png",
+    },
+    {
+      name: "Holo Pod Azul",
+      classname: "holo_pod",
+      revision: 28,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/28/holo_pod_icon.png",
+    },
+    {
+      name: "Máquina de Humo Roja",
+      classname: "smoke_machine",
+      revision: 12,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/12/smoke_machine_icon.png",
+    },
+    {
+      name: "Estatua de Frank",
+      classname: "frank_statue",
+      revision: 50,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/50/frank_statue_icon.png",
+    },
+    {
+      name: "Lámpara de Lava",
+      classname: "lava_lamp",
+      revision: 19,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/19/lava_lamp_icon.png",
+    },
+    {
+      name: "Trofeo Copa de Oro",
+      classname: "trophy_gold",
+      revision: 8,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/8/trophy_gold_icon.png",
+    },
+    {
+      name: "Sofá Plasto Azul",
+      classname: "plasto_sofa",
+      revision: 5,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/5/plasto_sofa_icon.png",
+    },
+    {
+      name: "Heladera Verde",
+      classname: "rare_icecream_green",
+      revision: 5,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/5/rare_icecream_green_icon.png",
+    },
+    {
+      name: "Pilar de Fuego",
+      classname: "pillar_fire",
+      revision: 8,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/8/pillar_fire_icon.png",
+    },
+    {
+      name: "Puerta Láser Roja",
+      classname: "laser_gate_red",
+      revision: 18,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/18/laser_gate_red_icon.png",
+    },
+    {
+      name: "Puerta Láser Azul",
+      classname: "laser_gate_blue",
+      revision: 18,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/18/laser_gate_blue_icon.png",
+    },
+    {
+      name: "Silla Plasto Roja",
+      classname: "plasto_chair",
+      revision: 5,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/5/plasto_chair_icon.png",
+    },
+    {
+      name: "Planta Yucca",
+      classname: "yucca",
+      revision: 6,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/6/yucca_icon.png",
+    },
+    {
+      name: "Cactus Gigante",
+      classname: "cactus",
+      revision: 7,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/7/cactus_icon.png",
+    },
+    {
+      name: "Alfombra Roja",
+      classname: "red_rug",
+      revision: 4,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/4/red_rug_icon.png",
+    },
+    {
+      name: "Espejo Barroco",
+      classname: "baroque_mirror",
+      revision: 11,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/11/baroque_mirror_icon.png",
+    },
+    {
+      name: "Ventana de Catedral",
+      classname: "cathedral_window",
+      revision: 25,
+      iconUrl:
+        "https://images.habbo.com/dcr/hof_furni/25/cathedral_window_icon.png",
+    },
+    {
+      name: "Estatua de León",
+      classname: "lion_statue",
+      revision: 14,
+      iconUrl: "https://images.habbo.com/dcr/hof_furni/14/lion_statue_icon.png",
+    },
   ];
 
   app.get("/api/habbo/marketplace/:item", async (req, res) => {
@@ -686,44 +1109,60 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), 1800); // 1.8s timeout
-      
-      const r = await fetch(`https://habboapi.site/api/market/history?classname=${encodeURIComponent(itemQuery)}&hotel=${hotel}`, {
-        signal: controller.signal
-      });
+
+      const r = await fetch(
+        `https://habboapi.site/api/market/history?classname=${encodeURIComponent(itemQuery)}&hotel=${hotel}`,
+        {
+          signal: controller.signal,
+        },
+      );
       clearTimeout(id);
-      
+
       if (r.ok) {
-        const data = await r.json() as any;
-        if (data && (data.averagePrice || data.history)) {
+        const raw = (await r.json()) as any;
+        const data = Array.isArray(raw) ? raw[0] : raw;
+        if (data && typeof data === "object") {
+          const marketData = data.marketData || {};
+          const history = Array.isArray(marketData.history)
+            ? marketData.history
+            : Array.isArray(data.history)
+              ? data.history
+              : [];
+          const averagePrice =
+            marketData.averagePrice || data.averagePrice || data.avgPrice || 0;
           const normalized = {
             ...data,
-            name: data.name || itemQuery,
-            classname: data.classname || itemQuery,
-            ClassName: data.classname || data.ClassName || itemQuery,
-            className: data.classname || data.className || itemQuery,
-            FurniName: data.name || data.FurniName || itemQuery,
-            itemName: data.name || data.itemName || itemQuery,
-            Revision: data.revision || data.Revision || 0,
-            revision: data.revision || 0,
-            marketData: data.marketData || {
-              averagePrice: data.averagePrice || data.avgPrice || 0,
-              history: data.history || []
-            }
+            name: data.name || data.FurniName || itemQuery,
+            classname: data.classname || data.ClassName || itemQuery,
+            ClassName: data.ClassName || data.classname || itemQuery,
+            className: data.className || data.classname || itemQuery,
+            FurniName: data.FurniName || data.name || itemQuery,
+            itemName: data.itemName || data.FurniName || data.name || itemQuery,
+            Revision: data.Revision || data.revision || 0,
+            revision: data.revision || data.Revision || 0,
+            marketData: {
+              averagePrice,
+              history,
+            },
           };
           return res.json(normalized);
         }
       }
     } catch (err) {
-      console.log(`[Marketplace Proxy] External API offline or timed out, generating deterministic fallback for ${itemQuery}`);
+      console.log(
+        `[Marketplace Proxy] External API offline or timed out, generating deterministic fallback for ${itemQuery}`,
+      );
     }
 
     const cleanClassname = itemQuery.toLowerCase().replace(/_icon$/i, "");
-    const displayName = cleanClassname.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    const displayName = cleanClassname
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
     const mData = enrichFurniWithMarketData(cleanClassname, displayName);
-    
-    const classic = CLASSIC_RARES.find(c => c.classname === cleanClassname);
+
+    const classic = CLASSIC_RARES.find((c) => c.classname === cleanClassname);
     const revision = classic ? classic.revision : 0;
-    
+
     const enrichedItem = {
       name: displayName,
       classname: cleanClassname,
@@ -736,9 +1175,9 @@ export async function registerRoutes(server: Server, app: Express) {
       Revision: revision,
       avgPrice: mData.averagePrice,
       avg_price: mData.averagePrice,
-      marketData: mData
+      marketData: mData,
     };
-    
+
     res.json(enrichedItem);
   });
 
@@ -747,30 +1186,37 @@ export async function registerRoutes(server: Server, app: Express) {
       const limitValue = parseInt(req.query.limit as string, 10);
       const limit = Number.isFinite(limitValue) ? limitValue : 0;
       const hotel = (req.query.hotel as string) || "es";
-      
+
       let items: any[] = [];
       let fetchSuccess = false;
 
       // 1. Try official Habbo API with host-specific suffixes (/1 for .com, /0 for others)
       const host = getHabboHost(hotel);
       const suffixes = host.includes(".com") ? ["1", "0"] : ["0", "1"];
-      
+
       for (const suffix of suffixes) {
         try {
           const officialUrl = `${host}/gamedata/furnidata_json/${suffix}`;
           console.log(`[Furni API] Trying official Habbo URL: ${officialUrl}`);
-          const r = await fetch(officialUrl, { headers: HABBO_HEADERS, signal: AbortSignal.timeout(4000) });
+          const r = await fetch(officialUrl, {
+            headers: HABBO_HEADERS,
+            signal: AbortSignal.timeout(4000),
+          });
           if (r.ok) {
-            const data = await r.json() as any;
+            const data = (await r.json()) as any;
             items = data?.roomitemtypes?.furnitype || [];
             if (items.length > 0) {
               fetchSuccess = true;
-              console.log(`[Furni API] Successfully fetched ${items.length} items from official Habbo API (${officialUrl})`);
+              console.log(
+                `[Furni API] Successfully fetched ${items.length} items from official Habbo API (${officialUrl})`,
+              );
               break;
             }
           }
         } catch (err: any) {
-          console.warn(`[Furni API] Failed to fetch official URL suffix ${suffix}: ${err.message}`);
+          console.warn(
+            `[Furni API] Failed to fetch official URL suffix ${suffix}: ${err.message}`,
+          );
         }
       }
 
@@ -779,10 +1225,14 @@ export async function registerRoutes(server: Server, app: Express) {
         try {
           const assetsHotel = hotel === "es" ? "es" : "com";
           const assetsUrl = `https://www.habboassets.com/api/v1/furniture?limit=1000&hotel=${assetsHotel}`;
-          console.log(`[Furni API] Official failed. Trying HabboAssets fallback: ${assetsUrl}`);
-          const r = await fetch(assetsUrl, { signal: AbortSignal.timeout(5000) });
+          console.log(
+            `[Furni API] Official failed. Trying HabboAssets fallback: ${assetsUrl}`,
+          );
+          const r = await fetch(assetsUrl, {
+            signal: AbortSignal.timeout(5000),
+          });
           if (r.ok) {
-            const data = await r.json() as any;
+            const data = (await r.json()) as any;
             const fetchedFurniture = data?.furniture || [];
             if (fetchedFurniture.length > 0) {
               items = fetchedFurniture.map((f: any) => ({
@@ -791,25 +1241,33 @@ export async function registerRoutes(server: Server, app: Express) {
                 revision: f.revision || 0,
                 name: f.name || f.classname || "",
                 description: f.description || "",
-                iconUrl: f.url_icon_habboassets || f.url_icon_habbo || null
+                iconUrl: f.url_icon_habboassets || f.url_icon_habbo || null,
               }));
               fetchSuccess = true;
-              console.log(`[Furni API] Successfully fetched ${items.length} items from HabboAssets API`);
+              console.log(
+                `[Furni API] Successfully fetched ${items.length} items from HabboAssets API`,
+              );
             }
           }
         } catch (err: any) {
-          console.error(`[Furni API] Failed to fetch from HabboAssets fallback: ${err.message}`);
+          console.error(
+            `[Furni API] Failed to fetch from HabboAssets fallback: ${err.message}`,
+          );
         }
       }
 
       const mappedOfficial = items.map((f: any) => {
-        const cleanName = (f.name || f.classname || "").replace(/_/g, " ").replace(/ name$/i, "");
+        const cleanName = (f.name || f.classname || "")
+          .replace(/_/g, " ")
+          .replace(/ name$/i, "");
         const mData = enrichFurniWithMarketData(f.classname, cleanName);
         return {
           name: cleanName,
           classname: f.classname,
           revision: f.revision,
-          iconUrl: f.iconUrl || `https://images.habbo.com/dcr/hof_furni/${f.revision}/${f.classname}_icon.png`,
+          iconUrl:
+            f.iconUrl ||
+            `https://images.habbo.com/dcr/hof_furni/${f.revision}/${f.classname}_icon.png`,
           FurniName: cleanName,
           itemName: cleanName,
           ClassName: f.classname,
@@ -818,8 +1276,8 @@ export async function registerRoutes(server: Server, app: Express) {
           avgPrice: mData.averagePrice,
           avg_price: mData.averagePrice,
           marketData: {
-            averagePrice: mData.averagePrice
-          }
+            averagePrice: mData.averagePrice,
+          },
         };
       });
 
@@ -838,21 +1296,23 @@ export async function registerRoutes(server: Server, app: Express) {
           avgPrice: mData.averagePrice,
           avg_price: mData.averagePrice,
           marketData: {
-            averagePrice: mData.averagePrice
-          }
+            averagePrice: mData.averagePrice,
+          },
         };
       });
 
-      const classicClassnames = new Set(mappedClassic.map(c => c.classname));
-      const filteredOfficial = mappedOfficial.filter(o => !classicClassnames.has(o.classname));
+      const classicClassnames = new Set(mappedClassic.map((c) => c.classname));
+      const filteredOfficial = mappedOfficial.filter(
+        (o) => !classicClassnames.has(o.classname),
+      );
 
       // Limit official items returned to avoid freezing client
       const maxOfficial = limit > 0 ? limit : 2000;
       const officialToReturn = filteredOfficial.slice(-maxOfficial).reverse();
       const combined = [...mappedClassic, ...officialToReturn];
-      
+
       res.json(combined);
-    } catch { 
+    } catch {
       const fallbackList = CLASSIC_RARES.map((r: any) => {
         const mData = enrichFurniWithMarketData(r.classname, r.name);
         return {
@@ -868,11 +1328,11 @@ export async function registerRoutes(server: Server, app: Express) {
           avgPrice: mData.averagePrice,
           avg_price: mData.averagePrice,
           marketData: {
-            averagePrice: mData.averagePrice
-          }
+            averagePrice: mData.averagePrice,
+          },
         };
       });
-      res.json(fallbackList); 
+      res.json(fallbackList);
     }
   });
 
@@ -882,7 +1342,9 @@ export async function registerRoutes(server: Server, app: Express) {
       const fp = await import("./figureparts.json");
       res.json((fp as any).default || fp);
     } catch (e) {
-      res.status(500).json({ message: "No se pudo cargar el catálogo de prendas" });
+      res
+        .status(500)
+        .json({ message: "No se pudo cargar el catálogo de prendas" });
     }
   });
 
@@ -907,11 +1369,25 @@ export async function registerRoutes(server: Server, app: Express) {
       }
 
       // allowlist hosts for user-provided urls
-      const allowed = ["images.habbo.com", "habbo.es", "habbo.com", "habbo.com.br", "habbo.de", "habbo.fi", "habbo.fr", "habbo.it", "habbo.nl", "habboassets.com", "www.habboassets.com"];
+      const allowed = [
+        "images.habbo.com",
+        "habbo.es",
+        "habbo.com",
+        "habbo.com.br",
+        "habbo.de",
+        "habbo.fi",
+        "habbo.fr",
+        "habbo.it",
+        "habbo.nl",
+        "habboassets.com",
+        "www.habboassets.com",
+      ];
       try {
         const parsed = new URL(sourceUrl);
         const host = parsed.hostname.toLowerCase();
-        const isAllowed = allowed.some((h) => host === h || host.endsWith("." + h));
+        const isAllowed = allowed.some(
+          (h) => host === h || host.endsWith("." + h),
+        );
         if (!isAllowed) {
           return res.status(403).send("forbidden host");
         }
@@ -925,7 +1401,10 @@ export async function registerRoutes(server: Server, app: Express) {
       let indexFile = "";
       let maxBytes = 209715200;
       let ttlSeconds = 60 * 60 * 24;
-      let index: Record<string, { file: string; size: number; atimeMs: number; mtimeMs: number }> = {};
+      let index: Record<
+        string,
+        { file: string; size: number; atimeMs: number; mtimeMs: number }
+      > = {};
       let hash = "";
       let cacheFile = "";
 
@@ -933,8 +1412,14 @@ export async function registerRoutes(server: Server, app: Express) {
         cacheDir = path.join(process.cwd(), "server", ".cache", "images");
         await fsp.mkdir(cacheDir, { recursive: true });
         indexFile = path.join(cacheDir, "index.json");
-        maxBytes = parseInt(process.env.PROXY_CACHE_MAX_BYTES || "209715200", 10);
-        ttlSeconds = parseInt(process.env.PROXY_CACHE_TTL_SECONDS || `${60 * 60 * 24}`, 10);
+        maxBytes = parseInt(
+          process.env.PROXY_CACHE_MAX_BYTES || "209715200",
+          10,
+        );
+        ttlSeconds = parseInt(
+          process.env.PROXY_CACHE_TTL_SECONDS || `${60 * 60 * 24}`,
+          10,
+        );
 
         const raw = await fsp.readFile(indexFile, "utf-8").catch(() => "{}");
         index = JSON.parse(raw || "{}");
@@ -948,7 +1433,11 @@ export async function registerRoutes(server: Server, app: Express) {
 
       const saveIndex = async () => {
         if (!useCache) return;
-        try { await fsp.writeFile(indexFile, JSON.stringify(index), "utf-8"); } catch { /* ignore */ }
+        try {
+          await fsp.writeFile(indexFile, JSON.stringify(index), "utf-8");
+        } catch {
+          /* ignore */
+        }
       };
 
       const totalCacheBytes = async () => {
@@ -961,9 +1450,13 @@ export async function registerRoutes(server: Server, app: Express) {
         try {
           let total = await totalCacheBytes();
           if (total <= maxBytes) return;
-          const entries = Object.entries(index).sort((a, b) => (a[1].atimeMs || 0) - (b[1].atimeMs || 0));
+          const entries = Object.entries(index).sort(
+            (a, b) => (a[1].atimeMs || 0) - (b[1].atimeMs || 0),
+          );
           for (const [k, v] of entries) {
-            try { await fsp.unlink(path.join(cacheDir, v.file)).catch(() => null); } catch {}
+            try {
+              await fsp.unlink(path.join(cacheDir, v.file)).catch(() => null);
+            } catch {}
             total -= v.size || 0;
             delete index[k];
             if (total <= maxBytes) break;
@@ -993,8 +1486,11 @@ export async function registerRoutes(server: Server, app: Express) {
       }
 
       // Fetch upstream using standard Chrome User-Agent to bypass Cloudflare
-      const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-      const upstream = await fetch(sourceUrl, { headers: { "User-Agent": userAgent } });
+      const userAgent =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+      const upstream = await fetch(sourceUrl, {
+        headers: { "User-Agent": userAgent },
+      });
       if (!upstream.ok) return res.status(502).send("bad upstream");
       const contentType = upstream.headers.get("content-type") || "image/png";
       const buffer = Buffer.from(await upstream.arrayBuffer());
@@ -1005,7 +1501,12 @@ export async function registerRoutes(server: Server, app: Express) {
           await fsp.writeFile(cacheFile, buffer).catch(() => null);
           const stat = await fsp.stat(cacheFile).catch(() => null);
           const size = stat?.size || buffer.length || 0;
-          index[hash] = { file: path.basename(cacheFile), size, atimeMs: Date.now(), mtimeMs: stat?.mtimeMs || Date.now() };
+          index[hash] = {
+            file: path.basename(cacheFile),
+            size,
+            atimeMs: Date.now(),
+            mtimeMs: stat?.mtimeMs || Date.now(),
+          };
           await saveIndex();
           await evictIfNeeded();
         } catch (e) {}
@@ -1023,91 +1524,164 @@ export async function registerRoutes(server: Server, app: Express) {
   // Extended Habbo API routes
   app.get("/api/habbo/room/:roomId", async (req, res) => {
     try {
-      const r = await fetch(`https://www.habbo.es/api/public/rooms/${encodeURIComponent(req.params.roomId)}`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `https://www.habbo.es/api/public/rooms/${encodeURIComponent(req.params.roomId)}`,
+        { headers: HABBO_HEADERS },
+      );
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
       res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
+    } catch {
+      res.status(500).json({ message: "Error" });
+    }
   });
 
   app.get("/api/habbo/user/:username/profile", async (req, res) => {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.status(404).json({ message: "Error" });
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/profile`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/profile`,
+        { headers: HABBO_HEADERS },
+      );
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
-      res.json({ uniqueId: uid, ...(await r.json() as any) });
-    } catch { res.status(500).json({ message: "Error" }); }
+      res.json({ uniqueId: uid, ...((await r.json()) as any) });
+    } catch {
+      res.status(500).json({ message: "Error" });
+    }
   });
 
   app.get("/api/habbo/user/:username/friends", async (req, res) => {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.status(404).json({ message: "Error" });
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/friends`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/friends`,
+        { headers: HABBO_HEADERS },
+      );
       res.json(r.ok ? await r.json() : []);
-    } catch { res.json([]); }
+    } catch {
+      res.json([]);
+    }
   });
 
   app.get("/api/habbo/user/:username/rooms", async (req, res) => {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.json([]);
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/rooms`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/rooms`,
+        { headers: HABBO_HEADERS },
+      );
       res.json(r.ok ? await r.json() : []);
-    } catch { res.json([]); }
+    } catch {
+      res.json([]);
+    }
   });
 
   app.get("/api/habbo/user/:username/badges", async (req, res) => {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.json([]);
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/badges`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/badges`,
+        { headers: HABBO_HEADERS },
+      );
       res.json(r.ok ? await r.json() : []);
-    } catch { res.json([]); }
+    } catch {
+      res.json([]);
+    }
   });
 
   app.get("/api/habbo/user/:username/groups", async (req, res) => {
     try {
       const uid = await resolveHabboUserId(req.params.username);
       if (!uid) return res.json([]);
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/groups`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/groups`,
+        { headers: HABBO_HEADERS },
+      );
       res.json(r.ok ? await r.json() : []);
-    } catch { res.json([]); }
+    } catch {
+      res.json([]);
+    }
   });
 
   app.get("/api/habbo/group/:id", async (req, res) => {
     try {
-      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}`,
+        { headers: HABBO_HEADERS },
+      );
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
       res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
+    } catch {
+      res.status(500).json({ message: "Error" });
+    }
   });
 
   app.get("/api/habbo/group/:id/members", async (req, res) => {
     try {
-      const r = await fetch(`https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}/members`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}/members`,
+        { headers: HABBO_HEADERS },
+      );
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
       res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
+    } catch {
+      res.status(500).json({ message: "Error" });
+    }
   });
 
   app.get("/api/habbo/hotlooks", async (_req, res) => {
     const fallbackHotLooks = [
-      { name: "Neon Rider", gender: "M", figure: "hd-180-1.hr-828-61.ch-3030-110.lg-270-82.sh-290-80.ha-1014-0" },
-      { name: "Aqua Queen", gender: "F", figure: "hd-600-1.hr-890-61.ch-232-92.lg-275-92.sh-295-80.ha-1012-110" },
-      { name: "Chrome DJ", gender: "M", figure: "hd-180-1.hr-170-61.ch-220-110.lg-285-82.sh-3089-80.ha-1001-0" },
-      { name: "Pixel Nomad", gender: "M", figure: "hd-180-1.hr-185-61.ch-230-82.lg-281-110.sh-300-80" },
-      { name: "Ruby Star", gender: "F", figure: "hd-600-1.hr-175-61.ch-225-66.lg-270-92.sh-295-62.ha-1012-62" },
-      { name: "Night Wave", gender: "M", figure: "hd-180-1.hr-680-61.ch-804-1341.lg-285-82.sh-3089-110" },
-      { name: "Golden Crown", gender: "F", figure: "hd-600-1.hr-165-61.ch-232-82.lg-275-110.sh-305-62.ha-1014-0" },
-      { name: "Street Funk", gender: "M", figure: "hd-180-1.hr-177-61.ch-255-92.lg-290-82.sh-290-80.ha-1002-0" }
+      {
+        name: "Neon Rider",
+        gender: "M",
+        figure: "hd-180-1.hr-828-61.ch-3030-110.lg-270-82.sh-290-80.ha-1014-0",
+      },
+      {
+        name: "Aqua Queen",
+        gender: "F",
+        figure: "hd-600-1.hr-890-61.ch-232-92.lg-275-92.sh-295-80.ha-1012-110",
+      },
+      {
+        name: "Chrome DJ",
+        gender: "M",
+        figure: "hd-180-1.hr-170-61.ch-220-110.lg-285-82.sh-3089-80.ha-1001-0",
+      },
+      {
+        name: "Pixel Nomad",
+        gender: "M",
+        figure: "hd-180-1.hr-185-61.ch-230-82.lg-281-110.sh-300-80",
+      },
+      {
+        name: "Ruby Star",
+        gender: "F",
+        figure: "hd-600-1.hr-175-61.ch-225-66.lg-270-92.sh-295-62.ha-1012-62",
+      },
+      {
+        name: "Night Wave",
+        gender: "M",
+        figure: "hd-180-1.hr-680-61.ch-804-1341.lg-285-82.sh-3089-110",
+      },
+      {
+        name: "Golden Crown",
+        gender: "F",
+        figure: "hd-600-1.hr-165-61.ch-232-82.lg-275-110.sh-305-62.ha-1014-0",
+      },
+      {
+        name: "Street Funk",
+        gender: "M",
+        figure: "hd-180-1.hr-177-61.ch-255-92.lg-290-82.sh-290-80.ha-1002-0",
+      },
     ];
 
     // Habbo devuelve XML (text/xml) en este endpoint, no JSON. Se parsea con regex
     // sobre las etiquetas <habbo gender="..." figure="..." hash="..."/>.
     function parseHotLooksXml(xml: string) {
       const items: { gender: string; figure: string; hash: string }[] = [];
-      const re = /<habbo\s+gender="([^"]*)"\s+figure="([^"]*)"\s+hash="([^"]*)"\s*\/>/g;
+      const re =
+        /<habbo\s+gender="([^"]*)"\s+figure="([^"]*)"\s+hash="([^"]*)"\s*\/>/g;
       let m: RegExpExecArray | null;
       while ((m = re.exec(xml)) !== null) {
         items.push({ gender: m[1], figure: m[2], hash: m[3] });
@@ -1116,7 +1690,9 @@ export async function registerRoutes(server: Server, app: Express) {
     }
 
     try {
-      const r = await fetch("https://www.habbo.es/api/public/lists/hotlooks", { headers: HABBO_HEADERS });
+      const r = await fetch("https://www.habbo.es/api/public/lists/hotlooks", {
+        headers: HABBO_HEADERS,
+      });
       if (!r.ok) return res.json(fallbackHotLooks);
       const contentType = r.headers.get("content-type") || "";
       let list: any[] = [];
@@ -1125,7 +1701,9 @@ export async function registerRoutes(server: Server, app: Express) {
         list = parseHotLooksXml(xml);
       } else {
         const data = await r.json().catch(() => null);
-        list = Array.isArray(data) ? data : (data?.hotLooks || data?.hotlooks || []);
+        list = Array.isArray(data)
+          ? data
+          : data?.hotLooks || data?.hotlooks || [];
       }
       res.json(list.length ? list : fallbackHotLooks);
     } catch {
@@ -1147,7 +1725,10 @@ export async function registerRoutes(server: Server, app: Express) {
         headers: { ...HABBO_HEADERS, "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!r.ok) return res.status(r.status).json({ message: "Error al consultar precios" });
+      if (!r.ok)
+        return res
+          .status(r.status)
+          .json({ message: "Error al consultar precios" });
       res.json(await r.json());
     } catch {
       res.status(500).json({ message: "Error al consultar precios" });
@@ -1163,9 +1744,12 @@ export async function registerRoutes(server: Server, app: Express) {
       const host = getHabboHost(hotel);
       const r = await fetch(
         `${host}/api/public/skills/leaderboard?skillType=${encodeURIComponent(skillType)}&page=${encodeURIComponent(page)}`,
-        { headers: HABBO_HEADERS }
+        { headers: HABBO_HEADERS },
       );
-      if (!r.ok) return res.status(r.status).json({ message: "Error al obtener el ranking" });
+      if (!r.ok)
+        return res
+          .status(r.status)
+          .json({ message: "Error al obtener el ranking" });
       res.json(await r.json());
     } catch {
       res.status(500).json({ message: "Error al obtener el ranking" });
@@ -1177,8 +1761,11 @@ export async function registerRoutes(server: Server, app: Express) {
     const hotel = (req.query.hotel as string) || "es";
     try {
       const host = getHabboHost(hotel);
-      const r = await fetch(`${host}/api/public/minigame/derby/v1/status`, { headers: HABBO_HEADERS });
-      if (!r.ok) return res.status(r.status).json({ message: "No hay derby activo" });
+      const r = await fetch(`${host}/api/public/minigame/derby/v1/status`, {
+        headers: HABBO_HEADERS,
+      });
+      if (!r.ok)
+        return res.status(r.status).json({ message: "No hay derby activo" });
       res.json(await r.json());
     } catch {
       res.status(500).json({ message: "Error al consultar el derby" });
@@ -1187,33 +1774,54 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/badge-owners/:badgeCode", async (req, res) => {
     try {
-      const r = await fetch(`https://www.habbo.es/api/public/badge/owners/${encodeURIComponent(req.params.badgeCode)}`, { headers: HABBO_HEADERS });
+      const r = await fetch(
+        `https://www.habbo.es/api/public/badge/owners/${encodeURIComponent(req.params.badgeCode)}`,
+        { headers: HABBO_HEADERS },
+      );
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
       res.json(await r.json());
-    } catch { res.status(500).json({ message: "Error" }); }
+    } catch {
+      res.status(500).json({ message: "Error" });
+    }
   });
 
   app.get("/api/habbo/achievements", async (_req, res) => {
     try {
-      const r = await fetch("https://www.habbo.es/api/public/achievements", { headers: HABBO_HEADERS });
+      const r = await fetch("https://www.habbo.es/api/public/achievements", {
+        headers: HABBO_HEADERS,
+      });
       res.json(r.ok ? await r.json() : []);
-    } catch { res.json([]); }
+    } catch {
+      res.json([]);
+    }
   });
 
   // ============ REQUESTS ============
-  app.get("/api/requests", async (_req, res) => { res.json(await storage.getAllRequests()); });
-  app.post("/api/requests", async (req, res) => { res.status(201).json(await storage.createRequest(req.body)); });
+  app.get("/api/requests", async (_req, res) => {
+    res.json(await storage.getAllRequests());
+  });
+  app.post("/api/requests", async (req, res) => {
+    res.status(201).json(await storage.createRequest(req.body));
+  });
   app.delete("/api/requests/:id", adminMiddleware, async (req, res) => {
     await storage.deleteRequest(parseInt(req.params.id));
     res.json({ message: "Eliminado" });
   });
 
   // ============ TEAM ============
-  app.get("/api/team", async (_req, res) => { res.json(await storage.getAllTeamMembers()); });
-  app.post("/api/team", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createTeamMember(req.body)); });
+  app.get("/api/team", async (_req, res) => {
+    res.json(await storage.getAllTeamMembers());
+  });
+  app.post("/api/team", adminMiddleware, async (req, res) => {
+    res.status(201).json(await storage.createTeamMember(req.body));
+  });
   app.put("/api/team/:id", adminMiddleware, async (req, res) => {
-    const item = await storage.updateTeamMember(parseInt(req.params.id), req.body);
-    if (!item) return res.status(404).json({ message: "Miembro no encontrado" });
+    const item = await storage.updateTeamMember(
+      parseInt(req.params.id),
+      req.body,
+    );
+    if (!item)
+      return res.status(404).json({ message: "Miembro no encontrado" });
     res.json(item);
   });
   app.delete("/api/team/:id", adminMiddleware, async (req, res) => {
@@ -1228,41 +1836,62 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ ADMIN: Cache management endpoints ============
-  app.post('/api/admin/cache/clear', adminMiddleware, async (_req, res) => {
+  app.post("/api/admin/cache/clear", adminMiddleware, async (_req, res) => {
     try {
-      const cacheDir = path.join(process.cwd(), 'server', '.cache', 'images');
-      const indexFile = path.join(cacheDir, 'index.json');
+      const cacheDir = path.join(process.cwd(), "server", ".cache", "images");
+      const indexFile = path.join(cacheDir, "index.json");
       // remove files and index
-      const idxRaw = await fsp.readFile(indexFile, 'utf-8').catch(() => '{}');
-      const index = JSON.parse(idxRaw || '{}');
+      const idxRaw = await fsp.readFile(indexFile, "utf-8").catch(() => "{}");
+      const index = JSON.parse(idxRaw || "{}");
       for (const k of Object.keys(index)) {
-        try { await fsp.unlink(path.join(cacheDir, index[k].file)).catch(() => null); } catch {}
+        try {
+          await fsp
+            .unlink(path.join(cacheDir, index[k].file))
+            .catch(() => null);
+        } catch {}
       }
       await fsp.writeFile(indexFile, JSON.stringify({})).catch(() => null);
-      res.json({ ok: true, message: 'cache cleared' });
+      res.json({ ok: true, message: "cache cleared" });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e.message || String(e) });
     }
   });
 
-  app.post('/api/admin/cache/evict', adminMiddleware, async (req, res) => {
+  app.post("/api/admin/cache/evict", adminMiddleware, async (req, res) => {
     try {
-      const targetBytes = parseInt(req.body.targetBytes || req.query.targetBytes || '0', 10);
-      if (!targetBytes || targetBytes <= 0) return res.status(400).json({ ok: false, message: 'invalid targetBytes' });
-      const cacheDir = path.join(process.cwd(), 'server', '.cache', 'images');
-      const indexFile = path.join(cacheDir, 'index.json');
-      const idxRaw = await fsp.readFile(indexFile, 'utf-8').catch(() => '{}');
-      const index: Record<string, any> = JSON.parse(idxRaw || '{}');
-      const entries = Object.entries(index).sort((a: any, b: any) => (a[1].atimeMs || 0) - (b[1].atimeMs || 0));
-      let total = Object.values(index).reduce((s: number, v: any) => s + (v.size || 0), 0);
+      const targetBytes = parseInt(
+        req.body.targetBytes || req.query.targetBytes || "0",
+        10,
+      );
+      if (!targetBytes || targetBytes <= 0)
+        return res
+          .status(400)
+          .json({ ok: false, message: "invalid targetBytes" });
+      const cacheDir = path.join(process.cwd(), "server", ".cache", "images");
+      const indexFile = path.join(cacheDir, "index.json");
+      const idxRaw = await fsp.readFile(indexFile, "utf-8").catch(() => "{}");
+      const index: Record<string, any> = JSON.parse(idxRaw || "{}");
+      const entries = Object.entries(index).sort(
+        (a: any, b: any) => (a[1].atimeMs || 0) - (b[1].atimeMs || 0),
+      );
+      let total = Object.values(index).reduce(
+        (s: number, v: any) => s + (v.size || 0),
+        0,
+      );
       for (const [k, v] of entries) {
         if (total <= targetBytes) break;
-        try { await fsp.unlink(path.join(cacheDir, v.file)).catch(() => null); } catch {}
+        try {
+          await fsp.unlink(path.join(cacheDir, v.file)).catch(() => null);
+        } catch {}
         total -= v.size || 0;
         delete index[k];
       }
       await fsp.writeFile(indexFile, JSON.stringify(index)).catch(() => null);
-      res.json({ ok: true, freedBytes: Math.max(0, targetBytes - total), remaining: total });
+      res.json({
+        ok: true,
+        freedBytes: Math.max(0, targetBytes - total),
+        remaining: total,
+      });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e.message || String(e) });
     }
@@ -1278,17 +1907,21 @@ export async function registerRoutes(server: Server, app: Express) {
       return res.status(403).json({ message: "No puedes editar otro perfil" });
     }
     const allowed: any = {};
-    if (req.body.displayName !== undefined) allowed.displayName = req.body.displayName;
-    if (req.body.habboUsername !== undefined) allowed.habboUsername = req.body.habboUsername;
+    if (req.body.displayName !== undefined)
+      allowed.displayName = req.body.displayName;
+    if (req.body.habboUsername !== undefined)
+      allowed.habboUsername = req.body.habboUsername;
     const item = await storage.updateUser(targetId, allowed);
-    if (!item) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!item)
+      return res.status(404).json({ message: "Usuario no encontrado" });
     res.json({ ...item, passwordHash: undefined });
   });
 
   // Admin full update
   app.put("/api/users/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateUser(parseInt(req.params.id), req.body);
-    if (!item) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!item)
+      return res.status(404).json({ message: "Usuario no encontrado" });
     res.json({ ...item, passwordHash: undefined });
   });
 
@@ -1297,15 +1930,20 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const users = await storage.getAllUsers();
       const user = users.find(
-        (u: any) => u.habboUsername?.toLowerCase() === req.params.username.toLowerCase()
+        (u: any) =>
+          u.habboUsername?.toLowerCase() === req.params.username.toLowerCase(),
       );
       if (!user) return res.status(404).json({ message: "No encontrado" });
       res.json({ ...user, passwordHash: undefined });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ THEMES ============
-  app.get("/api/themes", async (_req, res) => { res.json(await storage.getAllThemes()); });
+  app.get("/api/themes", async (_req, res) => {
+    res.json(await storage.getAllThemes());
+  });
   app.get("/api/themes/active", async (_req, res) => {
     const theme = await storage.getActiveTheme();
     if (!theme) return res.status(404).json({ message: "Tema no encontrado" });
@@ -1328,7 +1966,9 @@ export async function registerRoutes(server: Server, app: Express) {
     if (!theme) return res.status(404).json({ message: "Tema no encontrado" });
     res.json(theme);
   });
-  app.post("/api/themes", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createTheme(req.body)); });
+  app.post("/api/themes", adminMiddleware, async (req, res) => {
+    res.status(201).json(await storage.createTheme(req.body));
+  });
 
   // ============ NOW PLAYING ============
   let nowPlayingCache: { data: any; timestamp: number } | null = null;
@@ -1337,42 +1977,91 @@ export async function registerRoutes(server: Server, app: Express) {
   app.get("/api/nowplaying", async (_req, res) => {
     try {
       const cfg = await storage.getConfig();
-      if (!cfg || !cfg.apiUrl) return res.status(400).json({ message: "Radio no configurada" });
-      
+      if (!cfg || !cfg.apiUrl)
+        return res.status(400).json({ message: "Radio no configurada" });
+
       const now = Date.now();
       let normalizedData: any = null;
 
       // 1. Check cache first (15-second cache TTL)
-      if (nowPlayingCache && (now - nowPlayingCache.timestamp < 15000)) {
+      if (nowPlayingCache && now - nowPlayingCache.timestamp < 15000) {
         normalizedData = nowPlayingCache.data;
       } else {
         let data: any = null;
         try {
-          const r = await fetch(cfg.apiUrl, { signal: AbortSignal.timeout(3000) });
+          const r = await fetch(cfg.apiUrl, {
+            signal: AbortSignal.timeout(3000),
+          });
           if (r.ok) {
             data = await r.json();
           }
         } catch (fetchErr) {
-          console.warn("Could not fetch radio api url, using fallback metadata:", fetchErr);
+          console.warn(
+            "Could not fetch radio api url, using fallback metadata:",
+            fetchErr,
+          );
         }
 
         if (data) {
           normalizedData = Array.isArray(data)
-            ? (data.find((s: any) => s.station?.shortcode === "runa_fm" || s.station?.id === 1) || data[0])
+            ? data.find(
+                (s: any) =>
+                  s.station?.shortcode === "runa_fm" || s.station?.id === 1,
+              ) || data[0]
             : data;
         }
 
         // If fetch failed or returned invalid data, use dynamic mock fallback
         if (!normalizedData) {
           const MOCK_PLAYLIST = [
-            { title: "La Gota Fría", artist: "Carlos Vives", album: "Clásicos de la Provincia", art: "https://images.habbo.com/c_images/album1584/ADM.gif" },
-            { title: "Gyal You A Party Animal", artist: "Charly Black", album: "Party Animal", art: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif" },
-            { title: "Only Girl In The World", artist: "Rihanna", album: "Loud", art: "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif" },
-            { title: "Ojos Marrones", artist: "Lasso", album: "Eva", art: "https://images.habbo.com/c_images/album1584/ADM.gif" },
-            { title: "El Merengue", artist: "Manuel Turizo & Marshmello", album: "2000", art: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif" },
-            { title: "Tití Me Preguntó", artist: "Bad Bunny", album: "Un Verano Sin Ti", art: "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif" },
-            { title: "Bailando", artist: "Enrique Iglesias", album: "Sex and Love", art: "https://images.habbo.com/c_images/album1584/ADM.gif" },
-            { title: "Provenza", artist: "Karol G", album: "Mañana Será Bonito", art: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif" }
+            {
+              title: "La Gota Fría",
+              artist: "Carlos Vives",
+              album: "Clásicos de la Provincia",
+              art: "https://images.habbo.com/c_images/album1584/ADM.gif",
+            },
+            {
+              title: "Gyal You A Party Animal",
+              artist: "Charly Black",
+              album: "Party Animal",
+              art: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif",
+            },
+            {
+              title: "Only Girl In The World",
+              artist: "Rihanna",
+              album: "Loud",
+              art: "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif",
+            },
+            {
+              title: "Ojos Marrones",
+              artist: "Lasso",
+              album: "Eva",
+              art: "https://images.habbo.com/c_images/album1584/ADM.gif",
+            },
+            {
+              title: "El Merengue",
+              artist: "Manuel Turizo & Marshmello",
+              album: "2000",
+              art: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif",
+            },
+            {
+              title: "Tití Me Preguntó",
+              artist: "Bad Bunny",
+              album: "Un Verano Sin Ti",
+              art: "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif",
+            },
+            {
+              title: "Bailando",
+              artist: "Enrique Iglesias",
+              album: "Sex and Love",
+              art: "https://images.habbo.com/c_images/album1584/ADM.gif",
+            },
+            {
+              title: "Provenza",
+              artist: "Karol G",
+              album: "Mañana Será Bonito",
+              art: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif",
+            },
           ];
           const currentMinute = new Date().getMinutes();
           const index = Math.floor(currentMinute / 3) % MOCK_PLAYLIST.length;
@@ -1382,40 +2071,42 @@ export async function registerRoutes(server: Server, app: Express) {
               id: 1,
               name: "Runa FM",
               shortcode: "runa_fm",
-              listen_url: cfg.listenUrl || "https://radio.kusmedios.lat/listen/runa-fm/radio.mp3"
+              listen_url:
+                cfg.listenUrl ||
+                "https://radio.kusmedios.lat/listen/runa-fm/radio.mp3",
             },
             now_playing: {
               song: {
                 title: currentSong.title,
                 artist: currentSong.artist,
                 album: currentSong.album,
-                art: currentSong.art
+                art: currentSong.art,
               },
-              duration: 180
+              duration: 180,
             },
             listeners: {
-              current: 12 + (new Date().getHours() * 2) % 45
+              current: 12 + ((new Date().getHours() * 2) % 45),
             },
             live: {
               is_live: false,
-              streamer_name: "AutoDJ"
+              streamer_name: "AutoDJ",
             },
             song_history: MOCK_PLAYLIST.slice(0, 5).map((song, i) => ({
               sh_id: 2000 + i,
-              played_at: Math.floor(Date.now() / 1000) - (i * 180),
+              played_at: Math.floor(Date.now() / 1000) - i * 180,
               duration: 180,
               song: {
                 title: song.title,
                 artist: song.artist,
-                art: song.art
-              }
-            }))
+                art: song.art,
+              },
+            })),
           };
         } else {
           // Cache successful fetches
           nowPlayingCache = {
             data: normalizedData,
-            timestamp: now
+            timestamp: now,
           };
         }
       }
@@ -1424,21 +2115,28 @@ export async function registerRoutes(server: Server, app: Express) {
       const np = normalizedData?.now_playing;
       const songInfo = np?.song;
       if (songInfo && songInfo.title && songInfo.artist) {
-        const hasSongChanged = !lastSavedSong || lastSavedSong.title !== songInfo.title || lastSavedSong.artist !== songInfo.artist;
+        const hasSongChanged =
+          !lastSavedSong ||
+          lastSavedSong.title !== songInfo.title ||
+          lastSavedSong.artist !== songInfo.artist;
         if (hasSongChanged) {
           const djPanel = await storage.getDjPanel().catch(() => null);
           const playedByDj = djPanel?.currentDj || "AutoDJ";
-          await storage.createSongHistory({
-            title: songInfo.title,
-            artist: songInfo.artist,
-            album: songInfo.album || null,
-            coverUrl: songInfo.art || null,
-            playedByDj,
-            durationSeconds: np.duration || null,
-            requestedBy: null,
-            playCount: 1
-          }).catch((err: any) => console.error("Error auto-saving song history:", err));
-          
+          await storage
+            .createSongHistory({
+              title: songInfo.title,
+              artist: songInfo.artist,
+              album: songInfo.album || null,
+              coverUrl: songInfo.art || null,
+              playedByDj,
+              durationSeconds: np.duration || null,
+              requestedBy: null,
+              playCount: 1,
+            })
+            .catch((err: any) =>
+              console.error("Error auto-saving song history:", err),
+            );
+
           lastSavedSong = { title: songInfo.title, artist: songInfo.artist };
         }
       }
@@ -1452,15 +2150,21 @@ export async function registerRoutes(server: Server, app: Express) {
 
   // ============ DJ PANEL ============
   app.get("/api/dj-panel", async (_req, res) => {
-    try { res.json(await storage.getDjPanel()); }
-    catch (e: any) { res.status(500).json({ message: e.message }); }
+    try {
+      res.json(await storage.getDjPanel());
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
   app.put("/api/dj-panel", djMiddleware, async (req, res) => {
     try {
       const panel = await storage.updateDjPanel(req.body);
-      if (!panel) return res.status(404).json({ message: "Panel no encontrado" });
+      if (!panel)
+        return res.status(404).json({ message: "Panel no encontrado" });
       res.json(panel);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ CHAT ============
@@ -1468,13 +2172,17 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       res.json(await storage.getChatMessages(limit));
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
   app.delete("/api/chat/:id", djMiddleware, async (req: any, res) => {
     try {
       await storage.deleteChatMessage(parseInt(req.params.id));
       res.json({ message: "Mensaje eliminado" });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
   app.post("/api/chat", authMiddleware, async (req: any, res) => {
     try {
@@ -1487,254 +2195,426 @@ export async function registerRoutes(server: Server, app: Express) {
         message: req.body.content || req.body.message,
       });
       res.status(201).json(msg);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ PRIVATE MESSAGES ============
   app.get("/api/messages", authMiddleware, async (req: any, res) => {
-    try { res.json(await storage.getMessagesByUser(req.userId)); }
-    catch (e: any) { res.status(500).json({ message: e.message }); }
+    try {
+      res.json(await storage.getMessagesByUser(req.userId));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
   app.get("/api/messages/unread", authMiddleware, async (req: any, res) => {
-    try { res.json({ count: await storage.getUnreadCount(req.userId) }); }
-    catch (e: any) { res.status(500).json({ message: e.message }); }
+    try {
+      res.json({ count: await storage.getUnreadCount(req.userId) });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
   app.post("/api/messages", authMiddleware, async (req: any, res) => {
-    try { res.status(201).json(await storage.createPrivateMessage({ ...req.body, fromUserId: req.userId })); }
-    catch (e: any) { res.status(500).json({ message: e.message }); }
+    try {
+      res
+        .status(201)
+        .json(
+          await storage.createPrivateMessage({
+            ...req.body,
+            fromUserId: req.userId,
+          }),
+        );
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
   app.put("/api/messages/:id/read", authMiddleware, async (req: any, res) => {
     try {
       const msg = await storage.markMessageRead(parseInt(req.params.id));
-      if (!msg) return res.status(404).json({ message: "Mensaje no encontrado" });
+      if (!msg)
+        return res.status(404).json({ message: "Mensaje no encontrado" });
       res.json(msg);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ VERIFIED BADGES ============
   app.get("/api/verified-badges/:userId", async (req, res) => {
-    try { res.json(await storage.getVerifiedBadges(parseInt(req.params.userId))); }
-    catch (e: any) { res.status(500).json({ message: e.message }); }
-  });
-  app.post("/api/verified-badges/verify", authMiddleware, async (req: any, res) => {
     try {
-      const { habboUsername, badgeCode, hotel } = req.body;
-      if (!habboUsername || !badgeCode) return res.status(400).json({ message: "habboUsername y badgeCode son requeridos" });
-      const safeHotel = hotel || "es";
-      const host = getHabboHost(safeHotel);
-      const r = await fetch(`${host}/api/public/users?name=${encodeURIComponent(habboUsername)}`, { headers: HABBO_HEADERS });
-      if (!r.ok) return res.status(404).json({ message: "Usuario de Habbo no encontrado" });
-      const habboData = await r.json() as any;
-      const hasBadge = (habboData.selectedBadges || []).some((b: any) => b.code === badgeCode || b.badgeIndex === badgeCode);
-      if (!hasBadge) return res.status(400).json({ message: "Badge no encontrado en el perfil de Habbo", verified: false });
-      const badge = await storage.createVerifiedBadge({ userId: req.userId, badgeCode });
-      res.status(201).json({ verified: true, badge });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+      res.json(await storage.getVerifiedBadges(parseInt(req.params.userId)));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
+  app.post(
+    "/api/verified-badges/verify",
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const { habboUsername, badgeCode, hotel } = req.body;
+        if (!habboUsername || !badgeCode)
+          return res
+            .status(400)
+            .json({ message: "habboUsername y badgeCode son requeridos" });
+        const safeHotel = hotel || "es";
+        const host = getHabboHost(safeHotel);
+        const r = await fetch(
+          `${host}/api/public/users?name=${encodeURIComponent(habboUsername)}`,
+          { headers: HABBO_HEADERS },
+        );
+        if (!r.ok)
+          return res
+            .status(404)
+            .json({ message: "Usuario de Habbo no encontrado" });
+        const habboData = (await r.json()) as any;
+        const hasBadge = (habboData.selectedBadges || []).some(
+          (b: any) => b.code === badgeCode || b.badgeIndex === badgeCode,
+        );
+        if (!hasBadge)
+          return res
+            .status(400)
+            .json({
+              message: "Badge no encontrado en el perfil de Habbo",
+              verified: false,
+            });
+        const badge = await storage.createVerifiedBadge({
+          userId: req.userId,
+          badgeCode,
+        });
+        res.status(201).json({ verified: true, badge });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
 
   // ============ TEAM USERS ============
   app.get("/api/team-users", async (_req, res) => {
     try {
       const users = await storage.getTeamUsers();
       res.json(users.map((u: any) => ({ ...u, passwordHash: undefined })));
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ SPEED POINTS ============
   app.put("/api/users/:id/points", djMiddleware, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const points = req.body.points !== undefined ? req.body.points : req.body.amount;
-      if (points === undefined || isNaN(Number(points))) return res.status(400).json({ message: "Campo 'points' o 'amount' requerido" });
+      const points =
+        req.body.points !== undefined ? req.body.points : req.body.amount;
+      if (points === undefined || isNaN(Number(points)))
+        return res
+          .status(400)
+          .json({ message: "Campo 'points' o 'amount' requerido" });
       const user = await storage.getUser(userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      const updated = await storage.updateUser(userId, { speedPoints: (user.speedPoints ?? 0) + Number(points) });
-      if (!updated) return res.status(404).json({ message: "Usuario no encontrado" });
+      if (!user)
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      const updated = await storage.updateUser(userId, {
+        speedPoints: (user.speedPoints ?? 0) + Number(points),
+      });
+      if (!updated)
+        return res.status(404).json({ message: "Usuario no encontrado" });
       res.json({ ...updated, passwordHash: undefined });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ MUNDIAL 2026 ENDPOINTS ============
-  app.post(["/api/mundial/buy-pack", "/api/futbol-hub/buy-pack"], authMiddleware, async (req: any, res) => {
-    try {
-      const user = await storage.getUser(req.userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      if ((user.speedPoints ?? 0) < 10) return res.status(400).json({ message: "SpeedPoints insuficientes (necesitas 10 SP)" });
-      
-      const ESTAMPAS = ["trofeo", "balon", "estadio", "botas"];
-      const randomStampId = ESTAMPAS[Math.floor(Math.random() * ESTAMPAS.length)];
-      
-      const currentStamps = user.mundialStamps || [];
-      const updatedStamps = currentStamps.includes(randomStampId) ? currentStamps : [...currentStamps, randomStampId];
-      
-      const updated = await storage.updateUser(req.userId, {
-        speedPoints: (user.speedPoints ?? 0) - 10,
-        mundialStamps: updatedStamps
-      });
-      res.json({ user: { ...updated, passwordHash: undefined }, stampId: randomStampId });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
-  });
+  app.post(
+    ["/api/mundial/buy-pack", "/api/futbol-hub/buy-pack"],
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const user = await storage.getUser(req.userId);
+        if (!user)
+          return res.status(404).json({ message: "Usuario no encontrado" });
+        if ((user.speedPoints ?? 0) < 10)
+          return res
+            .status(400)
+            .json({ message: "SpeedPoints insuficientes (necesitas 10 SP)" });
 
-  app.post(["/api/mundial/buy-stamp", "/api/futbol-hub/buy-stamp"], authMiddleware, async (req: any, res) => {
-    try {
-      const { stampId, cost } = req.body;
-      if (!stampId || cost === undefined) return res.status(400).json({ message: "stampId y cost son requeridos" });
-      
-      const user = await storage.getUser(req.userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      if ((user.speedPoints ?? 0) < cost) return res.status(400).json({ message: `SpeedPoints insuficientes (necesitas ${cost} SP)` });
-      
-      const currentStamps = user.mundialStamps || [];
-      if (currentStamps.includes(stampId)) return res.status(400).json({ message: "Ya posees esta estampa" });
-      
-      const updated = await storage.updateUser(req.userId, {
-        speedPoints: (user.speedPoints ?? 0) - cost,
-        mundialStamps: [...currentStamps, stampId]
-      });
-      res.json({ ...updated, passwordHash: undefined });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
-  });
+        const ESTAMPAS = ["trofeo", "balon", "estadio", "botas"];
+        const randomStampId =
+          ESTAMPAS[Math.floor(Math.random() * ESTAMPAS.length)];
 
-  app.post(["/api/mundial/claim-logro", "/api/futbol-hub/claim-logro"], authMiddleware, async (req: any, res) => {
-    try {
-      const { logroId } = req.body;
-      if (!logroId) return res.status(400).json({ message: "logroId es requerido" });
-      
-      const user = await storage.getUser(req.userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      
-      const currentLogros = user.mundialLogros || [];
-      if (currentLogros.includes(logroId)) return res.json({ ...user, passwordHash: undefined });
-      
-      const updated = await storage.updateUser(req.userId, {
-        mundialLogros: [...currentLogros, logroId]
-      });
-      res.json({ ...updated, passwordHash: undefined });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
-  });
+        const currentStamps = user.mundialStamps || [];
+        const updatedStamps = currentStamps.includes(randomStampId)
+          ? currentStamps
+          : [...currentStamps, randomStampId];
 
-  app.post(["/api/mundial/predict", "/api/futbol-hub/predict"], authMiddleware, async (req: any, res) => {
-    try {
-      const { matchId, t1, t2 } = req.body;
-      if (!matchId || t1 === undefined || t2 === undefined) return res.status(400).json({ message: "matchId, t1 y t2 son requeridos" });
-      
-      const user = await storage.getUser(req.userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      
-      const predictions = user.mundialPredictions || {};
-      predictions[matchId] = { t1: String(t1), t2: String(t2) };
-      
-      const currentLogros = user.mundialLogros || [];
-      const updatedLogros = currentLogros.includes("votante") ? currentLogros : [...currentLogros, "votante"];
-      
-      const updated = await storage.updateUser(req.userId, {
-        mundialPredictions: predictions,
-        mundialLogros: updatedLogros
-      });
-      res.json({ ...updated, passwordHash: undefined });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
-  });
-
-  app.post(["/api/mundial/join-clan", "/api/futbol-hub/join-clan"], authMiddleware, async (req: any, res) => {
-    try {
-      const { clanName } = req.body;
-      if (!clanName) return res.status(400).json({ message: "clanName es requerido" });
-      
-      const user = await storage.getUser(req.userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      
-      const updated = await storage.updateUser(req.userId, {
-        mundialClan: clanName
-      });
-      res.json({ ...updated, passwordHash: undefined });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
-  });
-
-  app.post(["/api/mundial/complete-mission", "/api/futbol-hub/complete-mission"], authMiddleware, async (req: any, res) => {
-    try {
-      const { missionId } = req.body;
-      if (!missionId) return res.status(400).json({ message: "missionId es requerido" });
-      
-      const user = await storage.getUser(req.userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      
-      const currentLogros = user.mundialLogros || [];
-      const missionLogroId = `mision_${missionId}`;
-      if (currentLogros.includes(missionLogroId)) {
-        return res.status(400).json({ message: "Misión ya completada anteriormente" });
+        const updated = await storage.updateUser(req.userId, {
+          speedPoints: (user.speedPoints ?? 0) - 10,
+          mundialStamps: updatedStamps,
+        });
+        res.json({
+          user: { ...updated, passwordHash: undefined },
+          stampId: randomStampId,
+        });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
       }
-      
-      const updatedLogros = [...currentLogros, missionLogroId];
-      if (!updatedLogros.includes("hincha")) {
-        updatedLogros.push("hincha");
-      }
-      
-      const updated = await storage.updateUser(req.userId, {
-        speedPoints: (user.speedPoints ?? 0) + 15,
-        mundialLogros: updatedLogros
-      });
-      res.json({ ...updated, passwordHash: undefined });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
-  });
+    },
+  );
 
-  app.post(["/api/mundial/buy-ticket", "/api/futbol-hub/buy-ticket"], authMiddleware, async (req: any, res) => {
-    try {
-      const user = await storage.getUser(req.userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      if ((user.speedPoints ?? 0) < 15) return res.status(400).json({ message: "SpeedPoints insuficientes (necesitas 15 SP)" });
-      
-      const updated = await storage.updateUser(req.userId, {
-        speedPoints: (user.speedPoints ?? 0) - 15,
-        mundialTickets: (user.mundialTickets ?? 0) + 1
-      });
-      res.json({ ...updated, passwordHash: undefined });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
-  });
+  app.post(
+    ["/api/mundial/buy-stamp", "/api/futbol-hub/buy-stamp"],
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const { stampId, cost } = req.body;
+        if (!stampId || cost === undefined)
+          return res
+            .status(400)
+            .json({ message: "stampId y cost son requeridos" });
 
-  app.post(["/api/mundial/penalty-result", "/api/futbol-hub/penalty-result"], authMiddleware, async (req: any, res) => {
-    try {
-      const { score } = req.body;
-      if (score === undefined || isNaN(Number(score))) return res.status(400).json({ message: "score es requerido" });
-      
-      const user = await storage.getUser(req.userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-      
-      const penalties = user.mundialPenalties || { maxScore: 0, totalGames: 0 };
-      const newMaxScore = Math.max(penalties.maxScore || 0, score);
-      const newTotalGames = (penalties.totalGames || 0) + 1;
-      
-      const currentLogros = user.mundialLogros || [];
-      const updatedLogros = [...currentLogros];
-      if (score >= 5 && !updatedLogros.includes("penales")) {
-        updatedLogros.push("penales");
+        const user = await storage.getUser(req.userId);
+        if (!user)
+          return res.status(404).json({ message: "Usuario no encontrado" });
+        if ((user.speedPoints ?? 0) < cost)
+          return res
+            .status(400)
+            .json({
+              message: `SpeedPoints insuficientes (necesitas ${cost} SP)`,
+            });
+
+        const currentStamps = user.mundialStamps || [];
+        if (currentStamps.includes(stampId))
+          return res.status(400).json({ message: "Ya posees esta estampa" });
+
+        const updated = await storage.updateUser(req.userId, {
+          speedPoints: (user.speedPoints ?? 0) - cost,
+          mundialStamps: [...currentStamps, stampId],
+        });
+        res.json({ ...updated, passwordHash: undefined });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
       }
-      
-      let reward = score * 2;
-      if (score >= 5) {
-        reward += 10;
+    },
+  );
+
+  app.post(
+    ["/api/mundial/claim-logro", "/api/futbol-hub/claim-logro"],
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const { logroId } = req.body;
+        if (!logroId)
+          return res.status(400).json({ message: "logroId es requerido" });
+
+        const user = await storage.getUser(req.userId);
+        if (!user)
+          return res.status(404).json({ message: "Usuario no encontrado" });
+
+        const currentLogros = user.mundialLogros || [];
+        if (currentLogros.includes(logroId))
+          return res.json({ ...user, passwordHash: undefined });
+
+        const updated = await storage.updateUser(req.userId, {
+          mundialLogros: [...currentLogros, logroId],
+        });
+        res.json({ ...updated, passwordHash: undefined });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
       }
-      
-      const updated = await storage.updateUser(req.userId, {
-        speedPoints: (user.speedPoints ?? 0) + reward,
-        mundialPenalties: { maxScore: newMaxScore, totalGames: newTotalGames },
-        mundialLogros: updatedLogros
-      });
-      res.json({ user: { ...updated, passwordHash: undefined }, reward });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
-  });
+    },
+  );
+
+  app.post(
+    ["/api/mundial/predict", "/api/futbol-hub/predict"],
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const { matchId, t1, t2 } = req.body;
+        if (!matchId || t1 === undefined || t2 === undefined)
+          return res
+            .status(400)
+            .json({ message: "matchId, t1 y t2 son requeridos" });
+
+        const user = await storage.getUser(req.userId);
+        if (!user)
+          return res.status(404).json({ message: "Usuario no encontrado" });
+
+        const predictions = user.mundialPredictions || {};
+        predictions[matchId] = { t1: String(t1), t2: String(t2) };
+
+        const currentLogros = user.mundialLogros || [];
+        const updatedLogros = currentLogros.includes("votante")
+          ? currentLogros
+          : [...currentLogros, "votante"];
+
+        const updated = await storage.updateUser(req.userId, {
+          mundialPredictions: predictions,
+          mundialLogros: updatedLogros,
+        });
+        res.json({ ...updated, passwordHash: undefined });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.post(
+    ["/api/mundial/join-clan", "/api/futbol-hub/join-clan"],
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const { clanName } = req.body;
+        if (!clanName)
+          return res.status(400).json({ message: "clanName es requerido" });
+
+        const user = await storage.getUser(req.userId);
+        if (!user)
+          return res.status(404).json({ message: "Usuario no encontrado" });
+
+        const updated = await storage.updateUser(req.userId, {
+          mundialClan: clanName,
+        });
+        res.json({ ...updated, passwordHash: undefined });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.post(
+    ["/api/mundial/complete-mission", "/api/futbol-hub/complete-mission"],
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const { missionId } = req.body;
+        if (!missionId)
+          return res.status(400).json({ message: "missionId es requerido" });
+
+        const user = await storage.getUser(req.userId);
+        if (!user)
+          return res.status(404).json({ message: "Usuario no encontrado" });
+
+        const currentLogros = user.mundialLogros || [];
+        const missionLogroId = `mision_${missionId}`;
+        if (currentLogros.includes(missionLogroId)) {
+          return res
+            .status(400)
+            .json({ message: "Misión ya completada anteriormente" });
+        }
+
+        const updatedLogros = [...currentLogros, missionLogroId];
+        if (!updatedLogros.includes("hincha")) {
+          updatedLogros.push("hincha");
+        }
+
+        const updated = await storage.updateUser(req.userId, {
+          speedPoints: (user.speedPoints ?? 0) + 15,
+          mundialLogros: updatedLogros,
+        });
+        res.json({ ...updated, passwordHash: undefined });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.post(
+    ["/api/mundial/buy-ticket", "/api/futbol-hub/buy-ticket"],
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const user = await storage.getUser(req.userId);
+        if (!user)
+          return res.status(404).json({ message: "Usuario no encontrado" });
+        if ((user.speedPoints ?? 0) < 15)
+          return res
+            .status(400)
+            .json({ message: "SpeedPoints insuficientes (necesitas 15 SP)" });
+
+        const updated = await storage.updateUser(req.userId, {
+          speedPoints: (user.speedPoints ?? 0) - 15,
+          mundialTickets: (user.mundialTickets ?? 0) + 1,
+        });
+        res.json({ ...updated, passwordHash: undefined });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.post(
+    ["/api/mundial/penalty-result", "/api/futbol-hub/penalty-result"],
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const { score } = req.body;
+        if (score === undefined || isNaN(Number(score)))
+          return res.status(400).json({ message: "score es requerido" });
+
+        const user = await storage.getUser(req.userId);
+        if (!user)
+          return res.status(404).json({ message: "Usuario no encontrado" });
+
+        const penalties = user.mundialPenalties || {
+          maxScore: 0,
+          totalGames: 0,
+        };
+        const newMaxScore = Math.max(penalties.maxScore || 0, score);
+        const newTotalGames = (penalties.totalGames || 0) + 1;
+
+        const currentLogros = user.mundialLogros || [];
+        const updatedLogros = [...currentLogros];
+        if (score >= 5 && !updatedLogros.includes("penales")) {
+          updatedLogros.push("penales");
+        }
+
+        let reward = score * 2;
+        if (score >= 5) {
+          reward += 10;
+        }
+
+        const updated = await storage.updateUser(req.userId, {
+          speedPoints: (user.speedPoints ?? 0) + reward,
+          mundialPenalties: {
+            maxScore: newMaxScore,
+            totalGames: newTotalGames,
+          },
+          mundialLogros: updatedLogros,
+        });
+        res.json({ user: { ...updated, passwordHash: undefined }, reward });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
 
   // ============ DOWNLOADS ============
-  app.get("/api/downloads", async (_req, res) => { res.json(await storage.getAllDownloads()); });
+  app.get("/api/downloads", async (_req, res) => {
+    res.json(await storage.getAllDownloads());
+  });
   app.post("/api/downloads", adminMiddleware, async (req: any, res) => {
     try {
-      const item = await storage.createDownload({ ...req.body, addedBy: req.user?.displayName || "Admin" });
-      await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Descarga creada", details: req.body.title });
+      const item = await storage.createDownload({
+        ...req.body,
+        addedBy: req.user?.displayName || "Admin",
+      });
+      await storage.createPanelLog({
+        userName: req.user?.displayName || "Sistema",
+        action: "Descarga creada",
+        details: req.body.title,
+      });
       res.status(201).json(item);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
   app.delete("/api/downloads/:id", adminMiddleware, async (req: any, res) => {
     await storage.deleteDownload(parseInt(req.params.id));
-    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Descarga eliminada", details: `ID: ${req.params.id}` });
+    await storage.createPanelLog({
+      userName: req.user?.displayName || "Sistema",
+      action: "Descarga eliminada",
+      details: `ID: ${req.params.id}`,
+    });
     res.json({ message: "Eliminada" });
   });
   app.put("/api/downloads/:id/count", async (req, res) => {
@@ -1743,36 +2623,77 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ BANNED SONGS ============
-  app.get("/api/banned-songs", djMiddleware, async (_req, res) => { res.json(await storage.getAllBannedSongs()); });
+  app.get("/api/banned-songs", djMiddleware, async (_req, res) => {
+    res.json(await storage.getAllBannedSongs());
+  });
   app.post("/api/banned-songs", djMiddleware, async (req: any, res) => {
     try {
-      const song = await storage.createBannedSong({ ...req.body, bannedBy: req.user?.displayName || "Staff" });
-      await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Canción baneada", details: `${req.body.title} - ${req.body.artist || ""}` });
+      const song = await storage.createBannedSong({
+        ...req.body,
+        bannedBy: req.user?.displayName || "Staff",
+      });
+      await storage.createPanelLog({
+        userName: req.user?.displayName || "Sistema",
+        action: "Canción baneada",
+        details: `${req.body.title} - ${req.body.artist || ""}`,
+      });
       res.status(201).json(song);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
   app.delete("/api/banned-songs/:id", djMiddleware, async (req: any, res) => {
     await storage.deleteBannedSong(parseInt(req.params.id));
-    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Canción desbaneada", details: `ID: ${req.params.id}` });
+    await storage.createPanelLog({
+      userName: req.user?.displayName || "Sistema",
+      action: "Canción desbaneada",
+      details: `ID: ${req.params.id}`,
+    });
     res.json({ message: "Desbaneada" });
   });
 
   // ============ CONTACT MESSAGES ============
-  app.get("/api/contact-messages", adminMiddleware, async (_req, res) => { res.json(await storage.getAllContactMessages()); });
+  app.get("/api/contact-messages", adminMiddleware, async (_req, res) => {
+    res.json(await storage.getAllContactMessages());
+  });
   app.post("/api/contact-messages", async (req, res) => {
-    try { res.status(201).json(await storage.createContactMessage({ ...req.body, ip: req.ip })); }
-    catch (e: any) { res.status(500).json({ message: e.message }); }
+    try {
+      res
+        .status(201)
+        .json(await storage.createContactMessage({ ...req.body, ip: req.ip }));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
-  app.put("/api/contact-messages/:id/status", adminMiddleware, async (req: any, res) => {
-    const updated = await storage.updateContactMessageStatus(parseInt(req.params.id), req.body.status);
-    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Contacto actualizado", details: `ID: ${req.params.id} → ${req.body.status}` });
-    res.json(updated);
-  });
-  app.delete("/api/contact-messages/:id", adminMiddleware, async (req: any, res) => {
-    await storage.deleteContactMessage(parseInt(req.params.id));
-    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Contacto eliminado", details: `ID: ${req.params.id}` });
-    res.json({ message: "Eliminado" });
-  });
+  app.put(
+    "/api/contact-messages/:id/status",
+    adminMiddleware,
+    async (req: any, res) => {
+      const updated = await storage.updateContactMessageStatus(
+        parseInt(req.params.id),
+        req.body.status,
+      );
+      await storage.createPanelLog({
+        userName: req.user?.displayName || "Sistema",
+        action: "Contacto actualizado",
+        details: `ID: ${req.params.id} → ${req.body.status}`,
+      });
+      res.json(updated);
+    },
+  );
+  app.delete(
+    "/api/contact-messages/:id",
+    adminMiddleware,
+    async (req: any, res) => {
+      await storage.deleteContactMessage(parseInt(req.params.id));
+      await storage.createPanelLog({
+        userName: req.user?.displayName || "Sistema",
+        action: "Contacto eliminado",
+        details: `ID: ${req.params.id}`,
+      });
+      res.json({ message: "Eliminado" });
+    },
+  );
 
   // ============ PANEL LOGS ============
   app.get("/api/panel-logs", adminMiddleware, async (req, res) => {
@@ -1781,20 +2702,44 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // ============ REPORTED MESSAGES ============
-  app.get("/api/reported-messages", adminMiddleware, async (_req, res) => { res.json(await storage.getAllReportedMessages()); });
+  app.get("/api/reported-messages", adminMiddleware, async (_req, res) => {
+    res.json(await storage.getAllReportedMessages());
+  });
   app.post("/api/reported-messages", authMiddleware, async (req: any, res) => {
-    try { res.status(201).json(await storage.createReport({ ...req.body, reportedBy: req.userId })); }
-    catch (e: any) { res.status(500).json({ message: e.message }); }
+    try {
+      res
+        .status(201)
+        .json(
+          await storage.createReport({ ...req.body, reportedBy: req.userId }),
+        );
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
-  app.put("/api/reported-messages/:id/status", adminMiddleware, async (req: any, res) => {
-    const updated = await storage.updateReportStatus(parseInt(req.params.id), req.body.status);
-    await storage.createPanelLog({ userName: req.user?.displayName || "Sistema", action: "Reporte actualizado", details: `ID: ${req.params.id} → ${req.body.status}` });
-    res.json(updated);
-  });
-  app.delete("/api/reported-messages/:id", adminMiddleware, async (req: any, res) => {
-    await storage.deleteReport(parseInt(req.params.id));
-    res.json({ message: "Eliminado" });
-  });
+  app.put(
+    "/api/reported-messages/:id/status",
+    adminMiddleware,
+    async (req: any, res) => {
+      const updated = await storage.updateReportStatus(
+        parseInt(req.params.id),
+        req.body.status,
+      );
+      await storage.createPanelLog({
+        userName: req.user?.displayName || "Sistema",
+        action: "Reporte actualizado",
+        details: `ID: ${req.params.id} → ${req.body.status}`,
+      });
+      res.json(updated);
+    },
+  );
+  app.delete(
+    "/api/reported-messages/:id",
+    adminMiddleware,
+    async (req: any, res) => {
+      await storage.deleteReport(parseInt(req.params.id));
+      res.json({ message: "Eliminado" });
+    },
+  );
 
   // ============ SHOP / STORE ============
   app.get("/api/shop/products", async (req, res) => {
@@ -1803,15 +2748,20 @@ export async function registerRoutes(server: Server, app: Express) {
   });
   app.get("/api/shop/products/:id", async (req, res) => {
     const product = await storage.getShopProductById(parseInt(req.params.id));
-    if (!product) return res.status(404).json({ message: "Producto no encontrado" });
+    if (!product)
+      return res.status(404).json({ message: "Producto no encontrado" });
     res.json(product);
   });
   app.post("/api/shop/products", adminMiddleware, async (req: any, res) => {
     res.status(201).json(await storage.createShopProduct(req.body));
   });
   app.put("/api/shop/products/:id", adminMiddleware, async (req, res) => {
-    const product = await storage.updateShopProduct(parseInt(req.params.id), req.body);
-    if (!product) return res.status(404).json({ message: "Producto no encontrado" });
+    const product = await storage.updateShopProduct(
+      parseInt(req.params.id),
+      req.body,
+    );
+    if (!product)
+      return res.status(404).json({ message: "Producto no encontrado" });
     res.json(product);
   });
   app.delete("/api/shop/products/:id", adminMiddleware, async (req, res) => {
@@ -1826,7 +2776,8 @@ export async function registerRoutes(server: Server, app: Express) {
   app.post("/api/inventory/purchase", authMiddleware, async (req: any, res) => {
     try {
       const { productId } = req.body;
-      if (!productId) return res.status(400).json({ message: "productId requerido" });
+      if (!productId)
+        return res.status(400).json({ message: "productId requerido" });
       const item = await storage.purchaseProduct(req.userId, productId);
       // Create notification
       await storage.createNotification({
@@ -1841,37 +2792,58 @@ export async function registerRoutes(server: Server, app: Express) {
       res.status(400).json({ message: e.message });
     }
   });
-  app.post("/api/inventory/:id/toggle", authMiddleware, async (req: any, res) => {
-    try {
-      const item = await storage.toggleEquipItem(req.userId, parseInt(req.params.id));
-      res.json(item);
-    } catch (e: any) {
-      res.status(400).json({ message: e.message });
-    }
-  });
+  app.post(
+    "/api/inventory/:id/toggle",
+    authMiddleware,
+    async (req: any, res) => {
+      try {
+        const item = await storage.toggleEquipItem(
+          req.userId,
+          parseInt(req.params.id),
+        );
+        res.json(item);
+      } catch (e: any) {
+        res.status(400).json({ message: e.message });
+      }
+    },
+  );
 
   // ============ NOTIFICATIONS ============
   app.get("/api/notifications", authMiddleware, async (req: any, res) => {
     const limit = parseInt(req.query.limit as string) || 50;
     res.json(await storage.getUserNotifications(req.userId, limit));
   });
-  app.get("/api/notifications/unread-count", authMiddleware, async (req: any, res) => {
-    res.json({ count: await storage.getUnreadNotificationCount(req.userId) });
-  });
-  app.put("/api/notifications/:id/read", authMiddleware, async (req: any, res) => {
-    const notif = await storage.markNotificationRead(parseInt(req.params.id));
-    if (!notif) return res.status(404).json({ message: "Notificación no encontrada" });
-    res.json(notif);
-  });
-  app.put("/api/notifications/read-all", authMiddleware, async (req: any, res) => {
-    await storage.markAllNotificationsRead(req.userId);
-    res.json({ message: "Todas las notificaciones marcadas como leídas" });
-  });
+  app.get(
+    "/api/notifications/unread-count",
+    authMiddleware,
+    async (req: any, res) => {
+      res.json({ count: await storage.getUnreadNotificationCount(req.userId) });
+    },
+  );
+  app.put(
+    "/api/notifications/:id/read",
+    authMiddleware,
+    async (req: any, res) => {
+      const notif = await storage.markNotificationRead(parseInt(req.params.id));
+      if (!notif)
+        return res.status(404).json({ message: "Notificación no encontrada" });
+      res.json(notif);
+    },
+  );
+  app.put(
+    "/api/notifications/read-all",
+    authMiddleware,
+    async (req: any, res) => {
+      await storage.markAllNotificationsRead(req.userId);
+      res.json({ message: "Todas las notificaciones marcadas como leídas" });
+    },
+  );
 
   // ============ USER PROFILES ============
   app.get("/api/profiles/:userId", async (req, res) => {
     const profile = await storage.getUserProfile(parseInt(req.params.userId));
-    if (!profile) return res.status(404).json({ message: "Perfil no encontrado" });
+    if (!profile)
+      return res.status(404).json({ message: "Perfil no encontrado" });
     res.json(profile);
   });
   app.put("/api/profiles", authMiddleware, async (req: any, res) => {
@@ -1884,20 +2856,26 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
       res.json(await storage.getSongHistory(limit));
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.get("/api/song-history/top", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       res.json(await storage.getMostPlayedSongs(limit));
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.post("/api/song-history", djMiddleware, async (req, res) => {
     try {
       res.status(201).json(await storage.createSongHistory(req.body));
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ VIP MEMBERSHIPS ============
@@ -1905,25 +2883,41 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const vip = await storage.getVipMembership(req.userId);
       res.json(vip || { isActive: false });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.post("/api/vip/subscribe", authMiddleware, async (req: any, res) => {
     try {
       const { tier, months, paymentRef } = req.body;
-      if (!tier || !months) return res.status(400).json({ message: "Nivel (tier) y meses son requeridos" });
-      
-      const costs: { [key: string]: number } = { silver: 100, gold: 200, diamond: 400 };
+      if (!tier || !months)
+        return res
+          .status(400)
+          .json({ message: "Nivel (tier) y meses son requeridos" });
+
+      const costs: { [key: string]: number } = {
+        silver: 100,
+        gold: 200,
+        diamond: 400,
+      };
       const costPerMonth = costs[tier.toLowerCase()] || 100;
       const totalCost = costPerMonth * parseInt(months);
 
       const user = await storage.getUser(req.userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+      if (!user)
+        return res.status(404).json({ message: "Usuario no encontrado" });
       if (user.speedPoints < totalCost) {
-        return res.status(400).json({ message: `No tienes suficientes SpeedPoints. Necesitas ${totalCost} SP y tienes ${user.speedPoints} SP.` });
+        return res
+          .status(400)
+          .json({
+            message: `No tienes suficientes SpeedPoints. Necesitas ${totalCost} SP y tienes ${user.speedPoints} SP.`,
+          });
       }
 
-      await storage.updateUser(req.userId, { speedPoints: user.speedPoints - totalCost });
+      await storage.updateUser(req.userId, {
+        speedPoints: user.speedPoints - totalCost,
+      });
 
       const expiresAt = new Date();
       expiresAt.setMonth(expiresAt.getMonth() + parseInt(months));
@@ -1933,7 +2927,7 @@ export async function registerRoutes(server: Server, app: Express) {
         tier: tier.toLowerCase(),
         expiresAt,
         paymentRef: paymentRef || `SP_PURCHASE_${Date.now()}`,
-        isActive: true
+        isActive: true,
       });
 
       await storage.createNotification({
@@ -1943,34 +2937,44 @@ export async function registerRoutes(server: Server, app: Express) {
         message: `Felicidades, ahora eres miembro VIP ${tier.toUpperCase()} por ${months} mes(es).`,
         icon: "crown",
         link: "/vip",
-        isRead: false
+        isRead: false,
       });
 
       res.status(201).json(vip);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.post("/api/vip/perks/log", authMiddleware, async (req: any, res) => {
     try {
       const { perkUsed } = req.body;
-      if (!perkUsed) return res.status(400).json({ message: "Perk name is required" });
+      if (!perkUsed)
+        return res.status(400).json({ message: "Perk name is required" });
       res.status(201).json(await storage.logVipPerkUse(req.userId, perkUsed));
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.get("/api/vip/admin/all", adminMiddleware, async (_req, res) => {
     try {
       res.json(await storage.getAllVipMemberships());
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.put("/api/vip/admin/:userId", adminMiddleware, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
       const vip = await storage.updateVipMembership(userId, req.body);
-      if (!vip) return res.status(404).json({ message: "Membresía VIP no encontrada" });
+      if (!vip)
+        return res.status(404).json({ message: "Membresía VIP no encontrada" });
       res.json(vip);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ HSPEED ROOMS ============
@@ -1978,19 +2982,25 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const includeInactive = req.query.includeInactive === "true";
       res.json(await storage.getAllRooms(includeInactive));
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.get("/api/rooms/featured", async (_req, res) => {
     try {
       res.json(await storage.getFeaturedRooms());
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.post("/api/rooms", adminMiddleware, async (req, res) => {
     try {
       res.status(201).json(await storage.createRoom(req.body));
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.put("/api/rooms/:id", adminMiddleware, async (req, res) => {
@@ -1998,35 +3008,46 @@ export async function registerRoutes(server: Server, app: Express) {
       const room = await storage.updateRoom(parseInt(req.params.id), req.body);
       if (!room) return res.status(404).json({ message: "Sala no encontrada" });
       res.json(room);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.delete("/api/rooms/:id", adminMiddleware, async (req, res) => {
     try {
       const success = await storage.deleteRoom(parseInt(req.params.id));
-      if (!success) return res.status(404).json({ message: "Sala no encontrada" });
+      if (!success)
+        return res.status(404).json({ message: "Sala no encontrada" });
       res.json({ message: "Sala eliminada con éxito" });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ SUPPORT TICKETS ============
   app.get("/api/tickets", authMiddleware, async (req: any, res) => {
     try {
       res.json(await storage.getTicketsByUser(req.userId));
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.get("/api/tickets/all", adminMiddleware, async (_req, res) => {
     try {
       res.json(await storage.getAllTickets());
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.post("/api/tickets", authMiddleware, async (req: any, res) => {
     try {
       const { subject, description, category } = req.body;
       if (!subject || !description) {
-        return res.status(400).json({ message: "Asunto y descripción son obligatorios" });
+        return res
+          .status(400)
+          .json({ message: "Asunto y descripción son obligatorios" });
       }
       const ticket = await storage.createTicket({
         userId: req.userId,
@@ -2036,81 +3057,136 @@ export async function registerRoutes(server: Server, app: Express) {
         category: category || "general",
       });
       res.status(201).json(ticket);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.put("/api/tickets/:id/status", adminMiddleware, async (req, res) => {
     try {
       const { status } = req.body;
-      if (!status) return res.status(400).json({ message: "Estado obligatorio" });
-      const ticket = await storage.updateTicketStatus(parseInt(req.params.id), status);
-      if (!ticket) return res.status(404).json({ message: "Ticket no encontrado" });
+      if (!status)
+        return res.status(400).json({ message: "Estado obligatorio" });
+      const ticket = await storage.updateTicketStatus(
+        parseInt(req.params.id),
+        status,
+      );
+      if (!ticket)
+        return res.status(404).json({ message: "Ticket no encontrado" });
       res.json(ticket);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ ALLIANCES ============
   app.get("/api/alliances", async (_req, res) => {
     try {
       res.json(await storage.getAllAlliances());
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.post("/api/alliances", adminMiddleware, async (req: any, res) => {
     try {
       const alliance = await storage.createAlliance(req.body);
       res.status(201).json(alliance);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.put("/api/alliances/:id", adminMiddleware, async (req, res) => {
     try {
-      const alliance = await storage.updateAlliance(parseInt(req.params.id), req.body);
-      if (!alliance) return res.status(404).json({ message: "Alianza no encontrada" });
+      const alliance = await storage.updateAlliance(
+        parseInt(req.params.id),
+        req.body,
+      );
+      if (!alliance)
+        return res.status(404).json({ message: "Alianza no encontrada" });
       res.json(alliance);
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.delete("/api/alliances/:id", adminMiddleware, async (req, res) => {
     try {
       const success = await storage.deleteAlliance(parseInt(req.params.id));
-      if (!success) return res.status(404).json({ message: "Alianza no encontrada" });
+      if (!success)
+        return res.status(404).json({ message: "Alianza no encontrada" });
       res.json({ message: "Alianza eliminada" });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   // ============ RANKINGS ============
   app.get("/api/rankings", async (_req, res) => {
     try {
       const allUsers = await storage.getAllUsers();
-      const approved = allUsers.filter((u: any) => u.approved && u.role !== "pending");
+      const approved = allUsers.filter(
+        (u: any) => u.approved && u.role !== "pending",
+      );
 
       // Top Oyentes (más peticiones de canciones)
       const topListeners = [...approved]
-        .sort((a: any, b: any) => (b.totalRequests || 0) - (a.totalRequests || 0))
+        .sort(
+          (a: any, b: any) => (b.totalRequests || 0) - (a.totalRequests || 0),
+        )
         .slice(0, 5)
-        .map((u: any) => ({ id: u.id, displayName: u.displayName, habboUsername: u.habboUsername, avatarUrl: u.avatarUrl, value: u.totalRequests || 0 }));
+        .map((u: any) => ({
+          id: u.id,
+          displayName: u.displayName,
+          habboUsername: u.habboUsername,
+          avatarUrl: u.avatarUrl,
+          value: u.totalRequests || 0,
+        }));
 
       // Top SpeedPoints
       const topPoints = [...approved]
         .sort((a: any, b: any) => (b.speedPoints || 0) - (a.speedPoints || 0))
         .slice(0, 5)
-        .map((u: any) => ({ id: u.id, displayName: u.displayName, habboUsername: u.habboUsername, avatarUrl: u.avatarUrl, value: u.speedPoints || 0 }));
+        .map((u: any) => ({
+          id: u.id,
+          displayName: u.displayName,
+          habboUsername: u.habboUsername,
+          avatarUrl: u.avatarUrl,
+          value: u.speedPoints || 0,
+        }));
 
       // Top DJs
-      const djs = approved.filter((u: any) => u.role === "dj" || u.role === "admin");
+      const djs = approved.filter(
+        (u: any) => u.role === "dj" || u.role === "admin",
+      );
       const topDJs = [...djs]
         .sort((a: any, b: any) => (b.speedPoints || 0) - (a.speedPoints || 0))
         .slice(0, 5)
-        .map((u: any) => ({ id: u.id, displayName: u.displayName, habboUsername: u.habboUsername, avatarUrl: u.avatarUrl, value: u.speedPoints || 0, role: u.role }));
+        .map((u: any) => ({
+          id: u.id,
+          displayName: u.displayName,
+          habboUsername: u.habboUsername,
+          avatarUrl: u.avatarUrl,
+          value: u.speedPoints || 0,
+          role: u.role,
+        }));
 
       // Staff team
       const staff = approved
         .filter((u: any) => u.role === "admin" || u.role === "dj")
         .slice(0, 5)
-        .map((u: any) => ({ id: u.id, displayName: u.displayName, habboUsername: u.habboUsername, avatarUrl: u.avatarUrl, role: u.role }));
+        .map((u: any) => ({
+          id: u.id,
+          displayName: u.displayName,
+          habboUsername: u.habboUsername,
+          avatarUrl: u.avatarUrl,
+          role: u.role,
+        }));
 
       res.json({ topListeners, topPoints, topDJs, staff });
-    } catch (e: any) { res.status(500).json({ message: e.message }); }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 }
