@@ -28,9 +28,18 @@ services:
       # Sobreescribe con tu DATABASE_URL de Supabase en un archivo .env si no usas el postgres local
       DATABASE_URL: ${DATABASE_URL:-postgres://hspeed:hspeed@db:5432/hspeed}
       JWT_SECRET: ${JWT_SECRET:-habbospeed_secret_key_2026}
+      # El Postgres local del contenedor "db" no tiene SSL habilitado. Si usas
+      # DATABASE_URL de Supabase/Neon en tu .env, quita o pon PGSSL en true.
+      PGSSL: ${PGSSL:-false}
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:5000/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
     # Migra/seedea y luego arranca el server
     command: ["sh", "-c", "node docker/migrate-and-seed.cjs && node dist/index.cjs"]
 

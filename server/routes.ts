@@ -47,6 +47,23 @@ function djMiddleware(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(server: Server, app: Express) {
+  // Health check: usado por Docker HEALTHCHECK, balanceadores y monitoreo externo.
+  // No depende de la base de datos para que el contenedor no se marque "unhealthy"
+  // solo porque la DB tarda en levantar; reporta su estado por separado.
+  app.get("/api/health", async (_req, res) => {
+    let dbStatus: "up" | "down" | "disabled" = "disabled";
+    try {
+      const { pool } = await import("./db");
+      if (pool) {
+        await pool.query("SELECT 1");
+        dbStatus = "up";
+      }
+    } catch {
+      dbStatus = "down";
+    }
+    res.status(200).json({ status: "ok", db: dbStatus, uptime: process.uptime() });
+  });
+
   // If DB pool is available, ensure minimal users table exists so seeding works on Neon
   (async () => {
     try {

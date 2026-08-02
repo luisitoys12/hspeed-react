@@ -1,8 +1,12 @@
 const { Pool } = require('pg');
 try { require('dotenv').config(); } catch (_) { /* dotenv es opcional */ }
 
+// Igual criterio que server/db.ts: SSL activado por defecto (Neon/Supabase),
+// desactivado explícitamente con PGSSL=false (Postgres local de docker-compose).
+const sslDisabled = process.env.PGSSL === 'false';
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: sslDisabled ? false : { rejectUnauthorized: false },
 });
 
 async function runMigrations() {
