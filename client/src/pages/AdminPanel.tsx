@@ -444,11 +444,30 @@ function ConfigAdmin() {
         <div><Label className="text-xs text-muted-foreground mb-1.5 block">Servicio de Radio</Label>
           <Select value={form.radioService} onValueChange={v => setForm(p => ({ ...p, radioService: v }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="azuracast">AzuraCast</SelectItem><SelectItem value="shoutcast">SHOUTcast</SelectItem><SelectItem value="icecast">Icecast</SelectItem></SelectContent>
+            <SelectContent><SelectItem value="azuracast">AzuraCast</SelectItem><SelectItem value="zenofm">ZenoFM</SelectItem><SelectItem value="shoutcast">SHOUTcast</SelectItem><SelectItem value="icecast">Icecast</SelectItem></SelectContent>
           </Select>
         </div>
-        <div><Label className="text-xs text-muted-foreground mb-1.5 block">URL API Now Playing</Label><Input placeholder="https://radio.example.com/api/nowplaying/station" value={form.apiUrl} onChange={e => setForm(p => ({ ...p, apiUrl: e.target.value }))} data-testid="input-config-api-url" /></div>
-        <div><Label className="text-xs text-muted-foreground mb-1.5 block">URL Stream</Label><Input placeholder="https://radio.example.com/listen/station/radio.mp3" value={form.listenUrl} onChange={e => setForm(p => ({ ...p, listenUrl: e.target.value }))} data-testid="input-config-listen-url" /></div>
+        {form.radioService === "zenofm" ? (
+          <>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">URL Metadata (SSE) de ZenoFM</Label>
+              <Input placeholder="https://api.zeno.fm/mounts/metadata/subscribe/tu_mount_id" value={form.apiUrl} onChange={e => setForm(p => ({ ...p, apiUrl: e.target.value }))} data-testid="input-config-api-url" />
+              <p className="text-[10px] text-muted-foreground mt-1">La encuentras en Zeno Tools → Broadcast Settings. Usa el mount point sin el sufijo "/source".</p>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">URL Stream (audio)</Label>
+              <Input placeholder="https://stream.zeno.fm/tu_mount_id" value={form.listenUrl} onChange={e => setForm(p => ({ ...p, listenUrl: e.target.value }))} data-testid="input-config-listen-url" />
+            </div>
+            <p className="text-[10px] text-muted-foreground bg-secondary/40 rounded-lg p-2">
+              ZenoFM no reporta el nombre del locutor en vivo. El avatar y nombre que se muestran en el reproductor son los del DJ registrado en el Panel DJ.
+            </p>
+          </>
+        ) : (
+          <>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">URL API Now Playing</Label><Input placeholder="https://radio.example.com/api/nowplaying/station" value={form.apiUrl} onChange={e => setForm(p => ({ ...p, apiUrl: e.target.value }))} data-testid="input-config-api-url" /></div>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">URL Stream</Label><Input placeholder="https://radio.example.com/listen/station/radio.mp3" value={form.listenUrl} onChange={e => setForm(p => ({ ...p, listenUrl: e.target.value }))} data-testid="input-config-listen-url" /></div>
+          </>
+        )}
         <Button className="bg-primary hover:bg-primary/80 text-white text-xs" onClick={() => updateMutation.mutate(form)} disabled={updateMutation.isPending} data-testid="button-save-config">Guardar Configuración</Button>
       </div>
     </div>

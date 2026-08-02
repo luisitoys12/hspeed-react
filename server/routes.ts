@@ -1357,6 +1357,103 @@ export async function registerRoutes(server: Server, app: Express) {
   });
   app.post("/api/themes", adminMiddleware, async (req, res) => { res.status(201).json(await storage.createTheme(req.body)); });
 
+  // ============ ZENOFM (SSE metadata) ============
+  // ZenoFM no ofrece un endpoint JSON pollable: publica el "now playing" vía
+  // Server-Sent Events en /mounts/metadata/subscribe/<mount>. Mantenemos una
+  // única conexión persistente en memoria y la normalizamos a la forma que
+  // ya espera el frontend (misma forma que usa AzuraCast).
+  const zenoState: {
+    title: string | null;
+    artist: string | null;
+    history: { title: string; artist: string }[];
+    connected: boolean;
+    lastUpdate: number;
+  } = { title: null, artist: null, history: [], connected: false, lastUpdate: 0 };
+  let zenoActiveUrl: string | null = null;
+  let zenoConnecting = false;
+
+  function parseZenoStreamTitle(raw: string): { title: string; artist: string } {
+    const cleaned = (raw || "").trim();
+    const sepMatch = cleaned.split(/\s+-\s+|\s+–\s+/);
+    if (sepMatch.length >= 2) {
+      const [artist, ...rest] = sepMatch;
+      return { artist: artist.trim(), title: rest.join(" - ").trim() };
+    }
+    return { artist: "", title: cleaned };
+  }
+
+  function connectZenoSSE(metadataUrl: string) {
+    if (zenoConnecting || zenoActiveUrl === metadataUrl) return;
+    zenoActiveUrl = metadataUrl;
+    zenoConnecting = true;
+
+    (async () => {
+      try {
+        const res = await fetch(metadataUrl, { headers: { Accept: "text/event-stream" } });
+        if (!res.ok || !res.body) throw new Error(`ZenoFM SSE HTTP ${res.status}`);
+        zenoState.connected = true;
+        console.log("[ZenoFM] Conectado a metadata SSE:", metadataUrl);
+
+        const reader = (res.body as any).getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith("data:")) continue;
+            const payload = trimmed.slice(5).trim();
+            if (!payload) continue;
+
+            try {
+              const json = JSON.parse(payload);
+              const rawTitle: string =
+                json.streamTitle || json.StreamTitle || json.title || json.song || json.currentSong || "";
+              let artist: string = json.artist || "";
+              let title: string = json.songTitle || "";
+
+              if (!title || !artist) {
+                const parsed = parseZenoStreamTitle(rawTitle);
+                if (!artist) artist = parsed.artist;
+                if (!title) title = parsed.title || rawTitle;
+              }
+
+              if (title && (title !== zenoState.title || artist !== zenoState.artist)) {
+                if (zenoState.title) {
+                  zenoState.history.unshift({ title: zenoState.title, artist: zenoState.artist || "" });
+                  zenoState.history = zenoState.history.slice(0, 5);
+                }
+                zenoState.title = title;
+                zenoState.artist = artist;
+                zenoState.lastUpdate = Date.now();
+              }
+            } catch {
+              // Payload no-JSON (comentario SSE, keep-alive, etc.) - se ignora
+            }
+          }
+        }
+      } catch (err: any) {
+        console.warn("[ZenoFM] Error de conexión SSE, reintentando en 5s:", err?.message || err);
+      } finally {
+        zenoState.connected = false;
+        zenoConnecting = false;
+        setTimeout(() => {
+          // Solo reconecta si esta sigue siendo la URL activa (no cambiaron de servicio/estación)
+          if (zenoActiveUrl === metadataUrl) {
+            zenoActiveUrl = null;
+            connectZenoSSE(metadataUrl);
+          }
+        }, 5000);
+      }
+    })();
+  }
+
   // ============ NOW PLAYING ============
   let nowPlayingCache: { data: any; timestamp: number } | null = null;
   let lastSavedSong: { title: string; artist: string } | null = null;
@@ -1365,9 +1462,63 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const cfg = await storage.getConfig();
       if (!cfg || !cfg.apiUrl) return res.status(400).json({ message: "Radio no configurada" });
-      
+
       const now = Date.now();
       let normalizedData: any = null;
+
+      // ─── ZenoFM: metadata vía SSE persistente (no es un endpoint JSON pollable) ───
+      if (cfg.radioService === "zenofm") {
+        connectZenoSSE(cfg.apiUrl);
+        const djPanel = await storage.getDjPanel().catch(() => null);
+        normalizedData = {
+          station: {
+            id: 1,
+            name: "ZenoFM",
+            shortcode: "zenofm",
+            listen_url: cfg.listenUrl || "",
+          },
+          now_playing: {
+            song: {
+              title: zenoState.title || (zenoState.connected ? "En vivo" : "Conectando..."),
+              artist: zenoState.artist || "",
+              album: null,
+              art: null,
+            },
+            duration: null,
+          },
+          listeners: { current: null },
+          // Sin streamer_name a propósito: el frontend cae al DJ del Panel DJ
+          // (djPanelData.currentDj) y muestra su avatar de Habbo en el reproductor.
+          live: { is_live: false },
+          song_history: zenoState.history.map((s, i) => ({
+            sh_id: 9000 + i,
+            played_at: Math.floor(zenoState.lastUpdate / 1000) - i * 180,
+            duration: null,
+            song: { title: s.title, artist: s.artist },
+          })),
+        };
+
+        const songInfo = normalizedData.now_playing.song;
+        if (songInfo?.title && songInfo?.artist) {
+          const hasSongChanged = !lastSavedSong || lastSavedSong.title !== songInfo.title || lastSavedSong.artist !== songInfo.artist;
+          if (hasSongChanged) {
+            const playedByDj = djPanel?.currentDj || "AutoDJ";
+            await storage.createSongHistory({
+              title: songInfo.title,
+              artist: songInfo.artist,
+              album: null,
+              coverUrl: null,
+              playedByDj,
+              durationSeconds: null,
+              requestedBy: null,
+              playCount: 1,
+            }).catch((err: any) => console.error("Error auto-saving song history (ZenoFM):", err));
+            lastSavedSong = { title: songInfo.title, artist: songInfo.artist };
+          }
+        }
+
+        return res.json(normalizedData);
+      }
 
       // 1. Check cache first (15-second cache TTL)
       if (nowPlayingCache && (now - nowPlayingCache.timestamp < 15000)) {
