@@ -8,12 +8,26 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v3-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-336791?logo=postgresql&logoColor=white)](https://supabase.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-3.1-orange.svg)](#-changelog)
 
 ---
 
 ## 📋 Descripción
 
 **HabboSpeed** es una plataforma web full-stack orientada a la comunidad de jugadores de Habbo Hotel. Incluye reproductor de radio integrado (Azuracast/ZenoFM), sistema de noticias con reacciones, calendario de eventos, foro comunitario, explorador de badges, marketplace de furnis y un panel de administración completo.
+
+---
+
+## 📌 Changelog
+
+### v3.1
+
+- ✨ **Nueva sección Feria** (`/feria`): hub de herramientas con Catálogo de Logros, Buscador de Precios de Mercado (batch) y Ranking de Pesca + estado del Derby (Habbo Origins), más accesos directos a Hot Looks y Buscador de Grupos.
+- 🐛 Fix: imágenes de noticias no se mostraban por no pasar por el proxy de imágenes.
+- 🐛 Fix: furnis con imagen rota cuando el fallback venía de HabboAssets (host no estaba en el allowlist del proxy).
+- 🐛 Fix: Hot Looks siempre mostraba datos de relleno porque la API de Habbo responde XML y se intentaba parsear como JSON.
+- 🛠️ Panel admin: las categorías del foro ahora se pueden **editar** y **eliminar**, no solo crear.
+- 🧭 Navegación: "Feria" agregado al menú superior y al sidebar.
 
 ---
 

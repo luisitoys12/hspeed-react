@@ -327,6 +327,7 @@ export default function TopNavBar() {
   ];
 
   const habboItems: DropdownItem[] = [
+    { href: "/feria", label: "Feria", iconClass: "fa-solid fa-sparkles" },
     { href: "/herramientas", label: "Centro de Herramientas", iconClass: "fa-solid fa-screwdriver-wrench" },
     { href: "/armario", label: "Armario", iconClass: "fa-solid fa-shirt" },
     { href: "/imager", label: "Generador de Avatar (Imager)", iconClass: "fa-solid fa-image" },
