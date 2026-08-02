@@ -989,6 +989,9 @@ function ForumAdmin() {
   const { toast } = useToast();
   const [catForm, setCatForm] = useState({ name: "", description: "", color: "#7c3aed", icon: "fa-solid fa-comments" });
   const [catOpen, setCatOpen] = useState(false);
+  const [editCat, setEditCat] = useState<any>(null);
+  const [editForm, setEditForm] = useState({ name: "", description: "" });
+  const [deleteCatId, setDeleteCatId] = useState<number | null>(null);
 
   const { data: categories = [], refetch: refetchCats } = useQuery<any[]>({
     queryKey: ["/api/forum/categories"],
@@ -1000,6 +1003,23 @@ function ForumAdmin() {
     onSuccess: () => { toast({ title: "Categoría creada" }); setCatOpen(false); setCatForm({ name: "", description: "", color: "#7c3aed", icon: "fa-solid fa-comments" }); refetchCats(); queryClient.invalidateQueries({ queryKey: ["/api/forum/categories"] }); },
     onError: () => toast({ title: "Error al crear categoría", variant: "destructive" }),
   });
+
+  const updateCatMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("PUT", `/api/forum/categories/${editCat?.id}`, data, `Bearer ${token}`),
+    onSuccess: () => { toast({ title: "Categoría actualizada" }); setEditCat(null); refetchCats(); queryClient.invalidateQueries({ queryKey: ["/api/forum/categories"] }); },
+    onError: () => toast({ title: "Error al actualizar categoría", variant: "destructive" }),
+  });
+
+  const deleteCatMutation = useMutation({
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/forum/categories/${id}`, undefined, `Bearer ${token}`),
+    onSuccess: () => { toast({ title: "Categoría eliminada" }); setDeleteCatId(null); refetchCats(); queryClient.invalidateQueries({ queryKey: ["/api/forum/categories"] }); },
+    onError: () => toast({ title: "Error al eliminar categoría", variant: "destructive" }),
+  });
+
+  const openEditDialog = (cat: any) => {
+    setEditCat(cat);
+    setEditForm({ name: cat.name || "", description: cat.description || "" });
+  };
 
   return (
     <div className="space-y-5">
@@ -1034,9 +1054,17 @@ function ForumAdmin() {
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm" style={{ background: cat.color || "#7c3aed" }}>
                 <i className={cat.icon || "fa-solid fa-comments"}></i>
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-white truncate">{cat.name}</p>
                 <p className="text-[10px] text-muted-foreground truncate">{cat.description}</p>
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Button size="icon" variant="ghost" className="w-6 h-6" onClick={() => openEditDialog(cat)} data-testid={`button-edit-category-${cat.id}`}>
+                  <Edit className="w-3 h-3" />
+                </Button>
+                <Button size="icon" variant="ghost" className="w-6 h-6 text-destructive hover:text-destructive" onClick={() => setDeleteCatId(cat.id)} data-testid={`button-delete-category-${cat.id}`}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
               </div>
             </div>
             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
@@ -1047,6 +1075,43 @@ function ForumAdmin() {
         ))}
         {categories.length === 0 && <p className="text-xs text-muted-foreground col-span-3">No hay categorías. Crea la primera.</p>}
       </div>
+
+      {/* Edit category dialog */}
+      <Dialog open={!!editCat} onOpenChange={(open) => !open && setEditCat(null)}>
+        <DialogContent className="bg-card border-border max-w-sm">
+          <DialogHeader><DialogTitle>Editar Categoría</DialogTitle></DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div><Label className="text-xs">Nombre</Label><Input className="mt-1 text-xs" value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} data-testid="input-edit-category-name" /></div>
+            <div><Label className="text-xs">Descripción</Label><Textarea className="mt-1 text-xs resize-none" rows={2} value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} data-testid="input-edit-category-description" /></div>
+            <Button className="w-full bg-primary text-white text-xs" disabled={!editForm.name || updateCatMutation.isPending} onClick={() => updateCatMutation.mutate(editForm)} data-testid="button-save-category">
+              {updateCatMutation.isPending ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete category confirmation dialog */}
+      <Dialog open={deleteCatId !== null} onOpenChange={(open) => !open && setDeleteCatId(null)}>
+        <DialogContent className="bg-card border-border max-w-sm">
+          <DialogHeader><DialogTitle>Eliminar Categoría</DialogTitle></DialogHeader>
+          <div className="space-y-3 pt-2">
+            <p className="text-xs text-muted-foreground">
+              ¿Seguro que quieres eliminar esta categoría? Los hilos asociados no se eliminarán, pero quedarán sin categoría visible.
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1 text-xs" onClick={() => setDeleteCatId(null)}>Cancelar</Button>
+              <Button
+                className="flex-1 bg-destructive text-white hover:bg-destructive/80 text-xs"
+                disabled={deleteCatMutation.isPending}
+                onClick={() => deleteCatId !== null && deleteCatMutation.mutate(deleteCatId)}
+                data-testid="button-confirm-delete-category"
+              >
+                {deleteCatMutation.isPending ? "Eliminando..." : "Eliminar"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -78,6 +78,8 @@ export interface IStorage {
   // Forum
   getAllForumCategories(): Promise<ForumCategory[]>;
   createForumCategory(cat: InsertForumCategory): Promise<ForumCategory>;
+  updateForumCategory(id: number, data: Partial<InsertForumCategory>): Promise<ForumCategory | undefined>;
+  deleteForumCategory(id: number): Promise<boolean>;
   getThreadsByCategory(categoryId: number): Promise<ForumThread[]>;
   getThreadById(id: number): Promise<ForumThread | undefined>;
   createThread(thread: InsertForumThread): Promise<ForumThread>;
@@ -724,6 +726,25 @@ export class SupabaseStorage implements IStorage {
       [cat.name, cat.description || null, cat.sortOrder ?? 0]
     );
     return mapForumCategory(r.rows[0]);
+  }
+  async updateForumCategory(id: number, data: Partial<InsertForumCategory>) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
+    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
+    if (data.sortOrder !== undefined) { fields.push(`sort_order = $${i++}`); values.push(data.sortOrder); }
+    if (fields.length === 0) return this.getAllForumCategories().then((cats) => cats.find((c) => c.id === id));
+    values.push(id);
+    const r = await this.query(
+      `UPDATE forum_categories SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values
+    );
+    return r.rows[0] ? mapForumCategory(r.rows[0]) : undefined;
+  }
+  async deleteForumCategory(id: number) {
+    const r = await this.query("DELETE FROM forum_categories WHERE id = $1 RETURNING id", [id]);
+    return (r.rowCount || 0) > 0;
   }
   async getThreadsByCategory(categoryId: number) {
     const r = await this.query(

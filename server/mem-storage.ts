@@ -565,6 +565,21 @@ export class MemStorage implements IStorage {
     this.forumCategories.set(id, item);
     return item;
   }
+  async updateForumCategory(id: number, data: Partial<InsertForumCategory>) {
+    const existing = this.forumCategories.get(id);
+    if (!existing) return undefined;
+    const updated: ForumCategory = {
+      ...existing,
+      name: data.name !== undefined ? data.name : existing.name,
+      description: data.description !== undefined ? data.description : existing.description,
+      sortOrder: data.sortOrder !== undefined ? data.sortOrder : existing.sortOrder,
+    };
+    this.forumCategories.set(id, updated);
+    return updated;
+  }
+  async deleteForumCategory(id: number) {
+    return this.forumCategories.delete(id);
+  }
   async getThreadsByCategory(categoryId: number) {
     return Array.from(this.forumThreads.values()).filter(t => t.categoryId === categoryId);
   }

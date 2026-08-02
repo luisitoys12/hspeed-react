@@ -426,6 +426,16 @@ export async function registerRoutes(server: Server, app: Express) {
   app.post("/api/forum/categories", adminMiddleware, async (req, res) => {
     res.status(201).json(await storage.createForumCategory(req.body));
   });
+  app.put("/api/forum/categories/:id", adminMiddleware, async (req, res) => {
+    const updated = await storage.updateForumCategory(parseInt(req.params.id), req.body);
+    if (!updated) return res.status(404).json({ message: "Categoría no encontrada" });
+    res.json(updated);
+  });
+  app.delete("/api/forum/categories/:id", adminMiddleware, async (req, res) => {
+    const ok = await storage.deleteForumCategory(parseInt(req.params.id));
+    if (!ok) return res.status(404).json({ message: "Categoría no encontrada" });
+    res.status(204).send();
+  });
   app.get("/api/forum/categories/:id/threads", async (req, res) => {
     res.json(await storage.getThreadsByCategory(parseInt(req.params.id)));
   });
