@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Newspaper, Star, Calendar, ArrowRight } from "lucide-react";
 import type { News } from "@shared/schema";
+import { proxyImage } from "@/lib/habboProxy";
 
 const CATEGORIES = ["Todas", "Noticias", "Eventos", "Actualizaciones", "Comunidad", "Exclusiva"];
 
@@ -37,7 +38,7 @@ export default function NewsPage() {
             <div className="relative h-56 sm:h-72 rounded-2xl overflow-hidden shadow-xl border border-yellow-400/20">
               {featured[0].imageUrl ? (
                 <img
-                  src={featured[0].imageUrl}
+                  src={proxyImage(featured[0].imageUrl)}
                   alt={featured[0].title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -101,7 +102,7 @@ export default function NewsPage() {
                   <div className="relative h-40 overflow-hidden bg-secondary/30">
                     {article.imageUrl ? (
                       <img
-                        src={article.imageUrl}
+                        src={proxyImage(article.imageUrl)}
                         alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}

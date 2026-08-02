@@ -111,7 +111,7 @@ export default function NewsDetailPage() {
         {/* Hero image */}
         {article.imageUrl && (
           <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden shadow-xl">
-            <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" />
+            <img src={proxyImage(article.imageUrl)} alt={article.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             {isFeatured && (
               <div className="absolute top-3 left-3 flex items-center gap-1 bg-yellow-500/90 text-black text-[10px] font-bold px-2.5 py-1 rounded-full">

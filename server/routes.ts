@@ -907,7 +907,7 @@ export async function registerRoutes(server: Server, app: Express) {
       }
 
       // allowlist hosts for user-provided urls
-      const allowed = ["images.habbo.com", "habbo.es", "habbo.com", "habbo.com.br", "habbo.de", "habbo.fi", "habbo.fr", "habbo.it", "habbo.nl"];
+      const allowed = ["images.habbo.com", "habbo.es", "habbo.com", "habbo.com.br", "habbo.de", "habbo.fi", "habbo.fr", "habbo.it", "habbo.nl", "habboassets.com", "www.habboassets.com"];
       try {
         const parsed = new URL(sourceUrl);
         const host = parsed.hostname.toLowerCase();
