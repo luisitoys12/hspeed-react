@@ -1,0 +1,75 @@
+# docker-compose.prod.yml
+# Production Compose file for VPS / Fly.io / Kamatera.
+# Usage:
+#   cp .env.example .env          # fill in real values
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Two variants:
+#   A) Supabase / external Postgres  → set DATABASE_URL in .env, comment out the "db" service
+#   B) Local Postgres container      → leave DATABASE_URL pointing to the "db" service (default)
+
+services:
+
+  # ── Optional: local PostgreSQL ─────────────────────────────
+  # Comment this out entirely when using Supabase or an external DB.
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-hspeed}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-hspeed}
+      POSTGRES_DB: ${DB_NAME:-hspeed}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hspeed} -d ${DB_NAME:-hspeed}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Application ────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        # These VITE_* args are embedded in the frontend bundle at build-time.
+        # They are NOT secrets — they end up visible in the JS bundle.
+        VITE_API_URL: ${VITE_API_URL:-}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-5000}:5000"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 5000
+      # Variant A (Supabase): DATABASE_URL=postgresql://user:pass@db.supabase.co:5432/postgres
+      # Variant B (local):    DATABASE_URL=postgres://hspeed:hspeed@db:5432/hspeed
+      DATABASE_URL: ${DATABASE_URL:-postgres://${DB_USER:-hspeed}:${DB_PASSWORD:-hspeed}@db:5432/${DB_NAME:-hspeed}}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      # Set to "true" when using Supabase / external SSL postgres; "false" for local container
+      PGSSL: ${PGSSL:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - |
+          require('http').get(
+            'http://127.0.0.1:5000/api/health',
+            r => process.exit(r.statusCode===200?0:1)
+          ).on('error',()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      start_period: 25s
+      retries: 5
+
+volumes:
+  pgdata:
