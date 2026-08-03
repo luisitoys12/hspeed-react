@@ -1,0 +1,81 @@
+# .github/workflows/docker-deploy.yml
+# Builds, pushes to GHCR and deploys to VPS on push to main.
+# Required GitHub Secrets:
+#   VITE_API_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY  (build-time)
+#   DATABASE_URL, JWT_SECRET, SESSION_SECRET, PGSSL           (runtime)
+#   VPS_HOST, VPS_USER, VPS_SSH_KEY                           (deploy)
+
+name: Docker Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: production
+          push: true
+          # Tag with both the commit SHA (for rollback) and "latest"
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
+            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+            VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          cache-from: type=gist
+          cache-to: type=gist,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/hspeed-react
+
+            # Pull new image tagged with the commit SHA
+            docker pull ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+            # Update the compose file to use the pinned SHA tag (safe rollback)
+            export IMAGE_TAG=${{ github.sha }}
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+            # Confirm healthcheck passed
+            docker compose -f docker-compose.prod.yml ps
