@@ -1372,6 +1372,71 @@ export async function registerRoutes(server: Server, app: Express) {
   let zenoActiveUrl: string | null = null;
   let zenoConnecting = false;
 
+  // ─── Normalizadores para Icecast / SHOUTcast / Liquidsoap ───
+  // Todos devuelven la misma forma que ya consume el frontend (la de AzuraCast).
+  function splitTitleArtist(raw: string): { title: string; artist: string } {
+    const cleaned = (raw || "").trim();
+    const parts = cleaned.split(/\s+-\s+|\s+–\s+/);
+    if (parts.length >= 2) {
+      const [artist, ...rest] = parts;
+      return { artist: artist.trim(), title: rest.join(" - ").trim() };
+    }
+    return { artist: "", title: cleaned };
+  }
+
+  function normalizeIcecast(data: any, cfg: any) {
+    const stats = data?.icestats;
+    if (!stats) return null;
+    let source = stats.source;
+    if (Array.isArray(source)) {
+      // Si hay varios mounts en el servidor, intenta encontrar el que coincide con listenUrl
+      source =
+        source.find((s: any) => cfg.listenUrl && s.listenurl && cfg.listenUrl.includes(String(s.listenurl).replace(/^https?:\/\//, "").split("/")[0])) ||
+        source[0];
+    }
+    if (!source) return null;
+    const raw = source.title || source.yp_currently_playing || "";
+    const { artist, title } = splitTitleArtist(raw);
+    return {
+      station: { id: 1, name: source.server_name || "Icecast", shortcode: "icecast", listen_url: source.listenurl || cfg.listenUrl || "" },
+      now_playing: { song: { title: title || raw || "En vivo", artist, album: null, art: null }, duration: null },
+      listeners: { current: typeof source.listeners === "number" ? source.listeners : null },
+      // Sin streamer_name: cae al DJ del Panel DJ, igual que ZenoFM
+      live: { is_live: false },
+      song_history: [],
+    };
+  }
+
+  function normalizeShoutcast(data: any, cfg: any) {
+    const stream = data?.songtitle !== undefined ? data : (Array.isArray(data?.streams) ? data.streams[0] : null);
+    if (!stream) return null;
+    const raw = stream.songtitle || "";
+    const { artist, title } = splitTitleArtist(raw);
+    return {
+      station: { id: 1, name: stream.servertitle || "SHOUTcast", shortcode: "shoutcast", listen_url: cfg.listenUrl || "" },
+      now_playing: { song: { title: title || raw || "En vivo", artist, album: null, art: null }, duration: null },
+      listeners: { current: typeof stream.currentlisteners === "number" ? stream.currentlisteners : null },
+      live: { is_live: false },
+      song_history: [],
+    };
+  }
+
+  function normalizeLiquidsoap(data: any, cfg: any) {
+    if (!data) return null;
+    // Liquidsoap (vía harbor.http.register de un endpoint custom tipo /getmeta) ya entrega
+    // artist/title separados, a diferencia de Icecast/SHOUTcast que dan un string combinado.
+    const title = data.title || "";
+    const artist = data.artist || "";
+    if (!title && !artist) return null;
+    return {
+      station: { id: 1, name: "Liquidsoap", shortcode: "liquidsoap", listen_url: cfg.listenUrl || "" },
+      now_playing: { song: { title: title || "En vivo", artist, album: data.album || null, art: null }, duration: null },
+      listeners: { current: null },
+      live: { is_live: false },
+      song_history: [],
+    };
+  }
+
   function parseZenoStreamTitle(raw: string): { title: string; artist: string } {
     const cleaned = (raw || "").trim();
     const sepMatch = cleaned.split(/\s+-\s+|\s+–\s+/);
@@ -1535,9 +1600,17 @@ export async function registerRoutes(server: Server, app: Express) {
         }
 
         if (data) {
-          normalizedData = Array.isArray(data)
-            ? (data.find((s: any) => s.station?.shortcode === "runa_fm" || s.station?.id === 1) || data[0])
-            : data;
+          if (cfg.radioService === "icecast") {
+            normalizedData = normalizeIcecast(data, cfg);
+          } else if (cfg.radioService === "shoutcast") {
+            normalizedData = normalizeShoutcast(data, cfg);
+          } else if (cfg.radioService === "liquidsoap") {
+            normalizedData = normalizeLiquidsoap(data, cfg);
+          } else {
+            normalizedData = Array.isArray(data)
+              ? (data.find((s: any) => s.station?.shortcode === "runa_fm" || s.station?.id === 1) || data[0])
+              : data;
+          }
         }
 
         // If fetch failed or returned invalid data, use dynamic mock fallback

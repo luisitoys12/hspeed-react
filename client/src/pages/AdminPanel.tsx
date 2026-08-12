@@ -444,7 +444,13 @@ function ConfigAdmin() {
         <div><Label className="text-xs text-muted-foreground mb-1.5 block">Servicio de Radio</Label>
           <Select value={form.radioService} onValueChange={v => setForm(p => ({ ...p, radioService: v }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="azuracast">AzuraCast</SelectItem><SelectItem value="zenofm">ZenoFM</SelectItem><SelectItem value="shoutcast">SHOUTcast</SelectItem><SelectItem value="icecast">Icecast</SelectItem></SelectContent>
+            <SelectContent>
+              <SelectItem value="azuracast">AzuraCast</SelectItem>
+              <SelectItem value="zenofm">ZenoFM</SelectItem>
+              <SelectItem value="icecast">Icecast</SelectItem>
+              <SelectItem value="shoutcast">SHOUTcast</SelectItem>
+              <SelectItem value="liquidsoap">Liquidsoap (harbor JSON)</SelectItem>
+            </SelectContent>
           </Select>
         </div>
         {form.radioService === "zenofm" ? (
@@ -460,6 +466,51 @@ function ConfigAdmin() {
             </div>
             <p className="text-[10px] text-muted-foreground bg-secondary/40 rounded-lg p-2">
               ZenoFM no reporta el nombre del locutor en vivo. El avatar y nombre que se muestran en el reproductor son los del DJ registrado en el Panel DJ.
+            </p>
+          </>
+        ) : form.radioService === "icecast" ? (
+          <>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">URL status-json.xsl de Icecast</Label>
+              <Input placeholder="https://tu-servidor.com:8000/status-json.xsl" value={form.apiUrl} onChange={e => setForm(p => ({ ...p, apiUrl: e.target.value }))} data-testid="input-config-api-url" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">URL Stream</Label>
+              <Input placeholder="https://tu-servidor.com:8000/tu-mount" value={form.listenUrl} onChange={e => setForm(p => ({ ...p, listenUrl: e.target.value }))} data-testid="input-config-listen-url" />
+            </div>
+            <p className="text-[10px] text-muted-foreground bg-secondary/40 rounded-lg p-2">
+              Icecast tampoco reporta el locutor en vivo por nombre. El reproductor muestra el avatar del DJ registrado en el Panel DJ.
+            </p>
+          </>
+        ) : form.radioService === "shoutcast" ? (
+          <>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">URL Stats JSON de SHOUTcast</Label>
+              <Input placeholder="https://tu-servidor.com:8000/stats?sid=1&json=1" value={form.apiUrl} onChange={e => setForm(p => ({ ...p, apiUrl: e.target.value }))} data-testid="input-config-api-url" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">URL Stream</Label>
+              <Input placeholder="https://tu-servidor.com:8000/stream" value={form.listenUrl} onChange={e => setForm(p => ({ ...p, listenUrl: e.target.value }))} data-testid="input-config-listen-url" />
+            </div>
+            <p className="text-[10px] text-muted-foreground bg-secondary/40 rounded-lg p-2">
+              SHOUTcast tampoco reporta el locutor en vivo por nombre. El reproductor muestra el avatar del DJ registrado en el Panel DJ.
+            </p>
+          </>
+        ) : form.radioService === "liquidsoap" ? (
+          <>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">URL del endpoint harbor de Liquidsoap</Label>
+              <Input placeholder="http://tu-servidor.com:7000/getmeta" value={form.apiUrl} onChange={e => setForm(p => ({ ...p, apiUrl: e.target.value }))} data-testid="input-config-api-url" />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Requiere registrar un endpoint HTTP con <code>harbor.http.register</code> en tu script .liq que devuelva JSON con <code>artist</code>/<code>title</code>.
+              </p>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">URL Stream (normalmente el Icecast/SHOUTcast al que Liquidsoap transmite)</Label>
+              <Input placeholder="https://tu-servidor.com:8000/tu-mount" value={form.listenUrl} onChange={e => setForm(p => ({ ...p, listenUrl: e.target.value }))} data-testid="input-config-listen-url" />
+            </div>
+            <p className="text-[10px] text-muted-foreground bg-secondary/40 rounded-lg p-2">
+              Liquidsoap no transmite audio directo al navegador; normalmente alimenta a un Icecast o SHOUTcast. El reproductor muestra el avatar del DJ registrado en el Panel DJ.
             </p>
           </>
         ) : (
