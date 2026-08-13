@@ -2,8 +2,30 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { proxyImage } from "@/lib/habboProxy";
-import { Play, Pause, Square, Radio, Headphones, Volume2, VolumeX, MessageSquare, Gift, Clock, Megaphone, CalendarDays, MessagesSquare, Zap, Trash2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Play,
+  Pause,
+  Square,
+  Radio,
+  Headphones,
+  Volume2,
+  VolumeX,
+  MessageSquare,
+  Gift,
+  Clock,
+  Megaphone,
+  CalendarDays,
+  MessagesSquare,
+  Zap,
+  Trash2,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,17 +58,33 @@ interface ScheduleItem {
   djName: string;
 }
 
-const DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const DAYS_ES = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+];
 
 function getHabboAvatar(username: string, fullBody = false) {
   return proxyImage(
     fullBody
       ? `https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&action=wav&direction=2&head_direction=2&img_format=png&gesture=sml&size=b`
-      : `https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&gesture=std&action=std&direction=2&head_direction=2&headonly=1&size=s`
+      : `https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(username)}&gesture=std&action=std&direction=2&head_direction=2&headonly=1&size=s`,
   );
 }
 
-function AvatarImage({ username, alt, fullBody = false }: { username: string; alt: string; fullBody?: boolean }) {
+function AvatarImage({
+  username,
+  alt,
+  fullBody = false,
+}: {
+  username: string;
+  alt: string;
+  fullBody?: boolean;
+}) {
   const [src, setSrc] = useState(getHabboAvatar(username, fullBody));
   return (
     <img
@@ -69,8 +107,10 @@ function getProgramProgress(startTime: string, endTime: string) {
   const startMin = sh * 60 + sm;
   const endMin = eh * 60 + em;
   const nowMin = now.getHours() * 60 + now.getMinutes();
-  const totalMin = endMin > startMin ? endMin - startMin : 1440 - startMin + endMin;
-  const elapsedMin = nowMin >= startMin ? nowMin - startMin : 1440 - startMin + nowMin;
+  const totalMin =
+    endMin > startMin ? endMin - startMin : 1440 - startMin + endMin;
+  const elapsedMin =
+    nowMin >= startMin ? nowMin - startMin : 1440 - startMin + nowMin;
   if (totalMin <= 0) return 50;
   return Math.max(0, Math.min(100, (elapsedMin / totalMin) * 100));
 }
@@ -80,10 +120,14 @@ export default function HabboRadioHero() {
   const [volume, setVolume] = useState(70);
   const [isMuted, setIsMuted] = useState(false);
   const [showPeticionesModal, setShowPeticionesModal] = useState(false);
-  const [peticionForm, setPeticionForm] = useState({ songTitle: "", artist: "", details: "" });
+  const [peticionForm, setPeticionForm] = useState({
+    songTitle: "",
+    artist: "",
+    details: "",
+  });
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
-  
+
   const { user: currentUser, login, token } = useAuth();
   const qc = useQueryClient();
   const [chatInput, setChatInput] = useState("");
@@ -96,9 +140,16 @@ export default function HabboRadioHero() {
     setLoginPending(true);
     try {
       await login(loginForm.email, loginForm.password);
-      toast({ title: "¡Sesión iniciada!", description: "Bienvenido de vuelta a HabboSpeed." });
+      toast({
+        title: "¡Sesión iniciada!",
+        description: "Bienvenido de vuelta a HabboSpeed.",
+      });
     } catch (err: any) {
-      toast({ title: "Error al iniciar sesión", description: err.message, variant: "destructive" });
+      toast({
+        title: "Error al iniciar sesión",
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setLoginPending(false);
     }
@@ -117,7 +168,9 @@ export default function HabboRadioHero() {
         body: JSON.stringify({ content }),
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ message: "Error al enviar" }));
+        const err = await res
+          .json()
+          .catch(() => ({ message: "Error al enviar" }));
         throw new Error(err.message || "Error al enviar mensaje");
       }
       return res.json();
@@ -128,7 +181,11 @@ export default function HabboRadioHero() {
       qc.invalidateQueries({ queryKey: ["/api/chat"] });
     },
     onError: (err: any) => {
-      toast({ title: "Error al enviar", description: err.message, variant: "destructive" });
+      toast({
+        title: "Error al enviar",
+        description: err.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -197,7 +254,11 @@ export default function HabboRadioHero() {
 
   const handleSendPeticion = async () => {
     if (!peticionForm.songTitle.trim() || !peticionForm.artist.trim()) {
-      toast({ title: "Error", description: "Por favor rellena canción y artista", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Por favor rellena canción y artista",
+        variant: "destructive",
+      });
       return;
     }
     try {
@@ -207,41 +268,67 @@ export default function HabboRadioHero() {
         details: peticionForm.details.trim(),
       });
       if (response.ok) {
-        toast({ title: "¡Petición enviada!", description: "Tu canción ha sido agregada a la cola" });
+        toast({
+          title: "¡Petición enviada!",
+          description: "Tu canción ha sido agregada a la cola",
+        });
         setPeticionForm({ songTitle: "", artist: "", details: "" });
         setShowPeticionesModal(false);
       }
     } catch (err) {
-      toast({ title: "Error", description: "No se pudo enviar la petición", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "No se pudo enviar la petición",
+        variant: "destructive",
+      });
     }
   };
 
-  const rawDj = nowPlaying?.live?.streamer_name || djPanel?.currentDj || "HabboSpeed";
-  const isAutoDj = !rawDj || ["autodj", "auto dj", "azuracast autodj", "habbospeed"].includes(rawDj.toLowerCase());
+  const rawDj =
+    nowPlaying?.live?.streamer_name || djPanel?.currentDj || "HabboSpeed";
+  const isAutoDj =
+    !rawDj ||
+    ["autodj", "auto dj", "azuracast autodj", "habbospeed"].includes(
+      rawDj.toLowerCase(),
+    );
   const currentDj = isAutoDj ? "HabboSpeed" : rawDj;
   const nextDj = djPanel?.nextDj || "Dj_Invitado";
   const currentSong = nowPlaying?.now_playing?.song;
-  const songTitle = currentSong?.artist && currentSong?.title ? `${currentSong.artist} - ${currentSong.title}` : "Wulf - All Things Under The Sun";
+  const songTitle =
+    currentSong?.artist && currentSong?.title
+      ? `${currentSong.artist} - ${currentSong.title}`
+      : "Wulf - All Things Under The Sun";
   const listeners = nowPlaying?.listeners?.current ?? 50;
   const isLive = nowPlaying?.live?.is_live ?? true;
 
   const today = DAYS_ES[new Date().getDay()];
   const currentSchedule = useMemo(
     () => (scheduleData || []).find((item) => item.day === today),
-    [scheduleData, today]
+    [scheduleData, today],
   );
   const programStart = currentSchedule?.startTime || "01:00";
   const programEnd = currentSchedule?.endTime || "02:00";
-  const programProgress = currentSchedule ? getProgramProgress(programStart, programEnd) : 12;
+  const programProgress = currentSchedule
+    ? getProgramProgress(programStart, programEnd)
+    : 12;
 
-  const liveMessages = (chatMessages || []).slice(0, 6).map((message, index) => ({
-    key: `live-${message.id ?? index}-${message.userName || "anon"}`,
-    user: message.userName || "Anon",
-    text: message.message || message.content || "",
-    avatar: message.habboUsername || message.userName || "HabboSpeed",
-    featured: index === 0,
-  }));
-  const wallColors = ["#B793F7", "#93F7C9", "#26d7ff", "#F7D96A", "#F79393", "#F6A7F0"];
+  const liveMessages = (chatMessages || [])
+    .slice(0, 6)
+    .map((message, index) => ({
+      key: `live-${message.id ?? index}-${message.userName || "anon"}`,
+      user: message.userName || "Anon",
+      text: message.message || message.content || "",
+      avatar: message.habboUsername || message.userName || "HabboSpeed",
+      featured: index === 0,
+    }));
+  const wallColors = [
+    "#B793F7",
+    "#93F7C9",
+    "#26d7ff",
+    "#F7D96A",
+    "#F79393",
+    "#F6A7F0",
+  ];
 
   return (
     <section className="relative overflow-hidden rounded-[2.25rem] bg-[#1e0a72] text-white border border-white/10 shadow-[0_28px_80px_rgba(0,0,0,0.3)]">
@@ -254,28 +341,46 @@ export default function HabboRadioHero() {
                 <AvatarImage username={currentDj} alt={currentDj} fullBody />
               </div>
               <img
-                src="https://static.habbo-happy.net/img/furni/big/594402946997433.gif"
+                src={proxyImage(
+                  "https://static.habbo-happy.net/img/furni/big/594402946997433.gif",
+                )}
                 alt="Micrófono"
                 className="h-[76px] w-[76px] object-contain -scale-x-100"
               />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/70">DJ actual</p>
-              <p className="text-[1.05rem] font-semibold leading-tight sm:text-[1.15rem]">{currentDj}</p>
-              <p className="mt-1 text-sm text-white/72 truncate max-w-md">{songTitle}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/70">
+                DJ actual
+              </p>
+              <p className="text-[1.05rem] font-semibold leading-tight sm:text-[1.15rem]">
+                {currentDj}
+              </p>
+              <p className="mt-1 text-sm text-white/72 truncate max-w-md">
+                {songTitle}
+              </p>
             </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-[auto_1fr] lg:gap-4 lg:min-w-0">
             <div className="flex items-center justify-center gap-2 rounded-full bg-[#14073f] px-4 py-3 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] shrink-0">
               <Headphones className="h-5 w-5" />
-              <span className="text-2xl font-bold leading-none">{listeners}</span>
+              <span className="text-2xl font-bold leading-none">
+                {listeners}
+              </span>
             </div>
 
             <div className="flex flex-col gap-3 rounded-[1.4rem] bg-[#14073f] px-4 py-3 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] min-w-0">
               <div className="flex items-center gap-3 min-w-0">
-                <button onClick={togglePlay} className="flex h-11 w-11 items-center justify-center rounded-full bg-fuchsia-500 text-white transition hover:bg-fuchsia-400 shrink-0" aria-label={isPlaying ? "Stop" : "Play"}>
-                  {isPlaying ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
+                <button
+                  onClick={togglePlay}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-fuchsia-500 text-white transition hover:bg-fuchsia-400 shrink-0"
+                  aria-label={isPlaying ? "Stop" : "Play"}
+                >
+                  {isPlaying ? (
+                    <Square className="h-4 w-4" />
+                  ) : (
+                    <Play className="h-4 w-4 ml-0.5" />
+                  )}
                 </button>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/80">
@@ -283,12 +388,23 @@ export default function HabboRadioHero() {
                     Radio en vivo
                   </div>
                   <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full rounded-full bg-sky-400" style={{ width: `${programProgress}%` }} />
+                    <div
+                      className="h-full rounded-full bg-sky-400"
+                      style={{ width: `${programProgress}%` }}
+                    />
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-white/60 shrink-0">
-                  <button onClick={() => setIsMuted((value) => !value)} className="transition hover:text-white" aria-label="Mute">
-                    {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                  <button
+                    onClick={() => setIsMuted((value) => !value)}
+                    className="transition hover:text-white"
+                    aria-label="Mute"
+                  >
+                    {isMuted ? (
+                      <VolumeX className="h-4 w-4" />
+                    ) : (
+                      <Volume2 className="h-4 w-4" />
+                    )}
                   </button>
                   <input
                     type="range"
@@ -304,15 +420,24 @@ export default function HabboRadioHero() {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button onClick={() => setShowPeticionesModal(true)} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/85 transition hover:bg-white/10">
+                <button
+                  onClick={() => setShowPeticionesModal(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/85 transition hover:bg-white/10"
+                >
                   <Megaphone className="h-3.5 w-3.5" />
                   Peticiones
                 </button>
-                <a href="/dj-panel#saludos" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/85 transition hover:bg-white/10">
+                <a
+                  href="/dj-panel#saludos"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/85 transition hover:bg-white/10"
+                >
                   <MessagesSquare className="h-3.5 w-3.5" />
                   Saludos ⚡
                 </a>
-                <a href="/schedule" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/85 transition hover:bg-white/10">
+                <a
+                  href="/schedule"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/85 transition hover:bg-white/10"
+                >
                   <CalendarDays className="h-3.5 w-3.5" />
                   Horarios
                 </a>
@@ -320,8 +445,12 @@ export default function HabboRadioHero() {
             </div>
 
             <div className="hidden lg:flex flex-col items-end gap-1 rounded-2xl border-l border-white/10 pl-4 text-right min-w-[200px]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/65">Horario del programa</p>
-              <p className="text-sm text-white/75">{programStart} - {programEnd}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/65">
+                Horario del programa
+              </p>
+              <p className="text-sm text-white/75">
+                {programStart} - {programEnd}
+              </p>
               <div className="mt-1 flex items-center gap-2 text-xs text-white/60">
                 <Clock className="h-3.5 w-3.5" />
                 <span>{currentSchedule?.showName || "HabboRadio en vivo"}</span>
@@ -330,17 +459,26 @@ export default function HabboRadioHero() {
           </div>
 
           <div className="hidden lg:flex items-center justify-end gap-3 text-right">
-            <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] ${isLive ? "border-fuchsia-400/40 bg-fuchsia-500/15 text-fuchsia-100" : "border-white/10 bg-white/5 text-white/60"}`}>
-              <span className={`h-2 w-2 rounded-full ${isLive ? "bg-fuchsia-400" : "bg-white/30"}`} />
+            <span
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] ${isLive ? "border-fuchsia-400/40 bg-fuchsia-500/15 text-fuchsia-100" : "border-white/10 bg-white/5 text-white/60"}`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${isLive ? "bg-fuchsia-400" : "bg-white/30"}`}
+              />
               {isLive ? "En vivo" : "AutoDJ"}
             </span>
             <div className="rounded-2xl border border-white/10 bg-[#14073f] px-4 py-3 min-w-[210px]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/65">Next DJ</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/65">
+                Next DJ
+              </p>
               <p className="text-sm text-white/90 mt-1">{nextDj}</p>
               <div className="mt-2 flex items-center gap-3">
                 <span className="text-xs text-white/70">{programStart}</span>
                 <div className="h-1.5 w-24 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full rounded-full bg-sky-400" style={{ width: `${programProgress}%` }} />
+                  <div
+                    className="h-full rounded-full bg-sky-400"
+                    style={{ width: `${programProgress}%` }}
+                  />
                 </div>
                 <span className="text-xs text-white/70">{programEnd}</span>
               </div>
@@ -363,12 +501,19 @@ export default function HabboRadioHero() {
                         src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(currentUser.habboUsername || currentUser.displayName)}&size=s&headonly=1`}
                         alt={currentUser.displayName}
                         className="w-full h-full object-contain"
-                        onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "/habbo-radio/frank_small_03.gif";
+                        }}
                       />
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#26d7ff]">Conectado</p>
-                      <h3 className="text-lg font-bold text-white leading-tight">{currentUser.displayName}</h3>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#26d7ff]">
+                        Conectado
+                      </p>
+                      <h3 className="text-lg font-bold text-white leading-tight">
+                        {currentUser.displayName}
+                      </h3>
                       <p className="text-xs text-white/70 flex items-center gap-1.5 mt-0.5">
                         <Zap className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
                         <span>{currentUser.speedPoints} SpeedPoints</span>
@@ -376,8 +521,14 @@ export default function HabboRadioHero() {
                     </div>
                   </div>
 
-                  <form onSubmit={handleSendChatMessage} className="space-y-2.5">
-                    <Label htmlFor="player-chat-msg" className="text-[10px] font-bold uppercase tracking-wider text-white/70">
+                  <form
+                    onSubmit={handleSendChatMessage}
+                    className="space-y-2.5"
+                  >
+                    <Label
+                      htmlFor="player-chat-msg"
+                      className="text-[10px] font-bold uppercase tracking-wider text-white/70"
+                    >
                       Enviar mensaje al chat en vivo
                     </Label>
                     <div className="flex gap-2">
@@ -394,7 +545,9 @@ export default function HabboRadioHero() {
                         type="submit"
                         size="sm"
                         className="bg-[#26d7ff] hover:bg-[#61e4ff] text-[#1a1553] font-bold text-xs"
-                        disabled={sendChatMutation.isPending || !chatInput.trim()}
+                        disabled={
+                          sendChatMutation.isPending || !chatInput.trim()
+                        }
                       >
                         Enviar
                       </Button>
@@ -405,9 +558,16 @@ export default function HabboRadioHero() {
                 /* VISTA GUEST: Formulario de Login directo integrado en el Player */
                 <div className="space-y-4 w-full">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#26d7ff]">Inicia sesión</p>
-                    <h2 className="mt-1.5 text-2xl font-bold leading-tight text-white tracking-tight sm:text-3xl">Únete a HabboRadio</h2>
-                    <p className="text-xs text-white/70 mt-1">Conéctate al instante para enviar saludos, pedir canciones y chatear.</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#26d7ff]">
+                      Inicia sesión
+                    </p>
+                    <h2 className="mt-1.5 text-2xl font-bold leading-tight text-white tracking-tight sm:text-3xl">
+                      Únete a HabboRadio
+                    </h2>
+                    <p className="text-xs text-white/70 mt-1">
+                      Conéctate al instante para enviar saludos, pedir canciones
+                      y chatear.
+                    </p>
                   </div>
 
                   <form onSubmit={handleInlineLogin} className="space-y-2.5">
@@ -419,7 +579,12 @@ export default function HabboRadioHero() {
                           required
                           className="w-full px-3 py-2 text-xs rounded-lg bg-[#14073f]/65 border border-white/15 focus:outline-none focus:border-cyan-400 text-white placeholder-white/40 font-sans"
                           value={loginForm.email}
-                          onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                          onChange={(e) =>
+                            setLoginForm({
+                              ...loginForm,
+                              email: e.target.value,
+                            })
+                          }
                         />
                       </div>
                       <div>
@@ -429,7 +594,12 @@ export default function HabboRadioHero() {
                           required
                           className="w-full px-3 py-2 text-xs rounded-lg bg-[#14073f]/65 border border-white/15 focus:outline-none focus:border-cyan-400 text-white placeholder-white/40 font-sans"
                           value={loginForm.password}
-                          onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                          onChange={(e) =>
+                            setLoginForm({
+                              ...loginForm,
+                              password: e.target.value,
+                            })
+                          }
                         />
                       </div>
                     </div>
@@ -470,10 +640,20 @@ export default function HabboRadioHero() {
                     <div
                       key={message.key}
                       className={`flex items-center gap-3 rounded-full px-3 py-2.5 shadow-lg backdrop-blur ${index === 2 ? "bg-cyan-400 text-[#1a1553]" : "bg-white text-slate-900"}`}
-                      style={index !== 2 ? { backgroundColor: wallColors[index % wallColors.length] } : undefined}
+                      style={
+                        index !== 2
+                          ? {
+                              backgroundColor:
+                                wallColors[index % wallColors.length],
+                            }
+                          : undefined
+                      }
                     >
                       <div className="h-8 w-8 rounded-full bg-[#140936] overflow-hidden flex-shrink-0 ring-2 ring-white/50">
-                        <AvatarImage username={message.avatar} alt={message.user} />
+                        <AvatarImage
+                          username={message.avatar}
+                          alt={message.user}
+                        />
                       </div>
                       <p className="text-xs leading-tight">
                         <strong>{message.user}</strong>: {message.text}
@@ -482,8 +662,13 @@ export default function HabboRadioHero() {
                   ))
                 ) : (
                   <div className="rounded-2xl border border-white/15 bg-white/8 px-4 py-5 text-sm text-white/80 backdrop-blur">
-                    <p className="font-semibold">Aún no hay mensajes en vivo.</p>
-                    <p className="mt-1 text-xs text-white/70">En cuanto entren mensajes reales del chat, aparecerán aquí automáticamente.</p>
+                    <p className="font-semibold">
+                      Aún no hay mensajes en vivo.
+                    </p>
+                    <p className="mt-1 text-xs text-white/70">
+                      En cuanto entren mensajes reales del chat, aparecerán aquí
+                      automáticamente.
+                    </p>
                   </div>
                 )}
               </div>
@@ -496,13 +681,17 @@ export default function HabboRadioHero() {
                 <AvatarImage username={currentDj} alt={currentDj} fullBody />
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">Actual</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">
+                  Actual
+                </p>
                 <p className="text-sm font-semibold">{currentDj}</p>
               </div>
             </div>
             <div className="hidden h-10 w-px bg-white/10 sm:block" />
             <div className="hidden sm:block">
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">Sonando ahora</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">
+                Sonando ahora
+              </p>
               <p className="text-sm font-medium">{songTitle}</p>
             </div>
             <div className="ml-auto flex items-center gap-3 text-xs text-white/70">
@@ -513,7 +702,10 @@ export default function HabboRadioHero() {
         </div>
 
         {/* Modal de Peticiones */}
-        <Dialog open={showPeticionesModal} onOpenChange={setShowPeticionesModal}>
+        <Dialog
+          open={showPeticionesModal}
+          onOpenChange={setShowPeticionesModal}
+        >
           <DialogContent className="bg-card border-border max-w-sm">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -523,7 +715,10 @@ export default function HabboRadioHero() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="song-title" className="text-xs text-muted-foreground mb-1.5 block">
+                <Label
+                  htmlFor="song-title"
+                  className="text-xs text-muted-foreground mb-1.5 block"
+                >
                   Nombre de la canción
                 </Label>
                 <input
@@ -532,11 +727,19 @@ export default function HabboRadioHero() {
                   placeholder="Ej: Levitating"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-secondary/30 border border-border focus:outline-none focus:border-primary/50"
                   value={peticionForm.songTitle}
-                  onChange={(e) => setPeticionForm({ ...peticionForm, songTitle: e.target.value })}
+                  onChange={(e) =>
+                    setPeticionForm({
+                      ...peticionForm,
+                      songTitle: e.target.value,
+                    })
+                  }
                 />
               </div>
               <div>
-                <Label htmlFor="artist" className="text-xs text-muted-foreground mb-1.5 block">
+                <Label
+                  htmlFor="artist"
+                  className="text-xs text-muted-foreground mb-1.5 block"
+                >
                   Artista
                 </Label>
                 <input
@@ -545,11 +748,16 @@ export default function HabboRadioHero() {
                   placeholder="Ej: Dua Lipa"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-secondary/30 border border-border focus:outline-none focus:border-primary/50"
                   value={peticionForm.artist}
-                  onChange={(e) => setPeticionForm({ ...peticionForm, artist: e.target.value })}
+                  onChange={(e) =>
+                    setPeticionForm({ ...peticionForm, artist: e.target.value })
+                  }
                 />
               </div>
               <div>
-                <Label htmlFor="details" className="text-xs text-muted-foreground mb-1.5 block">
+                <Label
+                  htmlFor="details"
+                  className="text-xs text-muted-foreground mb-1.5 block"
+                >
                   Detalles (opcional)
                 </Label>
                 <Textarea
@@ -558,7 +766,12 @@ export default function HabboRadioHero() {
                   rows={3}
                   className="text-xs resize-none"
                   value={peticionForm.details}
-                  onChange={(e) => setPeticionForm({ ...peticionForm, details: e.target.value })}
+                  onChange={(e) =>
+                    setPeticionForm({
+                      ...peticionForm,
+                      details: e.target.value,
+                    })
+                  }
                 />
               </div>
               <Button

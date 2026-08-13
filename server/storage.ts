@@ -1,36 +1,66 @@
 import {
-  type User, type InsertUser,
-  type News, type InsertNews,
-  type Event, type InsertEvent,
-  type Schedule, type InsertSchedule,
-  type Comment, type InsertComment,
-  type Poll, type InsertPoll,
-  type Config, type InsertConfig,
-  type Theme, type InsertTheme,
-  type ForumCategory, type InsertForumCategory,
-  type ForumThread, type InsertForumThread,
-  type ForumPost, type InsertForumPost,
-  type MarketplaceItem, type InsertMarketplaceItem,
-  type Badge, type InsertBadge,
-  type Request, type InsertRequest,
-  type TeamMember, type InsertTeamMember,
-  type Download, type InsertDownload,
-  type BannedSong, type InsertBannedSong,
-  type ContactMessage, type InsertContactMessage,
-  type PanelLog, type InsertPanelLog,
-  type ReportedMessage, type InsertReportedMessage,
-  type ShopProduct, type InsertShopProduct,
-  type UserInventory, type InsertUserInventory,
-  type Notification, type InsertNotification,
-  type UserProfile, type InsertUserProfile,
-  type InsertProfileWall, type ProfileWallMessage,
-  type SongHistory, type InsertSongHistory,
-  type VipMembership, type InsertVipMembership,
-  type VipPerkLog, type InsertVipPerkLog,
-  type HSpeedRoom, type InsertHSpeedRoom,
-  type SupportTicket, type InsertSupportTicket,
-  type Alliance, type InsertAlliance,
-
+  type User,
+  type InsertUser,
+  type News,
+  type InsertNews,
+  type Event,
+  type InsertEvent,
+  type Schedule,
+  type InsertSchedule,
+  type Comment,
+  type InsertComment,
+  type Poll,
+  type InsertPoll,
+  type Config,
+  type InsertConfig,
+  type Theme,
+  type InsertTheme,
+  type ForumCategory,
+  type InsertForumCategory,
+  type ForumThread,
+  type InsertForumThread,
+  type ForumPost,
+  type InsertForumPost,
+  type MarketplaceItem,
+  type InsertMarketplaceItem,
+  type Badge,
+  type InsertBadge,
+  type Request,
+  type InsertRequest,
+  type TeamMember,
+  type InsertTeamMember,
+  type Download,
+  type InsertDownload,
+  type BannedSong,
+  type InsertBannedSong,
+  type ContactMessage,
+  type InsertContactMessage,
+  type PanelLog,
+  type InsertPanelLog,
+  type ReportedMessage,
+  type InsertReportedMessage,
+  type ShopProduct,
+  type InsertShopProduct,
+  type UserInventory,
+  type InsertUserInventory,
+  type Notification,
+  type InsertNotification,
+  type UserProfile,
+  type InsertUserProfile,
+  type InsertProfileWall,
+  type ProfileWallMessage,
+  type SongHistory,
+  type InsertSongHistory,
+  type VipMembership,
+  type InsertVipMembership,
+  type VipPerkLog,
+  type InsertVipPerkLog,
+  type HSpeedRoom,
+  type InsertHSpeedRoom,
+  type SupportTicket,
+  type InsertSupportTicket,
+  type Alliance,
+  type InsertAlliance,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -40,45 +70,54 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, data: Partial<InsertUser>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
-  
+
   // News
   getAllNews(): Promise<News[]>;
   getNewsById(id: number): Promise<News | undefined>;
   createNews(article: InsertNews): Promise<News>;
   updateNews(id: number, data: Partial<InsertNews>): Promise<News | undefined>;
   deleteNews(id: number): Promise<boolean>;
-  
+
   // Events
   getAllEvents(): Promise<Event[]>;
   getEventById(id: number): Promise<Event | undefined>;
   createEvent(event: InsertEvent): Promise<Event>;
-  updateEvent(id: number, data: Partial<InsertEvent>): Promise<Event | undefined>;
+  updateEvent(
+    id: number,
+    data: Partial<InsertEvent>,
+  ): Promise<Event | undefined>;
   deleteEvent(id: number): Promise<boolean>;
-  
+
   // Schedule
   getAllSchedule(): Promise<Schedule[]>;
   createScheduleItem(item: InsertSchedule): Promise<Schedule>;
-  updateScheduleItem(id: number, data: Partial<InsertSchedule>): Promise<Schedule | undefined>;
+  updateScheduleItem(
+    id: number,
+    data: Partial<InsertSchedule>,
+  ): Promise<Schedule | undefined>;
   deleteScheduleItem(id: number): Promise<boolean>;
-  
+
   // Comments
   getCommentsByArticle(articleId: number): Promise<Comment[]>;
   createComment(comment: InsertComment): Promise<Comment>;
   deleteComment(id: number): Promise<boolean>;
-  
+
   // Polls
   getAllPolls(): Promise<Poll[]>;
   createPoll(poll: InsertPoll): Promise<Poll>;
   updatePoll(id: number, data: Partial<InsertPoll>): Promise<Poll | undefined>;
-  
+
   // Config
   getConfig(): Promise<Config | undefined>;
   updateConfig(data: Partial<InsertConfig>): Promise<Config | undefined>;
-  
+
   // Forum
   getAllForumCategories(): Promise<ForumCategory[]>;
   createForumCategory(cat: InsertForumCategory): Promise<ForumCategory>;
-  updateForumCategory(id: number, data: Partial<InsertForumCategory>): Promise<ForumCategory | undefined>;
+  updateForumCategory(
+    id: number,
+    data: Partial<InsertForumCategory>,
+  ): Promise<ForumCategory | undefined>;
   deleteForumCategory(id: number): Promise<boolean>;
   getThreadsByCategory(categoryId: number): Promise<ForumThread[]>;
   getThreadById(id: number): Promise<ForumThread | undefined>;
@@ -87,34 +126,42 @@ export interface IStorage {
   getPostsByThread(threadId: number): Promise<ForumPost[]>;
   createPost(post: InsertForumPost): Promise<ForumPost>;
   deletePost(id: number): Promise<boolean>;
-  
+
   // Marketplace
   getAllMarketplaceItems(): Promise<MarketplaceItem[]>;
-  getMarketplaceItemByClass(className: string): Promise<MarketplaceItem | undefined>;
+  getMarketplaceItemByClass(
+    className: string,
+  ): Promise<MarketplaceItem | undefined>;
   upsertMarketplaceItem(item: InsertMarketplaceItem): Promise<MarketplaceItem>;
-  
+
   // Badges
   getAllBadges(): Promise<Badge[]>;
   searchBadges(query: string): Promise<Badge[]>;
   upsertBadge(badge: InsertBadge): Promise<Badge>;
-  
+
   // Requests
   getAllRequests(): Promise<Request[]>;
   createRequest(req: InsertRequest): Promise<Request>;
   deleteRequest(id: number): Promise<boolean>;
-  
+
   // Team
   getAllTeamMembers(): Promise<TeamMember[]>;
   createTeamMember(member: InsertTeamMember): Promise<TeamMember>;
-  updateTeamMember(id: number, data: Partial<InsertTeamMember>): Promise<TeamMember | undefined>;
+  updateTeamMember(
+    id: number,
+    data: Partial<InsertTeamMember>,
+  ): Promise<TeamMember | undefined>;
   deleteTeamMember(id: number): Promise<boolean>;
-  
+
   // Themes
   getAllThemes(): Promise<Theme[]>;
   getThemeBySlug(slug: string): Promise<Theme | undefined>;
   getActiveTheme(): Promise<Theme | undefined>;
   createTheme(theme: InsertTheme): Promise<Theme>;
-  updateTheme(id: number, data: Partial<InsertTheme>): Promise<Theme | undefined>;
+  updateTheme(
+    id: number,
+    data: Partial<InsertTheme>,
+  ): Promise<Theme | undefined>;
   setActiveTheme(slug: string): Promise<Config | undefined>;
 
   // DJ Panel
@@ -153,7 +200,10 @@ export interface IStorage {
   // Contact Messages
   getAllContactMessages(): Promise<ContactMessage[]>;
   createContactMessage(msg: InsertContactMessage): Promise<ContactMessage>;
-  updateContactMessageStatus(id: number, status: string): Promise<ContactMessage | undefined>;
+  updateContactMessageStatus(
+    id: number,
+    status: string,
+  ): Promise<ContactMessage | undefined>;
   deleteContactMessage(id: number): Promise<boolean>;
 
   // Panel Logs
@@ -163,20 +213,29 @@ export interface IStorage {
   // Reported Messages
   getAllReportedMessages(): Promise<any[]>;
   createReport(report: InsertReportedMessage): Promise<ReportedMessage>;
-  updateReportStatus(id: number, status: string): Promise<ReportedMessage | undefined>;
+  updateReportStatus(
+    id: number,
+    status: string,
+  ): Promise<ReportedMessage | undefined>;
   deleteReport(id: number): Promise<boolean>;
 
   // Shop Products
   getAllShopProducts(includeInactive?: boolean): Promise<ShopProduct[]>;
   getShopProductById(id: number): Promise<ShopProduct | undefined>;
   createShopProduct(product: InsertShopProduct): Promise<ShopProduct>;
-  updateShopProduct(id: number, data: Partial<InsertShopProduct>): Promise<ShopProduct | undefined>;
+  updateShopProduct(
+    id: number,
+    data: Partial<InsertShopProduct>,
+  ): Promise<ShopProduct | undefined>;
   deleteShopProduct(id: number): Promise<boolean>;
 
   // User Inventory
   getUserInventory(userId: number): Promise<UserInventory[]>;
   purchaseProduct(userId: number, productId: number): Promise<UserInventory>;
-  toggleEquipItem(userId: number, itemId: number): Promise<UserInventory | undefined>;
+  toggleEquipItem(
+    userId: number,
+    itemId: number,
+  ): Promise<UserInventory | undefined>;
 
   // Notifications
   getUserNotifications(userId: number, limit?: number): Promise<Notification[]>;
@@ -187,8 +246,14 @@ export interface IStorage {
 
   // User Profiles
   getUserProfile(userId: number): Promise<UserProfile | undefined>;
-  upsertUserProfile(userId: number, data: Partial<InsertUserProfile>): Promise<UserProfile>;
-  createUserProfile(userId: number, data: Partial<InsertUserProfile>): Promise<UserProfile>;
+  upsertUserProfile(
+    userId: number,
+    data: Partial<InsertUserProfile>,
+  ): Promise<UserProfile>;
+  createUserProfile(
+    userId: number,
+    data: Partial<InsertUserProfile>,
+  ): Promise<UserProfile>;
 
   // Profile Wall / Muro
   getWallMessages(profileUserId: number): Promise<ProfileWallMessage[]>;
@@ -204,7 +269,10 @@ export interface IStorage {
   // VIP Memberships
   getVipMembership(userId: number): Promise<VipMembership | undefined>;
   createVipMembership(membership: InsertVipMembership): Promise<VipMembership>;
-  updateVipMembership(userId: number, data: Partial<InsertVipMembership>): Promise<VipMembership | undefined>;
+  updateVipMembership(
+    userId: number,
+    data: Partial<InsertVipMembership>,
+  ): Promise<VipMembership | undefined>;
   getAllVipMemberships(): Promise<any[]>;
 
   // VIP Perks Log
@@ -215,30 +283,44 @@ export interface IStorage {
   getAllRooms(includeInactive?: boolean): Promise<HSpeedRoom[]>;
   getFeaturedRooms(): Promise<HSpeedRoom[]>;
   createRoom(room: InsertHSpeedRoom): Promise<HSpeedRoom>;
-  updateRoom(id: number, data: Partial<InsertHSpeedRoom>): Promise<HSpeedRoom | undefined>;
+  updateRoom(
+    id: number,
+    data: Partial<InsertHSpeedRoom>,
+  ): Promise<HSpeedRoom | undefined>;
   deleteRoom(id: number): Promise<boolean>;
 
   // Support Tickets
   getTicketsByUser(userId: number): Promise<SupportTicket[]>;
   createTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
-  updateTicketStatus(id: number, status: string): Promise<SupportTicket | undefined>;
+  updateTicketStatus(
+    id: number,
+    status: string,
+  ): Promise<SupportTicket | undefined>;
   getAllTickets(): Promise<SupportTicket[]>;
 
   // Alliances
   getAllAlliances(): Promise<Alliance[]>;
   createAlliance(data: InsertAlliance): Promise<Alliance>;
-  updateAlliance(id: number, data: Partial<InsertAlliance>): Promise<Alliance | undefined>;
+  updateAlliance(
+    id: number,
+    data: Partial<InsertAlliance>,
+  ): Promise<Alliance | undefined>;
   deleteAlliance(id: number): Promise<boolean>;
 }
-
 
 // Helper to map snake_case DB rows to camelCase TypeScript objects
 function mapUser(row: any): User {
   return {
-    id: row.id, email: row.email, passwordHash: row.password_hash,
-    displayName: row.display_name, habboUsername: row.habbo_username,
-    avatarUrl: row.avatar_url, role: row.role, approved: row.approved,
-    speedPoints: row.speed_points, createdAt: row.created_at,
+    id: row.id,
+    email: row.email,
+    passwordHash: row.password_hash,
+    displayName: row.display_name,
+    habboUsername: row.habbo_username,
+    avatarUrl: row.avatar_url,
+    role: row.role,
+    approved: row.approved,
+    speedPoints: row.speed_points,
+    createdAt: row.created_at,
     mundialStamps: row.mundial_stamps,
     mundialLogros: row.mundial_logros,
     mundialClan: row.mundial_clan,
@@ -255,125 +337,272 @@ function mapUser(row: any): User {
 }
 function mapNews(row: any): News {
   return {
-    id: row.id, title: row.title, summary: row.summary, content: row.content,
-    imageUrl: row.image_url, imageHint: row.image_hint, category: row.category,
-    date: row.date, reactions: row.reactions, authorId: row.author_id,
+    id: row.id,
+    title: row.title,
+    summary: row.summary,
+    content: row.content,
+    imageUrl: row.image_url,
+    imageHint: row.image_hint,
+    category: row.category,
+    date: row.date,
+    reactions: row.reactions,
+    authorId: row.author_id,
     createdAt: row.created_at,
   };
 }
 function mapEvent(row: any): Event {
   return {
-    id: row.id, title: row.title, server: row.server, date: row.date,
-    time: row.time, roomName: row.room_name, roomOwner: row.room_owner,
-    host: row.host, imageUrl: row.image_url, imageHint: row.image_hint,
+    id: row.id,
+    title: row.title,
+    server: row.server,
+    date: row.date,
+    time: row.time,
+    roomName: row.room_name,
+    roomOwner: row.room_owner,
+    host: row.host,
+    imageUrl: row.image_url,
+    imageHint: row.image_hint,
     createdAt: row.created_at,
   };
 }
 function mapSchedule(row: any): Schedule {
   return {
-    id: row.id, day: row.day, startTime: row.start_time,
-    endTime: row.end_time, showName: row.show_name, djName: row.dj_name,
+    id: row.id,
+    day: row.day,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    showName: row.show_name,
+    djName: row.dj_name,
   };
 }
 function mapComment(row: any): Comment {
   return {
-    id: row.id, articleId: row.article_id, authorId: row.author_id,
-    authorName: row.author_name, content: row.content, createdAt: row.created_at,
+    id: row.id,
+    articleId: row.article_id,
+    authorId: row.author_id,
+    authorName: row.author_name,
+    content: row.content,
+    createdAt: row.created_at,
   };
 }
 function mapPoll(row: any): Poll {
   return {
-    id: row.id, title: row.title, options: row.options,
-    isActive: row.is_active, createdAt: row.created_at,
+    id: row.id,
+    title: row.title,
+    options: row.options,
+    isActive: row.is_active,
+    createdAt: row.created_at,
   };
 }
 function mapConfig(row: any): Config {
   return {
-    id: row.id, radioService: row.radio_service, apiUrl: row.api_url,
-    listenUrl: row.listen_url, homePlayerBgUrl: row.home_player_bg_url,
-    slideshow: row.slideshow, discordWebhooks: row.discord_webhooks,
+    id: row.id,
+    radioService: row.radio_service,
+    apiUrl: row.api_url,
+    listenUrl: row.listen_url,
+    homePlayerBgUrl: row.home_player_bg_url,
+    slideshow: row.slideshow,
+    discordWebhooks: row.discord_webhooks,
     activeTheme: row.active_theme,
     maintenanceMode: row.maintenance_mode ?? true,
   };
 }
 function mapTheme(row: any): Theme {
   return {
-    id: row.id, slug: row.slug, name: row.name, description: row.description,
-    colors: row.colors, bannerUrl: row.banner_url, logoUrl: row.logo_url,
-    decorations: row.decorations, isDefault: row.is_default,
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description,
+    colors: row.colors,
+    bannerUrl: row.banner_url,
+    logoUrl: row.logo_url,
+    decorations: row.decorations,
+    isDefault: row.is_default,
   };
 }
 function mapForumCategory(row: any): ForumCategory {
-  return { id: row.id, name: row.name, description: row.description, sortOrder: row.sort_order };
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    sortOrder: row.sort_order,
+  };
 }
 function mapForumThread(row: any): ForumThread {
   return {
-    id: row.id, categoryId: row.category_id, title: row.title,
-    authorId: row.author_id, authorName: row.author_name,
-    isPinned: row.is_pinned, isLocked: row.is_locked,
-    views: row.views, createdAt: row.created_at,
+    id: row.id,
+    categoryId: row.category_id,
+    title: row.title,
+    authorId: row.author_id,
+    authorName: row.author_name,
+    isPinned: row.is_pinned,
+    isLocked: row.is_locked,
+    views: row.views,
+    createdAt: row.created_at,
   };
 }
 function mapForumPost(row: any): ForumPost {
   return {
-    id: row.id, threadId: row.thread_id, authorId: row.author_id,
-    authorName: row.author_name, content: row.content, createdAt: row.created_at,
+    id: row.id,
+    threadId: row.thread_id,
+    authorId: row.author_id,
+    authorName: row.author_name,
+    content: row.content,
+    createdAt: row.created_at,
   };
 }
 function mapMarketplaceItem(row: any): MarketplaceItem {
   return {
-    id: row.id, itemName: row.item_name, className: row.class_name,
-    hotel: row.hotel, currentPrice: row.current_price, avgPrice: row.avg_price,
-    priceHistory: row.price_history, imageUrl: row.image_url,
+    id: row.id,
+    itemName: row.item_name,
+    className: row.class_name,
+    hotel: row.hotel,
+    currentPrice: row.current_price,
+    avgPrice: row.avg_price,
+    priceHistory: row.price_history,
+    imageUrl: row.image_url,
     lastUpdated: row.last_updated,
   };
 }
 function mapBadge(row: any): Badge {
   return {
-    id: row.id, code: row.code, name: row.name, description: row.description,
-    hotel: row.hotel, category: row.category, imageUrl: row.image_url,
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    description: row.description,
+    hotel: row.hotel,
+    category: row.category,
+    imageUrl: row.image_url,
     discoveredAt: row.discovered_at,
   };
 }
 function mapRequest(row: any): Request {
   return {
-    id: row.id, type: row.type, details: row.details,
-    userName: row.user_name, createdAt: row.created_at,
+    id: row.id,
+    type: row.type,
+    details: row.details,
+    userName: row.user_name,
+    createdAt: row.created_at,
   };
 }
 function mapTeamMember(row: any): TeamMember {
   return {
-    id: row.id, displayName: row.display_name,
-    habboUsername: row.habbo_username, role: row.role,
-    motto: row.motto, joinedAt: row.joined_at,
+    id: row.id,
+    displayName: row.display_name,
+    habboUsername: row.habbo_username,
+    role: row.role,
+    motto: row.motto,
+    joinedAt: row.joined_at,
   };
 }
 function mapDownload(row: any): Download {
-  return { id: row.id, title: row.title, description: row.description, fileUrl: row.file_url, category: row.category, addedBy: row.added_by, downloadCount: row.download_count, createdAt: row.created_at };
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    fileUrl: row.file_url,
+    category: row.category,
+    addedBy: row.added_by,
+    downloadCount: row.download_count,
+    createdAt: row.created_at,
+  };
 }
 function mapBannedSong(row: any): BannedSong {
-  return { id: row.id, title: row.title, artist: row.artist, reason: row.reason, bannedBy: row.banned_by, createdAt: row.created_at };
+  return {
+    id: row.id,
+    title: row.title,
+    artist: row.artist,
+    reason: row.reason,
+    bannedBy: row.banned_by,
+    createdAt: row.created_at,
+  };
 }
 function mapContactMessage(row: any): ContactMessage {
-  return { id: row.id, name: row.name, email: row.email, subject: row.subject, message: row.message, ip: row.ip, status: row.status, createdAt: row.created_at };
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    subject: row.subject,
+    message: row.message,
+    ip: row.ip,
+    status: row.status,
+    createdAt: row.created_at,
+  };
 }
 function mapPanelLog(row: any): PanelLog {
-  return { id: row.id, userId: row.user_id, userName: row.user_name, action: row.action, details: row.details, ip: row.ip, createdAt: row.created_at };
+  return {
+    id: row.id,
+    userId: row.user_id,
+    userName: row.user_name,
+    action: row.action,
+    details: row.details,
+    ip: row.ip,
+    createdAt: row.created_at,
+  };
 }
 function mapReportedMessage(row: any): ReportedMessage {
-  return { id: row.id, messageId: row.message_id, reportedBy: row.reported_by, reason: row.reason, status: row.status, createdAt: row.created_at };
+  return {
+    id: row.id,
+    messageId: row.message_id,
+    reportedBy: row.reported_by,
+    reason: row.reason,
+    status: row.status,
+    createdAt: row.created_at,
+  };
 }
 function mapShopProduct(row: any): ShopProduct {
-  return { id: row.id, name: row.name, description: row.description, category: row.category, price: row.price, imageUrl: row.image_url, previewUrl: row.preview_url, data: row.data, isLimited: row.is_limited, stock: row.stock, isActive: row.is_active, createdAt: row.created_at };
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    category: row.category,
+    price: row.price,
+    imageUrl: row.image_url,
+    previewUrl: row.preview_url,
+    data: row.data,
+    isLimited: row.is_limited,
+    stock: row.stock,
+    isActive: row.is_active,
+    createdAt: row.created_at,
+  };
 }
 function mapUserInventory(row: any): UserInventory {
-  return { id: row.id, userId: row.user_id, productId: row.product_id, isEquipped: row.is_equipped, purchasedAt: row.purchased_at };
+  return {
+    id: row.id,
+    userId: row.user_id,
+    productId: row.product_id,
+    isEquipped: row.is_equipped,
+    purchasedAt: row.purchased_at,
+  };
 }
 function mapNotification(row: any): Notification {
-  return { id: row.id, userId: row.user_id, type: row.type, title: row.title, message: row.message, icon: row.icon, link: row.link, isRead: row.is_read, createdAt: row.created_at };
+  return {
+    id: row.id,
+    userId: row.user_id,
+    type: row.type,
+    title: row.title,
+    message: row.message,
+    icon: row.icon,
+    link: row.link,
+    isRead: row.is_read,
+    createdAt: row.created_at,
+  };
 }
 function mapUserProfile(row: any): UserProfile {
-  return { id: row.id, userId: row.user_id, bio: row.bio, backgroundUrl: row.background_url, backgroundColor: row.background_color, accentColor: row.accent_color, aboutMe: row.about_me, socialYoutube: row.social_youtube, socialTwitter: row.social_twitter, socialInstagram: row.social_instagram, customCss: row.custom_css, updatedAt: row.updated_at };
+  return {
+    id: row.id,
+    userId: row.user_id,
+    bio: row.bio,
+    backgroundUrl: row.background_url,
+    backgroundColor: row.background_color,
+    accentColor: row.accent_color,
+    aboutMe: row.about_me,
+    socialYoutube: row.social_youtube,
+    socialTwitter: row.social_twitter,
+    socialInstagram: row.social_instagram,
+    customCss: row.custom_css,
+    updatedAt: row.updated_at,
+  };
 }
 
 function mapProfileWall(row: any): ProfileWallMessage {
@@ -466,7 +695,6 @@ function mapAlliance(row: any): Alliance {
   };
 }
 
-
 export class SupabaseStorage implements IStorage {
   private pool: any;
 
@@ -496,7 +724,16 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO users (email, password_hash, display_name, habbo_username, avatar_url, role, approved, speed_points)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [user.email, user.passwordHash, user.displayName, user.habboUsername || null, user.avatarUrl || null, user.role || "pending", user.approved ?? false, user.speedPoints ?? 0]
+      [
+        user.email,
+        user.passwordHash,
+        user.displayName,
+        user.habboUsername || null,
+        user.avatarUrl || null,
+        user.role || "pending",
+        user.approved ?? false,
+        user.speedPoints ?? 0,
+      ],
     );
     return mapUser(r.rows[0]);
   }
@@ -504,29 +741,92 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.email !== undefined) { fields.push(`email = $${i++}`); values.push(data.email); }
-    if (data.displayName !== undefined) { fields.push(`display_name = $${i++}`); values.push(data.displayName); }
-    if (data.habboUsername !== undefined) { fields.push(`habbo_username = $${i++}`); values.push(data.habboUsername); }
-    if (data.avatarUrl !== undefined) { fields.push(`avatar_url = $${i++}`); values.push(data.avatarUrl); }
-    if (data.role !== undefined) { fields.push(`role = $${i++}`); values.push(data.role); }
-    if (data.approved !== undefined) { fields.push(`approved = $${i++}`); values.push(data.approved); }
-    if (data.speedPoints !== undefined) { fields.push(`speed_points = $${i++}`); values.push(data.speedPoints); }
-    if (data.passwordHash !== undefined) { fields.push(`password_hash = $${i++}`); values.push(data.passwordHash); }
-    if (data.mundialStamps !== undefined) { fields.push(`mundial_stamps = $${i++}`); values.push(JSON.stringify(data.mundialStamps)); }
-    if (data.mundialLogros !== undefined) { fields.push(`mundial_logros = $${i++}`); values.push(JSON.stringify(data.mundialLogros)); }
-    if (data.mundialClan !== undefined) { fields.push(`mundial_clan = $${i++}`); values.push(data.mundialClan); }
-    if (data.mundialPredictions !== undefined) { fields.push(`mundial_predictions = $${i++}`); values.push(JSON.stringify(data.mundialPredictions)); }
-    if (data.mundialTickets !== undefined) { fields.push(`mundial_tickets = $${i++}`); values.push(data.mundialTickets); }
-    if (data.mundialPenalties !== undefined) { fields.push(`mundial_penalties = $${i++}`); values.push(JSON.stringify(data.mundialPenalties)); }
-    if (data.vipTier !== undefined) { fields.push(`vip_tier = $${i++}`); values.push(data.vipTier); }
-    if (data.totalRequests !== undefined) { fields.push(`total_requests = $${i++}`); values.push(data.totalRequests); }
-    if (data.favoriteGenre !== undefined) { fields.push(`favorite_genre = $${i++}`); values.push(data.favoriteGenre); }
-    if (data.bio !== undefined) { fields.push(`bio = $${i++}`); values.push(data.bio); }
-    if (data.socialLinks !== undefined) { fields.push(`social_links = $${i++}`); values.push(JSON.stringify(data.socialLinks)); }
-    if (data.badgesEarned !== undefined) { fields.push(`badges_earned = $${i++}`); values.push(JSON.stringify(data.badgesEarned)); }
+    if (data.email !== undefined) {
+      fields.push(`email = $${i++}`);
+      values.push(data.email);
+    }
+    if (data.displayName !== undefined) {
+      fields.push(`display_name = $${i++}`);
+      values.push(data.displayName);
+    }
+    if (data.habboUsername !== undefined) {
+      fields.push(`habbo_username = $${i++}`);
+      values.push(data.habboUsername);
+    }
+    if (data.avatarUrl !== undefined) {
+      fields.push(`avatar_url = $${i++}`);
+      values.push(data.avatarUrl);
+    }
+    if (data.role !== undefined) {
+      fields.push(`role = $${i++}`);
+      values.push(data.role);
+    }
+    if (data.approved !== undefined) {
+      fields.push(`approved = $${i++}`);
+      values.push(data.approved);
+    }
+    if (data.speedPoints !== undefined) {
+      fields.push(`speed_points = $${i++}`);
+      values.push(data.speedPoints);
+    }
+    if (data.passwordHash !== undefined) {
+      fields.push(`password_hash = $${i++}`);
+      values.push(data.passwordHash);
+    }
+    if (data.mundialStamps !== undefined) {
+      fields.push(`mundial_stamps = $${i++}`);
+      values.push(JSON.stringify(data.mundialStamps));
+    }
+    if (data.mundialLogros !== undefined) {
+      fields.push(`mundial_logros = $${i++}`);
+      values.push(JSON.stringify(data.mundialLogros));
+    }
+    if (data.mundialClan !== undefined) {
+      fields.push(`mundial_clan = $${i++}`);
+      values.push(data.mundialClan);
+    }
+    if (data.mundialPredictions !== undefined) {
+      fields.push(`mundial_predictions = $${i++}`);
+      values.push(JSON.stringify(data.mundialPredictions));
+    }
+    if (data.mundialTickets !== undefined) {
+      fields.push(`mundial_tickets = $${i++}`);
+      values.push(data.mundialTickets);
+    }
+    if (data.mundialPenalties !== undefined) {
+      fields.push(`mundial_penalties = $${i++}`);
+      values.push(JSON.stringify(data.mundialPenalties));
+    }
+    if (data.vipTier !== undefined) {
+      fields.push(`vip_tier = $${i++}`);
+      values.push(data.vipTier);
+    }
+    if (data.totalRequests !== undefined) {
+      fields.push(`total_requests = $${i++}`);
+      values.push(data.totalRequests);
+    }
+    if (data.favoriteGenre !== undefined) {
+      fields.push(`favorite_genre = $${i++}`);
+      values.push(data.favoriteGenre);
+    }
+    if (data.bio !== undefined) {
+      fields.push(`bio = $${i++}`);
+      values.push(data.bio);
+    }
+    if (data.socialLinks !== undefined) {
+      fields.push(`social_links = $${i++}`);
+      values.push(JSON.stringify(data.socialLinks));
+    }
+    if (data.badgesEarned !== undefined) {
+      fields.push(`badges_earned = $${i++}`);
+      values.push(JSON.stringify(data.badgesEarned));
+    }
     if (fields.length === 0) return this.getUser(id);
     values.push(id);
-    const r = await this.query(`UPDATE users SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    const r = await this.query(
+      `UPDATE users SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
     return r.rows[0] ? mapUser(r.rows[0]) : undefined;
   }
   async getAllUsers() {
@@ -547,7 +847,17 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO news (title, summary, content, image_url, image_hint, category, date, reactions, author_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [article.title, article.summary, article.content, article.imageUrl, article.imageHint || "", article.category, article.date, JSON.stringify(article.reactions || {}), article.authorId || null]
+      [
+        article.title,
+        article.summary,
+        article.content,
+        article.imageUrl,
+        article.imageHint || "",
+        article.category,
+        article.date,
+        JSON.stringify(article.reactions || {}),
+        article.authorId || null,
+      ],
     );
     return mapNews(r.rows[0]);
   }
@@ -555,17 +865,44 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.title !== undefined) { fields.push(`title = $${i++}`); values.push(data.title); }
-    if (data.summary !== undefined) { fields.push(`summary = $${i++}`); values.push(data.summary); }
-    if (data.content !== undefined) { fields.push(`content = $${i++}`); values.push(data.content); }
-    if (data.imageUrl !== undefined) { fields.push(`image_url = $${i++}`); values.push(data.imageUrl); }
-    if (data.imageHint !== undefined) { fields.push(`image_hint = $${i++}`); values.push(data.imageHint); }
-    if (data.category !== undefined) { fields.push(`category = $${i++}`); values.push(data.category); }
-    if (data.date !== undefined) { fields.push(`date = $${i++}`); values.push(data.date); }
-    if (data.reactions !== undefined) { fields.push(`reactions = $${i++}`); values.push(JSON.stringify(data.reactions)); }
+    if (data.title !== undefined) {
+      fields.push(`title = $${i++}`);
+      values.push(data.title);
+    }
+    if (data.summary !== undefined) {
+      fields.push(`summary = $${i++}`);
+      values.push(data.summary);
+    }
+    if (data.content !== undefined) {
+      fields.push(`content = $${i++}`);
+      values.push(data.content);
+    }
+    if (data.imageUrl !== undefined) {
+      fields.push(`image_url = $${i++}`);
+      values.push(data.imageUrl);
+    }
+    if (data.imageHint !== undefined) {
+      fields.push(`image_hint = $${i++}`);
+      values.push(data.imageHint);
+    }
+    if (data.category !== undefined) {
+      fields.push(`category = $${i++}`);
+      values.push(data.category);
+    }
+    if (data.date !== undefined) {
+      fields.push(`date = $${i++}`);
+      values.push(data.date);
+    }
+    if (data.reactions !== undefined) {
+      fields.push(`reactions = $${i++}`);
+      values.push(JSON.stringify(data.reactions));
+    }
     if (fields.length === 0) return this.getNewsById(id);
     values.push(id);
-    const r = await this.query(`UPDATE news SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    const r = await this.query(
+      `UPDATE news SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
     return r.rows[0] ? mapNews(r.rows[0]) : undefined;
   }
   async deleteNews(id: number) {
@@ -575,7 +912,9 @@ export class SupabaseStorage implements IStorage {
 
   // Events
   async getAllEvents() {
-    const r = await this.query("SELECT * FROM events ORDER BY date DESC, time DESC");
+    const r = await this.query(
+      "SELECT * FROM events ORDER BY date DESC, time DESC",
+    );
     return r.rows.map(mapEvent);
   }
   async getEventById(id: number) {
@@ -586,7 +925,17 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO events (title, server, date, time, room_name, room_owner, host, image_url, image_hint)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [event.title, event.server, event.date, event.time, event.roomName, event.roomOwner, event.host, event.imageUrl, event.imageHint || ""]
+      [
+        event.title,
+        event.server,
+        event.date,
+        event.time,
+        event.roomName,
+        event.roomOwner,
+        event.host,
+        event.imageUrl,
+        event.imageHint || "",
+      ],
     );
     return mapEvent(r.rows[0]);
   }
@@ -594,17 +943,44 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.title !== undefined) { fields.push(`title = $${i++}`); values.push(data.title); }
-    if (data.server !== undefined) { fields.push(`server = $${i++}`); values.push(data.server); }
-    if (data.date !== undefined) { fields.push(`date = $${i++}`); values.push(data.date); }
-    if (data.time !== undefined) { fields.push(`time = $${i++}`); values.push(data.time); }
-    if (data.roomName !== undefined) { fields.push(`room_name = $${i++}`); values.push(data.roomName); }
-    if (data.roomOwner !== undefined) { fields.push(`room_owner = $${i++}`); values.push(data.roomOwner); }
-    if (data.host !== undefined) { fields.push(`host = $${i++}`); values.push(data.host); }
-    if (data.imageUrl !== undefined) { fields.push(`image_url = $${i++}`); values.push(data.imageUrl); }
+    if (data.title !== undefined) {
+      fields.push(`title = $${i++}`);
+      values.push(data.title);
+    }
+    if (data.server !== undefined) {
+      fields.push(`server = $${i++}`);
+      values.push(data.server);
+    }
+    if (data.date !== undefined) {
+      fields.push(`date = $${i++}`);
+      values.push(data.date);
+    }
+    if (data.time !== undefined) {
+      fields.push(`time = $${i++}`);
+      values.push(data.time);
+    }
+    if (data.roomName !== undefined) {
+      fields.push(`room_name = $${i++}`);
+      values.push(data.roomName);
+    }
+    if (data.roomOwner !== undefined) {
+      fields.push(`room_owner = $${i++}`);
+      values.push(data.roomOwner);
+    }
+    if (data.host !== undefined) {
+      fields.push(`host = $${i++}`);
+      values.push(data.host);
+    }
+    if (data.imageUrl !== undefined) {
+      fields.push(`image_url = $${i++}`);
+      values.push(data.imageUrl);
+    }
     if (fields.length === 0) return this.getEventById(id);
     values.push(id);
-    const r = await this.query(`UPDATE events SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    const r = await this.query(
+      `UPDATE events SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
     return r.rows[0] ? mapEvent(r.rows[0]) : undefined;
   }
   async deleteEvent(id: number) {
@@ -620,7 +996,7 @@ export class SupabaseStorage implements IStorage {
   async createScheduleItem(item: InsertSchedule) {
     const r = await this.query(
       `INSERT INTO schedule (day, start_time, end_time, show_name, dj_name) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [item.day, item.startTime, item.endTime, item.showName, item.djName]
+      [item.day, item.startTime, item.endTime, item.showName, item.djName],
     );
     return mapSchedule(r.rows[0]);
   }
@@ -628,14 +1004,32 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.day !== undefined) { fields.push(`day = $${i++}`); values.push(data.day); }
-    if (data.startTime !== undefined) { fields.push(`start_time = $${i++}`); values.push(data.startTime); }
-    if (data.endTime !== undefined) { fields.push(`end_time = $${i++}`); values.push(data.endTime); }
-    if (data.showName !== undefined) { fields.push(`show_name = $${i++}`); values.push(data.showName); }
-    if (data.djName !== undefined) { fields.push(`dj_name = $${i++}`); values.push(data.djName); }
+    if (data.day !== undefined) {
+      fields.push(`day = $${i++}`);
+      values.push(data.day);
+    }
+    if (data.startTime !== undefined) {
+      fields.push(`start_time = $${i++}`);
+      values.push(data.startTime);
+    }
+    if (data.endTime !== undefined) {
+      fields.push(`end_time = $${i++}`);
+      values.push(data.endTime);
+    }
+    if (data.showName !== undefined) {
+      fields.push(`show_name = $${i++}`);
+      values.push(data.showName);
+    }
+    if (data.djName !== undefined) {
+      fields.push(`dj_name = $${i++}`);
+      values.push(data.djName);
+    }
     if (fields.length === 0) return undefined;
     values.push(id);
-    const r = await this.query(`UPDATE schedule SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    const r = await this.query(
+      `UPDATE schedule SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
     return r.rows[0] ? mapSchedule(r.rows[0]) : undefined;
   }
   async deleteScheduleItem(id: number) {
@@ -649,7 +1043,7 @@ export class SupabaseStorage implements IStorage {
       `SELECT c.*, u.habbo_username FROM comments c 
        LEFT JOIN users u ON c.author_id = u.id 
        WHERE c.article_id = $1 ORDER BY c.created_at ASC`,
-      [articleId]
+      [articleId],
     );
     return r.rows.map((row: any) => ({
       ...mapComment(row),
@@ -659,7 +1053,12 @@ export class SupabaseStorage implements IStorage {
   async createComment(comment: InsertComment) {
     const r = await this.query(
       `INSERT INTO comments (article_id, author_id, author_name, content) VALUES ($1, $2, $3, $4) RETURNING *`,
-      [comment.articleId || null, comment.authorId || null, comment.authorName, comment.content]
+      [
+        comment.articleId || null,
+        comment.authorId || null,
+        comment.authorName,
+        comment.content,
+      ],
     );
     return mapComment(r.rows[0]);
   }
@@ -676,7 +1075,7 @@ export class SupabaseStorage implements IStorage {
   async createPoll(poll: InsertPoll) {
     const r = await this.query(
       `INSERT INTO polls (title, options, is_active) VALUES ($1, $2, $3) RETURNING *`,
-      [poll.title, JSON.stringify(poll.options || []), poll.isActive ?? true]
+      [poll.title, JSON.stringify(poll.options || []), poll.isActive ?? true],
     );
     return mapPoll(r.rows[0]);
   }
@@ -684,12 +1083,24 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.title !== undefined) { fields.push(`title = $${i++}`); values.push(data.title); }
-    if (data.options !== undefined) { fields.push(`options = $${i++}`); values.push(JSON.stringify(data.options)); }
-    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
+    if (data.title !== undefined) {
+      fields.push(`title = $${i++}`);
+      values.push(data.title);
+    }
+    if (data.options !== undefined) {
+      fields.push(`options = $${i++}`);
+      values.push(JSON.stringify(data.options));
+    }
+    if (data.isActive !== undefined) {
+      fields.push(`is_active = $${i++}`);
+      values.push(data.isActive);
+    }
     if (fields.length === 0) return undefined;
     values.push(id);
-    const r = await this.query(`UPDATE polls SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    const r = await this.query(
+      `UPDATE polls SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
     return r.rows[0] ? mapPoll(r.rows[0]) : undefined;
   }
 
@@ -702,28 +1113,57 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.radioService !== undefined) { fields.push(`radio_service = $${i++}`); values.push(data.radioService); }
-    if (data.apiUrl !== undefined) { fields.push(`api_url = $${i++}`); values.push(data.apiUrl); }
-    if (data.listenUrl !== undefined) { fields.push(`listen_url = $${i++}`); values.push(data.listenUrl); }
-    if (data.homePlayerBgUrl !== undefined) { fields.push(`home_player_bg_url = $${i++}`); values.push(data.homePlayerBgUrl); }
-    if (data.slideshow !== undefined) { fields.push(`slideshow = $${i++}`); values.push(JSON.stringify(data.slideshow)); }
-    if (data.discordWebhooks !== undefined) { fields.push(`discord_webhooks = $${i++}`); values.push(JSON.stringify(data.discordWebhooks)); }
-    if (data.activeTheme !== undefined) { fields.push(`active_theme = $${i++}`); values.push(data.activeTheme); }
-    if (data.maintenanceMode !== undefined) { fields.push(`maintenance_mode = $${i++}`); values.push(data.maintenanceMode); }
+    if (data.radioService !== undefined) {
+      fields.push(`radio_service = $${i++}`);
+      values.push(data.radioService);
+    }
+    if (data.apiUrl !== undefined) {
+      fields.push(`api_url = $${i++}`);
+      values.push(data.apiUrl);
+    }
+    if (data.listenUrl !== undefined) {
+      fields.push(`listen_url = $${i++}`);
+      values.push(data.listenUrl);
+    }
+    if (data.homePlayerBgUrl !== undefined) {
+      fields.push(`home_player_bg_url = $${i++}`);
+      values.push(data.homePlayerBgUrl);
+    }
+    if (data.slideshow !== undefined) {
+      fields.push(`slideshow = $${i++}`);
+      values.push(JSON.stringify(data.slideshow));
+    }
+    if (data.discordWebhooks !== undefined) {
+      fields.push(`discord_webhooks = $${i++}`);
+      values.push(JSON.stringify(data.discordWebhooks));
+    }
+    if (data.activeTheme !== undefined) {
+      fields.push(`active_theme = $${i++}`);
+      values.push(data.activeTheme);
+    }
+    if (data.maintenanceMode !== undefined) {
+      fields.push(`maintenance_mode = $${i++}`);
+      values.push(data.maintenanceMode);
+    }
     if (fields.length === 0) return this.getConfig();
-    const r = await this.query(`UPDATE config SET ${fields.join(", ")} WHERE id = (SELECT id FROM config ORDER BY id LIMIT 1) RETURNING *`, values);
+    const r = await this.query(
+      `UPDATE config SET ${fields.join(", ")} WHERE id = (SELECT id FROM config ORDER BY id LIMIT 1) RETURNING *`,
+      values,
+    );
     return r.rows[0] ? mapConfig(r.rows[0]) : undefined;
   }
 
   // Forum
   async getAllForumCategories() {
-    const r = await this.query("SELECT * FROM forum_categories ORDER BY sort_order ASC");
+    const r = await this.query(
+      "SELECT * FROM forum_categories ORDER BY sort_order ASC",
+    );
     return r.rows.map(mapForumCategory);
   }
   async createForumCategory(cat: InsertForumCategory) {
     const r = await this.query(
       `INSERT INTO forum_categories (name, description, sort_order) VALUES ($1, $2, $3) RETURNING *`,
-      [cat.name, cat.description || null, cat.sortOrder ?? 0]
+      [cat.name, cat.description || null, cat.sortOrder ?? 0],
     );
     return mapForumCategory(r.rows[0]);
   }
@@ -731,50 +1171,87 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
-    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
-    if (data.sortOrder !== undefined) { fields.push(`sort_order = $${i++}`); values.push(data.sortOrder); }
-    if (fields.length === 0) return this.getAllForumCategories().then((cats) => cats.find((c) => c.id === id));
+    if (data.name !== undefined) {
+      fields.push(`name = $${i++}`);
+      values.push(data.name);
+    }
+    if (data.description !== undefined) {
+      fields.push(`description = $${i++}`);
+      values.push(data.description);
+    }
+    if (data.sortOrder !== undefined) {
+      fields.push(`sort_order = $${i++}`);
+      values.push(data.sortOrder);
+    }
+    if (fields.length === 0)
+      return this.getAllForumCategories().then((cats: any[]) =>
+        cats.find((c: any) => c.id === id),
+      );
     values.push(id);
     const r = await this.query(
       `UPDATE forum_categories SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
-      values
+      values,
     );
     return r.rows[0] ? mapForumCategory(r.rows[0]) : undefined;
   }
   async deleteForumCategory(id: number) {
-    const r = await this.query("DELETE FROM forum_categories WHERE id = $1 RETURNING id", [id]);
+    const r = await this.query(
+      "DELETE FROM forum_categories WHERE id = $1 RETURNING id",
+      [id],
+    );
     return (r.rowCount || 0) > 0;
   }
   async getThreadsByCategory(categoryId: number) {
     const r = await this.query(
-      "SELECT * FROM forum_threads WHERE category_id = $1 ORDER BY is_pinned DESC, created_at DESC", [categoryId]
+      "SELECT * FROM forum_threads WHERE category_id = $1 ORDER BY is_pinned DESC, created_at DESC",
+      [categoryId],
     );
     return r.rows.map(mapForumThread);
   }
   async getThreadById(id: number) {
-    const r = await this.query("SELECT * FROM forum_threads WHERE id = $1", [id]);
+    const r = await this.query("SELECT * FROM forum_threads WHERE id = $1", [
+      id,
+    ]);
     return r.rows[0] ? mapForumThread(r.rows[0]) : undefined;
   }
   async createThread(thread: InsertForumThread) {
     const r = await this.query(
       `INSERT INTO forum_threads (category_id, title, author_id, author_name, is_pinned, is_locked, views)
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [thread.categoryId || null, thread.title, thread.authorId || null, thread.authorName, thread.isPinned ?? false, thread.isLocked ?? false, thread.views ?? 0]
+      [
+        thread.categoryId || null,
+        thread.title,
+        thread.authorId || null,
+        thread.authorName,
+        thread.isPinned ?? false,
+        thread.isLocked ?? false,
+        thread.views ?? 0,
+      ],
     );
     return mapForumThread(r.rows[0]);
   }
   async incrementThreadViews(id: number) {
-    await this.query("UPDATE forum_threads SET views = views + 1 WHERE id = $1", [id]);
+    await this.query(
+      "UPDATE forum_threads SET views = views + 1 WHERE id = $1",
+      [id],
+    );
   }
   async getPostsByThread(threadId: number) {
-    const r = await this.query("SELECT * FROM forum_posts WHERE thread_id = $1 ORDER BY created_at ASC", [threadId]);
+    const r = await this.query(
+      "SELECT * FROM forum_posts WHERE thread_id = $1 ORDER BY created_at ASC",
+      [threadId],
+    );
     return r.rows.map(mapForumPost);
   }
   async createPost(post: InsertForumPost) {
     const r = await this.query(
       `INSERT INTO forum_posts (thread_id, author_id, author_name, content) VALUES ($1, $2, $3, $4) RETURNING *`,
-      [post.threadId || null, post.authorId || null, post.authorName, post.content]
+      [
+        post.threadId || null,
+        post.authorId || null,
+        post.authorName,
+        post.content,
+      ],
     );
     return mapForumPost(r.rows[0]);
   }
@@ -785,11 +1262,16 @@ export class SupabaseStorage implements IStorage {
 
   // Marketplace
   async getAllMarketplaceItems() {
-    const r = await this.query("SELECT * FROM marketplace_items ORDER BY last_updated DESC");
+    const r = await this.query(
+      "SELECT * FROM marketplace_items ORDER BY last_updated DESC",
+    );
     return r.rows.map(mapMarketplaceItem);
   }
   async getMarketplaceItemByClass(className: string) {
-    const r = await this.query("SELECT * FROM marketplace_items WHERE class_name = $1", [className]);
+    const r = await this.query(
+      "SELECT * FROM marketplace_items WHERE class_name = $1",
+      [className],
+    );
     return r.rows[0] ? mapMarketplaceItem(r.rows[0]) : undefined;
   }
   async upsertMarketplaceItem(item: InsertMarketplaceItem) {
@@ -801,20 +1283,30 @@ export class SupabaseStorage implements IStorage {
          avg_price = EXCLUDED.avg_price, price_history = EXCLUDED.price_history,
          image_url = EXCLUDED.image_url, last_updated = NOW()
        RETURNING *`,
-      [item.itemName, item.className, item.hotel || "es", item.currentPrice ?? null, item.avgPrice ?? null, JSON.stringify(item.priceHistory || []), item.imageUrl || null]
+      [
+        item.itemName,
+        item.className,
+        item.hotel || "es",
+        item.currentPrice ?? null,
+        item.avgPrice ?? null,
+        JSON.stringify(item.priceHistory || []),
+        item.imageUrl || null,
+      ],
     );
     return mapMarketplaceItem(r.rows[0]);
   }
 
   // Badges
   async getAllBadges() {
-    const r = await this.query("SELECT * FROM badge_collection ORDER BY discovered_at DESC");
+    const r = await this.query(
+      "SELECT * FROM badge_collection ORDER BY discovered_at DESC",
+    );
     return r.rows.map(mapBadge);
   }
   async searchBadges(query: string) {
     const r = await this.query(
       "SELECT * FROM badge_collection WHERE LOWER(name) LIKE $1 OR LOWER(code) LIKE $1 ORDER BY name",
-      [`%${query.toLowerCase()}%`]
+      [`%${query.toLowerCase()}%`],
     );
     return r.rows.map(mapBadge);
   }
@@ -826,20 +1318,29 @@ export class SupabaseStorage implements IStorage {
          name = EXCLUDED.name, description = EXCLUDED.description,
          category = EXCLUDED.category, image_url = EXCLUDED.image_url
        RETURNING *`,
-      [badge.code, badge.name, badge.description || null, badge.hotel || "es", badge.category || null, badge.imageUrl || null]
+      [
+        badge.code,
+        badge.name,
+        badge.description || null,
+        badge.hotel || "es",
+        badge.category || null,
+        badge.imageUrl || null,
+      ],
     );
     return mapBadge(r.rows[0]);
   }
 
   // Requests
   async getAllRequests() {
-    const r = await this.query("SELECT * FROM requests ORDER BY created_at DESC");
+    const r = await this.query(
+      "SELECT * FROM requests ORDER BY created_at DESC",
+    );
     return r.rows.map(mapRequest);
   }
   async createRequest(req: InsertRequest) {
     const r = await this.query(
       `INSERT INTO requests (type, details, user_name) VALUES ($1, $2, $3) RETURNING *`,
-      [req.type, req.details, req.userName]
+      [req.type, req.details, req.userName],
     );
     return mapRequest(r.rows[0]);
   }
@@ -856,7 +1357,12 @@ export class SupabaseStorage implements IStorage {
   async createTeamMember(member: InsertTeamMember) {
     const r = await this.query(
       `INSERT INTO team_members (display_name, habbo_username, role, motto) VALUES ($1, $2, $3, $4) RETURNING *`,
-      [member.displayName, member.habboUsername, member.role, member.motto || null]
+      [
+        member.displayName,
+        member.habboUsername,
+        member.role,
+        member.motto || null,
+      ],
     );
     return mapTeamMember(r.rows[0]);
   }
@@ -864,13 +1370,28 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.displayName !== undefined) { fields.push(`display_name = $${i++}`); values.push(data.displayName); }
-    if (data.habboUsername !== undefined) { fields.push(`habbo_username = $${i++}`); values.push(data.habboUsername); }
-    if (data.role !== undefined) { fields.push(`role = $${i++}`); values.push(data.role); }
-    if (data.motto !== undefined) { fields.push(`motto = $${i++}`); values.push(data.motto); }
+    if (data.displayName !== undefined) {
+      fields.push(`display_name = $${i++}`);
+      values.push(data.displayName);
+    }
+    if (data.habboUsername !== undefined) {
+      fields.push(`habbo_username = $${i++}`);
+      values.push(data.habboUsername);
+    }
+    if (data.role !== undefined) {
+      fields.push(`role = $${i++}`);
+      values.push(data.role);
+    }
+    if (data.motto !== undefined) {
+      fields.push(`motto = $${i++}`);
+      values.push(data.motto);
+    }
     if (fields.length === 0) return undefined;
     values.push(id);
-    const r = await this.query(`UPDATE team_members SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    const r = await this.query(
+      `UPDATE team_members SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
     return r.rows[0] ? mapTeamMember(r.rows[0]) : undefined;
   }
   async deleteTeamMember(id: number) {
@@ -896,7 +1417,16 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO themes (slug, name, description, colors, banner_url, logo_url, decorations, is_default)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [theme.slug, theme.name, theme.description || null, JSON.stringify(theme.colors || {}), theme.bannerUrl || null, theme.logoUrl || null, JSON.stringify(theme.decorations || {}), theme.isDefault ?? false]
+      [
+        theme.slug,
+        theme.name,
+        theme.description || null,
+        JSON.stringify(theme.colors || {}),
+        theme.bannerUrl || null,
+        theme.logoUrl || null,
+        JSON.stringify(theme.decorations || {}),
+        theme.isDefault ?? false,
+      ],
     );
     return mapTheme(r.rows[0]);
   }
@@ -904,17 +1434,44 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.slug !== undefined) { fields.push(`slug = $${i++}`); values.push(data.slug); }
-    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
-    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
-    if (data.colors !== undefined) { fields.push(`colors = $${i++}`); values.push(JSON.stringify(data.colors)); }
-    if (data.bannerUrl !== undefined) { fields.push(`banner_url = $${i++}`); values.push(data.bannerUrl); }
-    if (data.logoUrl !== undefined) { fields.push(`logo_url = $${i++}`); values.push(data.logoUrl); }
-    if (data.decorations !== undefined) { fields.push(`decorations = $${i++}`); values.push(JSON.stringify(data.decorations)); }
-    if (data.isDefault !== undefined) { fields.push(`is_default = $${i++}`); values.push(data.isDefault); }
+    if (data.slug !== undefined) {
+      fields.push(`slug = $${i++}`);
+      values.push(data.slug);
+    }
+    if (data.name !== undefined) {
+      fields.push(`name = $${i++}`);
+      values.push(data.name);
+    }
+    if (data.description !== undefined) {
+      fields.push(`description = $${i++}`);
+      values.push(data.description);
+    }
+    if (data.colors !== undefined) {
+      fields.push(`colors = $${i++}`);
+      values.push(JSON.stringify(data.colors));
+    }
+    if (data.bannerUrl !== undefined) {
+      fields.push(`banner_url = $${i++}`);
+      values.push(data.bannerUrl);
+    }
+    if (data.logoUrl !== undefined) {
+      fields.push(`logo_url = $${i++}`);
+      values.push(data.logoUrl);
+    }
+    if (data.decorations !== undefined) {
+      fields.push(`decorations = $${i++}`);
+      values.push(JSON.stringify(data.decorations));
+    }
+    if (data.isDefault !== undefined) {
+      fields.push(`is_default = $${i++}`);
+      values.push(data.isDefault);
+    }
     if (fields.length === 0) return undefined;
     values.push(id);
-    const r = await this.query(`UPDATE themes SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    const r = await this.query(
+      `UPDATE themes SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
     return r.rows[0] ? mapTheme(r.rows[0]) : undefined;
   }
   async setActiveTheme(slug: string) {
@@ -925,7 +1482,7 @@ export class SupabaseStorage implements IStorage {
 
   // DJ Panel
   async getDjPanel() {
-    const r = await this.query('SELECT * FROM dj_panel ORDER BY id LIMIT 1');
+    const r = await this.query("SELECT * FROM dj_panel ORDER BY id LIMIT 1");
     if (!r.rows[0]) return null;
     const row = r.rows[0];
     return {
@@ -940,14 +1497,23 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.currentDj !== undefined) { fields.push(`current_dj = $${i++}`); values.push(data.currentDj); }
-    if (data.nextDj !== undefined) { fields.push(`next_dj = $${i++}`); values.push(data.nextDj); }
-    if (data.djMessage !== undefined) { fields.push(`dj_message = $${i++}`); values.push(data.djMessage); }
+    if (data.currentDj !== undefined) {
+      fields.push(`current_dj = $${i++}`);
+      values.push(data.currentDj);
+    }
+    if (data.nextDj !== undefined) {
+      fields.push(`next_dj = $${i++}`);
+      values.push(data.nextDj);
+    }
+    if (data.djMessage !== undefined) {
+      fields.push(`dj_message = $${i++}`);
+      values.push(data.djMessage);
+    }
     fields.push(`updated_at = NOW()`);
     if (values.length === 0) return this.getDjPanel();
     const r = await this.query(
-      `UPDATE dj_panel SET ${fields.join(', ')} WHERE id = (SELECT id FROM dj_panel ORDER BY id LIMIT 1) RETURNING *`,
-      values
+      `UPDATE dj_panel SET ${fields.join(", ")} WHERE id = (SELECT id FROM dj_panel ORDER BY id LIMIT 1) RETURNING *`,
+      values,
     );
     if (!r.rows[0]) return null;
     const row = r.rows[0];
@@ -963,23 +1529,30 @@ export class SupabaseStorage implements IStorage {
   // Chat Messages
   async getChatMessages(limit: number = 50) {
     const r = await this.query(
-      'SELECT * FROM chat_messages ORDER BY created_at DESC LIMIT $1',
-      [limit]
+      "SELECT * FROM chat_messages ORDER BY created_at DESC LIMIT $1",
+      [limit],
     );
-    return r.rows.map((row: any) => ({
-      id: row.id,
-      userId: row.user_id,
-      userName: row.user_name,
-      habboUsername: row.habbo_username,
-      message: row.message,
-      createdAt: row.created_at,
-    })).reverse();
+    return r.rows
+      .map((row: any) => ({
+        id: row.id,
+        userId: row.user_id,
+        userName: row.user_name,
+        habboUsername: row.habbo_username,
+        message: row.message,
+        createdAt: row.created_at,
+      }))
+      .reverse();
   }
   async createChatMessage(data: any) {
     const r = await this.query(
       `INSERT INTO chat_messages (user_id, user_name, habbo_username, message)
        VALUES ($1, $2, $3, $4) RETURNING *`,
-      [data.userId || null, data.userName, data.habboUsername || null, data.message]
+      [
+        data.userId || null,
+        data.userName,
+        data.habboUsername || null,
+        data.message,
+      ],
     );
     const row = r.rows[0];
     return {
@@ -992,15 +1565,15 @@ export class SupabaseStorage implements IStorage {
     };
   }
   async deleteChatMessage(id: number) {
-    await this.query('DELETE FROM chat_messages WHERE id = $1', [id]);
+    await this.query("DELETE FROM chat_messages WHERE id = $1", [id]);
     return true;
   }
 
   // Private Messages
   async getMessagesByUser(userId: number) {
     const r = await this.query(
-      'SELECT * FROM private_messages WHERE to_user_id = $1 OR from_user_id = $1 ORDER BY created_at DESC',
-      [userId]
+      "SELECT * FROM private_messages WHERE to_user_id = $1 OR from_user_id = $1 ORDER BY created_at DESC",
+      [userId],
     );
     return r.rows.map((row: any) => ({
       id: row.id,
@@ -1014,16 +1587,16 @@ export class SupabaseStorage implements IStorage {
   }
   async getUnreadCount(userId: number) {
     const r = await this.query(
-      'SELECT COUNT(*) AS count FROM private_messages WHERE to_user_id = $1 AND is_read = false',
-      [userId]
+      "SELECT COUNT(*) AS count FROM private_messages WHERE to_user_id = $1 AND is_read = false",
+      [userId],
     );
-    return parseInt(r.rows[0]?.count ?? '0', 10);
+    return parseInt(r.rows[0]?.count ?? "0", 10);
   }
   async createPrivateMessage(data: any) {
     const r = await this.query(
       `INSERT INTO private_messages (from_user_id, to_user_id, subject, content, is_read)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [data.fromUserId, data.toUserId, data.subject || '', data.content, false]
+      [data.fromUserId, data.toUserId, data.subject || "", data.content, false],
     );
     const row = r.rows[0];
     return {
@@ -1038,8 +1611,8 @@ export class SupabaseStorage implements IStorage {
   }
   async markMessageRead(id: number) {
     const r = await this.query(
-      'UPDATE private_messages SET is_read = true WHERE id = $1 RETURNING *',
-      [id]
+      "UPDATE private_messages SET is_read = true WHERE id = $1 RETURNING *",
+      [id],
     );
     if (!r.rows[0]) return null;
     const row = r.rows[0];
@@ -1057,8 +1630,8 @@ export class SupabaseStorage implements IStorage {
   // Verified Badges
   async getVerifiedBadges(userId: number) {
     const r = await this.query(
-      'SELECT * FROM verified_badges WHERE user_id = $1 ORDER BY verified_at DESC',
-      [userId]
+      "SELECT * FROM verified_badges WHERE user_id = $1 ORDER BY verified_at DESC",
+      [userId],
     );
     return r.rows.map((row: any) => ({
       id: row.id,
@@ -1071,7 +1644,7 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO verified_badges (user_id, badge_code)
        VALUES ($1, $2) RETURNING *`,
-      [data.userId, data.badgeCode]
+      [data.userId, data.badgeCode],
     );
     const row = r.rows[0];
     return {
@@ -1085,18 +1658,29 @@ export class SupabaseStorage implements IStorage {
   // Team from Users
   async getTeamUsers() {
     const r = await this.query(
-      "SELECT * FROM users WHERE role IN ('admin', 'dj') AND approved = true ORDER BY role, display_name"
+      "SELECT * FROM users WHERE role IN ('admin', 'dj') AND approved = true ORDER BY role, display_name",
     );
     return r.rows.map(mapUser);
   }
 
   // Downloads
   async getAllDownloads() {
-    const r = await this.query("SELECT * FROM downloads ORDER BY created_at DESC");
+    const r = await this.query(
+      "SELECT * FROM downloads ORDER BY created_at DESC",
+    );
     return r.rows.map(mapDownload);
   }
   async createDownload(d: InsertDownload) {
-    const r = await this.query("INSERT INTO downloads (title, description, file_url, category, added_by) VALUES ($1, $2, $3, $4, $5) RETURNING *", [d.title, d.description || null, d.fileUrl, d.category || "general", d.addedBy]);
+    const r = await this.query(
+      "INSERT INTO downloads (title, description, file_url, category, added_by) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [
+        d.title,
+        d.description || null,
+        d.fileUrl,
+        d.category || "general",
+        d.addedBy,
+      ],
+    );
     return mapDownload(r.rows[0]);
   }
   async deleteDownload(id: number) {
@@ -1104,16 +1688,24 @@ export class SupabaseStorage implements IStorage {
     return (r.rowCount ?? 0) > 0;
   }
   async incrementDownloadCount(id: number) {
-    await this.query("UPDATE downloads SET download_count = download_count + 1 WHERE id = $1", [id]);
+    await this.query(
+      "UPDATE downloads SET download_count = download_count + 1 WHERE id = $1",
+      [id],
+    );
   }
 
   // Banned Songs
   async getAllBannedSongs() {
-    const r = await this.query("SELECT * FROM banned_songs ORDER BY created_at DESC");
+    const r = await this.query(
+      "SELECT * FROM banned_songs ORDER BY created_at DESC",
+    );
     return r.rows.map(mapBannedSong);
   }
   async createBannedSong(s: InsertBannedSong) {
-    const r = await this.query("INSERT INTO banned_songs (title, artist, reason, banned_by) VALUES ($1, $2, $3, $4) RETURNING *", [s.title, s.artist || null, s.reason || null, s.bannedBy]);
+    const r = await this.query(
+      "INSERT INTO banned_songs (title, artist, reason, banned_by) VALUES ($1, $2, $3, $4) RETURNING *",
+      [s.title, s.artist || null, s.reason || null, s.bannedBy],
+    );
     return mapBannedSong(r.rows[0]);
   }
   async deleteBannedSong(id: number) {
@@ -1123,29 +1715,58 @@ export class SupabaseStorage implements IStorage {
 
   // Contact Messages
   async getAllContactMessages() {
-    const r = await this.query("SELECT * FROM contact_messages ORDER BY created_at DESC");
+    const r = await this.query(
+      "SELECT * FROM contact_messages ORDER BY created_at DESC",
+    );
     return r.rows.map(mapContactMessage);
   }
   async createContactMessage(msg: InsertContactMessage) {
-    const r = await this.query("INSERT INTO contact_messages (name, email, subject, message, ip, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *", [msg.name, msg.email, msg.subject, msg.message, msg.ip || null, msg.status || "pending"]);
+    const r = await this.query(
+      "INSERT INTO contact_messages (name, email, subject, message, ip, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+      [
+        msg.name,
+        msg.email,
+        msg.subject,
+        msg.message,
+        msg.ip || null,
+        msg.status || "pending",
+      ],
+    );
     return mapContactMessage(r.rows[0]);
   }
   async updateContactMessageStatus(id: number, status: string) {
-    const r = await this.query("UPDATE contact_messages SET status = $1 WHERE id = $2 RETURNING *", [status, id]);
+    const r = await this.query(
+      "UPDATE contact_messages SET status = $1 WHERE id = $2 RETURNING *",
+      [status, id],
+    );
     return r.rows[0] ? mapContactMessage(r.rows[0]) : undefined;
   }
   async deleteContactMessage(id: number) {
-    const r = await this.query("DELETE FROM contact_messages WHERE id = $1", [id]);
+    const r = await this.query("DELETE FROM contact_messages WHERE id = $1", [
+      id,
+    ]);
     return (r.rowCount ?? 0) > 0;
   }
 
   // Panel Logs
   async getPanelLogs(limit = 200) {
-    const r = await this.query("SELECT * FROM panel_logs ORDER BY created_at DESC LIMIT $1", [limit]);
+    const r = await this.query(
+      "SELECT * FROM panel_logs ORDER BY created_at DESC LIMIT $1",
+      [limit],
+    );
     return r.rows.map(mapPanelLog);
   }
   async createPanelLog(log: InsertPanelLog) {
-    const r = await this.query("INSERT INTO panel_logs (user_id, user_name, action, details, ip) VALUES ($1, $2, $3, $4, $5) RETURNING *", [log.userId || null, log.userName, log.action, log.details || null, log.ip || null]);
+    const r = await this.query(
+      "INSERT INTO panel_logs (user_id, user_name, action, details, ip) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [
+        log.userId || null,
+        log.userName,
+        log.action,
+        log.details || null,
+        log.ip || null,
+      ],
+    );
     return mapPanelLog(r.rows[0]);
   }
 
@@ -1171,15 +1792,28 @@ export class SupabaseStorage implements IStorage {
     }));
   }
   async createReport(report: InsertReportedMessage) {
-    const r = await this.query("INSERT INTO reported_messages (message_id, reported_by, reason, status) VALUES ($1, $2, $3, $4) RETURNING *", [report.messageId, report.reportedBy, report.reason, report.status || "pending"]);
+    const r = await this.query(
+      "INSERT INTO reported_messages (message_id, reported_by, reason, status) VALUES ($1, $2, $3, $4) RETURNING *",
+      [
+        report.messageId,
+        report.reportedBy,
+        report.reason,
+        report.status || "pending",
+      ],
+    );
     return mapReportedMessage(r.rows[0]);
   }
   async updateReportStatus(id: number, status: string) {
-    const r = await this.query("UPDATE reported_messages SET status = $1 WHERE id = $2 RETURNING *", [status, id]);
+    const r = await this.query(
+      "UPDATE reported_messages SET status = $1 WHERE id = $2 RETURNING *",
+      [status, id],
+    );
     return r.rows[0] ? mapReportedMessage(r.rows[0]) : undefined;
   }
   async deleteReport(id: number) {
-    const r = await this.query("DELETE FROM reported_messages WHERE id = $1", [id]);
+    const r = await this.query("DELETE FROM reported_messages WHERE id = $1", [
+      id,
+    ]);
     return (r.rowCount ?? 0) > 0;
   }
 
@@ -1188,19 +1822,32 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       includeInactive
         ? "SELECT * FROM shop_products ORDER BY category, price ASC"
-        : "SELECT * FROM shop_products WHERE is_active = true ORDER BY category, price ASC"
+        : "SELECT * FROM shop_products WHERE is_active = true ORDER BY category, price ASC",
     );
     return r.rows.map(mapShopProduct);
   }
   async getShopProductById(id: number) {
-    const r = await this.query("SELECT * FROM shop_products WHERE id = $1", [id]);
+    const r = await this.query("SELECT * FROM shop_products WHERE id = $1", [
+      id,
+    ]);
     return r.rows[0] ? mapShopProduct(r.rows[0]) : undefined;
   }
   async createShopProduct(product: InsertShopProduct) {
     const r = await this.query(
       `INSERT INTO shop_products (name, description, category, price, image_url, preview_url, data, is_limited, stock, is_active)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-      [product.name, product.description || null, product.category, product.price, product.imageUrl || null, product.previewUrl || null, JSON.stringify(product.data || {}), product.isLimited ?? false, product.stock ?? 0, product.isActive ?? true]
+      [
+        product.name,
+        product.description || null,
+        product.category,
+        product.price,
+        product.imageUrl || null,
+        product.previewUrl || null,
+        JSON.stringify(product.data || {}),
+        product.isLimited ?? false,
+        product.stock ?? 0,
+        product.isActive ?? true,
+      ],
     );
     return mapShopProduct(r.rows[0]);
   }
@@ -1208,19 +1855,52 @@ export class SupabaseStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
-    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
-    if (data.category !== undefined) { fields.push(`category = $${i++}`); values.push(data.category); }
-    if (data.price !== undefined) { fields.push(`price = $${i++}`); values.push(data.price); }
-    if (data.imageUrl !== undefined) { fields.push(`image_url = $${i++}`); values.push(data.imageUrl); }
-    if (data.previewUrl !== undefined) { fields.push(`preview_url = $${i++}`); values.push(data.previewUrl); }
-    if (data.data !== undefined) { fields.push(`data = $${i++}`); values.push(JSON.stringify(data.data)); }
-    if (data.isLimited !== undefined) { fields.push(`is_limited = $${i++}`); values.push(data.isLimited); }
-    if (data.stock !== undefined) { fields.push(`stock = $${i++}`); values.push(data.stock); }
-    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
+    if (data.name !== undefined) {
+      fields.push(`name = $${i++}`);
+      values.push(data.name);
+    }
+    if (data.description !== undefined) {
+      fields.push(`description = $${i++}`);
+      values.push(data.description);
+    }
+    if (data.category !== undefined) {
+      fields.push(`category = $${i++}`);
+      values.push(data.category);
+    }
+    if (data.price !== undefined) {
+      fields.push(`price = $${i++}`);
+      values.push(data.price);
+    }
+    if (data.imageUrl !== undefined) {
+      fields.push(`image_url = $${i++}`);
+      values.push(data.imageUrl);
+    }
+    if (data.previewUrl !== undefined) {
+      fields.push(`preview_url = $${i++}`);
+      values.push(data.previewUrl);
+    }
+    if (data.data !== undefined) {
+      fields.push(`data = $${i++}`);
+      values.push(JSON.stringify(data.data));
+    }
+    if (data.isLimited !== undefined) {
+      fields.push(`is_limited = $${i++}`);
+      values.push(data.isLimited);
+    }
+    if (data.stock !== undefined) {
+      fields.push(`stock = $${i++}`);
+      values.push(data.stock);
+    }
+    if (data.isActive !== undefined) {
+      fields.push(`is_active = $${i++}`);
+      values.push(data.isActive);
+    }
     if (fields.length === 0) return this.getShopProductById(id);
     values.push(id);
-    const r = await this.query(`UPDATE shop_products SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`, values);
+    const r = await this.query(
+      `UPDATE shop_products SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
     return r.rows[0] ? mapShopProduct(r.rows[0]) : undefined;
   }
   async deleteShopProduct(id: number) {
@@ -1235,7 +1915,7 @@ export class SupabaseStorage implements IStorage {
        FROM user_inventory ui
        LEFT JOIN shop_products sp ON ui.product_id = sp.id
        WHERE ui.user_id = $1 ORDER BY ui.purchased_at DESC`,
-      [userId]
+      [userId],
     );
     return r.rows.map((row: any) => ({
       ...mapUserInventory(row),
@@ -1252,24 +1932,30 @@ export class SupabaseStorage implements IStorage {
     if (!product) throw new Error("Producto no encontrado");
     const user = await this.getUser(userId);
     if (!user) throw new Error("Usuario no encontrado");
-    if ((user.speedPoints ?? 0) < product.price) throw new Error("SpeedPoints insuficientes");
+    if ((user.speedPoints ?? 0) < product.price)
+      throw new Error("SpeedPoints insuficientes");
     // Deduct points
-    await this.updateUser(userId, { speedPoints: (user.speedPoints ?? 0) - product.price });
+    await this.updateUser(userId, {
+      speedPoints: (user.speedPoints ?? 0) - product.price,
+    });
     // Create inventory item
     const r = await this.query(
       `INSERT INTO user_inventory (user_id, product_id) VALUES ($1, $2) RETURNING *`,
-      [userId, productId]
+      [userId, productId],
     );
     return mapUserInventory(r.rows[0]);
   }
   async toggleEquipItem(userId: number, itemId: number) {
-    const item = await this.query("SELECT * FROM user_inventory WHERE id = $1 AND user_id = $2", [itemId, userId]);
+    const item = await this.query(
+      "SELECT * FROM user_inventory WHERE id = $1 AND user_id = $2",
+      [itemId, userId],
+    );
     if (!item.rows[0]) throw new Error("Item no encontrado");
     const currentEquipped = item.rows[0].is_equipped;
     const newEquipped = !currentEquipped;
     const r = await this.query(
       "UPDATE user_inventory SET is_equipped = $1 WHERE id = $2 RETURNING *",
-      [newEquipped, itemId]
+      [newEquipped, itemId],
     );
     return r.rows[0] ? mapUserInventory(r.rows[0]) : undefined;
   }
@@ -1278,55 +1964,101 @@ export class SupabaseStorage implements IStorage {
   async getUserNotifications(userId: number, limit = 50) {
     const r = await this.query(
       "SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2",
-      [userId, limit]
+      [userId, limit],
     );
     return r.rows.map(mapNotification);
   }
   async getUnreadNotificationCount(userId: number) {
     const r = await this.query(
       "SELECT COUNT(*) AS count FROM notifications WHERE user_id = $1 AND is_read = false",
-      [userId]
+      [userId],
     );
-    return parseInt(r.rows[0]?.count ?? '0', 10);
+    return parseInt(r.rows[0]?.count ?? "0", 10);
   }
   async createNotification(notif: InsertNotification) {
     const r = await this.query(
       `INSERT INTO notifications (user_id, type, title, message, icon, link) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [notif.userId, notif.type || "info", notif.title, notif.message || null, notif.icon || null, notif.link || null]
+      [
+        notif.userId,
+        notif.type || "info",
+        notif.title,
+        notif.message || null,
+        notif.icon || null,
+        notif.link || null,
+      ],
     );
     return mapNotification(r.rows[0]);
   }
   async markNotificationRead(id: number) {
-    const r = await this.query("UPDATE notifications SET is_read = true WHERE id = $1 RETURNING *", [id]);
+    const r = await this.query(
+      "UPDATE notifications SET is_read = true WHERE id = $1 RETURNING *",
+      [id],
+    );
     return r.rows[0] ? mapNotification(r.rows[0]) : undefined;
   }
   async markAllNotificationsRead(userId: number) {
-    await this.query("UPDATE notifications SET is_read = true WHERE user_id = $1", [userId]);
+    await this.query(
+      "UPDATE notifications SET is_read = true WHERE user_id = $1",
+      [userId],
+    );
   }
 
   // User Profiles
   async getUserProfile(userId: number) {
-    const r = await this.query("SELECT * FROM user_profiles WHERE user_id = $1", [userId]);
+    const r = await this.query(
+      "SELECT * FROM user_profiles WHERE user_id = $1",
+      [userId],
+    );
     return r.rows[0] ? mapUserProfile(r.rows[0]) : undefined;
   }
   async upsertUserProfile(userId: number, data: Partial<InsertUserProfile>) {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.bio !== undefined) { fields.push(`bio = $${i++}`); values.push(data.bio); }
-    if (data.backgroundUrl !== undefined) { fields.push(`background_url = $${i++}`); values.push(data.backgroundUrl); }
-    if (data.backgroundColor !== undefined) { fields.push(`background_color = $${i++}`); values.push(data.backgroundColor); }
-    if (data.accentColor !== undefined) { fields.push(`accent_color = $${i++}`); values.push(data.accentColor); }
-    if (data.aboutMe !== undefined) { fields.push(`about_me = $${i++}`); values.push(data.aboutMe); }
-    if (data.socialYoutube !== undefined) { fields.push(`social_youtube = $${i++}`); values.push(data.socialYoutube); }
-    if (data.socialTwitter !== undefined) { fields.push(`social_twitter = $${i++}`); values.push(data.socialTwitter); }
-    if (data.socialInstagram !== undefined) { fields.push(`social_instagram = $${i++}`); values.push(data.socialInstagram); }
-    if (data.customCss !== undefined) { fields.push(`custom_css = $${i++}`); values.push(data.customCss); }
+    if (data.bio !== undefined) {
+      fields.push(`bio = $${i++}`);
+      values.push(data.bio);
+    }
+    if (data.backgroundUrl !== undefined) {
+      fields.push(`background_url = $${i++}`);
+      values.push(data.backgroundUrl);
+    }
+    if (data.backgroundColor !== undefined) {
+      fields.push(`background_color = $${i++}`);
+      values.push(data.backgroundColor);
+    }
+    if (data.accentColor !== undefined) {
+      fields.push(`accent_color = $${i++}`);
+      values.push(data.accentColor);
+    }
+    if (data.aboutMe !== undefined) {
+      fields.push(`about_me = $${i++}`);
+      values.push(data.aboutMe);
+    }
+    if (data.socialYoutube !== undefined) {
+      fields.push(`social_youtube = $${i++}`);
+      values.push(data.socialYoutube);
+    }
+    if (data.socialTwitter !== undefined) {
+      fields.push(`social_twitter = $${i++}`);
+      values.push(data.socialTwitter);
+    }
+    if (data.socialInstagram !== undefined) {
+      fields.push(`social_instagram = $${i++}`);
+      values.push(data.socialInstagram);
+    }
+    if (data.customCss !== undefined) {
+      fields.push(`custom_css = $${i++}`);
+      values.push(data.customCss);
+    }
     fields.push(`updated_at = NOW()`);
     const existing = await this.getUserProfile(userId);
     if (existing) {
       values.push(userId);
-      const r = await this.query(`UPDATE user_profiles SET ${fields.join(", ")} WHERE user_id = $${i} RETURNING *`, values);
+      const r = await this.query(
+        `UPDATE user_profiles SET ${fields.join(", ")} WHERE user_id = $${i} RETURNING *`,
+        values,
+      );
       return mapUserProfile(r.rows[0]);
     } else {
       return this.createUserProfile(userId, data);
@@ -1336,7 +2068,18 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO user_profiles (user_id, bio, background_url, background_color, accent_color, about_me, social_youtube, social_twitter, social_instagram, custom_css)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-      [userId, data.bio || "", data.backgroundUrl || null, data.backgroundColor || "#1e293b", data.accentColor || null, data.aboutMe || "", data.socialYoutube || null, data.socialTwitter || null, data.socialInstagram || null, data.customCss || null]
+      [
+        userId,
+        data.bio || "",
+        data.backgroundUrl || null,
+        data.backgroundColor || "#1e293b",
+        data.accentColor || null,
+        data.aboutMe || "",
+        data.socialYoutube || null,
+        data.socialTwitter || null,
+        data.socialInstagram || null,
+        data.customCss || null,
+      ],
     );
     return mapUserProfile(r.rows[0]);
   }
@@ -1345,9 +2088,9 @@ export class SupabaseStorage implements IStorage {
   async getWallMessages(profileUserId: number) {
     const r = await this.query(
       "SELECT pw.*, u.display_name as author_name FROM profile_wall pw " +
-      "JOIN users u ON pw.author_id = u.id " +
-      "WHERE pw.profile_user_id = $1 ORDER BY pw.created_at DESC",
-      [profileUserId]
+        "JOIN users u ON pw.author_id = u.id " +
+        "WHERE pw.profile_user_id = $1 ORDER BY pw.created_at DESC",
+      [profileUserId],
     );
     return r.rows.map(mapProfileWall);
   }
@@ -1355,9 +2098,9 @@ export class SupabaseStorage implements IStorage {
   async getWallMessageById(id: number) {
     const r = await this.query(
       "SELECT pw.*, u.display_name as author_name FROM profile_wall pw " +
-      "JOIN users u ON pw.author_id = u.id " +
-      "WHERE pw.id = $1",
-      [id]
+        "JOIN users u ON pw.author_id = u.id " +
+        "WHERE pw.id = $1",
+      [id],
     );
     return r.rows[0] ? mapProfileWall(r.rows[0]) : undefined;
   }
@@ -1366,7 +2109,7 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO profile_wall (profile_user_id, author_id, author_name, message) 
        VALUES ($1, $2, $3, $4) RETURNING *`,
-      [msg.profileUserId, msg.authorId, msg.authorName, msg.message]
+      [msg.profileUserId, msg.authorId, msg.authorName, msg.message],
     );
     return mapProfileWall(r.rows[0]);
   }
@@ -1378,20 +2121,23 @@ export class SupabaseStorage implements IStorage {
 
   // Song History
   async getSongHistory(limit: number = 20): Promise<SongHistory[]> {
-    const r = await this.query("SELECT * FROM song_history ORDER BY played_at DESC LIMIT $1", [limit]);
+    const r = await this.query(
+      "SELECT * FROM song_history ORDER BY played_at DESC LIMIT $1",
+      [limit],
+    );
     return r.rows.map(mapSongHistory);
   }
 
   async createSongHistory(song: InsertSongHistory): Promise<SongHistory> {
     const check = await this.query(
       "SELECT * FROM song_history WHERE title = $1 AND artist = $2 AND played_at > NOW() - INTERVAL '2 minutes' LIMIT 1",
-      [song.title, song.artist]
+      [song.title, song.artist],
     );
     if (check.rows.length > 0) {
       const existing = check.rows[0];
       const r = await this.query(
         "UPDATE song_history SET play_count = play_count + 1, played_at = NOW() WHERE id = $1 RETURNING *",
-        [existing.id]
+        [existing.id],
       );
       return mapSongHistory(r.rows[0]);
     }
@@ -1399,7 +2145,16 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO song_history (title, artist, album, cover_url, played_by_dj, duration_seconds, requested_by, play_count)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [song.title, song.artist, song.album || null, song.coverUrl || null, song.playedByDj || null, song.durationSeconds || null, song.requestedBy || null, song.playCount || 1]
+      [
+        song.title,
+        song.artist,
+        song.album || null,
+        song.coverUrl || null,
+        song.playedByDj || null,
+        song.durationSeconds || null,
+        song.requestedBy || null,
+        song.playCount || 1,
+      ],
     );
     return mapSongHistory(r.rows[0]);
   }
@@ -1407,7 +2162,7 @@ export class SupabaseStorage implements IStorage {
   async getMostPlayedSongs(limit: number = 10): Promise<SongHistory[]> {
     const r = await this.query(
       "SELECT title, artist, album, cover_url, SUM(play_count) as play_count FROM song_history GROUP BY title, artist, album, cover_url ORDER BY play_count DESC LIMIT $1",
-      [limit]
+      [limit],
     );
     return r.rows.map((row: any, idx: number) => ({
       id: idx + 1,
@@ -1425,43 +2180,75 @@ export class SupabaseStorage implements IStorage {
 
   // VIP Memberships
   async getVipMembership(userId: number): Promise<VipMembership | undefined> {
-    const r = await this.query("SELECT * FROM vip_memberships WHERE user_id = $1 AND is_active = true ORDER BY expires_at DESC LIMIT 1", [userId]);
+    const r = await this.query(
+      "SELECT * FROM vip_memberships WHERE user_id = $1 AND is_active = true ORDER BY expires_at DESC LIMIT 1",
+      [userId],
+    );
     return r.rows[0] ? mapVipMembership(r.rows[0]) : undefined;
   }
 
-  async createVipMembership(membership: InsertVipMembership): Promise<VipMembership> {
+  async createVipMembership(
+    membership: InsertVipMembership,
+  ): Promise<VipMembership> {
     const r = await this.query(
       `INSERT INTO vip_memberships (user_id, tier, expires_at, payment_ref, is_active)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [membership.userId, membership.tier, membership.expiresAt || null, membership.paymentRef || null, membership.isActive ?? true]
+      [
+        membership.userId,
+        membership.tier,
+        membership.expiresAt || null,
+        membership.paymentRef || null,
+        membership.isActive ?? true,
+      ],
     );
-    await this.query("UPDATE users SET vip_tier = $1 WHERE id = $2", [membership.tier, membership.userId]);
+    await this.query("UPDATE users SET vip_tier = $1 WHERE id = $2", [
+      membership.tier,
+      membership.userId,
+    ]);
     return mapVipMembership(r.rows[0]);
   }
 
-  async updateVipMembership(userId: number, data: Partial<InsertVipMembership>): Promise<VipMembership | undefined> {
+  async updateVipMembership(
+    userId: number,
+    data: Partial<InsertVipMembership>,
+  ): Promise<VipMembership | undefined> {
     const active = await this.getVipMembership(userId);
     if (!active) return undefined;
 
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.tier !== undefined) { fields.push(`tier = $${i++}`); values.push(data.tier); }
-    if (data.expiresAt !== undefined) { fields.push(`expires_at = $${i++}`); values.push(data.expiresAt); }
-    if (data.paymentRef !== undefined) { fields.push(`payment_ref = $${i++}`); values.push(data.paymentRef); }
-    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
+    if (data.tier !== undefined) {
+      fields.push(`tier = $${i++}`);
+      values.push(data.tier);
+    }
+    if (data.expiresAt !== undefined) {
+      fields.push(`expires_at = $${i++}`);
+      values.push(data.expiresAt);
+    }
+    if (data.paymentRef !== undefined) {
+      fields.push(`payment_ref = $${i++}`);
+      values.push(data.paymentRef);
+    }
+    if (data.isActive !== undefined) {
+      fields.push(`is_active = $${i++}`);
+      values.push(data.isActive);
+    }
 
     if (fields.length === 0) return active;
 
     values.push(active.id);
     const r = await this.query(
       `UPDATE vip_memberships SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
-      values
+      values,
     );
 
     if (data.tier !== undefined || data.isActive === false) {
-      const newTier = (data.isActive === false) ? null : (data.tier || active.tier);
-      await this.query("UPDATE users SET vip_tier = $1 WHERE id = $2", [newTier, userId]);
+      const newTier = data.isActive === false ? null : data.tier || active.tier;
+      await this.query("UPDATE users SET vip_tier = $1 WHERE id = $2", [
+        newTier,
+        userId,
+      ]);
     }
 
     return mapVipMembership(r.rows[0]);
@@ -1472,13 +2259,13 @@ export class SupabaseStorage implements IStorage {
       `SELECT vm.*, u.display_name, u.email, u.habbo_username 
        FROM vip_memberships vm 
        JOIN users u ON vm.user_id = u.id 
-       ORDER BY vm.started_at DESC`
+       ORDER BY vm.started_at DESC`,
     );
     return r.rows.map((row: any) => ({
       ...mapVipMembership(row),
       displayName: row.display_name,
       email: row.email,
-      habboUsername: row.habbo_username
+      habboUsername: row.habbo_username,
     }));
   }
 
@@ -1486,7 +2273,7 @@ export class SupabaseStorage implements IStorage {
   async logVipPerkUse(userId: number, perkUsed: string): Promise<VipPerkLog> {
     const r = await this.query(
       "INSERT INTO vip_perks_log (user_id, perk_used) VALUES ($1, $2) RETURNING *",
-      [userId, perkUsed]
+      [userId, perkUsed],
     );
     return mapVipPerkLog(r.rows[0]);
   }
@@ -1494,14 +2281,14 @@ export class SupabaseStorage implements IStorage {
   async getVipPerkLogs(userId: number): Promise<VipPerkLog[]> {
     const r = await this.query(
       "SELECT * FROM vip_perks_log WHERE user_id = $1 ORDER BY used_at DESC",
-      [userId]
+      [userId],
     );
     return r.rows.map(mapVipPerkLog);
   }
 
   // Rooms
   async getAllRooms(includeInactive: boolean = false): Promise<HSpeedRoom[]> {
-    const queryStr = includeInactive 
+    const queryStr = includeInactive
       ? "SELECT * FROM hspeed_rooms ORDER BY featured DESC, created_at DESC"
       : "SELECT * FROM hspeed_rooms WHERE is_active = true ORDER BY featured DESC, created_at DESC";
     const r = await this.query(queryStr);
@@ -1509,7 +2296,9 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getFeaturedRooms(): Promise<HSpeedRoom[]> {
-    const r = await this.query("SELECT * FROM hspeed_rooms WHERE is_active = true AND featured = true ORDER BY created_at DESC");
+    const r = await this.query(
+      "SELECT * FROM hspeed_rooms WHERE is_active = true AND featured = true ORDER BY created_at DESC",
+    );
     return r.rows.map(mapHSpeedRoom);
   }
 
@@ -1517,36 +2306,86 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO hspeed_rooms (name, description, room_code, owner_habbo, hotel, category, capacity, current_visitors, is_active, thumbnailUrl, featured)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-      [room.name, room.description || null, room.roomCode || null, room.ownerHabbo || null, room.hotel || 'es', room.category || null, room.capacity || null, room.currentVisitors || 0, room.isActive ?? true, room.thumbnailUrl || null, room.featured ?? false]
+      [
+        room.name,
+        room.description || null,
+        room.roomCode || null,
+        room.ownerHabbo || null,
+        room.hotel || "es",
+        room.category || null,
+        room.capacity || null,
+        room.currentVisitors || 0,
+        room.isActive ?? true,
+        room.thumbnailUrl || null,
+        room.featured ?? false,
+      ],
     );
     return mapHSpeedRoom(r.rows[0]);
   }
 
-  async updateRoom(id: number, data: Partial<InsertHSpeedRoom>): Promise<HSpeedRoom | undefined> {
+  async updateRoom(
+    id: number,
+    data: Partial<InsertHSpeedRoom>,
+  ): Promise<HSpeedRoom | undefined> {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
-    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
-    if (data.roomCode !== undefined) { fields.push(`room_code = $${i++}`); values.push(data.roomCode); }
-    if (data.ownerHabbo !== undefined) { fields.push(`owner_habbo = $${i++}`); values.push(data.ownerHabbo); }
-    if (data.hotel !== undefined) { fields.push(`hotel = $${i++}`); values.push(data.hotel); }
-    if (data.category !== undefined) { fields.push(`category = $${i++}`); values.push(data.category); }
-    if (data.capacity !== undefined) { fields.push(`capacity = $${i++}`); values.push(data.capacity); }
-    if (data.currentVisitors !== undefined) { fields.push(`current_visitors = $${i++}`); values.push(data.currentVisitors); }
-    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
-    if (data.thumbnailUrl !== undefined) { fields.push(`thumbnailUrl = $${i++}`); values.push(data.thumbnailUrl); }
-    if (data.featured !== undefined) { fields.push(`featured = $${i++}`); values.push(data.featured); }
+    if (data.name !== undefined) {
+      fields.push(`name = $${i++}`);
+      values.push(data.name);
+    }
+    if (data.description !== undefined) {
+      fields.push(`description = $${i++}`);
+      values.push(data.description);
+    }
+    if (data.roomCode !== undefined) {
+      fields.push(`room_code = $${i++}`);
+      values.push(data.roomCode);
+    }
+    if (data.ownerHabbo !== undefined) {
+      fields.push(`owner_habbo = $${i++}`);
+      values.push(data.ownerHabbo);
+    }
+    if (data.hotel !== undefined) {
+      fields.push(`hotel = $${i++}`);
+      values.push(data.hotel);
+    }
+    if (data.category !== undefined) {
+      fields.push(`category = $${i++}`);
+      values.push(data.category);
+    }
+    if (data.capacity !== undefined) {
+      fields.push(`capacity = $${i++}`);
+      values.push(data.capacity);
+    }
+    if (data.currentVisitors !== undefined) {
+      fields.push(`current_visitors = $${i++}`);
+      values.push(data.currentVisitors);
+    }
+    if (data.isActive !== undefined) {
+      fields.push(`is_active = $${i++}`);
+      values.push(data.isActive);
+    }
+    if (data.thumbnailUrl !== undefined) {
+      fields.push(`thumbnailUrl = $${i++}`);
+      values.push(data.thumbnailUrl);
+    }
+    if (data.featured !== undefined) {
+      fields.push(`featured = $${i++}`);
+      values.push(data.featured);
+    }
 
     if (fields.length === 0) {
-      const r = await this.query("SELECT * FROM hspeed_rooms WHERE id = $1", [id]);
+      const r = await this.query("SELECT * FROM hspeed_rooms WHERE id = $1", [
+        id,
+      ]);
       return r.rows[0] ? mapHSpeedRoom(r.rows[0]) : undefined;
     }
 
     values.push(id);
     const r = await this.query(
       `UPDATE hspeed_rooms SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
-      values
+      values,
     );
     return r.rows[0] ? mapHSpeedRoom(r.rows[0]) : undefined;
   }
@@ -1558,7 +2397,10 @@ export class SupabaseStorage implements IStorage {
 
   // Support Tickets
   async getTicketsByUser(userId: number): Promise<SupportTicket[]> {
-    const r = await this.query("SELECT * FROM support_tickets WHERE user_id = $1 ORDER BY created_at DESC", [userId]);
+    const r = await this.query(
+      "SELECT * FROM support_tickets WHERE user_id = $1 ORDER BY created_at DESC",
+      [userId],
+    );
     return r.rows.map(mapSupportTicket);
   }
 
@@ -1566,27 +2408,40 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO support_tickets (user_id, subject, description, status, category)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [ticket.userId, ticket.subject, ticket.description, ticket.status ?? 'open', ticket.category ?? 'general']
+      [
+        ticket.userId,
+        ticket.subject,
+        ticket.description,
+        ticket.status ?? "open",
+        ticket.category ?? "general",
+      ],
     );
     return mapSupportTicket(r.rows[0]);
   }
 
-  async updateTicketStatus(id: number, status: string): Promise<SupportTicket | undefined> {
+  async updateTicketStatus(
+    id: number,
+    status: string,
+  ): Promise<SupportTicket | undefined> {
     const r = await this.query(
       "UPDATE support_tickets SET status = $1 WHERE id = $2 RETURNING *",
-      [status, id]
+      [status, id],
     );
     return r.rows[0] ? mapSupportTicket(r.rows[0]) : undefined;
   }
 
   async getAllTickets(): Promise<SupportTicket[]> {
-    const r = await this.query("SELECT * FROM support_tickets ORDER BY created_at DESC");
+    const r = await this.query(
+      "SELECT * FROM support_tickets ORDER BY created_at DESC",
+    );
     return r.rows.map(mapSupportTicket);
   }
 
   // Alliances
   async getAllAlliances(): Promise<Alliance[]> {
-    const r = await this.query("SELECT * FROM alliances WHERE is_active = true ORDER BY sort_order ASC");
+    const r = await this.query(
+      "SELECT * FROM alliances WHERE is_active = true ORDER BY sort_order ASC",
+    );
     return r.rows.map(mapAlliance);
   }
 
@@ -1594,21 +2449,49 @@ export class SupabaseStorage implements IStorage {
     const r = await this.query(
       `INSERT INTO alliances (name, logo_url, website_url, description, is_active, sort_order)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [alliance.name, alliance.logoUrl, alliance.websiteUrl || null, alliance.description || null, alliance.isActive ?? true, alliance.sortOrder ?? 0]
+      [
+        alliance.name,
+        alliance.logoUrl,
+        alliance.websiteUrl || null,
+        alliance.description || null,
+        alliance.isActive ?? true,
+        alliance.sortOrder ?? 0,
+      ],
     );
     return mapAlliance(r.rows[0]);
   }
 
-  async updateAlliance(id: number, data: Partial<InsertAlliance>): Promise<Alliance | undefined> {
+  async updateAlliance(
+    id: number,
+    data: Partial<InsertAlliance>,
+  ): Promise<Alliance | undefined> {
     const fields: string[] = [];
     const values: any[] = [];
     let i = 1;
-    if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
-    if (data.logoUrl !== undefined) { fields.push(`logo_url = $${i++}`); values.push(data.logoUrl); }
-    if (data.websiteUrl !== undefined) { fields.push(`website_url = $${i++}`); values.push(data.websiteUrl); }
-    if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
-    if (data.isActive !== undefined) { fields.push(`is_active = $${i++}`); values.push(data.isActive); }
-    if (data.sortOrder !== undefined) { fields.push(`sort_order = $${i++}`); values.push(data.sortOrder); }
+    if (data.name !== undefined) {
+      fields.push(`name = $${i++}`);
+      values.push(data.name);
+    }
+    if (data.logoUrl !== undefined) {
+      fields.push(`logo_url = $${i++}`);
+      values.push(data.logoUrl);
+    }
+    if (data.websiteUrl !== undefined) {
+      fields.push(`website_url = $${i++}`);
+      values.push(data.websiteUrl);
+    }
+    if (data.description !== undefined) {
+      fields.push(`description = $${i++}`);
+      values.push(data.description);
+    }
+    if (data.isActive !== undefined) {
+      fields.push(`is_active = $${i++}`);
+      values.push(data.isActive);
+    }
+    if (data.sortOrder !== undefined) {
+      fields.push(`sort_order = $${i++}`);
+      values.push(data.sortOrder);
+    }
 
     if (fields.length === 0) {
       const r = await this.query("SELECT * FROM alliances WHERE id = $1", [id]);
@@ -1618,7 +2501,7 @@ export class SupabaseStorage implements IStorage {
     values.push(id);
     const r = await this.query(
       `UPDATE alliances SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
-      values
+      values,
     );
     return r.rows[0] ? mapAlliance(r.rows[0]) : undefined;
   }

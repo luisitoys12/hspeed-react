@@ -3,15 +3,29 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { proxyImage } from "@/lib/habboProxy";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-const DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const DAYS_ES = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+];
 
 function getProgramProgress(startTime: string, endTime: string, now: Date) {
   const [sh, sm] = startTime.split(":").map(Number);
@@ -19,8 +33,10 @@ function getProgramProgress(startTime: string, endTime: string, now: Date) {
   const startMin = sh * 60 + sm;
   const endMin = eh * 60 + em;
   const nowMin = now.getHours() * 60 + now.getMinutes();
-  const totalMin = endMin > startMin ? endMin - startMin : 1440 - startMin + endMin;
-  const elapsedMin = nowMin >= startMin ? nowMin - startMin : 1440 - startMin + nowMin;
+  const totalMin =
+    endMin > startMin ? endMin - startMin : 1440 - startMin + endMin;
+  const elapsedMin =
+    nowMin >= startMin ? nowMin - startMin : 1440 - startMin + nowMin;
   if (totalMin <= 0) return 50;
   return Math.max(0, Math.min(100, (elapsedMin / totalMin) * 100));
 }
@@ -35,7 +51,9 @@ function DirectNavLink({ href, label }: { href: string; label: string }) {
       href={href}
       className={cn(
         "text-[11px] font-extrabold uppercase tracking-wider transition-colors py-1.5 border-b-2 border-transparent hover:text-slate-900 hover:border-slate-300 cursor-pointer",
-        isActive ? "text-primary border-primary hover:border-primary" : "text-slate-500"
+        isActive
+          ? "text-primary border-primary hover:border-primary"
+          : "text-slate-500",
       )}
     >
       {label}
@@ -52,16 +70,28 @@ interface DropdownItem {
 }
 
 // Subcomponente Dropdown para menú en Desktop
-function NavDropdown({ label, items, activePrefixes }: { label: string; items: DropdownItem[]; activePrefixes: string[] }) {
+function NavDropdown({
+  label,
+  items,
+  activePrefixes,
+}: {
+  label: string;
+  items: DropdownItem[];
+  activePrefixes: string[];
+}) {
   const [location] = useLocation();
-  const isActive = activePrefixes.some(pref => pref === "/" ? location === "/" : location.startsWith(pref));
+  const isActive = activePrefixes.some((pref) =>
+    pref === "/" ? location === "/" : location.startsWith(pref),
+  );
 
   return (
     <div className="relative group py-4">
       <button
         className={cn(
           "text-[11px] font-extrabold uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer focus:outline-none",
-          isActive ? "text-primary border-b-2 border-primary" : "text-slate-500 hover:text-slate-900"
+          isActive
+            ? "text-primary border-b-2 border-primary"
+            : "text-slate-500 hover:text-slate-900",
         )}
       >
         <span>{label}</span>
@@ -72,7 +102,11 @@ function NavDropdown({ label, items, activePrefixes }: { label: string; items: D
       <div className="absolute left-0 top-full pt-1 hidden group-hover:block w-56 z-50 animate-fade-in">
         <div className="bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden">
           {items.map((item, i) => {
-            const isItemActive = item.href ? (item.href === "/" ? location === "/" : location.startsWith(item.href)) : false;
+            const isItemActive = item.href
+              ? item.href === "/"
+                ? location === "/"
+                : location.startsWith(item.href)
+              : false;
 
             if (item.onClick) {
               return (
@@ -83,11 +117,19 @@ function NavDropdown({ label, items, activePrefixes }: { label: string; items: D
                     "w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold transition-colors",
                     isItemActive
                       ? "text-primary bg-primary/5"
-                      : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                      : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
                   )}
                 >
-                  <i className={cn(item.iconClass, "w-4 text-center text-slate-400 group-hover:text-primary", isItemActive && "text-primary")}></i>
-                  <span className="uppercase tracking-wider text-[10px]">{item.label}</span>
+                  <i
+                    className={cn(
+                      item.iconClass,
+                      "w-4 text-center text-slate-400 group-hover:text-primary",
+                      isItemActive && "text-primary",
+                    )}
+                  ></i>
+                  <span className="uppercase tracking-wider text-[10px]">
+                    {item.label}
+                  </span>
                 </button>
               );
             }
@@ -100,11 +142,19 @@ function NavDropdown({ label, items, activePrefixes }: { label: string; items: D
                   "flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold transition-colors",
                   isItemActive
                     ? "text-primary bg-primary/5"
-                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
                 )}
               >
-                <i className={cn(item.iconClass, "w-4 text-center text-slate-400 group-hover:text-primary", isItemActive && "text-primary")}></i>
-                <span className="uppercase tracking-wider text-[10px]">{item.label}</span>
+                <i
+                  className={cn(
+                    item.iconClass,
+                    "w-4 text-center text-slate-400 group-hover:text-primary",
+                    isItemActive && "text-primary",
+                  )}
+                ></i>
+                <span className="uppercase tracking-wider text-[10px]">
+                  {item.label}
+                </span>
               </Link>
             );
           })}
@@ -126,7 +176,12 @@ export default function TopNavBar() {
   const { data: notifications = [] } = useQuery<any[]>({
     queryKey: ["/api/notifications"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/notifications", undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "GET",
+        "/api/notifications",
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
     enabled: !!user,
@@ -135,27 +190,41 @@ export default function TopNavBar() {
 
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("PUT", "/api/notifications/read-all", undefined, token ? `Bearer ${token}` : undefined);
+      return apiRequest(
+        "PUT",
+        "/api/notifications/read-all",
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-    }
+    },
   });
 
   const markReadMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest("PUT", `/api/notifications/${id}/read`, undefined, token ? `Bearer ${token}` : undefined);
+      return apiRequest(
+        "PUT",
+        `/api/notifications/${id}/read`,
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-    }
+    },
   });
 
   const unreadNotifs = notifications.filter((n: any) => !n.isRead);
   const unreadNotifsCount = unreadNotifs.length;
 
   const [footballMode, setFootballMode] = useState<boolean>(() => {
-    try { return localStorage.getItem("footballMode") === "1"; } catch { return false; }
+    try {
+      return localStorage.getItem("footballMode") === "1";
+    } catch {
+      return false;
+    }
   });
 
   useEffect(() => {
@@ -193,7 +262,12 @@ export default function TopNavBar() {
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/messages/unread", undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "GET",
+        "/api/messages/unread",
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
     enabled: !!user,
@@ -241,33 +315,51 @@ export default function TopNavBar() {
   };
 
   // Cálculo de datos del reproductor
-  const rawDj = nowPlaying?.live?.streamer_name || djPanel?.currentDj || "HabboSpeed";
-  const isAutoDj = !rawDj || ["autodj", "auto dj", "azuracast autodj", "habbospeed"].includes(rawDj.toLowerCase());
+  const rawDj =
+    nowPlaying?.live?.streamer_name || djPanel?.currentDj || "HabboSpeed";
+  const isAutoDj =
+    !rawDj ||
+    ["autodj", "auto dj", "azuracast autodj", "habbospeed"].includes(
+      rawDj.toLowerCase(),
+    );
   const currentDj = isAutoDj ? "HabboSpeed" : rawDj;
   const nextDj = djPanel?.nextDj || "Dj_Invitado";
   const currentSong = nowPlaying?.now_playing?.song;
-  const songTitle = currentSong?.artist && currentSong?.title ? `${currentSong.artist} - ${currentSong.title}` : "Wulf - All Things Under The Sun";
+  const songTitle =
+    currentSong?.artist && currentSong?.title
+      ? `${currentSong.artist} - ${currentSong.title}`
+      : "Wulf - All Things Under The Sun";
   const listeners = nowPlaying?.listeners?.current ?? 50;
 
   const today = DAYS_ES[new Date().getDay()];
   const currentSchedule = useMemo(
     () => (scheduleData || []).find((item) => item.day === today),
-    [scheduleData, today]
+    [scheduleData, today],
   );
   const programStart = currentSchedule?.startTime || "01:00";
   const programEnd = currentSchedule?.endTime || "02:00";
-  const programProgress = currentSchedule ? getProgramProgress(programStart, programEnd, nowDate) : 12;
+  const programProgress = currentSchedule
+    ? getProgramProgress(programStart, programEnd, nowDate)
+    : 12;
 
   // Modales
   const [showPeticionesModal, setShowPeticionesModal] = useState(false);
   const [showSaludosModal, setShowSaludosModal] = useState(false);
 
-  const [peticionForm, setPeticionForm] = useState({ songTitle: "", artist: "", details: "" });
+  const [peticionForm, setPeticionForm] = useState({
+    songTitle: "",
+    artist: "",
+    details: "",
+  });
   const [saludoForm, setSaludoForm] = useState({ details: "" });
 
   const handleSendPeticion = async () => {
     if (!peticionForm.songTitle.trim() || !peticionForm.artist.trim()) {
-      toast({ title: "Error", description: "Por favor rellena canción y artista", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Por favor rellena canción y artista",
+        variant: "destructive",
+      });
       return;
     }
     try {
@@ -277,18 +369,29 @@ export default function TopNavBar() {
         details: `${peticionForm.artist.trim()} - ${peticionForm.songTitle.trim()} (${peticionForm.details.trim()})`,
       });
       if (response.ok) {
-        toast({ title: "¡Petición enviada!", description: "Tu canción ha sido agregada a la cola" });
+        toast({
+          title: "¡Petición enviada!",
+          description: "Tu canción ha sido agregada a la cola",
+        });
         setPeticionForm({ songTitle: "", artist: "", details: "" });
         setShowPeticionesModal(false);
       }
     } catch (err) {
-      toast({ title: "Error", description: "No se pudo enviar la petición", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "No se pudo enviar la petición",
+        variant: "destructive",
+      });
     }
   };
 
   const handleSendSaludo = async () => {
     if (!saludoForm.details.trim()) {
-      toast({ title: "Error", description: "Por favor escribe un mensaje", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Por favor escribe un mensaje",
+        variant: "destructive",
+      });
       return;
     }
     try {
@@ -298,81 +401,219 @@ export default function TopNavBar() {
         details: saludoForm.details.trim(),
       });
       if (response.ok) {
-        toast({ title: "¡Saludo enviado!", description: "Tu mensaje ha sido enviado al DJ de turno." });
+        toast({
+          title: "¡Saludo enviado!",
+          description: "Tu mensaje ha sido enviado al DJ de turno.",
+        });
         setSaludoForm({ details: "" });
         setShowSaludosModal(false);
       }
     } catch (err) {
-      toast({ title: "Error", description: "No se pudo enviar el saludo", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "No se pudo enviar el saludo",
+        variant: "destructive",
+      });
     }
   };
 
   // Dropdown Items Arrays
   const comunidadItems: DropdownItem[] = [
     { href: "/news", label: "Noticias", iconClass: "fa-solid fa-newspaper" },
-    { href: "/events", label: "Eventos", iconClass: "fa-solid fa-calendar-days" },
+    {
+      href: "/events",
+      label: "Eventos",
+      iconClass: "fa-solid fa-calendar-days",
+    },
     { href: "/forum", label: "Foro", iconClass: "fa-solid fa-comments" },
     { href: "/team", label: "Nuestro Equipo", iconClass: "fa-solid fa-users" },
-    { href: "/rooms", label: "Salas Comunitarias", iconClass: "fa-solid fa-hotel" },
-    { href: "/soporte", label: "Soporte / Tickets", iconClass: "fa-solid fa-ticket" },
+    {
+      href: "/rooms",
+      label: "Salas Comunitarias",
+      iconClass: "fa-solid fa-hotel",
+    },
+    {
+      href: "/soporte",
+      label: "Soporte / Tickets",
+      iconClass: "fa-solid fa-ticket",
+    },
     { href: "/contact", label: "Contacto", iconClass: "fa-solid fa-envelope" },
   ];
 
   const radioItems: DropdownItem[] = [
-    { href: "/radio", label: "Sintonizar Radio", iconClass: "fa-solid fa-radio" },
-    { href: "/schedule", label: "Horarios", iconClass: "fa-solid fa-calendar-week" },
-    { href: "/song-history", label: "Historial de Temas", iconClass: "fa-solid fa-compact-disc" },
-    { label: "Peticiones", iconClass: "fa-solid fa-bullhorn", onClick: () => setShowPeticionesModal(true) },
-    { label: "Saludos", iconClass: "fa-solid fa-gift", onClick: () => setShowSaludosModal(true) },
+    {
+      href: "/radio",
+      label: "Sintonizar Radio",
+      iconClass: "fa-solid fa-radio",
+    },
+    {
+      href: "/schedule",
+      label: "Horarios",
+      iconClass: "fa-solid fa-calendar-week",
+    },
+    {
+      href: "/song-history",
+      label: "Historial de Temas",
+      iconClass: "fa-solid fa-compact-disc",
+    },
+    {
+      label: "Peticiones",
+      iconClass: "fa-solid fa-bullhorn",
+      onClick: () => setShowPeticionesModal(true),
+    },
+    {
+      label: "Saludos",
+      iconClass: "fa-solid fa-gift",
+      onClick: () => setShowSaludosModal(true),
+    },
   ];
 
   const habboItems: DropdownItem[] = [
     { href: "/feria", label: "Feria", iconClass: "fa-solid fa-sparkles" },
-    { href: "/herramientas", label: "Centro de Herramientas", iconClass: "fa-solid fa-screwdriver-wrench" },
+    {
+      href: "/tendencias",
+      label: "Tendencias & SpeedShorts",
+      iconClass: "fa-solid fa-fire-flame-curved",
+    },
+    {
+      href: "/herramientas",
+      label: "Centro de Herramientas",
+      iconClass: "fa-solid fa-screwdriver-wrench",
+    },
     { href: "/armario", label: "Armario", iconClass: "fa-solid fa-shirt" },
-    { href: "/imager", label: "Generador de Avatar (Imager)", iconClass: "fa-solid fa-image" },
-    { href: "/catalog", label: "Catálogo de Furnis", iconClass: "fa-solid fa-cubes" },
-    { href: "/badges", label: "Buscador de Placas", iconClass: "fa-solid fa-award" },
+    {
+      href: "/imager",
+      label: "Generador de Avatar (Imager)",
+      iconClass: "fa-solid fa-image",
+    },
+    {
+      href: "/catalog",
+      label: "Catálogo de Furnis",
+      iconClass: "fa-solid fa-cubes",
+    },
+    {
+      href: "/badges",
+      label: "Buscador de Placas",
+      iconClass: "fa-solid fa-award",
+    },
   ];
 
   const tiendaItems: DropdownItem[] = [
-    { href: "/tienda", label: "Tienda SP", iconClass: "fa-solid fa-cart-shopping" },
+    {
+      href: "/tienda",
+      label: "Tienda SP",
+      iconClass: "fa-solid fa-cart-shopping",
+    },
     { href: "/vip", label: "Membresía VIP", iconClass: "fa-solid fa-crown" },
-    { href: "/marketplace", label: "Mercadillo (Marketplace)", iconClass: "fa-solid fa-chart-line" },
+    {
+      href: "/marketplace",
+      label: "Mercadillo (Marketplace)",
+      iconClass: "fa-solid fa-chart-line",
+    },
   ];
 
   const mundialItems: DropdownItem[] = [
-    { href: "/futbol-hub", label: "Fútbol Hub Home", iconClass: "fa-solid fa-trophy" },
-    { href: "/futbol-hub/pronosticos", label: "Pronósticos", iconClass: "fa-solid fa-chart-bar" },
-    { href: "/futbol-hub/ranking", label: "Ranking de Expertos", iconClass: "fa-solid fa-ranking-star" },
-    { href: "/futbol-hub/equipos", label: "Equipos", iconClass: "fa-solid fa-users-gear" },
-    { href: "/futbol-hub/aventura", label: "Aventura Futbolística", iconClass: "fa-solid fa-compass" },
-    { href: "/futbol-hub/mini/rapido", label: "Juego de Penales", iconClass: "fa-solid fa-gamepad" },
-    { href: "/futbol-hub/mini/sorteos", label: "Sorteos Especiales", iconClass: "fa-solid fa-gift" },
-    { href: "/futbol-hub/torneos", label: "HSpeed Torneos", iconClass: "fa-solid fa-medal" },
+    {
+      href: "/futbol-hub",
+      label: "Fútbol Hub Home",
+      iconClass: "fa-solid fa-trophy",
+    },
+    {
+      href: "/futbol-hub/pronosticos",
+      label: "Pronósticos",
+      iconClass: "fa-solid fa-chart-bar",
+    },
+    {
+      href: "/futbol-hub/ranking",
+      label: "Ranking de Expertos",
+      iconClass: "fa-solid fa-ranking-star",
+    },
+    {
+      href: "/futbol-hub/equipos",
+      label: "Equipos",
+      iconClass: "fa-solid fa-users-gear",
+    },
+    {
+      href: "/futbol-hub/aventura",
+      label: "Aventura Futbolística",
+      iconClass: "fa-solid fa-compass",
+    },
+    {
+      href: "/futbol-hub/mini/rapido",
+      label: "Juego de Penales",
+      iconClass: "fa-solid fa-gamepad",
+    },
+    {
+      href: "/futbol-hub/mini/sorteos",
+      label: "Sorteos Especiales",
+      iconClass: "fa-solid fa-gift",
+    },
+    {
+      href: "/futbol-hub/torneos",
+      label: "HSpeed Torneos",
+      iconClass: "fa-solid fa-medal",
+    },
   ];
 
   return (
-    <nav className="w-full sticky top-0 z-50 shadow-md flex flex-col font-sans" data-testid="top-nav-bar">
-      
+    <nav
+      className="w-full sticky top-0 z-50 shadow-md flex flex-col font-sans"
+      data-testid="top-nav-bar"
+    >
       {/* 1. MENÚ BLANCO PREMIUM CON DROPDOWNS COMPLETOS */}
       <div className="bg-white text-slate-800 border-b border-slate-200 h-14 flex items-center px-4 sm:px-6 relative z-50">
         <div className="mx-auto w-full max-w-[1600px] flex items-center justify-between">
-          
           {/* Logo y Dropdowns de Navegación */}
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center">
-              <img src="/logo.png" alt="hSpeed Logo" className="h-9 w-auto object-contain" />
+              <img
+                src="/logo.png"
+                alt="hSpeed Logo"
+                className="h-9 w-auto object-contain"
+              />
             </Link>
 
             {/* Links Escritorio en Dropdowns */}
             <div className="hidden md:flex items-center gap-6">
               <DirectNavLink href="/" label="INICIO" />
-              <NavDropdown label="COMUNIDAD" items={comunidadItems} activePrefixes={["/news", "/events", "/forum", "/team", "/contact", "/rooms"]} />
-              <NavDropdown label="RADIO" items={radioItems} activePrefixes={["/radio", "/schedule", "/song-history"]} />
-              <NavDropdown label="HERRAMIENTAS" items={habboItems} activePrefixes={["/herramientas", "/armario", "/imager", "/catalog", "/badges"]} />
-              <NavDropdown label="TIENDA" items={tiendaItems} activePrefixes={["/tienda", "/shop", "/vip", "/marketplace"]} />
-              <NavDropdown label="FÚTBOL HUB" items={mundialItems} activePrefixes={["/futbol-hub"]} />
+              <NavDropdown
+                label="COMUNIDAD"
+                items={comunidadItems}
+                activePrefixes={[
+                  "/news",
+                  "/events",
+                  "/forum",
+                  "/team",
+                  "/contact",
+                  "/rooms",
+                ]}
+              />
+              <NavDropdown
+                label="RADIO"
+                items={radioItems}
+                activePrefixes={["/radio", "/schedule", "/song-history"]}
+              />
+              <NavDropdown
+                label="HERRAMIENTAS"
+                items={habboItems}
+                activePrefixes={[
+                  "/herramientas",
+                  "/armario",
+                  "/imager",
+                  "/catalog",
+                  "/badges",
+                ]}
+              />
+              <NavDropdown
+                label="TIENDA"
+                items={tiendaItems}
+                activePrefixes={["/tienda", "/shop", "/vip", "/marketplace"]}
+              />
+              <NavDropdown
+                label="FÚTBOL HUB"
+                items={mundialItems}
+                activePrefixes={["/futbol-hub"]}
+              />
             </div>
           </div>
 
@@ -384,10 +625,12 @@ export default function TopNavBar() {
               className="text-slate-500 hover:text-slate-900 transition-colors text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
             >
               <i className="fa-solid fa-futbol text-emerald-500 mr-1"></i>
-              <span className="hidden sm:inline">{footballMode ? "Fútbol On" : "Fútbol Off"}</span>
+              <span className="hidden sm:inline">
+                {footballMode ? "Fútbol On" : "Fútbol Off"}
+              </span>
             </button>
 
-             {user ? (
+            {user ? (
               <div className="flex items-center gap-3 relative">
                 {/* Campana de Notificaciones */}
                 <div className="relative">
@@ -409,7 +652,9 @@ export default function TopNavBar() {
                   {notifMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-fade-in text-slate-700">
                       <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
-                        <span className="font-extrabold text-[10px] uppercase tracking-wider text-slate-900">Notificaciones</span>
+                        <span className="font-extrabold text-[10px] uppercase tracking-wider text-slate-900">
+                          Notificaciones
+                        </span>
                         {unreadNotifsCount > 0 && (
                           <button
                             onClick={() => markAllReadMutation.mutate()}
@@ -430,10 +675,11 @@ export default function TopNavBar() {
                               key={notif.id}
                               className={cn(
                                 "px-4 py-2.5 hover:bg-slate-50 transition-colors flex items-start gap-2.5 border-b border-slate-50 last:border-0 cursor-pointer",
-                                !notif.isRead && "bg-slate-50/50"
+                                !notif.isRead && "bg-slate-50/50",
                               )}
                               onClick={() => {
-                                if (!notif.isRead) markReadMutation.mutate(notif.id);
+                                if (!notif.isRead)
+                                  markReadMutation.mutate(notif.id);
                                 if (notif.link) {
                                   // Navigate manually
                                   window.location.hash = notif.link;
@@ -442,10 +688,24 @@ export default function TopNavBar() {
                               }}
                             >
                               <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 mt-0.5">
-                                <i className={cn("fa-solid", notif.icon === "crown" ? "fa-crown text-amber-500" : notif.icon === "trophy" ? "fa-trophy text-yellow-500" : "fa-info-circle")}></i>
+                                <i
+                                  className={cn(
+                                    "fa-solid",
+                                    notif.icon === "crown"
+                                      ? "fa-crown text-amber-500"
+                                      : notif.icon === "trophy"
+                                        ? "fa-trophy text-yellow-500"
+                                        : "fa-info-circle",
+                                  )}
+                                ></i>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={cn("text-xs font-bold text-slate-800 truncate", !notif.isRead && "text-slate-900")}>
+                                <p
+                                  className={cn(
+                                    "text-xs font-bold text-slate-800 truncate",
+                                    !notif.isRead && "text-slate-900",
+                                  )}
+                                >
                                   {notif.title}
                                 </p>
                                 <p className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-normal">
@@ -475,9 +735,14 @@ export default function TopNavBar() {
                     src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(user.habboUsername || user.displayName)}&size=s&headonly=1`}
                     alt={user.displayName}
                     className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 object-contain"
-                    onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "/habbo-radio/frank_small_03.gif";
+                    }}
                   />
-                  <span className="hidden sm:inline-block text-xs font-bold text-slate-700 uppercase tracking-wider">{user.displayName}</span>
+                  <span className="hidden sm:inline-block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    {user.displayName}
+                  </span>
                   <i className="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
                 </button>
 
@@ -502,7 +767,9 @@ export default function TopNavBar() {
                         MENSAJES
                       </span>
                       {unreadCount > 0 && (
-                        <Badge className="bg-primary text-white text-[9px] px-1.5 py-0.5">{unreadCount}</Badge>
+                        <Badge className="bg-primary text-white text-[9px] px-1.5 py-0.5">
+                          {unreadCount}
+                        </Badge>
                       )}
                     </Link>
                     <Link
@@ -534,7 +801,10 @@ export default function TopNavBar() {
                       </Link>
                     )}
                     <button
-                      onClick={() => { logout(); setUserMenuOpen(false); }}
+                      onClick={() => {
+                        logout();
+                        setUserMenuOpen(false);
+                      }}
                       className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 transition-colors border-t border-slate-100 text-left"
                     >
                       <i className="fa-solid fa-sign-out-alt text-red-400 w-4 text-center"></i>
@@ -545,11 +815,16 @@ export default function TopNavBar() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/login" className="flex items-center gap-1 text-[11px] font-extrabold text-slate-600 hover:text-slate-900 transition-colors uppercase tracking-wider">
+                <Link
+                  href="/login"
+                  className="flex items-center gap-1 text-[11px] font-extrabold text-slate-600 hover:text-slate-900 transition-colors uppercase tracking-wider"
+                >
                   Sign In
                 </Link>
                 <img
-                  src="https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=s&headonly=1"
+                  src={proxyImage(
+                    "https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=s&headonly=1",
+                  )}
                   alt="Sign in"
                   className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 object-contain"
                 />
@@ -561,7 +836,11 @@ export default function TopNavBar() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden text-slate-700 hover:bg-slate-100 p-2 rounded-lg transition-colors"
             >
-              {mobileMenuOpen ? <i className="fa-solid fa-xmark text-lg"></i> : <i className="fa-solid fa-bars text-lg"></i>}
+              {mobileMenuOpen ? (
+                <i className="fa-solid fa-xmark text-lg"></i>
+              ) : (
+                <i className="fa-solid fa-bars text-lg"></i>
+              )}
             </button>
           </div>
         </div>
@@ -571,7 +850,6 @@ export default function TopNavBar() {
       <div className="bg-[#0b0632] text-white border-b border-white/5 py-2 px-4 sm:px-6 relative z-40 select-none font-sans overflow-hidden">
         <audio ref={audioRef} preload="none" />
         <div className="mx-auto w-full max-w-[1600px] flex flex-wrap items-center justify-between gap-3">
-          
           {/* DJ de Turno */}
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-lg bg-[#140b49] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
@@ -579,19 +857,36 @@ export default function TopNavBar() {
                 src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(currentDj)}&size=b`}
                 alt={currentDj}
                 className="absolute top-[-10px] w-12 h-16 object-contain"
-                onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "/habbo-radio/frank_small_03.gif";
+                }}
               />
             </div>
             <div className="min-w-0">
-              <p className="text-[9px] font-bold text-white/50 uppercase tracking-wider leading-none">CURRENT DJ</p>
-              <p className="text-xs font-black text-white truncate max-w-[90px] mt-0.5" title={currentDj}>{currentDj}</p>
+              <p className="text-[9px] font-bold text-white/50 uppercase tracking-wider leading-none">
+                CURRENT DJ
+              </p>
+              <p
+                className="text-xs font-black text-white truncate max-w-[90px] mt-0.5"
+                title={currentDj}
+              >
+                {currentDj}
+              </p>
             </div>
           </div>
 
           {/* Canción en Reproducción */}
           <div className="flex-1 min-w-[150px] max-w-md hidden sm:block border-l border-white/10 pl-3.5">
-            <p className="text-[9px] font-bold text-white/50 uppercase tracking-wider leading-none">CURRENT SONG</p>
-            <p className="text-xs font-semibold text-white/90 truncate mt-0.5" title={songTitle}>{songTitle}</p>
+            <p className="text-[9px] font-bold text-white/50 uppercase tracking-wider leading-none">
+              CURRENT SONG
+            </p>
+            <p
+              className="text-xs font-semibold text-white/90 truncate mt-0.5"
+              title={songTitle}
+            >
+              {songTitle}
+            </p>
           </div>
 
           {/* Oyentes */}
@@ -606,27 +901,45 @@ export default function TopNavBar() {
             className="w-8.5 h-8.5 rounded-full bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center transition-all shadow-md shrink-0 hover:scale-105 active:scale-95"
             aria-label={isPlaying ? "Pause" : "Play"}
           >
-            {isPlaying ? <i className="fa-solid fa-stop text-[10px]"></i> : <i className="fa-solid fa-play text-[10px] ml-0.5"></i>}
+            {isPlaying ? (
+              <i className="fa-solid fa-stop text-[10px]"></i>
+            ) : (
+              <i className="fa-solid fa-play text-[10px] ml-0.5"></i>
+            )}
           </button>
 
           {/* Deslizador de Volumen */}
           <div className="hidden md:flex items-center gap-2 border-l border-white/10 pl-3.5">
-            <button onClick={() => setIsMuted(!isMuted)} className="text-white/60 hover:text-white transition-colors">
-              {isMuted ? <i className="fa-solid fa-volume-xmark"></i> : <i className="fa-solid fa-volume-high"></i>}
+            <button
+              onClick={() => setIsMuted(!isMuted)}
+              className="text-white/60 hover:text-white transition-colors"
+            >
+              {isMuted ? (
+                <i className="fa-solid fa-volume-xmark"></i>
+              ) : (
+                <i className="fa-solid fa-volume-high"></i>
+              )}
             </button>
             <input
               type="range"
               min="0"
               max="100"
               value={isMuted ? 0 : volume}
-              onChange={(e) => { setVolume(Number(e.target.value)); setIsMuted(false); }}
+              onChange={(e) => {
+                setVolume(Number(e.target.value));
+                setIsMuted(false);
+              }}
               className="w-16 h-1 rounded-full accent-cyan-400 bg-white/20 appearance-none cursor-pointer"
             />
           </div>
 
           {/* Iconos de Acción Rápida */}
           <div className="flex items-center gap-2 bg-[#140b49] px-2 py-1 rounded-lg border border-white/5">
-            <Link href="/forum" className="text-white/60 hover:text-[#26d7ff] p-1.5 transition-colors" title="Chat/Foro">
+            <Link
+              href="/forum"
+              className="text-white/60 hover:text-[#26d7ff] p-1.5 transition-colors"
+              title="Chat/Foro"
+            >
               <i className="fa-solid fa-comments text-xs"></i>
             </Link>
             <button
@@ -652,20 +965,33 @@ export default function TopNavBar() {
               <span>PROGRAM TIME</span>
             </div>
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <span className="text-[10px] text-white/60 font-semibold">{programStart}</span>
+              <span className="text-[10px] text-white/60 font-semibold">
+                {programStart}
+              </span>
               <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-                <div className="h-full bg-[#26d7ff] transition-all duration-1000" style={{ width: `${programProgress}%` }} />
+                <div
+                  className="h-full bg-[#26d7ff] transition-all duration-1000"
+                  style={{ width: `${programProgress}%` }}
+                />
               </div>
-              <span className="text-[10px] text-white/60 font-semibold">{programEnd}</span>
+              <span className="text-[10px] text-white/60 font-semibold">
+                {programEnd}
+              </span>
             </div>
           </div>
 
           {/* Próximo DJ */}
           <div className="hidden xl:block border-l border-white/10 pl-3.5 text-right min-w-[90px]">
-            <p className="text-[9px] font-bold text-white/50 uppercase tracking-wider leading-none">NEXT DJ</p>
-            <p className="text-xs font-black text-white/90 truncate mt-0.5 max-w-[100px]" title={nextDj}>{nextDj}</p>
+            <p className="text-[9px] font-bold text-white/50 uppercase tracking-wider leading-none">
+              NEXT DJ
+            </p>
+            <p
+              className="text-xs font-black text-white/90 truncate mt-0.5 max-w-[100px]"
+              title={nextDj}
+            >
+              {nextDj}
+            </p>
           </div>
-
         </div>
       </div>
 
@@ -673,14 +999,14 @@ export default function TopNavBar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-100 bg-slate-50/98 backdrop-blur-md shadow-2xl animate-fade-in-up max-h-[80vh] overflow-y-auto rounded-b-2xl">
           <div className="px-4 py-5 space-y-4">
-            
             {/* Inicio */}
-            <Link 
-              href="/" 
-              className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-black uppercase text-slate-900 bg-white border border-slate-100 hover:bg-slate-50 rounded-xl transition-all shadow-sm" 
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-black uppercase text-slate-900 bg-white border border-slate-100 hover:bg-slate-50 rounded-xl transition-all shadow-sm"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <i className="fa-solid fa-house w-4 text-center text-primary"></i> INICIO
+              <i className="fa-solid fa-house w-4 text-center text-primary"></i>{" "}
+              INICIO
             </Link>
 
             {/* Sección Comunidad */}
@@ -690,8 +1016,19 @@ export default function TopNavBar() {
               </p>
               <div className="grid grid-cols-1 gap-1">
                 {comunidadItems.map((item, idx) => (
-                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
-                    <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                  <Link
+                    key={idx}
+                    href={item.href || "#"}
+                    className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i
+                      className={cn(
+                        item.iconClass,
+                        "w-4 text-center text-slate-400",
+                      )}
+                    ></i>{" "}
+                    {item.label}
                   </Link>
                 ))}
               </div>
@@ -700,7 +1037,8 @@ export default function TopNavBar() {
             {/* Sección Radio */}
             <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
               <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Radio & Programación
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Radio &
+                Programación
               </p>
               <div className="grid grid-cols-1 gap-1">
                 {radioItems.map((item, idx) => {
@@ -708,16 +1046,36 @@ export default function TopNavBar() {
                     return (
                       <button
                         key={idx}
-                        onClick={() => { item.onClick?.(); setMobileMenuOpen(false); }}
+                        onClick={() => {
+                          item.onClick?.();
+                          setMobileMenuOpen(false);
+                        }}
                         className="w-full flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg text-left transition-all"
                       >
-                        <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                        <i
+                          className={cn(
+                            item.iconClass,
+                            "w-4 text-center text-slate-400",
+                          )}
+                        ></i>{" "}
+                        {item.label}
                       </button>
                     );
                   }
                   return (
-                    <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
-                      <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                    <Link
+                      key={idx}
+                      href={item.href || "#"}
+                      className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <i
+                        className={cn(
+                          item.iconClass,
+                          "w-4 text-center text-slate-400",
+                        )}
+                      ></i>{" "}
+                      {item.label}
                     </Link>
                   );
                 })}
@@ -727,15 +1085,32 @@ export default function TopNavBar() {
             {/* Sección Herramientas */}
             <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
               <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Herramientas HSpeed
+                <span className="w-1 h-1 bg-slate-300 rounded-full" />{" "}
+                Herramientas HSpeed
               </p>
               <div className="grid grid-cols-1 gap-1">
-                <Link href="/herramientas" className="flex items-center gap-2.5 px-3 py-2 text-xs font-black text-primary bg-primary/5 border border-primary/10 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
-                  <i className="fa-solid fa-screwdriver-wrench w-4 text-center text-primary"></i> Centro de Herramientas
+                <Link
+                  href="/herramientas"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-black text-primary bg-primary/5 border border-primary/10 rounded-lg transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <i className="fa-solid fa-screwdriver-wrench w-4 text-center text-primary"></i>{" "}
+                  Centro de Herramientas
                 </Link>
                 {habboItems.slice(1).map((item, idx) => (
-                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
-                    <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                  <Link
+                    key={idx}
+                    href={item.href || "#"}
+                    className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i
+                      className={cn(
+                        item.iconClass,
+                        "w-4 text-center text-slate-400",
+                      )}
+                    ></i>{" "}
+                    {item.label}
                   </Link>
                 ))}
               </div>
@@ -744,17 +1119,34 @@ export default function TopNavBar() {
             {/* Sección Radio */}
             <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
               <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Radio HSpeed
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Radio
+                HSpeed
               </p>
               <div className="grid grid-cols-1 gap-1">
-                <Link href="/radio" className="flex items-center gap-2.5 px-3 py-2 text-xs font-black text-primary bg-primary/5 border border-primary/10 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
-                  <i className="fa-solid fa-radio w-4 text-center text-primary"></i> Sintonizar Radio
+                <Link
+                  href="/radio"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-black text-primary bg-primary/5 border border-primary/10 rounded-lg transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <i className="fa-solid fa-radio w-4 text-center text-primary"></i>{" "}
+                  Sintonizar Radio
                 </Link>
                 {radioItems.slice(1).map((item, idx) => {
                   if (item.href) {
                     return (
-                      <Link key={idx} href={item.href} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
-                        <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                      <Link
+                        key={idx}
+                        href={item.href}
+                        className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <i
+                          className={cn(
+                            item.iconClass,
+                            "w-4 text-center text-slate-400",
+                          )}
+                        ></i>{" "}
+                        {item.label}
                       </Link>
                     );
                   } else {
@@ -767,7 +1159,13 @@ export default function TopNavBar() {
                         }}
                         className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all text-left w-full"
                       >
-                        <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                        <i
+                          className={cn(
+                            item.iconClass,
+                            "w-4 text-center text-slate-400",
+                          )}
+                        ></i>{" "}
+                        {item.label}
                       </button>
                     );
                   }
@@ -778,12 +1176,24 @@ export default function TopNavBar() {
             {/* Sección Tienda */}
             <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
               <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Tienda & Economía
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Tienda &
+                Economía
               </p>
               <div className="grid grid-cols-1 gap-1">
                 {tiendaItems.map((item, idx) => (
-                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
-                    <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                  <Link
+                    key={idx}
+                    href={item.href || "#"}
+                    className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i
+                      className={cn(
+                        item.iconClass,
+                        "w-4 text-center text-slate-400",
+                      )}
+                    ></i>{" "}
+                    {item.label}
                   </Link>
                 ))}
               </div>
@@ -792,17 +1202,28 @@ export default function TopNavBar() {
             {/* Sección Mundial */}
             <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
               <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Fútbol Hub
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Fútbol
+                Hub
               </p>
               <div className="grid grid-cols-1 gap-1">
                 {mundialItems.map((item, idx) => (
-                  <Link key={idx} href={item.href || "#"} className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all" onClick={() => setMobileMenuOpen(false)}>
-                    <i className={cn(item.iconClass, "w-4 text-center text-slate-400")}></i> {item.label}
+                  <Link
+                    key={idx}
+                    href={item.href || "#"}
+                    className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i
+                      className={cn(
+                        item.iconClass,
+                        "w-4 text-center text-slate-400",
+                      )}
+                    ></i>{" "}
+                    {item.label}
                   </Link>
                 ))}
               </div>
             </div>
-
           </div>
         </div>
       )}
@@ -818,7 +1239,10 @@ export default function TopNavBar() {
           </DialogHeader>
           <div className="space-y-4 pt-2 font-sans">
             <div>
-              <Label htmlFor="nav-song-title" className="text-xs text-muted-foreground mb-1.5 block">
+              <Label
+                htmlFor="nav-song-title"
+                className="text-xs text-muted-foreground mb-1.5 block"
+              >
                 Nombre de la canción
               </Label>
               <input
@@ -827,11 +1251,19 @@ export default function TopNavBar() {
                 placeholder="Ej: Levitating"
                 className="w-full px-3 py-2 text-xs rounded-lg bg-secondary/30 border border-border focus:outline-none focus:border-primary/50 text-foreground"
                 value={peticionForm.songTitle}
-                onChange={(e) => setPeticionForm({ ...peticionForm, songTitle: e.target.value })}
+                onChange={(e) =>
+                  setPeticionForm({
+                    ...peticionForm,
+                    songTitle: e.target.value,
+                  })
+                }
               />
             </div>
             <div>
-              <Label htmlFor="nav-artist" className="text-xs text-muted-foreground mb-1.5 block">
+              <Label
+                htmlFor="nav-artist"
+                className="text-xs text-muted-foreground mb-1.5 block"
+              >
                 Artista
               </Label>
               <input
@@ -840,11 +1272,16 @@ export default function TopNavBar() {
                 placeholder="Ej: Dua Lipa"
                 className="w-full px-3 py-2 text-xs rounded-lg bg-secondary/30 border border-border focus:outline-none focus:border-primary/50 text-foreground"
                 value={peticionForm.artist}
-                onChange={(e) => setPeticionForm({ ...peticionForm, artist: e.target.value })}
+                onChange={(e) =>
+                  setPeticionForm({ ...peticionForm, artist: e.target.value })
+                }
               />
             </div>
             <div>
-              <Label htmlFor="nav-details" className="text-xs text-muted-foreground mb-1.5 block">
+              <Label
+                htmlFor="nav-details"
+                className="text-xs text-muted-foreground mb-1.5 block"
+              >
                 Comentarios
               </Label>
               <Textarea
@@ -853,7 +1290,9 @@ export default function TopNavBar() {
                 rows={3}
                 className="text-xs resize-none"
                 value={peticionForm.details}
-                onChange={(e) => setPeticionForm({ ...peticionForm, details: e.target.value })}
+                onChange={(e) =>
+                  setPeticionForm({ ...peticionForm, details: e.target.value })
+                }
               />
             </div>
             <Button
@@ -877,7 +1316,10 @@ export default function TopNavBar() {
           </DialogHeader>
           <div className="space-y-4 pt-2 font-sans">
             <div>
-              <Label htmlFor="nav-saludo-msg" className="text-xs text-muted-foreground mb-1.5 block">
+              <Label
+                htmlFor="nav-saludo-msg"
+                className="text-xs text-muted-foreground mb-1.5 block"
+              >
                 Mensaje de saludo
               </Label>
               <Textarea
@@ -898,7 +1340,6 @@ export default function TopNavBar() {
           </div>
         </DialogContent>
       </Dialog>
-
     </nav>
   );
 }

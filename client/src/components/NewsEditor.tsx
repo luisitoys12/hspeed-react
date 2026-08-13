@@ -21,10 +21,21 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import CharacterCount from "@tiptap/extension-character-count";
 import {
-  Bold, Italic, Strikethrough, Heading2, Heading3,
-  List, ListOrdered, Quote, Minus, Image as ImageIcon,
-  Youtube as YoutubeIcon, Link as LinkIcon, Undo2, Redo2,
-  Code2
+  Bold,
+  Italic,
+  Strikethrough,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+  Minus,
+  Image as ImageIcon,
+  Youtube as YoutubeIcon,
+  Link as LinkIcon,
+  Undo2,
+  Redo2,
+  Code2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -46,7 +57,11 @@ export function NewsEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },
-        codeBlock: { HTMLAttributes: { class: "rounded-lg bg-muted p-4 font-mono text-sm" } },
+        codeBlock: {
+          HTMLAttributes: {
+            class: "rounded-lg bg-muted p-4 font-mono text-sm",
+          },
+        },
       }),
       Image.configure({
         HTMLAttributes: {
@@ -62,7 +77,8 @@ export function NewsEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-primary underline underline-offset-2 hover:text-primary/80",
+          class:
+            "text-primary underline underline-offset-2 hover:text-primary/80",
           rel: "noopener noreferrer",
           target: "_blank",
         },
@@ -94,7 +110,8 @@ export function NewsEditor({
 
   const insertYoutube = () => {
     const url = window.prompt("URL de YouTube:");
-    if (url?.trim()) editor.chain().focus().setYoutubeVideo({ src: url.trim() }).run();
+    if (url?.trim())
+      editor.chain().focus().setYoutubeVideo({ src: url.trim() }).run();
   };
 
   const setLink = () => {
@@ -104,35 +121,131 @@ export function NewsEditor({
     if (url.trim() === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
     } else {
-      editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange("link")
+        .setLink({ href: url.trim() })
+        .run();
     }
   };
 
   // ── Toolbar buttons config ─────────────────────────────────────────────
   type ToolbarBtn =
-    | { type: "btn"; icon: React.ElementType; title: string; action: () => void; active?: boolean }
+    | {
+        type: "btn";
+        icon: React.ComponentType<{ className?: string }>;
+        title: string;
+        action: () => void;
+        active?: boolean;
+      }
     | { type: "sep" };
 
   const tools: ToolbarBtn[] = [
-    { type: "btn", icon: Bold,        title: "Negrita (Ctrl+B)",   action: () => editor.chain().focus().toggleBold().run(),        active: editor.isActive("bold") },
-    { type: "btn", icon: Italic,      title: "Cursiva (Ctrl+I)",   action: () => editor.chain().focus().toggleItalic().run(),      active: editor.isActive("italic") },
-    { type: "btn", icon: Strikethrough, title: "Tachado",          action: () => editor.chain().focus().toggleStrike().run(),      active: editor.isActive("strike") },
-    { type: "btn", icon: Code2,       title: "Código inline",      action: () => editor.chain().focus().toggleCode().run(),        active: editor.isActive("code") },
+    {
+      type: "btn",
+      icon: Bold,
+      title: "Negrita (Ctrl+B)",
+      action: () => editor.chain().focus().toggleBold().run(),
+      active: editor.isActive("bold"),
+    },
+    {
+      type: "btn",
+      icon: Italic,
+      title: "Cursiva (Ctrl+I)",
+      action: () => editor.chain().focus().toggleItalic().run(),
+      active: editor.isActive("italic"),
+    },
+    {
+      type: "btn",
+      icon: Strikethrough,
+      title: "Tachado",
+      action: () => editor.chain().focus().toggleStrike().run(),
+      active: editor.isActive("strike"),
+    },
+    {
+      type: "btn",
+      icon: Code2,
+      title: "Código inline",
+      action: () => editor.chain().focus().toggleCode().run(),
+      active: editor.isActive("code"),
+    },
     { type: "sep" },
-    { type: "btn", icon: Heading2,    title: "Título H2",          action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(), active: editor.isActive("heading", { level: 2 }) },
-    { type: "btn", icon: Heading3,    title: "Título H3",          action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(), active: editor.isActive("heading", { level: 3 }) },
+    {
+      type: "btn",
+      icon: Heading2,
+      title: "Título H2",
+      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      active: editor.isActive("heading", { level: 2 }),
+    },
+    {
+      type: "btn",
+      icon: Heading3,
+      title: "Título H3",
+      action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+      active: editor.isActive("heading", { level: 3 }),
+    },
     { type: "sep" },
-    { type: "btn", icon: List,        title: "Lista",              action: () => editor.chain().focus().toggleBulletList().run(),  active: editor.isActive("bulletList") },
-    { type: "btn", icon: ListOrdered, title: "Lista numerada",     action: () => editor.chain().focus().toggleOrderedList().run(), active: editor.isActive("orderedList") },
-    { type: "btn", icon: Quote,       title: "Cita",               action: () => editor.chain().focus().toggleBlockquote().run(), active: editor.isActive("blockquote") },
-    { type: "btn", icon: Minus,       title: "Separador",          action: () => editor.chain().focus().setHorizontalRule().run() },
+    {
+      type: "btn",
+      icon: List,
+      title: "Lista",
+      action: () => editor.chain().focus().toggleBulletList().run(),
+      active: editor.isActive("bulletList"),
+    },
+    {
+      type: "btn",
+      icon: ListOrdered,
+      title: "Lista numerada",
+      action: () => editor.chain().focus().toggleOrderedList().run(),
+      active: editor.isActive("orderedList"),
+    },
+    {
+      type: "btn",
+      icon: Quote,
+      title: "Cita",
+      action: () => editor.chain().focus().toggleBlockquote().run(),
+      active: editor.isActive("blockquote"),
+    },
+    {
+      type: "btn",
+      icon: Minus,
+      title: "Separador",
+      action: () => editor.chain().focus().setHorizontalRule().run(),
+    },
     { type: "sep" },
-    { type: "btn", icon: LinkIcon,    title: "Insertar enlace",    action: setLink,    active: editor.isActive("link") },
-    { type: "btn", icon: ImageIcon,   title: "Insertar imagen",   action: insertImage },
-    { type: "btn", icon: YoutubeIcon, title: "Embed YouTube",     action: insertYoutube },
+    {
+      type: "btn",
+      icon: LinkIcon,
+      title: "Insertar enlace",
+      action: setLink,
+      active: editor.isActive("link"),
+    },
+    {
+      type: "btn",
+      icon: ImageIcon,
+      title: "Insertar imagen",
+      action: insertImage,
+    },
+    {
+      type: "btn",
+      icon: YoutubeIcon,
+      title: "Embed YouTube",
+      action: insertYoutube,
+    },
     { type: "sep" },
-    { type: "btn", icon: Undo2,       title: "Deshacer (Ctrl+Z)", action: () => editor.chain().focus().undo().run() },
-    { type: "btn", icon: Redo2,       title: "Rehacer (Ctrl+Y)",  action: () => editor.chain().focus().redo().run() },
+    {
+      type: "btn",
+      icon: Undo2,
+      title: "Deshacer (Ctrl+Z)",
+      action: () => editor.chain().focus().undo().run(),
+    },
+    {
+      type: "btn",
+      icon: Redo2,
+      title: "Rehacer (Ctrl+Y)",
+      action: () => editor.chain().focus().redo().run(),
+    },
   ];
 
   const chars = editor.storage.characterCount?.characters?.() ?? null;
@@ -152,7 +265,7 @@ export function NewsEditor({
               size="icon"
               className={cn(
                 "w-7 h-7 rounded transition-colors",
-                t.active && "bg-primary/15 text-primary"
+                t.active && "bg-primary/15 text-primary",
               )}
               title={t.title}
               onMouseDown={(e) => {
@@ -162,7 +275,7 @@ export function NewsEditor({
             >
               <t.icon className="w-3.5 h-3.5" />
             </Button>
-          )
+          ),
         )}
       </div>
 

@@ -41,88 +41,88 @@ import VipPage from "@/pages/VipPage";
 import RoomsPage from "@/pages/RoomsPage";
 import FeriaPage from "@/pages/FeriaPage";
 import SupportPage from "@/pages/SupportPage";
+import TendenciasPage from "@/pages/TendenciasPage";
 import NotFound from "@/pages/not-found";
 
-
-
 function AppContent() {
-	const [location] = useLocation();
-	const { user, loading } = useAuth();
-	usePageTitle(location);
+  const [location] = useLocation();
+  const { user, loading } = useAuth();
+  usePageTitle(location);
 
-	const { data: config } = useQuery<any>({
-		queryKey: ["/api/config"],
-		retry: false,
-	});
+  const { data: config } = useQuery<any>({
+    queryKey: ["/api/config"],
+    retry: false,
+  });
 
-	const maintenanceEnabled = config?.maintenanceMode === true;
-	const canBypassMaintenance = user?.role === "admin";
+  const maintenanceEnabled = config?.maintenanceMode === true;
+  const canBypassMaintenance = user?.role === "admin";
 
-	if (maintenanceEnabled && !loading && !canBypassMaintenance) {
-		return <MaintenancePage />;
-	}
+  if (maintenanceEnabled && !loading && !canBypassMaintenance) {
+    return <MaintenancePage />;
+  }
 
-	return (
-		<div className="min-h-screen flex flex-col">
-			<ThemeParticles />
-			<TopNavBar />
-			<ThemeDecoBar />
-			<main className="flex-1">
-				<Suspense fallback={null}>
-					<Switch>
-						<Route path="/" component={HomePage} />
-						<Route path="/news" component={NewsPage} />
-						<Route path="/news/:id" component={NewsDetailPage} />
-						<Route path="/events" component={EventsPage} />
-						<Route path="/schedule" component={SchedulePage} />
-						<Route path="/team" component={TeamPage} />
-						<Route path="/badges" component={BadgesPage} />
-						<Route path="/marketplace" component={MarketplacePage} />
-						<Route path="/imager" component={ImagerPage} />
-						<Route path="/forum" component={ForumPage} />
-						<Route path="/forum/:id" component={ForumThreadPage} />
-						<Route path="/contact" component={ContactPage} />
-						<Route path="/login" component={LoginPage} />
-						<Route path="/register" component={RegisterPage} />
-						<Route path="/panel" component={AdminPanel} />
-						<Route path="/djpanel" component={DJPanelPage} />
-						<Route path="/messages" component={MessagesPage} />
-						<Route path="/armario" component={ArmarioPage} />
-						<Route path="/herramientas" component={HerramientasPage} />
-						<Route path="/tienda" component={ShopPage} />
-						<Route path="/shop" component={ShopPage} />
-						<Route path="/catalog" component={CatalogPage} />
+  return (
+    <div className="min-h-screen flex flex-col">
+      <ThemeParticles />
+      <TopNavBar />
+      <ThemeDecoBar />
+      <main className="flex-1">
+        <Suspense fallback={null}>
+          <Switch>
+            <Route path="/" component={HomePage} />
+            <Route path="/news" component={NewsPage} />
+            <Route path="/news/:id" component={NewsDetailPage} />
+            <Route path="/events" component={EventsPage} />
+            <Route path="/schedule" component={SchedulePage} />
+            <Route path="/team" component={TeamPage} />
+            <Route path="/badges" component={BadgesPage} />
+            <Route path="/marketplace" component={MarketplacePage} />
+            <Route path="/imager" component={ImagerPage} />
+            <Route path="/forum" component={ForumPage} />
+            <Route path="/forum/:id" component={ForumThreadPage} />
+            <Route path="/contact" component={ContactPage} />
+            <Route path="/login" component={LoginPage} />
+            <Route path="/register" component={RegisterPage} />
+            <Route path="/panel" component={AdminPanel} />
+            <Route path="/djpanel" component={DJPanelPage} />
+            <Route path="/messages" component={MessagesPage} />
+            <Route path="/armario" component={ArmarioPage} />
+            <Route path="/herramientas" component={HerramientasPage} />
+            <Route path="/tienda" component={ShopPage} />
+            <Route path="/shop" component={ShopPage} />
+            <Route path="/catalog" component={CatalogPage} />
 
-						<Route path="/legal" component={LegalPage} />
-						<Route path="/privacy" component={LegalPage} />
-						<Route path="/maintenance" component={MaintenancePage} />
-						<Route path="/profile/:username" component={ProfilePage} />
-						<Route path="/futbol-hub" component={FutbolHubPage} />
-						<Route path="/futbol-hub/*" component={FutbolHubPage} />
-						<Route path="/song-history" component={SongHistoryPage} />
-						<Route path="/radio" component={RadioPage} />
-						<Route path="/vip" component={VipPage} />
-						<Route path="/rooms" component={RoomsPage} />
-						<Route path="/feria" component={FeriaPage} />
-						<Route path="/soporte" component={SupportPage} />
-						<Route component={NotFound} />
-					</Switch>
-				</Suspense>
-			</main>
-			<Footer />
-		</div>
-	);
+            <Route path="/legal" component={LegalPage} />
+            <Route path="/privacy" component={LegalPage} />
+            <Route path="/maintenance" component={MaintenancePage} />
+            <Route path="/profile/:username" component={ProfilePage} />
+            <Route path="/futbol-hub" component={FutbolHubPage} />
+            <Route path="/futbol-hub/*" component={FutbolHubPage} />
+            <Route path="/song-history" component={SongHistoryPage} />
+            <Route path="/radio" component={RadioPage} />
+            <Route path="/vip" component={VipPage} />
+            <Route path="/rooms" component={RoomsPage} />
+            <Route path="/feria" component={FeriaPage} />
+            <Route path="/soporte" component={SupportPage} />
+            <Route path="/tendencias" component={TendenciasPage} />
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 export default function App() {
-	return (
-		<QueryClientProvider client={queryClient}>
-			<AuthProvider>
-				<ThemeProvider>
-					<AppContent />
-					<Toaster />
-				</ThemeProvider>
-			</AuthProvider>
-		</QueryClientProvider>
-	);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider>
+          <AppContent />
+          <Toaster />
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
 }

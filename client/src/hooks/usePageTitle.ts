@@ -20,6 +20,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/maintenance": "HabboSpeed - Mantenimiento",
   "/legal": "HabboSpeed - Legal",
   "/privacy": "HabboSpeed - Privacidad",
+  "/tendencias": "HabboSpeed - Tendencias & SpeedShorts",
 };
 
 export function usePageTitle(path: string) {
