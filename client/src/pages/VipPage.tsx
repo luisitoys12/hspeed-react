@@ -1,5 +1,11 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -98,7 +104,8 @@ export default function VipPage() {
           Membresías <span className="text-primary">VIP</span>
         </h1>
         <p className="text-muted-foreground text-sm max-w-md mx-auto">
-          Apoya a la comunidad de HabboSpeed y obtén beneficios, multiplicadores de puntos e insignias exclusivas.
+          Apoya a la comunidad de HabboSpeed y obtén beneficios, multiplicadores
+          de puntos e insignias exclusivas.
         </p>
 
         {user && (
@@ -121,10 +128,17 @@ export default function VipPage() {
               </div>
               <div>
                 <h3 className="font-bold text-white text-lg">
-                  Tu Rango VIP <span className="text-primary uppercase">{vipStatus.tier}</span> está Activo
+                  Tu Rango VIP{" "}
+                  <span className="text-primary uppercase">
+                    {vipStatus.tier}
+                  </span>{" "}
+                  está Activo
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Vence el {new Date(vipStatus.expiresAt!).toLocaleDateString("es-ES", { dateStyle: "long" })}
+                  Vence el{" "}
+                  {new Date(vipStatus.expiresAt!).toLocaleDateString("es-ES", {
+                    dateStyle: "long",
+                  })}
                 </p>
               </div>
             </div>
@@ -141,7 +155,9 @@ export default function VipPage() {
           <Card
             key={tier.name}
             className={`relative flex flex-col border transition-all duration-300 hover:scale-[1.02] ${
-              tier.featured ? "border-primary/80 bg-zinc-950" : "border-border bg-card/60"
+              tier.featured
+                ? "border-primary/80 bg-zinc-950"
+                : "border-border bg-card/60"
             } ${tier.glowColor}`}
           >
             {tier.featured && (
@@ -151,22 +167,28 @@ export default function VipPage() {
             )}
 
             <CardHeader className="text-center pt-8">
-              <CardTitle className={`text-2xl font-black uppercase font-cabinet ${tier.textColor}`}>
+              <CardTitle
+                className={`text-2xl font-black uppercase font-cabinet ${tier.textColor}`}
+              >
                 VIP {tier.name}
               </CardTitle>
               <div className="flex items-baseline justify-center gap-1 mt-4">
-                <span className="text-4xl font-extrabold text-white">{tier.cost}</span>
+                <span className="text-4xl font-extrabold text-white">
+                  {tier.cost}
+                </span>
                 <span className="text-xs text-muted-foreground">SP / mes</span>
               </div>
             </CardHeader>
 
             <CardContent className="flex-1 flex flex-col p-6 pt-0">
               <hr className="border-border/60 mb-6" />
-              
+
               <ul className="space-y-3 mb-8 flex-1 text-xs text-muted-foreground text-left">
                 {tier.perks.map((perk, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5"><i className="fa-solid fa-check"></i></span>
+                    <span className="text-primary mt-0.5">
+                      <i className="fa-solid fa-check"></i>
+                    </span>
                     <span>{perk}</span>
                   </li>
                 ))}
@@ -174,16 +196,27 @@ export default function VipPage() {
 
               <Button
                 className={`w-full font-bold uppercase py-5 rounded-lg text-xs tracking-wider transition-all duration-300 ${
-                  tier.featured 
-                    ? "bg-primary text-black hover:bg-primary/90 shadow-[0_4px_12px_rgba(245,166,35,0.25)]" 
+                  tier.featured
+                    ? "bg-primary text-black hover:bg-primary/90 shadow-[0_4px_12px_rgba(245,166,35,0.25)]"
                     : "bg-secondary text-white hover:bg-zinc-800"
                 }`}
-                disabled={!user || subscribeMutation.isPending || (vipStatus?.isActive && vipStatus.tier === tier.name.toLowerCase())}
-                onClick={() => subscribeMutation.mutate({ tier: tier.name.toLowerCase(), months: 1 })}
+                disabled={
+                  !user ||
+                  subscribeMutation.isPending ||
+                  (vipStatus?.isActive &&
+                    vipStatus.tier === tier.name.toLowerCase())
+                }
+                onClick={() =>
+                  subscribeMutation.mutate({
+                    tier: tier.name.toLowerCase(),
+                    months: 1,
+                  })
+                }
               >
                 {subscribeMutation.isPending ? (
                   <i className="fa-solid fa-circle-notch animate-spin"></i>
-                ) : vipStatus?.isActive && vipStatus.tier === tier.name.toLowerCase() ? (
+                ) : vipStatus?.isActive &&
+                  vipStatus.tier === tier.name.toLowerCase() ? (
                   "Suscrito"
                 ) : (
                   "Adquirir con SP"
@@ -202,12 +235,25 @@ export default function VipPage() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-muted-foreground">
             <div>
-              <h4 className="font-bold text-white mb-1">¿Cómo consigo SpeedPoints (SP)?</h4>
-              <p>Puedes conseguir SpeedPoints de manera gratuita participando en los juegos de la comunidad, sintonizando la radio activamente, respondiendo las encuestas o participando en los concursos del foro.</p>
+              <h4 className="font-bold text-white mb-1">
+                ¿Cómo consigo SpeedPoints (SP)?
+              </h4>
+              <p>
+                Puedes conseguir SpeedPoints de manera gratuita participando en
+                los juegos de la comunidad, sintonizando la radio activamente,
+                respondiendo las encuestas o participando en los concursos del
+                foro.
+              </p>
             </div>
             <div>
-              <h4 className="font-bold text-white mb-1">¿Puedo acumular meses de VIP?</h4>
-              <p>Sí. Si decides renovar o adquirir más meses, tu fecha de expiración se extenderá automáticamente sumando los meses correspondientes.</p>
+              <h4 className="font-bold text-white mb-1">
+                ¿Puedo acumular meses de VIP?
+              </h4>
+              <p>
+                Sí. Si decides renovar o adquirir más meses, tu fecha de
+                expiración se extenderá automáticamente sumando los meses
+                correspondientes.
+              </p>
             </div>
           </div>
         </CardContent>

@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +68,16 @@ export default function ImagerPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const hotelDomain = hotel === "es" ? "habbo.es" : hotel === "com" ? "habbo.com" : hotel === "com.br" ? "habbo.com.br" : hotel === "de" ? "habbo.de" : "habbo.fr";
+  const hotelDomain =
+    hotel === "es"
+      ? "habbo.es"
+      : hotel === "com"
+        ? "habbo.com"
+        : hotel === "com.br"
+          ? "habbo.com.br"
+          : hotel === "de"
+            ? "habbo.de"
+            : "habbo.fr";
 
   const buildUrl = (s: string, hOnly: boolean = headOnly) => {
     if (!username) return "";
@@ -97,7 +112,10 @@ export default function ImagerPage() {
       a.click();
       document.body.removeChild(a);
     } catch {
-      toast({ title: "Abre la URL directamente en una nueva pestaña", variant: "destructive" });
+      toast({
+        title: "Abre la URL directamente en una nueva pestaña",
+        variant: "destructive",
+      });
     }
   };
 
@@ -113,8 +131,12 @@ export default function ImagerPage() {
         <ImageIcon className="w-5 h-5 text-primary" />
         <h1 className="text-xl font-bold">Habbo Imager</h1>
       </div>
-      <p className="text-sm text-muted-foreground">Genera imágenes de avatares de Habbo con diferentes opciones.</p>
-      <p className="text-xs text-yellow-400/80">⚠ Requiere que el perfil de Habbo sea público en el hotel seleccionado.</p>
+      <p className="text-sm text-muted-foreground">
+        Genera imágenes de avatares de Habbo con diferentes opciones.
+      </p>
+      <p className="text-xs text-yellow-400/80">
+        ⚠ Requiere que el perfil de Habbo sea público en el hotel seleccionado.
+      </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Controls */}
@@ -122,31 +144,42 @@ export default function ImagerPage() {
           <Card className="bg-card border-border">
             <CardContent className="p-5 space-y-4">
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Usuario de Habbo</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">
+                  Usuario de Habbo
+                </Label>
                 <Input
                   placeholder="Introduce tu usuario..."
                   value={username}
-                  onChange={(e) => { setUsername(e.target.value); setGenerated(false); }}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setGenerated(false);
+                  }}
                   data-testid="input-habbo-username"
                 />
               </div>
 
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Hotel</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">
+                  Hotel
+                </Label>
                 <Select value={hotel} onValueChange={setHotel}>
                   <SelectTrigger data-testid="select-hotel">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {HOTELS.map((h) => (
-                      <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>
+                      <SelectItem key={h.value} value={h.value}>
+                        {h.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Tamaño</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">
+                  Tamaño
+                </Label>
                 <Select value={size} onValueChange={setSize}>
                   <SelectTrigger data-testid="select-avatar-size">
                     <SelectValue />
@@ -162,42 +195,54 @@ export default function ImagerPage() {
               </div>
 
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Dirección del cuerpo</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">
+                  Dirección del cuerpo
+                </Label>
                 <Select value={direction} onValueChange={setDirection}>
                   <SelectTrigger data-testid="select-direction">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {DIRECTIONS.map((d) => (
-                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                      <SelectItem key={d.value} value={d.value}>
+                        {d.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Dirección de la cabeza</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">
+                  Dirección de la cabeza
+                </Label>
                 <Select value={headDirection} onValueChange={setHeadDirection}>
                   <SelectTrigger data-testid="select-head-direction">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {DIRECTIONS.map((d) => (
-                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                      <SelectItem key={d.value} value={d.value}>
+                        {d.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Gesto / Acción</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">
+                  Gesto / Acción
+                </Label>
                 <Select value={gesture} onValueChange={setGesture}>
                   <SelectTrigger data-testid="select-gesture">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {GESTURES.map((g) => (
-                      <SelectItem key={g.value || "default"} value={g.value}>{g.label}</SelectItem>
+                      <SelectItem key={g.value || "default"} value={g.value}>
+                        {g.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -205,8 +250,12 @@ export default function ImagerPage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Solo cabeza</Label>
-                  <p className="text-[10px] text-muted-foreground/60">Mostrar solo la cabeza del avatar</p>
+                  <Label className="text-xs text-muted-foreground">
+                    Solo cabeza
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground/60">
+                    Mostrar solo la cabeza del avatar
+                  </p>
                 </div>
                 <Switch
                   checked={headOnly}
@@ -231,7 +280,9 @@ export default function ImagerPage() {
           {generated && imageUrl && (
             <Card className="bg-card border-border">
               <CardContent className="p-4 space-y-2">
-                <Label className="text-xs text-muted-foreground">URL generada</Label>
+                <Label className="text-xs text-muted-foreground">
+                  URL generada
+                </Label>
                 <div className="flex gap-2">
                   <Input
                     value={imageUrl}
@@ -239,7 +290,13 @@ export default function ImagerPage() {
                     className="text-xs font-mono bg-secondary/50"
                     data-testid="text-avatar-url"
                   />
-                  <Button variant="outline" size="icon" onClick={copyUrl} className="flex-shrink-0" data-testid="button-copy-url">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={copyUrl}
+                    className="flex-shrink-0"
+                    data-testid="button-copy-url"
+                  >
                     <Copy className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -264,7 +321,9 @@ export default function ImagerPage() {
             <>
               <Card className="bg-card border-border">
                 <CardContent className="p-6 flex flex-col items-center justify-center min-h-48 gap-4">
-                  <p className="text-xs text-muted-foreground">Vista previa: tamaño {size}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Vista previa: tamaño {size}
+                  </p>
                   {loading ? (
                     <div className="w-20 h-32 bg-secondary/50 rounded-lg animate-pulse" />
                   ) : (
@@ -278,25 +337,47 @@ export default function ImagerPage() {
                       }}
                     />
                   )}
-                  <p className="text-xs text-muted-foreground font-pixel text-[8px]">@{username}</p>
+                  <p className="text-xs text-muted-foreground font-pixel text-[8px]">
+                    @{username}
+                  </p>
                 </CardContent>
               </Card>
 
               {/* All sizes preview */}
               <Card className="bg-card border-border">
                 <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground mb-3">Todos los tamaños</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Todos los tamaños
+                  </p>
                   <div className="flex items-end gap-4 justify-center">
                     {allSizePreviews.map(({ size: s, url }) => (
-                      <div key={s} className="flex flex-col items-center gap-1.5">
+                      <div
+                        key={s}
+                        className="flex flex-col items-center gap-1.5"
+                      >
                         <img
                           src={url}
                           alt={`${username} size ${s}`}
                           className="object-contain"
-                          style={{ maxHeight: s === "b" ? "80px" : s === "l" ? "60px" : s === "m" ? "45px" : "35px" }}
-                          onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}
+                          style={{
+                            maxHeight:
+                              s === "b"
+                                ? "80px"
+                                : s === "l"
+                                  ? "60px"
+                                  : s === "m"
+                                    ? "45px"
+                                    : "35px",
+                          }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.opacity =
+                              "0.2";
+                          }}
                         />
-                        <Badge variant="outline" className={`text-[9px] ${size === s ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] ${size === s ? "border-primary text-primary" : "border-border text-muted-foreground"}`}
+                        >
                           {s}
                         </Badge>
                       </div>

@@ -5,7 +5,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, Radio } from "lucide-react";
 import type { Schedule } from "@shared/schema";
 
-const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const DAYS = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+];
 
 const DAY_COLORS: Record<string, string> = {
   Lunes: "border-blue-500/30 bg-blue-500/5",
@@ -18,7 +26,9 @@ const DAY_COLORS: Record<string, string> = {
 };
 
 export default function SchedulePage() {
-  const { data: schedule, isLoading } = useQuery<Schedule[]>({ queryKey: ["/api/schedule"] });
+  const { data: schedule, isLoading } = useQuery<Schedule[]>({
+    queryKey: ["/api/schedule"],
+  });
 
   const byDay: Record<string, Schedule[]> = {};
   (schedule || []).forEach((s) => {
@@ -46,9 +56,13 @@ export default function SchedulePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 7 }).map((_, i) => (
             <Card key={i} className="bg-card border-border">
-              <CardHeader><Skeleton className="h-4 w-24" /></CardHeader>
+              <CardHeader>
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
               <CardContent className="space-y-2">
-                {Array.from({ length: 3 }).map((_, j) => <Skeleton key={j} className="h-14" />)}
+                {Array.from({ length: 3 }).map((_, j) => (
+                  <Skeleton key={j} className="h-14" />
+                ))}
               </CardContent>
             </Card>
           ))}
@@ -66,34 +80,43 @@ export default function SchedulePage() {
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm font-semibold flex items-center justify-between">
                     {day}
-                    <Badge variant="outline" className="text-[9px] border-border">
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] border-border"
+                    >
                       {slots.length} shows
                     </Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 pb-3 space-y-2">
-                  {slots.length > 0
-                    ? slots.map((slot) => (
-                        <div
-                          key={slot.id}
-                          className="bg-white/5 rounded-lg p-2.5 border border-border/50"
-                          data-testid={`slot-${slot.id}`}
-                        >
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <Radio className="w-3 h-3 text-primary flex-shrink-0" />
-                            <span className="text-xs font-semibold text-primary truncate">{slot.showName}</span>
-                          </div>
-                          <p className="text-[11px] text-foreground/80 truncate">{slot.djName}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
-                            {slot.startTime} – {slot.endTime}
-                          </p>
+                  {slots.length > 0 ? (
+                    slots.map((slot) => (
+                      <div
+                        key={slot.id}
+                        className="bg-white/5 rounded-lg p-2.5 border border-border/50"
+                        data-testid={`slot-${slot.id}`}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Radio className="w-3 h-3 text-primary flex-shrink-0" />
+                          <span className="text-xs font-semibold text-primary truncate">
+                            {slot.showName}
+                          </span>
                         </div>
-                      ))
-                    : (
-                        <div className="text-center py-4">
-                          <p className="text-[11px] text-muted-foreground">Sin programación</p>
-                        </div>
-                      )}
+                        <p className="text-[11px] text-foreground/80 truncate">
+                          {slot.djName}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {slot.startTime} – {slot.endTime}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-[11px] text-muted-foreground">
+                        Sin programación
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

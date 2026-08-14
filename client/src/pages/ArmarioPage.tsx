@@ -22,7 +22,7 @@ import {
   Crown,
   Glasses,
   Smile,
-  Search
+  Search,
 } from "lucide-react";
 
 import setsData from "@/data/sets.json";
@@ -119,7 +119,9 @@ export default function ArmarioPage() {
     if (!habboUsername.trim()) return;
     setIsFetchingUser(true);
     try {
-      const res = await fetch(`/api/habbo/user/${encodeURIComponent(habboUsername.trim())}?hotel=${habboHotel}`);
+      const res = await fetch(
+        `/api/habbo/user/${encodeURIComponent(habboUsername.trim())}?hotel=${habboHotel}`,
+      );
       if (!res.ok) {
         throw new Error("Usuario no encontrado en el hotel seleccionado");
       }
@@ -226,17 +228,24 @@ export default function ArmarioPage() {
   };
 
   // Update a specific part of the avatar
-  const updateFigurePart = (itemId: number, color1: number, color2?: number) => {
+  const updateFigurePart = (
+    itemId: number,
+    color1: number,
+    color2?: number,
+  ) => {
     setFigureParts((prev) => {
       const existing = prev.find((p) => p.type === activeCategoryKey);
       if (existing) {
         return prev.map((p) =>
           p.type === activeCategoryKey
             ? { ...p, id: itemId, color: color1, color2 }
-            : p
+            : p,
         );
       } else {
-        return [...prev, { type: activeCategoryKey, id: itemId, color: color1, color2 }];
+        return [
+          ...prev,
+          { type: activeCategoryKey, id: itemId, color: color1, color2 },
+        ];
       }
     });
   };
@@ -315,13 +324,19 @@ export default function ArmarioPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast({ title: "Descarga Iniciada", description: "La imagen de tu avatar se está descargando." });
+    toast({
+      title: "Descarga Iniciada",
+      description: "La imagen de tu avatar se está descargando.",
+    });
   };
 
   // Copy figure code to clipboard
   const copyFigureCode = () => {
     navigator.clipboard.writeText(figureString);
-    toast({ title: "Copiado", description: "Código de figura copiado al portapapeles." });
+    toast({
+      title: "Copiado",
+      description: "Código de figura copiado al portapapeles.",
+    });
   };
 
   // Handle clothing item select
@@ -354,7 +369,6 @@ export default function ArmarioPage() {
 
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-5 font-sans">
-      
       {/* Title Header */}
       <div className="site-panel-strong p-5 flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -364,20 +378,27 @@ export default function ArmarioPage() {
             Armario HabboSpeed
           </h1>
           <p className="text-xs text-muted-foreground mt-2 max-w-2xl">
-            Personaliza tu avatar con todas las prendas y paletas oficiales de Habbo. Rota tu personaje, añade gestos, señales u objetos en mano.
+            Personaliza tu avatar con todas las prendas y paletas oficiales de
+            Habbo. Rota tu personaje, añade gestos, señales u objetos en mano.
           </p>
         </div>
         <div className="flex gap-2">
           <Button
             variant={gender === "M" ? "default" : "outline"}
-            onClick={() => { setGender("M"); setCurrentPage(1); }}
+            onClick={() => {
+              setGender("M");
+              setCurrentPage(1);
+            }}
             className={`text-xs px-4 h-8 font-bold ${gender === "M" ? "bg-primary text-black" : "border-border text-white"}`}
           >
             Masculino
           </Button>
           <Button
             variant={gender === "F" ? "default" : "outline"}
-            onClick={() => { setGender("F"); setCurrentPage(1); }}
+            onClick={() => {
+              setGender("F");
+              setCurrentPage(1);
+            }}
             className={`text-xs px-4 h-8 font-bold ${gender === "F" ? "bg-primary text-black" : "border-border text-white"}`}
           >
             Femenino
@@ -386,7 +407,6 @@ export default function ArmarioPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        
         {/* Left Side: Live Preview & Action panel (Col-span 4) */}
         <div className="lg:col-span-4 space-y-4">
           <Card className="border border-border bg-card/60 backdrop-blur-md overflow-hidden relative shadow-lg">
@@ -397,11 +417,11 @@ export default function ArmarioPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 flex flex-col items-center w-full space-y-4">
-              
               {/* Cargar desde Habbo Form */}
               <div className="w-full space-y-1.5 bg-black/20 p-3 rounded-xl border border-border/40">
                 <Label className="text-[10px] uppercase font-black tracking-wider text-primary flex items-center gap-1.5">
-                  <Search className="w-3.5 h-3.5 text-primary" /> Cargar Avatar Real
+                  <Search className="w-3.5 h-3.5 text-primary" /> Cargar Avatar
+                  Real
                 </Label>
                 <div className="flex gap-1">
                   <Input
@@ -441,7 +461,6 @@ export default function ArmarioPage() {
 
               {/* Live Image Box */}
               <div className="w-48 h-64 relative bg-zinc-950/40 rounded-2xl border border-border/80 flex items-center justify-center overflow-hidden group shadow-inner">
-                
                 {/* Body Rotation Buttons */}
                 <button
                   onClick={() => rotateBody("left")}
@@ -467,7 +486,9 @@ export default function ArmarioPage() {
                   >
                     H‹
                   </button>
-                  <span className="text-[9px] text-muted-foreground uppercase font-black tracking-wider self-center">Girar</span>
+                  <span className="text-[9px] text-muted-foreground uppercase font-black tracking-wider self-center">
+                    Girar
+                  </span>
                   <button
                     onClick={() => rotateHead("right")}
                     className="w-6 h-6 rounded-md bg-black/40 hover:bg-primary text-white hover:text-black text-[10px] flex items-center justify-center font-bold"
@@ -482,7 +503,8 @@ export default function ArmarioPage() {
                   alt="Avatar Live Preview"
                   className="w-44 h-56 object-contain drop-shadow-[0_4px_10px_rgba(180,0,255,0.4)]"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif";
+                    (e.target as HTMLImageElement).src =
+                      "/habbo-radio/frank_small_03.gif";
                   }}
                 />
               </div>
@@ -518,7 +540,6 @@ export default function ArmarioPage() {
                   onClick={(e) => (e.target as HTMLInputElement).select()}
                 />
               </div>
-
             </CardContent>
           </Card>
 
@@ -530,10 +551,11 @@ export default function ArmarioPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-              
               {/* Gestos/Acción */}
               <div>
-                <Label className="text-[10px] uppercase font-bold text-slate-400">Acción / Gesto</Label>
+                <Label className="text-[10px] uppercase font-bold text-slate-400">
+                  Acción / Gesto
+                </Label>
                 <div className="grid grid-cols-3 gap-1.5 mt-1.5">
                   {ACTIONS.map((act) => (
                     <button
@@ -557,7 +579,9 @@ export default function ArmarioPage() {
               {/* Señales (Carteles 0-18) */}
               <div>
                 <div className="flex justify-between items-center">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Carteles / Señal</Label>
+                  <Label className="text-[10px] uppercase font-bold text-slate-400">
+                    Carteles / Señal
+                  </Label>
                   {signal !== null && (
                     <button
                       onClick={() => setSignal(null)}
@@ -594,7 +618,9 @@ export default function ArmarioPage() {
               {/* Objeto en Mano */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Objeto de mano (ID)</Label>
+                  <Label className="text-[10px] uppercase font-bold text-slate-400">
+                    Objeto de mano (ID)
+                  </Label>
                   <div className="flex gap-1.5 mt-1">
                     <Input
                       type="number"
@@ -627,14 +653,12 @@ export default function ArmarioPage() {
                   </div>
                 </div>
               </div>
-
             </CardContent>
           </Card>
         </div>
 
         {/* Right Side: Tabbed clothing selection (Col-span 8) */}
         <div className="lg:col-span-8 space-y-4">
-          
           {/* Category Tabs Scroll Bar */}
           <div className="flex overflow-x-auto gap-1 bg-white/5 rounded-xl p-1 border border-border/60 backdrop-blur-sm scrollbar-thin">
             {CATEGORIES.map((cat) => {
@@ -658,13 +682,13 @@ export default function ArmarioPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
-            
             {/* Color Swatches Grid (Col-span 4) */}
             <div className="md:col-span-4 bg-card/40 border border-border rounded-xl p-4 flex flex-col shadow-lg">
-              
               <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                <span className="text-[10px] font-black uppercase tracking-wider text-primary">Paleta Colores</span>
-                
+                <span className="text-[10px] font-black uppercase tracking-wider text-primary">
+                  Paleta Colores
+                </span>
+
                 {/* Target Select */}
                 <div className="flex gap-1">
                   <button
@@ -723,20 +747,32 @@ export default function ArmarioPage() {
               {/* Target Indicator Text */}
               <div className="mt-auto pt-3 border-t border-border/40 text-[9.5px] text-center text-slate-400 font-medium">
                 {colorTarget === "color1" ? (
-                  <span>Editando <span className="text-primary font-bold">Color Primario</span></span>
+                  <span>
+                    Editando{" "}
+                    <span className="text-primary font-bold">
+                      Color Primario
+                    </span>
+                  </span>
                 ) : (
-                  <span>Editando <span className="text-cyan-400 font-bold">Color Secundario</span></span>
+                  <span>
+                    Editando{" "}
+                    <span className="text-cyan-400 font-bold">
+                      Color Secundario
+                    </span>
+                  </span>
                 )}
               </div>
-
             </div>
 
             {/* Clothing Items Grid (Col-span 8) */}
             <div className="md:col-span-8 bg-card/40 border border-border rounded-xl p-4 flex flex-col shadow-lg min-h-[380px]">
-              
               <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                <span className="text-[10px] font-black uppercase tracking-wider text-primary">Prendas Disponibles</span>
-                <span className="text-[10px] text-muted-foreground font-semibold">{availableItems.length} ítems</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-primary">
+                  Prendas Disponibles
+                </span>
+                <span className="text-[10px] text-muted-foreground font-semibold">
+                  {availableItems.length} ítems
+                </span>
               </div>
 
               {availableItems.length === 0 ? (
@@ -764,7 +800,8 @@ export default function ArmarioPage() {
                             loading="lazy"
                             className="w-14 h-14 object-contain scale-125 group-hover:scale-135 transition-all drop-shadow-sm"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif";
+                              (e.target as HTMLImageElement).src =
+                                "/habbo-radio/frank_small_03.gif";
                             }}
                           />
                           <span className="absolute bottom-0.5 right-1.5 text-[8px] text-muted-foreground font-mono group-hover:text-primary transition-all">
@@ -790,7 +827,9 @@ export default function ArmarioPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
                         disabled={currentPage === 1}
                         className="h-6 w-8 text-[10px] p-0"
                       >
@@ -802,7 +841,9 @@ export default function ArmarioPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
                         disabled={currentPage === totalPages}
                         className="h-6 w-8 text-[10px] p-0"
                       >
@@ -821,15 +862,10 @@ export default function ArmarioPage() {
                   )}
                 </>
               )}
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

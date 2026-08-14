@@ -36,10 +36,16 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-2">
-            <img src="/logo.png" alt="hSpeed Logo" className="h-12 w-auto object-contain" />
+            <img
+              src="/logo.png"
+              alt="hSpeed Logo"
+              className="h-12 w-auto object-contain"
+            />
           </div>
           <h1 className="text-lg font-bold">Iniciar Sesión</h1>
-          <p className="text-xs text-muted-foreground">Bienvenido de vuelta a la comunidad</p>
+          <p className="text-xs text-muted-foreground">
+            Bienvenido de vuelta a la comunidad
+          </p>
         </div>
 
         <Card className="bg-card border-border glow-purple">
@@ -53,30 +59,40 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive" className="py-2">
-                  <AlertDescription className="text-xs">{error}</AlertDescription>
+                  <AlertDescription className="text-xs">
+                    {error}
+                  </AlertDescription>
                 </Alert>
               )}
 
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Correo electrónico</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">
+                  Correo electrónico
+                </Label>
                 <Input
                   type="email"
                   placeholder="tu@email.com"
                   value={form.email}
-                  onChange={(e) => setForm(p => ({ ...p, email: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, email: e.target.value }))
+                  }
                   required
                   data-testid="input-login-email"
                 />
               </div>
 
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Contraseña</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">
+                  Contraseña
+                </Label>
                 <div className="relative">
                   <Input
                     type={showPw ? "text" : "password"}
                     placeholder="••••••••"
                     value={form.password}
-                    onChange={(e) => setForm(p => ({ ...p, password: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, password: e.target.value }))
+                    }
                     required
                     className="pr-9"
                     data-testid="input-login-password"
@@ -87,7 +103,11 @@ export default function LoginPage() {
                     onClick={() => setShowPw(!showPw)}
                     data-testid="button-toggle-password"
                   >
-                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPw ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -104,7 +124,10 @@ export default function LoginPage() {
                     Entrando...
                   </span>
                 ) : (
-                  <><LogIn className="w-4 h-4 mr-2" />Entrar</>
+                  <>
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Entrar
+                  </>
                 )}
               </Button>
             </form>
@@ -114,7 +137,10 @@ export default function LoginPage() {
         <p className="text-center text-xs text-muted-foreground">
           ¿No tienes cuenta?{" "}
           <Link href="/register">
-            <a className="text-primary hover:text-primary/80 transition-colors" data-testid="link-to-register">
+            <a
+              className="text-primary hover:text-primary/80 transition-colors"
+              data-testid="link-to-register"
+            >
               Regístrate aquí
             </a>
           </Link>

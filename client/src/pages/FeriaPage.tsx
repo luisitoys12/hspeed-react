@@ -23,11 +23,15 @@ import {
 } from "lucide-react";
 
 function badgeImageUrl(badgeCode: string) {
-  return proxyImage(`https://images.habbo.com/c_images/album1584/${badgeCode}.gif`);
+  return proxyImage(
+    `https://images.habbo.com/c_images/album1584/${badgeCode}.gif`,
+  );
 }
 
 function furniIconUrl(classname: string) {
-  return proxyImage(`https://images.habbo.com/dcr/hof_furni/0/${classname}_icon.png`);
+  return proxyImage(
+    `https://images.habbo.com/dcr/hof_furni/0/${classname}_icon.png`,
+  );
 }
 
 function LogrosTab() {
@@ -85,18 +89,28 @@ function LogrosTab() {
             const ach = a?.achievement || a;
             const levels = a?.levelRequirements || [];
             return (
-              <Card key={`ach-${ach?.id || i}`} className="bg-card border-border">
+              <Card
+                key={`ach-${ach?.id || i}`}
+                className="bg-card border-border"
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold truncate">{ach?.name || "—"}</p>
+                    <p className="text-sm font-semibold truncate">
+                      {ach?.name || "—"}
+                    </p>
                     {ach?.category && (
-                      <Badge variant="outline" className="text-[9px] border-primary/20 text-primary/70 flex-shrink-0">
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] border-primary/20 text-primary/70 flex-shrink-0"
+                      >
                         {ach.category}
                       </Badge>
                     )}
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {levels.length > 0 ? `${levels.length} niveles` : "Sin niveles registrados"}
+                    {levels.length > 0
+                      ? `${levels.length} niveles`
+                      : "Sin niveles registrados"}
                   </p>
                 </CardContent>
               </Card>
@@ -132,7 +146,10 @@ function PreciosMercadoTab() {
         .map((s) => s.trim())
         .filter(Boolean)
         .map((item) => ({ item }));
-      const res = await apiRequest("POST", "/api/habbo/marketplace-stats", { roomItems, wallItems });
+      const res = await apiRequest("POST", "/api/habbo/marketplace-stats", {
+        roomItems,
+        wallItems,
+      });
       if (!res.ok) throw new Error("Error al consultar precios");
       return res.json();
     },
@@ -147,13 +164,16 @@ function PreciosMercadoTab() {
       <div className="flex items-center gap-2">
         <Coins className="w-4 h-4 text-yellow-400" />
         <p className="text-sm text-muted-foreground">
-          Consulta el precio de mercado de varios furnis a la vez. Un classname por línea.
+          Consulta el precio de mercado de varios furnis a la vez. Un classname
+          por línea.
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <p className="text-xs text-muted-foreground mb-1.5">Room items (classname)</p>
+          <p className="text-xs text-muted-foreground mb-1.5">
+            Room items (classname)
+          </p>
           <Textarea
             value={roomItemsText}
             onChange={(e) => setRoomItemsText(e.target.value)}
@@ -163,7 +183,9 @@ function PreciosMercadoTab() {
           />
         </div>
         <div>
-          <p className="text-xs text-muted-foreground mb-1.5">Wall items (classname)</p>
+          <p className="text-xs text-muted-foreground mb-1.5">
+            Wall items (classname)
+          </p>
           <Textarea
             value={wallItemsText}
             onChange={(e) => setWallItemsText(e.target.value)}
@@ -187,16 +209,22 @@ function PreciosMercadoTab() {
       {mutation.isError && (
         <Card className="bg-destructive/10 border-destructive/30">
           <CardContent className="p-4 text-sm text-destructive">
-            No se pudieron obtener los precios. Verifica los classnames e inténtalo de nuevo.
+            No se pudieron obtener los precios. Verifica los classnames e
+            inténtalo de nuevo.
           </CardContent>
         </Card>
       )}
 
       {results && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" data-testid="grid-price-results">
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+          data-testid="grid-price-results"
+        >
           {[...roomStats, ...wallStats].map((stat: any, i: number) => {
-            const name = stat?.item || stat?.className || stat?.classname || "—";
-            const avg = stat?.averagePrice ?? stat?.avgPrice ?? stat?.currentAveragePrice;
+            const name =
+              stat?.item || stat?.className || stat?.classname || "—";
+            const avg =
+              stat?.averagePrice ?? stat?.avgPrice ?? stat?.currentAveragePrice;
             const min = stat?.minPrice ?? stat?.lowestPrice;
             return (
               <Card key={`stat-${name}-${i}`} className="bg-card border-border">
@@ -205,13 +233,21 @@ function PreciosMercadoTab() {
                     src={furniIconUrl(name)}
                     alt={name}
                     className="w-10 h-10 object-contain flex-shrink-0"
-                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.15"; }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.opacity = "0.15";
+                    }}
                   />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold font-mono truncate">{name}</p>
+                    <p className="text-sm font-semibold font-mono truncate">
+                      {name}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      {avg !== undefined ? `Prom: ${Number(avg).toLocaleString()}c` : "Sin datos"}
-                      {min !== undefined ? ` · Min: ${Number(min).toLocaleString()}c` : ""}
+                      {avg !== undefined
+                        ? `Prom: ${Number(avg).toLocaleString()}c`
+                        : "Sin datos"}
+                      {min !== undefined
+                        ? ` · Min: ${Number(min).toLocaleString()}c`
+                        : ""}
                     </p>
                   </div>
                 </CardContent>
@@ -230,10 +266,17 @@ function PreciosMercadoTab() {
 }
 
 function RankingDerbyTab() {
-  const { data: leaderboard, isLoading: loadingLb, error: errorLb } = useQuery<any>({
+  const {
+    data: leaderboard,
+    isLoading: loadingLb,
+    error: errorLb,
+  } = useQuery<any>({
     queryKey: ["/api/habbo/skills-leaderboard"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/habbo/skills-leaderboard?skillType=FISHING&page=1");
+      const res = await apiRequest(
+        "GET",
+        "/api/habbo/skills-leaderboard?skillType=FISHING&page=1",
+      );
       if (!res.ok) throw new Error("Error");
       return res.json();
     },
@@ -272,11 +315,16 @@ function RankingDerbyTab() {
           {loadingDerby ? (
             <Skeleton className="h-10 w-full" />
           ) : derby ? (
-            <pre className="text-xs bg-secondary/40 rounded-lg p-3 overflow-x-auto" data-testid="text-derby-status">
+            <pre
+              className="text-xs bg-secondary/40 rounded-lg p-3 overflow-x-auto"
+              data-testid="text-derby-status"
+            >
               {JSON.stringify(derby, null, 2)}
             </pre>
           ) : (
-            <p className="text-xs text-muted-foreground">No hay ningún derby activo en este momento.</p>
+            <p className="text-xs text-muted-foreground">
+              No hay ningún derby activo en este momento.
+            </p>
           )}
         </CardContent>
       </Card>
@@ -304,9 +352,16 @@ function RankingDerbyTab() {
               key={`lb-${e.uniqueId || i}`}
               className="flex items-center gap-3 bg-secondary/40 rounded-lg p-2.5"
             >
-              <span className="w-6 text-center text-xs font-bold text-muted-foreground">#{i + 1}</span>
-              <span className="text-sm font-medium flex-1 truncate">{e.name || e.username || e.uniqueId}</span>
-              <Badge variant="outline" className="text-xs border-blue-500/30 text-blue-400">
+              <span className="w-6 text-center text-xs font-bold text-muted-foreground">
+                #{i + 1}
+              </span>
+              <span className="text-sm font-medium flex-1 truncate">
+                {e.name || e.username || e.uniqueId}
+              </span>
+              <Badge
+                variant="outline"
+                className="text-xs border-blue-500/30 text-blue-400"
+              >
                 {(e.score ?? e.value ?? 0).toLocaleString?.() ?? e.score}
               </Badge>
             </div>
@@ -323,10 +378,23 @@ function RankingDerbyTab() {
   );
 }
 
-function EnlaceHerramienta({ href, icon: Icon, title, desc }: { href: string; icon: any; title: string; desc: string }) {
+function EnlaceHerramienta({
+  href,
+  icon: Icon,
+  title,
+  desc,
+}: {
+  href: string;
+  icon: any;
+  title: string;
+  desc: string;
+}) {
   return (
     <Link href={href}>
-      <Card className="bg-card border-border hover:border-primary/40 transition-colors cursor-pointer h-full" data-testid={`link-tool-${title.toLowerCase().replace(/\s+/g, "-")}`}>
+      <Card
+        className="bg-card border-border hover:border-primary/40 transition-colors cursor-pointer h-full"
+        data-testid={`link-tool-${title.toLowerCase().replace(/\s+/g, "-")}`}
+      >
         <CardContent className="p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
             <Icon className="w-5 h-5 text-primary" />
@@ -350,12 +418,23 @@ export default function FeriaPage() {
         <h1 className="text-xl font-bold">Feria</h1>
       </div>
       <p className="text-sm text-muted-foreground">
-        El punto de encuentro de todas las herramientas de HabboSpeed: logros, precios de mercado, rankings y mucho más.
+        El punto de encuentro de todas las herramientas de HabboSpeed: logros,
+        precios de mercado, rankings y mucho más.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <EnlaceHerramienta href="/herramientas" icon={Flame} title="Hot Looks" desc="Avatares más populares del momento" />
-        <EnlaceHerramienta href="/herramientas" icon={Shield} title="Buscador de Grupos" desc="Busca clanes y sus miembros" />
+        <EnlaceHerramienta
+          href="/herramientas"
+          icon={Flame}
+          title="Hot Looks"
+          desc="Avatares más populares del momento"
+        />
+        <EnlaceHerramienta
+          href="/herramientas"
+          icon={Shield}
+          title="Buscador de Grupos"
+          desc="Busca clanes y sus miembros"
+        />
       </div>
 
       <Tabs defaultValue="logros">

@@ -8,9 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const TEAMS = [
   { name: "México", flag: "🇲🇽", group: "A" },
@@ -36,7 +39,7 @@ const TEAMS = [
   { name: "Arabia Saudita", flag: "🇸🇦", group: "H" },
   { name: "Australia", flag: "🇦🇺", group: "H" },
   { name: "Camerún", flag: "🇨🇲", group: "H" },
-  { name: "Ecuador", flag: "🇪🇨", group: "H" }
+  { name: "Ecuador", flag: "🇪🇨", group: "H" },
 ];
 
 function seedRandom(seedStr: string) {
@@ -81,8 +84,18 @@ export function generateMatchesForDate(d: Date): SimulatedMatch[] {
   const matches: SimulatedMatch[] = [];
   const times = ["14:00", "17:00", "20:00"];
   const monthsSp = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
   const readableDate = `${day} de ${monthsSp[d.getMonth()]}, ${year}`;
 
@@ -91,11 +104,13 @@ export function generateMatchesForDate(d: Date): SimulatedMatch[] {
     const teamB = shuffled[idx * 2 + 1];
     const scoreA = Math.floor(rand() * 4);
     const scoreB = Math.floor(rand() * 4);
-    
+
     const now = new Date();
     const isToday = now.toDateString() === d.toDateString();
-    const isPast = d.getTime() < new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    
+    const isPast =
+      d.getTime() <
+      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
     let status = "PRÓXIMAMENTE";
     let min = "—";
     let curScoreA = scoreA;
@@ -112,9 +127,13 @@ export function generateMatchesForDate(d: Date): SimulatedMatch[] {
       if (currentHour > matchHour + 1) {
         status = "FINAL";
         min = "90'";
-      } else if (currentHour === matchHour || (currentHour === matchHour + 1 && currentMinute < 45)) {
+      } else if (
+        currentHour === matchHour ||
+        (currentHour === matchHour + 1 && currentMinute < 45)
+      ) {
         status = "LIVE";
-        const elapsed = (currentHour === matchHour) ? currentMinute : currentMinute + 60;
+        const elapsed =
+          currentHour === matchHour ? currentMinute : currentMinute + 60;
         min = `${elapsed}'`;
         if (elapsed < 30) {
           curScoreA = Math.min(scoreA, 0);
@@ -148,26 +167,98 @@ export function generateMatchesForDate(d: Date): SimulatedMatch[] {
       scoreA: curScoreA,
       scoreB: curScoreB,
       status,
-      min
+      min,
     });
   }
   return matches;
 }
 
 const ESTAMPAS = [
-  { id: "trofeo", name: "Copa Dorada 2026", rarity: "Legendario", image: "/habbo-radio/estampa_trofeo.png", cost: 25, badgeColor: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30", glowClass: "shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:border-yellow-500/80 border-yellow-500/20" },
-  { id: "balon", name: "Balón Imperial", rarity: "Épico", image: "/habbo-radio/estampa_balon.png", cost: 15, badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30", glowClass: "shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:border-purple-500/80 border-purple-500/20" },
-  { id: "estadio", name: "Estadio Cyber", rarity: "Raro", image: "/habbo-radio/estampa_estadio.png", cost: 10, badgeColor: "bg-blue-500/20 text-blue-300 border-blue-500/30", glowClass: "shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:border-blue-500/80 border-blue-500/20" },
-  { id: "botas", name: "Botas de Neón", rarity: "Común", image: "/habbo-radio/estampa_botas.png", cost: 5, badgeColor: "bg-slate-500/20 text-slate-300 border-slate-500/30", glowClass: "shadow-[0_0_20px_rgba(148,163,184,0.15)] hover:border-slate-500/80 border-slate-500/20" },
+  {
+    id: "trofeo",
+    name: "Copa Dorada 2026",
+    rarity: "Legendario",
+    image: "/habbo-radio/estampa_trofeo.png",
+    cost: 25,
+    badgeColor: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+    glowClass:
+      "shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:border-yellow-500/80 border-yellow-500/20",
+  },
+  {
+    id: "balon",
+    name: "Balón Imperial",
+    rarity: "Épico",
+    image: "/habbo-radio/estampa_balon.png",
+    cost: 15,
+    badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+    glowClass:
+      "shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:border-purple-500/80 border-purple-500/20",
+  },
+  {
+    id: "estadio",
+    name: "Estadio Cyber",
+    rarity: "Raro",
+    image: "/habbo-radio/estampa_estadio.png",
+    cost: 10,
+    badgeColor: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+    glowClass:
+      "shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:border-blue-500/80 border-blue-500/20",
+  },
+  {
+    id: "botas",
+    name: "Botas de Neón",
+    rarity: "Común",
+    image: "/habbo-radio/estampa_botas.png",
+    cost: 5,
+    badgeColor: "bg-slate-500/20 text-slate-300 border-slate-500/30",
+    glowClass:
+      "shadow-[0_0_20px_rgba(148,163,184,0.15)] hover:border-slate-500/80 border-slate-500/20",
+  },
 ];
 
 const LOGROS = [
-  { id: "penales", name: "Guante del Campeón", requirement: "Anotar 5 goles en la tanda de penales", image: "/habbo-radio/logro_penales.png", badgeColor: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30" },
-  { id: "votante", name: "Pronosticador Experto", requirement: "Enviar un pronóstico de partido", image: "/habbo-radio/logro_votante.png", badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" },
-  { id: "hincha", name: "Megáfono de Oro", requirement: "Completar una misión de aventura", image: "/habbo-radio/logro_hincha.png", badgeColor: "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30" },
-  { id: "chateador", name: "Hablador Píxel", requirement: "Interactuar en el chat o reclamar logro", image: "/habbo-radio/logro_chateador.png", badgeColor: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30" },
-  { id: "staff", name: "Placa Staff HSpeed", requirement: "Pertenecer al equipo oficial del fansite", image: "/habbo-radio/estampa_staff.png", badgeColor: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30" },
-  { id: "dj", name: "Audífonos Locutor", requirement: "Rango de DJ Locutor en la radio", image: "/habbo-radio/estampa_audifonos_dj.png", badgeColor: "bg-red-500/20 text-red-300 border-red-500/30" },
+  {
+    id: "penales",
+    name: "Guante del Campeón",
+    requirement: "Anotar 5 goles en la tanda de penales",
+    image: "/habbo-radio/logro_penales.png",
+    badgeColor: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
+  },
+  {
+    id: "votante",
+    name: "Pronosticador Experto",
+    requirement: "Enviar un pronóstico de partido",
+    image: "/habbo-radio/logro_votante.png",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+  },
+  {
+    id: "hincha",
+    name: "Megáfono de Oro",
+    requirement: "Completar una misión de aventura",
+    image: "/habbo-radio/logro_hincha.png",
+    badgeColor: "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30",
+  },
+  {
+    id: "chateador",
+    name: "Hablador Píxel",
+    requirement: "Interactuar en el chat o reclamar logro",
+    image: "/habbo-radio/logro_chateador.png",
+    badgeColor: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+  },
+  {
+    id: "staff",
+    name: "Placa Staff HSpeed",
+    requirement: "Pertenecer al equipo oficial del fansite",
+    image: "/habbo-radio/estampa_staff.png",
+    badgeColor: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+  },
+  {
+    id: "dj",
+    name: "Audífonos Locutor",
+    requirement: "Rango de DJ Locutor en la radio",
+    image: "/habbo-radio/estampa_audifonos_dj.png",
+    badgeColor: "bg-red-500/20 text-red-300 border-red-500/30",
+  },
 ];
 
 function getSection(pathname: string) {
@@ -183,12 +274,22 @@ function getSection(pathname: string) {
 }
 
 // 8-bit Web Audio Synth helper
-const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "save" | "win" | "purchase" | "logro") => {
+const playSynthSound = (
+  type:
+    | "click"
+    | "pack_shake"
+    | "pack_open"
+    | "goal"
+    | "save"
+    | "win"
+    | "purchase"
+    | "logro",
+) => {
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
-    
+
     if (type === "click") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -199,8 +300,7 @@ const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "s
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
       osc.start();
       osc.stop(ctx.currentTime + 0.1);
-    } 
-    else if (type === "pack_shake") {
+    } else if (type === "pack_shake") {
       const bufferSize = ctx.sampleRate * 0.3;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
@@ -219,9 +319,8 @@ const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "s
       filter.connect(gainNode);
       gainNode.connect(ctx.destination);
       noise.start();
-    }
-    else if (type === "pack_open") {
-      const freqs = [523.25, 659.25, 783.99, 1046.50];
+    } else if (type === "pack_open") {
+      const freqs = [523.25, 659.25, 783.99, 1046.5];
       freqs.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -229,12 +328,14 @@ const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "s
         gain.connect(ctx.destination);
         osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
         gain.gain.setValueAtTime(0.08, ctx.currentTime + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.4);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          ctx.currentTime + idx * 0.08 + 0.4,
+        );
         osc.start(ctx.currentTime + idx * 0.08);
         osc.stop(ctx.currentTime + idx * 0.08 + 0.4);
       });
-    }
-    else if (type === "goal") {
+    } else if (type === "goal") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "triangle";
@@ -246,7 +347,7 @@ const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "s
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
       osc.start();
       osc.stop(ctx.currentTime + 0.4);
-      
+
       const bufferSize = ctx.sampleRate * 1.2;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
@@ -266,8 +367,7 @@ const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "s
       filter.connect(noiseGain);
       noiseGain.connect(ctx.destination);
       noise.start();
-    }
-    else if (type === "save") {
+    } else if (type === "save") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sawtooth";
@@ -279,9 +379,8 @@ const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "s
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
       osc.start();
       osc.stop(ctx.currentTime + 0.4);
-    }
-    else if (type === "win") {
-      const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 523.25];
+    } else if (type === "win") {
+      const notes = [261.63, 329.63, 392.0, 523.25, 392.0, 523.25];
       notes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -289,13 +388,15 @@ const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "s
         gain.connect(ctx.destination);
         osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.12);
         gain.gain.setValueAtTime(0.08, ctx.currentTime + idx * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.12 + 0.3);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          ctx.currentTime + idx * 0.12 + 0.3,
+        );
         osc.start(ctx.currentTime + idx * 0.12);
         osc.stop(ctx.currentTime + idx * 0.12 + 0.3);
       });
-    }
-    else if (type === "purchase" || type === "logro") {
-      const freqs = [587.33, 880.00, 1174.66];
+    } else if (type === "purchase" || type === "logro") {
+      const freqs = [587.33, 880.0, 1174.66];
       freqs.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -304,7 +405,10 @@ const playSynthSound = (type: "click" | "pack_shake" | "pack_open" | "goal" | "s
         gain.connect(ctx.destination);
         osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
         gain.gain.setValueAtTime(0.06, ctx.currentTime + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.3);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          ctx.currentTime + idx * 0.08 + 0.3,
+        );
         osc.start(ctx.currentTime + idx * 0.08);
         osc.stop(ctx.currentTime + idx * 0.08 + 0.3);
       });
@@ -326,33 +430,46 @@ export default function FutbolHubPage() {
   const userPredictions = useMemo(() => user?.mundialPredictions || {}, [user]);
   const selectedClan = useMemo(() => user?.mundialClan || null, [user]);
   const ticketsCount = useMemo(() => user?.mundialTickets || 0, [user]);
-  const penaltyStats = useMemo(() => user?.mundialPenalties || { maxScore: 0, totalGames: 0 }, [user]);
+  const penaltyStats = useMemo(
+    () => user?.mundialPenalties || { maxScore: 0, totalGames: 0 },
+    [user],
+  );
 
-  const adventureMissions = useMemo(() => ({
-    mis1: unlockedLogros.includes("mision_mis1"),
-    mis2: unlockedLogros.includes("mision_mis2"),
-    mis3: unlockedLogros.includes("mision_mis3"),
-  }), [unlockedLogros]);
+  const adventureMissions = useMemo(
+    () => ({
+      mis1: unlockedLogros.includes("mision_mis1"),
+      mis2: unlockedLogros.includes("mision_mis2"),
+      mis3: unlockedLogros.includes("mision_mis3"),
+    }),
+    [unlockedLogros],
+  );
 
   // 2. Estados Locales de UI
   const [albumTab, setAlbumTab] = useState<"tienda" | "logros">("tienda");
   const [packOpening, setPackOpening] = useState(false);
-  const [revealedStamp, setRevealedStamp] = useState<typeof ESTAMPAS[0] | null>(null);
+  const [revealedStamp, setRevealedStamp] = useState<
+    (typeof ESTAMPAS)[0] | null
+  >(null);
   const [packModalOpen, setPackModalOpen] = useState(false);
 
   // Estados de Pronósticos Dinámicos
   const todayMatches = useMemo(() => generateMatchesForDate(new Date()), []);
-  const [predictionsInput, setPredictionsInput] = useState<Record<string, { t1: string; t2: string }>>({});
+  const [predictionsInput, setPredictionsInput] = useState<
+    Record<string, { t1: string; t2: string }>
+  >({});
 
   useEffect(() => {
     const initialInput: Record<string, { t1: string; t2: string }> = {};
-    todayMatches.forEach(m => {
+    todayMatches.forEach((m) => {
       initialInput[m.id] = { t1: "", t2: "" };
     });
-    
+
     if (user?.mundialPredictions) {
-      const p = user.mundialPredictions as Record<string, { t1: string; t2: string }>;
-      todayMatches.forEach(m => {
+      const p = user.mundialPredictions as Record<
+        string,
+        { t1: string; t2: string }
+      >;
+      todayMatches.forEach((m) => {
         if (p[m.id]) {
           initialInput[m.id] = p[m.id];
         }
@@ -362,23 +479,43 @@ export default function FutbolHubPage() {
   }, [user, todayMatches]);
 
   // 3. HSpeed Torneos States & Form
-  const [registeredTeams, setRegisteredTeams] = useState<{
-    id: string;
-    teamName: string;
-    captain: string;
-    members: string;
-    color: string;
-    createdAt: string;
-  }[]>(() => {
+  const [registeredTeams, setRegisteredTeams] = useState<
+    {
+      id: string;
+      teamName: string;
+      captain: string;
+      members: string;
+      color: string;
+      createdAt: string;
+    }[]
+  >(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("hspeed_torneos_registered");
       if (saved) {
-        try { return JSON.parse(saved); } catch { return []; }
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return [];
+        }
       }
     }
     return [
-      { id: "1", teamName: "Hapoel Píxeles", captain: "Staff_Habbo", members: "Staff_Habbo, Frank_D, Locutor_A", color: "Púrpura", createdAt: new Date().toLocaleDateString() },
-      { id: "2", teamName: "Golden Striker FC", captain: "luisitoys12", members: "luisitoys12, AlexPro, HabboMaster", color: "Oro", createdAt: new Date().toLocaleDateString() }
+      {
+        id: "1",
+        teamName: "Hapoel Píxeles",
+        captain: "Staff_Habbo",
+        members: "Staff_Habbo, Frank_D, Locutor_A",
+        color: "Púrpura",
+        createdAt: new Date().toLocaleDateString(),
+      },
+      {
+        id: "2",
+        teamName: "Golden Striker FC",
+        captain: "luisitoys12",
+        members: "luisitoys12, AlexPro, HabboMaster",
+        color: "Oro",
+        createdAt: new Date().toLocaleDateString(),
+      },
     ];
   });
 
@@ -389,7 +526,11 @@ export default function FutbolHubPage() {
 
   const handleRegisterTeam = () => {
     if (!regTeamName.trim() || !regCaptainName.trim() || !regMembers.trim()) {
-      toast({ title: "Error", description: "Por favor, completa todos los campos del registro.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Por favor, completa todos los campos del registro.",
+        variant: "destructive",
+      });
       return;
     }
     const newTeam = {
@@ -398,7 +539,7 @@ export default function FutbolHubPage() {
       captain: regCaptainName.trim(),
       members: regMembers.trim(),
       color: regColor,
-      createdAt: new Date().toLocaleDateString()
+      createdAt: new Date().toLocaleDateString(),
     };
     const updated = [newTeam, ...registeredTeams];
     setRegisteredTeams(updated);
@@ -414,21 +555,31 @@ export default function FutbolHubPage() {
     });
   };
 
-
-
   // API Call Handlers
-  const handleClaimStamp = async (stamp: typeof ESTAMPAS[0]) => {
+  const handleClaimStamp = async (stamp: (typeof ESTAMPAS)[0]) => {
     if (claimedStamps.includes(stamp.id)) {
-      toast({ title: "Estampa ya reclamada", description: "Ya tienes esta estampa en tu álbum." });
+      toast({
+        title: "Estampa ya reclamada",
+        description: "Ya tienes esta estampa en tu álbum.",
+      });
       return;
     }
     if ((user?.speedPoints ?? 0) < stamp.cost) {
-      toast({ title: "SpeedPoints insuficientes", description: `Necesitas ${stamp.cost} SP para comprar esta estampa.`, variant: "destructive" });
+      toast({
+        title: "SpeedPoints insuficientes",
+        description: `Necesitas ${stamp.cost} SP para comprar esta estampa.`,
+        variant: "destructive",
+      });
       return;
     }
 
     try {
-      const res = await apiRequest("POST", "/api/futbol-hub/buy-stamp", { stampId: stamp.id, cost: stamp.cost }, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/futbol-hub/buy-stamp",
+        { stampId: stamp.id, cost: stamp.cost },
+        token ? `Bearer ${token}` : undefined,
+      );
       if (res.ok) {
         playSynthSound("purchase");
         await refetchUser();
@@ -438,17 +589,29 @@ export default function FutbolHubPage() {
         });
       } else {
         const err = await res.json();
-        toast({ title: "Error", description: err.message || "Error al canjear", variant: "destructive" });
+        toast({
+          title: "Error",
+          description: err.message || "Error al canjear",
+          variant: "destructive",
+        });
       }
     } catch (e) {
-      toast({ title: "Error", description: "Error al contactar con el servidor", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Error al contactar con el servidor",
+        variant: "destructive",
+      });
     }
   };
 
   const handleOpenPack = async () => {
     if (packOpening) return;
     if ((user?.speedPoints ?? 0) < 10) {
-      toast({ title: "SpeedPoints insuficientes", description: "Necesitas 10 SpeedPoints para abrir un sobre.", variant: "destructive" });
+      toast({
+        title: "SpeedPoints insuficientes",
+        description: "Necesitas 10 SpeedPoints para abrir un sobre.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -463,7 +626,12 @@ export default function FutbolHubPage() {
     }, 450);
 
     try {
-      const res = await apiRequest("POST", "/api/futbol-hub/buy-pack", undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/futbol-hub/buy-pack",
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       clearInterval(interval);
       if (res.ok) {
         const data = await res.json();
@@ -483,19 +651,30 @@ export default function FutbolHubPage() {
         setPackOpening(false);
         setPackModalOpen(false);
         const err = await res.json();
-        toast({ title: "Error", description: err.message || "Error al abrir el sobre", variant: "destructive" });
+        toast({
+          title: "Error",
+          description: err.message || "Error al abrir el sobre",
+          variant: "destructive",
+        });
       }
     } catch (e) {
       clearInterval(interval);
       setPackOpening(false);
       setPackModalOpen(false);
-      toast({ title: "Error", description: "Error al contactar con el servidor", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Error al contactar con el servidor",
+        variant: "destructive",
+      });
     }
   };
 
   const handleClaimLogroManual = async (logroId: string, name: string) => {
     if (unlockedLogros.includes(logroId)) {
-      toast({ title: "Logro ya desbloqueado", description: "Ya tienes esta estampa de logro." });
+      toast({
+        title: "Logro ya desbloqueado",
+        description: "Ya tienes esta estampa de logro.",
+      });
       return;
     }
 
@@ -504,7 +683,17 @@ export default function FutbolHubPage() {
     if (logroId === "chateador") {
       isEligible = true; // Claimable
     } else if (logroId === "staff") {
-      const isUserStaff = user && (user.role === "admin" || user.role === "dj" || user.role === "moderador" || user.role === "colaborador" || user.role === "periodista" || user.role === "diseñador" || user.role === "builder" || user.role === "mentor" || user.role === "eventos");
+      const isUserStaff =
+        user &&
+        (user.role === "admin" ||
+          user.role === "dj" ||
+          user.role === "moderador" ||
+          user.role === "colaborador" ||
+          user.role === "periodista" ||
+          user.role === "diseñador" ||
+          user.role === "builder" ||
+          user.role === "mentor" ||
+          user.role === "eventos");
       isEligible = !!isUserStaff;
     } else if (logroId === "dj") {
       const isUserDj = user && (user.role === "admin" || user.role === "dj");
@@ -514,16 +703,25 @@ export default function FutbolHubPage() {
     } else if (logroId === "votante") {
       isEligible = Object.keys(userPredictions).length > 0;
     } else if (logroId === "hincha") {
-      isEligible = Object.values(adventureMissions).some(v => v);
+      isEligible = Object.values(adventureMissions).some((v) => v);
     }
 
     if (!isEligible) {
-      toast({ title: "Requisitos no cumplidos", description: `Aún no cumples con el requisito para reclamar "${name}".`, variant: "destructive" });
+      toast({
+        title: "Requisitos no cumplidos",
+        description: `Aún no cumples con el requisito para reclamar "${name}".`,
+        variant: "destructive",
+      });
       return;
     }
 
     try {
-      const res = await apiRequest("POST", "/api/futbol-hub/claim-logro", { logroId }, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/futbol-hub/claim-logro",
+        { logroId },
+        token ? `Bearer ${token}` : undefined,
+      );
       if (res.ok) {
         playSynthSound("logro");
         await refetchUser();
@@ -537,14 +735,27 @@ export default function FutbolHubPage() {
     }
   };
 
-  const handleSavePrediction = async (matchId: string, teamA: string, teamB: string) => {
+  const handleSavePrediction = async (
+    matchId: string,
+    teamA: string,
+    teamB: string,
+  ) => {
     const pred = predictionsInput[matchId];
     if (!pred || pred.t1 === "" || pred.t2 === "") {
-      toast({ title: "Error", description: "Por favor rellena ambos marcadores.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Por favor rellena ambos marcadores.",
+        variant: "destructive",
+      });
       return;
     }
     try {
-      const res = await apiRequest("POST", "/api/futbol-hub/predict", { matchId, t1: pred.t1, t2: pred.t2 }, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/futbol-hub/predict",
+        { matchId, t1: pred.t1, t2: pred.t2 },
+        token ? `Bearer ${token}` : undefined,
+      );
       if (res.ok) {
         playSynthSound("logro");
         await refetchUser();
@@ -560,11 +771,19 @@ export default function FutbolHubPage() {
 
   const handleJoinClan = async (clanName: string) => {
     try {
-      const res = await apiRequest("POST", "/api/futbol-hub/join-clan", { clanName }, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/futbol-hub/join-clan",
+        { clanName },
+        token ? `Bearer ${token}` : undefined,
+      );
       if (res.ok) {
         playSynthSound("click");
         await refetchUser();
-        toast({ title: "¡Te has unido!", description: `Ahora representas al "${clanName}" en el hotel.` });
+        toast({
+          title: "¡Te has unido!",
+          description: `Ahora representas al "${clanName}" en el hotel.`,
+        });
       }
     } catch (e) {
       toast({ title: "Error al unirse al clan", variant: "destructive" });
@@ -573,14 +792,26 @@ export default function FutbolHubPage() {
 
   const handleCompleteMission = async (misId: string, title: string) => {
     try {
-      const res = await apiRequest("POST", "/api/futbol-hub/complete-mission", { missionId: misId }, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/futbol-hub/complete-mission",
+        { missionId: misId },
+        token ? `Bearer ${token}` : undefined,
+      );
       if (res.ok) {
         playSynthSound("logro");
         await refetchUser();
-        toast({ title: "¡Misión Completada!", description: `Has terminado la misión "${title}". ¡Ganaste 15 SpeedPoints!` });
+        toast({
+          title: "¡Misión Completada!",
+          description: `Has terminado la misión "${title}". ¡Ganaste 15 SpeedPoints!`,
+        });
       } else {
         const err = await res.json();
-        toast({ title: "Error", description: err.message || "Error al completar la misión", variant: "destructive" });
+        toast({
+          title: "Error",
+          description: err.message || "Error al completar la misión",
+          variant: "destructive",
+        });
       }
     } catch (e) {
       toast({ title: "Error al enviar la misión", variant: "destructive" });
@@ -601,12 +832,19 @@ export default function FutbolHubPage() {
   });
 
   const [userShot, setUserShot] = useState<"izq" | "cen" | "der" | null>(null);
-  const [keeperJump, setKeeperJump] = useState<"izq" | "cen" | "der" | null>(null);
+  const [keeperJump, setKeeperJump] = useState<"izq" | "cen" | "der" | null>(
+    null,
+  );
   const [isShooting, setIsShooting] = useState(false);
 
   const submitPenaltyResult = async (finalScore: number) => {
     try {
-      const res = await apiRequest("POST", "/api/futbol-hub/penalty-result", { score: finalScore }, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/futbol-hub/penalty-result",
+        { score: finalScore },
+        token ? `Bearer ${token}` : undefined,
+      );
       if (res.ok) {
         const data = await res.json();
         playSynthSound("win");
@@ -630,13 +868,15 @@ export default function FutbolHubPage() {
 
   const handleShoot = (direction: "izq" | "cen" | "der") => {
     if (penaltyState.shotsRemaining <= 0 || isShooting) return;
-    
+
     playSynthSound("click");
     setIsShooting(true);
     setUserShot(direction);
-    
-    const goalkeeperChoice = ["izq", "cen", "der"][Math.floor(Math.random() * 3)];
-    
+
+    const goalkeeperChoice = ["izq", "cen", "der"][
+      Math.floor(Math.random() * 3)
+    ];
+
     setTimeout(() => {
       setKeeperJump(goalkeeperChoice as any);
       const isGoal = direction !== goalkeeperChoice;
@@ -648,7 +888,7 @@ export default function FutbolHubPage() {
         setPenaltyState((prev) => {
           const newScore = isGoal ? prev.score + 1 : prev.score;
           const newShots = prev.shotsRemaining - 1;
-          
+
           if (newShots === 0) {
             submitPenaltyResult(newScore);
             return {
@@ -672,7 +912,6 @@ export default function FutbolHubPage() {
           setKeeperJump(null);
           setIsShooting(false);
         }, 1200);
-
       }, 500);
     }, 200);
   };
@@ -693,15 +932,28 @@ export default function FutbolHubPage() {
   // Sorteos
   const handleBuyTicket = async () => {
     if ((user?.speedPoints ?? 0) < 15) {
-      toast({ title: "SpeedPoints insuficientes", description: "Cada boleto cuesta 15 SP.", variant: "destructive" });
+      toast({
+        title: "SpeedPoints insuficientes",
+        description: "Cada boleto cuesta 15 SP.",
+        variant: "destructive",
+      });
       return;
     }
     try {
-      const res = await apiRequest("POST", "/api/futbol-hub/buy-ticket", undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/futbol-hub/buy-ticket",
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       if (res.ok) {
         playSynthSound("purchase");
         await refetchUser();
-        toast({ title: "Boleto Comprado", description: "Has adquirido un boleto para el próximo gran sorteo de placas." });
+        toast({
+          title: "Boleto Comprado",
+          description:
+            "Has adquirido un boleto para el próximo gran sorteo de placas.",
+        });
       }
     } catch (e) {
       toast({ title: "Error al comprar boleto", variant: "destructive" });
@@ -710,33 +962,62 @@ export default function FutbolHubPage() {
 
   // Simulación de partidos mundialistas en vivo
   const [liveMatches, setLiveMatches] = useState([
-    { t1: "México", t2: "Estados Unidos", flag1: "🇲🇽", flag2: "🇺🇸", score1: 1, score2: 1, min: "74'", status: "LIVE" },
-    { t1: "Argentina", t2: "Brasil", flag1: "🇦🇷", flag2: "🇧🇷", score1: 0, score2: 0, min: "—", status: "HOY 20:00" },
-    { t1: "España", t2: "Francia", flag1: "🇪🇸", flag2: "🇫🇷", score1: 2, score2: 1, min: "90+4'", status: "FINAL" },
+    {
+      t1: "México",
+      t2: "Estados Unidos",
+      flag1: "🇲🇽",
+      flag2: "🇺🇸",
+      score1: 1,
+      score2: 1,
+      min: "74'",
+      status: "LIVE",
+    },
+    {
+      t1: "Argentina",
+      t2: "Brasil",
+      flag1: "🇦🇷",
+      flag2: "🇧🇷",
+      score1: 0,
+      score2: 0,
+      min: "—",
+      status: "HOY 20:00",
+    },
+    {
+      t1: "España",
+      t2: "Francia",
+      flag1: "🇪🇸",
+      flag2: "🇫🇷",
+      score1: 2,
+      score2: 1,
+      min: "90+4'",
+      status: "FINAL",
+    },
   ]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setLiveMatches(prev => prev.map(m => {
-        if (m.status === "LIVE") {
-          const currentMin = parseInt(m.min);
-          const nextMin = currentMin < 90 ? currentMin + 1 : 90;
-          let nextScore1 = m.score1;
-          let nextScore2 = m.score2;
-          if (Math.random() < 0.05) {
-            if (Math.random() < 0.5) nextScore1++;
-            else nextScore2++;
+      setLiveMatches((prev) =>
+        prev.map((m) => {
+          if (m.status === "LIVE") {
+            const currentMin = parseInt(m.min);
+            const nextMin = currentMin < 90 ? currentMin + 1 : 90;
+            let nextScore1 = m.score1;
+            let nextScore2 = m.score2;
+            if (Math.random() < 0.05) {
+              if (Math.random() < 0.5) nextScore1++;
+              else nextScore2++;
+            }
+            return {
+              ...m,
+              min: `${nextMin}'`,
+              score1: nextScore1,
+              score2: nextScore2,
+              status: nextMin === 90 ? "FINAL" : "LIVE",
+            };
           }
-          return {
-            ...m,
-            min: `${nextMin}'`,
-            score1: nextScore1,
-            score2: nextScore2,
-            status: nextMin === 90 ? "FINAL" : "LIVE"
-          };
-        }
-        return m;
-      }));
+          return m;
+        }),
+      );
     }, 15000); // update every 15s
 
     return () => clearInterval(interval);
@@ -748,9 +1029,9 @@ export default function FutbolHubPage() {
     const timer = setInterval(() => {
       const d = new Date();
       const nextSunday = new Date();
-      nextSunday.setDate(d.getDate() + (7 - d.getDay()) % 7);
+      nextSunday.setDate(d.getDate() + ((7 - d.getDay()) % 7));
       nextSunday.setHours(21, 0, 0, 0); // Sunday at 9 PM
-      
+
       let diff = nextSunday.getTime() - d.getTime();
       if (diff < 0) diff += 7 * 24 * 60 * 60 * 1000; // next week
 
@@ -809,9 +1090,13 @@ export default function FutbolHubPage() {
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
               <i className="fa-solid fa-lock text-3xl"></i>
             </div>
-            <h2 className="text-lg font-black uppercase text-foreground">Acceso de Aficionados</h2>
+            <h2 className="text-lg font-black uppercase text-foreground">
+              Acceso de Aficionados
+            </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              La sección especial del <strong>Fútbol Hub</strong> requiere tener una sesión iniciada para participar en los pronósticos, aventuras, y coleccionar estampas.
+              La sección especial del <strong>Fútbol Hub</strong> requiere tener
+              una sesión iniciada para participar en los pronósticos, aventuras,
+              y coleccionar estampas.
             </p>
             <div className="pt-2">
               <Link href="/login">
@@ -821,7 +1106,13 @@ export default function FutbolHubPage() {
               </Link>
             </div>
             <div className="text-[11px] text-muted-foreground mt-2">
-              ¿Eres nuevo? <Link href="/register" className="text-primary hover:underline font-extrabold">Regístrate ahora</Link>
+              ¿Eres nuevo?{" "}
+              <Link
+                href="/register"
+                className="text-primary hover:underline font-extrabold"
+              >
+                Regístrate ahora
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -831,14 +1122,17 @@ export default function FutbolHubPage() {
 
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-5 font-sans">
-      
       {/* Banner Principal */}
       <div className="site-panel-strong overflow-hidden relative rounded-3xl border border-border/80 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/15 via-transparent to-amber-400/10 pointer-events-none" />
         <div className="relative p-5 lg:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex flex-wrap items-center gap-2">
-              <Button asChild variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 text-xs h-8">
+              <Button
+                asChild
+                variant="outline"
+                className="bg-white/5 border-white/10 text-white hover:bg-white/10 text-xs h-8"
+              >
                 <Link href="/">
                   <i className="fa-solid fa-arrow-left mr-1.5 text-[10px]"></i>
                   Volver al Inicio
@@ -847,20 +1141,26 @@ export default function FutbolHubPage() {
               <Badge className="bg-emerald-500/15 text-emerald-200 border-emerald-400/20 text-[10px] font-bold">
                 Fútbol Hub
               </Badge>
-              <Badge className="bg-white/10 text-white border-white/10 text-[10px] font-bold">Modo Habbo</Badge>
+              <Badge className="bg-white/10 text-white border-white/10 text-[10px] font-bold">
+                Modo Habbo
+              </Badge>
             </div>
 
             {/* SpeedPoints Balance inside header */}
             <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/30 px-3 py-1.5 rounded-full shadow-lg">
               <span className="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
               <i className="fa-solid fa-bolt text-yellow-400 text-xs"></i>
-              <span className="text-xs font-black text-yellow-400 font-mono">{(user?.speedPoints ?? 0).toLocaleString()} SP</span>
+              <span className="text-xs font-black text-yellow-400 font-mono">
+                {(user?.speedPoints ?? 0).toLocaleString()} SP
+              </span>
             </div>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr] items-start">
             <div>
-              <p className="site-kicker font-black text-emerald-400">Fansite Hub</p>
+              <p className="site-kicker font-black text-emerald-400">
+                Fansite Hub
+              </p>
               <h1 className="text-2xl lg:text-4xl font-black text-white mt-2 uppercase tracking-tight">
                 {activeTitle}
               </h1>
@@ -868,10 +1168,18 @@ export default function FutbolHubPage() {
                 {activeCopy}
               </p>
               <div className="flex flex-wrap gap-2 mt-4 text-[10px] font-bold text-white/70">
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">Pronósticos</span>
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">Aventura</span>
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">Mini torneos</span>
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">Estampas</span>
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">
+                  Pronósticos
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">
+                  Aventura
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">
+                  Mini torneos
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">
+                  Estampas
+                </span>
               </div>
             </div>
 
@@ -882,10 +1190,12 @@ export default function FutbolHubPage() {
                   Disclaimer Oficial
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Esta zona especial es interactiva para la comunidad. No tenemos afiliación oficial con la FIFA o marcas asociadas.
+                  Esta zona especial es interactiva para la comunidad. No
+                  tenemos afiliación oficial con la FIFA o marcas asociadas.
                 </p>
                 <div className="text-[10px] text-muted-foreground font-semibold">
-                  Tus SpeedPoints acumulados en la radio se usan para jugar en el hub.
+                  Tus SpeedPoints acumulados en la radio se usan para jugar en
+                  el hub.
                 </div>
               </CardContent>
             </Card>
@@ -895,31 +1205,103 @@ export default function FutbolHubPage() {
 
       {/* Sub-Navegación del Mundial (Pestañas Rápidas) */}
       <div className="grid gap-2 grid-cols-4 md:grid-cols-9">
-        <Link href="/futbol-hub" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "home" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link
+          href="/futbol-hub"
+          className={cn(
+            "p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1",
+            section === "home"
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border hover:bg-secondary/40",
+          )}
+        >
           <i className="fa-solid fa-house text-xs"></i> INICIO
         </Link>
-        <Link href="/futbol-hub/album" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "album" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link
+          href="/futbol-hub/album"
+          className={cn(
+            "p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1",
+            section === "album"
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border hover:bg-secondary/40",
+          )}
+        >
           <i className="fa-solid fa-trophy text-xs"></i> ÁLBUM
         </Link>
-        <Link href="/futbol-hub/pronosticos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "forecast" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link
+          href="/futbol-hub/pronosticos"
+          className={cn(
+            "p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1",
+            section === "forecast"
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border hover:bg-secondary/40",
+          )}
+        >
           <i className="fa-solid fa-chart-line text-xs"></i> PRONÓSTICOS
         </Link>
-        <Link href="/futbol-hub/ranking" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "ranking" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link
+          href="/futbol-hub/ranking"
+          className={cn(
+            "p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1",
+            section === "ranking"
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border hover:bg-secondary/40",
+          )}
+        >
           <i className="fa-solid fa-ranking-star text-xs"></i> RANKING
         </Link>
-        <Link href="/futbol-hub/equipos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "teams" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link
+          href="/futbol-hub/equipos"
+          className={cn(
+            "p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1",
+            section === "teams"
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border hover:bg-secondary/40",
+          )}
+        >
           <i className="fa-solid fa-users-gear text-xs"></i> CLANES
         </Link>
-        <Link href="/futbol-hub/aventura" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "adventure" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link
+          href="/futbol-hub/aventura"
+          className={cn(
+            "p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1",
+            section === "adventure"
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border hover:bg-secondary/40",
+          )}
+        >
           <i className="fa-solid fa-compass text-xs"></i> AVENTURA
         </Link>
-        <Link href="/futbol-hub/mini/rapido" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "mini-rapid" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link
+          href="/futbol-hub/mini/rapido"
+          className={cn(
+            "p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1",
+            section === "mini-rapid"
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border hover:bg-secondary/40",
+          )}
+        >
           <i className="fa-solid fa-futbol text-xs"></i> PENALES
         </Link>
-        <Link href="/futbol-hub/mini/sorteos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "mini-draw" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link
+          href="/futbol-hub/mini/sorteos"
+          className={cn(
+            "p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1",
+            section === "mini-draw"
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border hover:bg-secondary/40",
+          )}
+        >
           <i className="fa-solid fa-gift text-xs"></i> SORTEOS
         </Link>
-        <Link href="/futbol-hub/torneos" className={cn("p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1", section === "torneos" ? "bg-primary border-primary text-white" : "bg-card border-border hover:bg-secondary/40")}>
+        <Link
+          href="/futbol-hub/torneos"
+          className={cn(
+            "p-2 border rounded-xl text-center text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1",
+            section === "torneos"
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border hover:bg-secondary/40",
+          )}
+        >
           <i className="fa-solid fa-medal text-xs"></i> TORNEOS
         </Link>
       </div>
@@ -935,10 +1317,15 @@ export default function FutbolHubPage() {
                 <div className="text-center sm:text-left space-y-1.5">
                   <div className="flex items-center gap-2 justify-center sm:justify-start">
                     <i className="fa-solid fa-box-open text-primary"></i>
-                    <h4 className="text-xs font-black text-white uppercase tracking-wider">¿Probarás tu suerte?</h4>
+                    <h4 className="text-xs font-black text-white uppercase tracking-wider">
+                      ¿Probarás tu suerte?
+                    </h4>
                   </div>
                   <p className="text-[11px] text-muted-foreground max-w-sm">
-                    Abre un sobre sorpresa por <strong>10 SpeedPoints</strong>. Puedes conseguir cualquiera de las 4 estampas oficiales de forma aleatoria y guardarlas en tu cuenta de forma permanente.
+                    Abre un sobre sorpresa por <strong>10 SpeedPoints</strong>.
+                    Puedes conseguir cualquiera de las 4 estampas oficiales de
+                    forma aleatoria y guardarlas en tu cuenta de forma
+                    permanente.
                   </p>
                 </div>
                 <Button
@@ -948,7 +1335,8 @@ export default function FutbolHubPage() {
                 >
                   {packOpening ? (
                     <span className="flex items-center gap-1.5">
-                      <i className="fa-solid fa-circle-notch animate-spin"></i> ABRIENDO...
+                      <i className="fa-solid fa-circle-notch animate-spin"></i>{" "}
+                      ABRIENDO...
                     </span>
                   ) : (
                     <span>ABRIR SOBRE (10 SP)</span>
@@ -966,9 +1354,11 @@ export default function FutbolHubPage() {
               <div className="flex items-center justify-between border-b border-border/80 pb-3.5 mb-5 flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <i className="fa-solid fa-images text-primary text-sm"></i>
-                  <h3 className="text-sm font-extrabold uppercase">Colección de Estampas del Mundial</h3>
+                  <h3 className="text-sm font-extrabold uppercase">
+                    Colección de Estampas del Mundial
+                  </h3>
                 </div>
-                
+
                 <div className="flex gap-2">
                   <Button
                     onClick={() => setAlbumTab("tienda")}
@@ -990,7 +1380,9 @@ export default function FutbolHubPage() {
               {albumTab === "tienda" ? (
                 <div className="space-y-4">
                   <p className="text-xs text-muted-foreground mb-4">
-                    Compra estampas conmemorativas del Mundial usando tus <strong>SpeedPoints</strong>. Se guardarán en tu inventario persistente.
+                    Compra estampas conmemorativas del Mundial usando tus{" "}
+                    <strong>SpeedPoints</strong>. Se guardarán en tu inventario
+                    persistente.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     {ESTAMPAS.map((stamp) => {
@@ -1000,26 +1392,45 @@ export default function FutbolHubPage() {
                           key={stamp.id}
                           className={cn(
                             "relative border rounded-2xl p-4 flex flex-col items-center justify-between text-center transition-all bg-[#0e0a32]/40 duration-300",
-                            isClaimed ? `border-emerald-500/50 ${stamp.glowClass}` : "border-border/60 grayscale opacity-45"
+                            isClaimed
+                              ? `border-emerald-500/50 ${stamp.glowClass}`
+                              : "border-border/60 grayscale opacity-45",
                           )}
                         >
-                          <Badge className={cn("absolute top-3 right-3 font-bold text-[9px] border", stamp.badgeColor)}>
+                          <Badge
+                            className={cn(
+                              "absolute top-3 right-3 font-bold text-[9px] border",
+                              stamp.badgeColor,
+                            )}
+                          >
                             {stamp.rarity}
                           </Badge>
-                          
+
                           <div className="w-28 h-28 my-3 flex items-center justify-center relative overflow-hidden bg-black/20 rounded-xl border border-white/5 group">
-                            <img src={stamp.image} alt={stamp.name} className="w-24 h-24 object-contain transition-transform duration-300 group-hover:scale-110" />
+                            <img
+                              src={stamp.image}
+                              alt={stamp.name}
+                              className="w-24 h-24 object-contain transition-transform duration-300 group-hover:scale-110"
+                            />
                           </div>
 
                           <div className="space-y-1">
-                            <h4 className="text-xs font-black text-white">{stamp.name}</h4>
-                            <p className="text-[10px] text-muted-foreground font-semibold">Costo: {stamp.cost} SP</p>
+                            <h4 className="text-xs font-black text-white">
+                              {stamp.name}
+                            </h4>
+                            <p className="text-[10px] text-muted-foreground font-semibold">
+                              Costo: {stamp.cost} SP
+                            </p>
                           </div>
 
                           <div className="mt-4 w-full">
                             {isClaimed ? (
-                              <Button disabled className="w-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold h-8">
-                                <i className="fa-solid fa-check mr-1"></i> ADQUIRIDA
+                              <Button
+                                disabled
+                                className="w-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold h-8"
+                              >
+                                <i className="fa-solid fa-check mr-1"></i>{" "}
+                                ADQUIRIDA
                               </Button>
                             ) : (
                               <Button
@@ -1038,7 +1449,8 @@ export default function FutbolHubPage() {
               ) : (
                 <div className="space-y-4">
                   <p className="text-xs text-muted-foreground mb-4">
-                    Desbloquea estas estampas especiales completando actividades temáticas en los mini juegos o rangos especiales.
+                    Desbloquea estas estampas especiales completando actividades
+                    temáticas en los mini juegos o rangos especiales.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     {LOGROS.map((logro) => {
@@ -1048,30 +1460,51 @@ export default function FutbolHubPage() {
                           key={logro.id}
                           className={cn(
                             "relative border rounded-2xl p-4 flex flex-col items-center justify-between text-center transition-all bg-[#0e0a32]/40 duration-300",
-                            isUnlocked ? "border-emerald-500/50 shadow-lg shadow-emerald-500/5" : "border-border/60 grayscale opacity-45"
+                            isUnlocked
+                              ? "border-emerald-500/50 shadow-lg shadow-emerald-500/5"
+                              : "border-border/60 grayscale opacity-45",
                           )}
                         >
-                          <Badge className={cn("absolute top-3 right-3 font-bold text-[9px] border", logro.badgeColor)}>
+                          <Badge
+                            className={cn(
+                              "absolute top-3 right-3 font-bold text-[9px] border",
+                              logro.badgeColor,
+                            )}
+                          >
                             LOGRO
                           </Badge>
-                          
+
                           <div className="w-28 h-28 my-3 flex items-center justify-center relative overflow-hidden bg-black/20 rounded-xl border border-white/5">
-                            <img src={logro.image} alt={logro.name} className="w-24 h-24 object-contain" />
+                            <img
+                              src={logro.image}
+                              alt={logro.name}
+                              className="w-24 h-24 object-contain"
+                            />
                           </div>
 
                           <div className="space-y-1">
-                            <h4 className="text-xs font-black text-white">{logro.name}</h4>
-                            <p className="text-[10px] text-muted-foreground leading-tight px-1 mt-0.5">{logro.requirement}</p>
+                            <h4 className="text-xs font-black text-white">
+                              {logro.name}
+                            </h4>
+                            <p className="text-[10px] text-muted-foreground leading-tight px-1 mt-0.5">
+                              {logro.requirement}
+                            </p>
                           </div>
 
                           <div className="mt-4 w-full">
                             {isUnlocked ? (
-                              <Button disabled className="w-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold h-8">
-                                <i className="fa-solid fa-lock-open mr-1"></i> DESBLOQUEADO
+                              <Button
+                                disabled
+                                className="w-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold h-8"
+                              >
+                                <i className="fa-solid fa-lock-open mr-1"></i>{" "}
+                                DESBLOQUEADO
                               </Button>
                             ) : (
                               <Button
-                                onClick={() => handleClaimLogroManual(logro.id, logro.name)}
+                                onClick={() =>
+                                  handleClaimLogroManual(logro.id, logro.name)
+                                }
                                 className="w-full bg-secondary hover:bg-secondary/80 text-foreground text-[10px] font-bold h-8"
                               >
                                 COMPROBAR LOGRO
@@ -1084,12 +1517,11 @@ export default function FutbolHubPage() {
                   </div>
                 </div>
               )}
-
             </CardContent>
           </Card>
         </div>
       )}
- 
+
       {/* 0. INICIO / DASHBOARD WELCOME */}
       {section === "home" && (
         <div className="space-y-6 animate-fade-in">
@@ -1104,12 +1536,20 @@ export default function FutbolHubPage() {
                       <i className="fa-solid fa-star-of-life animate-spin-slow"></i>
                     </div>
                     <div>
-                      <h3 className="text-sm font-black uppercase text-white">¡Bienvenido al Fútbol Hub!</h3>
-                      <p className="text-[11px] text-muted-foreground">Tu espacio de entretenimiento, juego y pasión por el fútbol.</p>
+                      <h3 className="text-sm font-black uppercase text-white">
+                        ¡Bienvenido al Fútbol Hub!
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground">
+                        Tu espacio de entretenimiento, juego y pasión por el
+                        fútbol.
+                      </p>
                     </div>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Usa los <strong>SpeedPoints (SP)</strong> que ganas escuchando la radio o comentando en el foro para abrir sobres de estampas, jugar a los penales o participar en los sorteos especiales de placas en el hotel.
+                    Usa los <strong>SpeedPoints (SP)</strong> que ganas
+                    escuchando la radio o comentando en el foro para abrir
+                    sobres de estampas, jugar a los penales o participar en los
+                    sorteos especiales de placas en el hotel.
                   </p>
                   <div className="pt-2 flex flex-wrap gap-2.5">
                     <Link href="/futbol-hub/album">
@@ -1118,7 +1558,10 @@ export default function FutbolHubPage() {
                       </Button>
                     </Link>
                     <Link href="/futbol-hub/mini/rapido">
-                      <Button variant="outline" className="border-border hover:bg-secondary/40 text-slate-300 font-extrabold text-[10px] h-8.5 uppercase tracking-wider px-4">
+                      <Button
+                        variant="outline"
+                        className="border-border hover:bg-secondary/40 text-slate-300 font-extrabold text-[10px] h-8.5 uppercase tracking-wider px-4"
+                      >
                         Patear Penales
                       </Button>
                     </Link>
@@ -1134,16 +1577,31 @@ export default function FutbolHubPage() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3 text-[11px] text-slate-300">
                   <div className="space-y-1">
-                    <span className="font-mono text-emerald-400 font-extrabold">1. Gana SP</span>
-                    <p className="text-muted-foreground leading-normal">Escucha la radio en vivo y sintoniza los programas para sumar SpeedPoints.</p>
+                    <span className="font-mono text-emerald-400 font-extrabold">
+                      1. Gana SP
+                    </span>
+                    <p className="text-muted-foreground leading-normal">
+                      Escucha la radio en vivo y sintoniza los programas para
+                      sumar SpeedPoints.
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    <span className="font-mono text-emerald-400 font-extrabold">2. Juega & Colecciona</span>
-                    <p className="text-muted-foreground leading-normal">Abre sobres sorpresas, juega tanda de penales, y únete a un clan.</p>
+                    <span className="font-mono text-emerald-400 font-extrabold">
+                      2. Juega & Colecciona
+                    </span>
+                    <p className="text-muted-foreground leading-normal">
+                      Abre sobres sorpresas, juega tanda de penales, y únete a
+                      un clan.
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    <span className="font-mono text-emerald-400 font-extrabold">3. Consigue Placas</span>
-                    <p className="text-muted-foreground leading-normal">Participa en sorteos semanales para ganar placas oficiales e insignias.</p>
+                    <span className="font-mono text-emerald-400 font-extrabold">
+                      3. Consigue Placas
+                    </span>
+                    <p className="text-muted-foreground leading-normal">
+                      Participa en sorteos semanales para ganar placas oficiales
+                      e insignias.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1158,9 +1616,10 @@ export default function FutbolHubPage() {
           {/* Rejilla de Módulos */}
           <div className="space-y-3">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <i className="fa-solid fa-table-cells text-primary"></i> Actividades Disponibles
+              <i className="fa-solid fa-table-cells text-primary"></i>{" "}
+              Actividades Disponibles
             </h3>
-            
+
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {/* Card 1: Álbum */}
               <Card className="bg-card/45 border-border/80 hover:border-primary/50 transition-all group duration-300 flex flex-col justify-between">
@@ -1169,16 +1628,28 @@ export default function FutbolHubPage() {
                     <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-400">
                       <i className="fa-solid fa-images group-hover:scale-110 transition-transform"></i>
                     </div>
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-yellow-500/5 text-yellow-300 border-yellow-500/20">Colección</Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase tracking-wider font-extrabold bg-yellow-500/5 text-yellow-300 border-yellow-500/20"
+                    >
+                      Colección
+                    </Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Álbum de Estampas</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">
+                      Álbum de Estampas
+                    </h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      Consigue las 4 estampas oficiales o desbloquea estampas de logros gratis completando actividades.
+                      Consigue las 4 estampas oficiales o desbloquea estampas de
+                      logros gratis completando actividades.
                     </p>
                   </div>
-                  <Link href="/futbol-hub/album" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
-                    Ver mi álbum <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  <Link
+                    href="/futbol-hub/album"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto"
+                  >
+                    Ver mi álbum{" "}
+                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
               </Card>
@@ -1190,16 +1661,28 @@ export default function FutbolHubPage() {
                     <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                       <i className="fa-solid fa-chart-line group-hover:scale-110 transition-transform"></i>
                     </div>
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-emerald-500/5 text-emerald-300 border-emerald-500/20">Diario</Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase tracking-wider font-extrabold bg-emerald-500/5 text-emerald-300 border-emerald-500/20"
+                    >
+                      Diario
+                    </Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Pronósticos Diarios</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">
+                      Pronósticos Diarios
+                    </h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      Apuesta tus predicciones de los partidos internacionales y gana SpeedPoints gratis por tus aciertos exactos.
+                      Apuesta tus predicciones de los partidos internacionales y
+                      gana SpeedPoints gratis por tus aciertos exactos.
                     </p>
                   </div>
-                  <Link href="/futbol-hub/pronosticos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
-                    Pronosticar partidos <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  <Link
+                    href="/futbol-hub/pronosticos"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto"
+                  >
+                    Pronosticar partidos{" "}
+                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
               </Card>
@@ -1211,16 +1694,28 @@ export default function FutbolHubPage() {
                     <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400">
                       <i className="fa-solid fa-futbol group-hover:rotate-45 transition-transform duration-500"></i>
                     </div>
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-cyan-500/5 text-cyan-300 border-cyan-500/20">Minijuego</Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase tracking-wider font-extrabold bg-cyan-500/5 text-cyan-300 border-cyan-500/20"
+                    >
+                      Minijuego
+                    </Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Tanda de Penales</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">
+                      Tanda de Penales
+                    </h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      Desafía a Frank el portero. Cada gol anotado te otorga SpeedPoints directamente en tu saldo.
+                      Desafía a Frank el portero. Cada gol anotado te otorga
+                      SpeedPoints directamente en tu saldo.
                     </p>
                   </div>
-                  <Link href="/futbol-hub/mini/rapido" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
-                    Jugar ahora <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  <Link
+                    href="/futbol-hub/mini/rapido"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto"
+                  >
+                    Jugar ahora{" "}
+                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
               </Card>
@@ -1232,16 +1727,28 @@ export default function FutbolHubPage() {
                     <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
                       <i className="fa-solid fa-ranking-star group-hover:scale-110 transition-transform"></i>
                     </div>
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-purple-500/5 text-purple-300 border-purple-500/20">Social</Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase tracking-wider font-extrabold bg-purple-500/5 text-purple-300 border-purple-500/20"
+                    >
+                      Social
+                    </Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Ranking</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">
+                      Ranking
+                    </h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      Compite contra otros usuarios de la comunidad para alcanzar el Top de pronósticos y liderar el Fansite.
+                      Compite contra otros usuarios de la comunidad para
+                      alcanzar el Top de pronósticos y liderar el Fansite.
                     </p>
                   </div>
-                  <Link href="/futbol-hub/ranking" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
-                    Ver clasificación <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  <Link
+                    href="/futbol-hub/ranking"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto"
+                  >
+                    Ver clasificación{" "}
+                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
               </Card>
@@ -1253,16 +1760,28 @@ export default function FutbolHubPage() {
                     <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400">
                       <i className="fa-solid fa-users-gear group-hover:scale-110 transition-transform"></i>
                     </div>
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-orange-500/5 text-orange-300 border-orange-500/20">Comunidad</Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase tracking-wider font-extrabold bg-orange-500/5 text-orange-300 border-orange-500/20"
+                    >
+                      Comunidad
+                    </Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Equipos y Clanes</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">
+                      Equipos y Clanes
+                    </h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      Únete a una facción de fanáticos en el hotel y demuestra qué hinchada es la más comprometida.
+                      Únete a una facción de fanáticos en el hotel y demuestra
+                      qué hinchada es la más comprometida.
                     </p>
                   </div>
-                  <Link href="/futbol-hub/equipos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
-                    Elegir mi clan <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  <Link
+                    href="/futbol-hub/equipos"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto"
+                  >
+                    Elegir mi clan{" "}
+                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
               </Card>
@@ -1274,16 +1793,28 @@ export default function FutbolHubPage() {
                     <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400">
                       <i className="fa-solid fa-compass group-hover:scale-110 transition-transform"></i>
                     </div>
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-pink-500/5 text-pink-300 border-pink-500/20">Aventura</Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase tracking-wider font-extrabold bg-pink-500/5 text-pink-300 border-pink-500/20"
+                    >
+                      Aventura
+                    </Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Aventura Futbolística</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">
+                      Aventura Futbolística
+                    </h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      Explora pistas, responde preguntas sobre la radio y completa misiones temáticas con recompensas.
+                      Explora pistas, responde preguntas sobre la radio y
+                      completa misiones temáticas con recompensas.
                     </p>
                   </div>
-                  <Link href="/futbol-hub/aventura" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
-                    Iniciar aventura <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  <Link
+                    href="/futbol-hub/aventura"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto"
+                  >
+                    Iniciar aventura{" "}
+                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
               </Card>
@@ -1295,16 +1826,28 @@ export default function FutbolHubPage() {
                     <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400">
                       <i className="fa-solid fa-gift group-hover:scale-110 transition-transform"></i>
                     </div>
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-rose-500/5 text-rose-300 border-rose-500/20">Sorteo</Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase tracking-wider font-extrabold bg-rose-500/5 text-rose-300 border-rose-500/20"
+                    >
+                      Sorteo
+                    </Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">Sorteos de Placas</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">
+                      Sorteos de Placas
+                    </h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      Compra boletos de rifa por 15 SP y participa para ganar insignias y placas exclusivas del Fansite.
+                      Compra boletos de rifa por 15 SP y participa para ganar
+                      insignias y placas exclusivas del Fansite.
                     </p>
                   </div>
-                  <Link href="/futbol-hub/mini/sorteos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
-                    Participar en rifas <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  <Link
+                    href="/futbol-hub/mini/sorteos"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto"
+                  >
+                    Participar en rifas{" "}
+                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
               </Card>
@@ -1316,16 +1859,28 @@ export default function FutbolHubPage() {
                     <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-400">
                       <i className="fa-solid fa-medal group-hover:scale-110 transition-transform"></i>
                     </div>
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold bg-yellow-500/5 text-yellow-300 border-yellow-500/20">Competición</Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase tracking-wider font-extrabold bg-yellow-500/5 text-yellow-300 border-yellow-500/20"
+                    >
+                      Competición
+                    </Badge>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">HSpeed Torneos</h4>
+                    <h4 className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase">
+                      HSpeed Torneos
+                    </h4>
                     <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      Inscribe tu equipo de fútbol, consulta las bases oficiales y repasa el reglamento de Habbo Fútbol.
+                      Inscribe tu equipo de fútbol, consulta las bases oficiales
+                      y repasa el reglamento de Habbo Fútbol.
                     </p>
                   </div>
-                  <Link href="/futbol-hub/torneos" className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto">
-                    Inscribirse / Ver bases <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  <Link
+                    href="/futbol-hub/torneos"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline pt-2 mt-auto"
+                  >
+                    Inscribirse / Ver bases{" "}
+                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </Link>
                 </CardContent>
               </Card>
@@ -1341,52 +1896,90 @@ export default function FutbolHubPage() {
             <CardContent className="p-4 sm:p-5 space-y-4">
               <div className="flex items-center gap-2">
                 <i className="fa-solid fa-chart-bar text-primary text-sm"></i>
-                <h3 className="text-sm font-extrabold uppercase">Pronosticar Partidos del Mundial</h3>
+                <h3 className="text-sm font-extrabold uppercase">
+                  Pronosticar Partidos del Mundial
+                </h3>
               </div>
               <p className="text-xs text-muted-foreground">
-                Predice marcadores. Si aciertas el ganador ganas 15 SP. Si aciertas el marcador exacto ganas **50 SpeedPoints** (y desbloqueas tu estampa de pronósticos).
+                Predice marcadores. Si aciertas el ganador ganas 15 SP. Si
+                aciertas el marcador exacto ganas **50 SpeedPoints** (y
+                desbloqueas tu estampa de pronósticos).
               </p>
 
               <div className="space-y-3 pt-2">
                 {todayMatches.map((match) => {
                   const hasPred = userPredictions[match.id] !== undefined;
-                  const dbPred = userPredictions[match.id] || { t1: "", t2: "" };
-                  
+                  const dbPred = userPredictions[match.id] || {
+                    t1: "",
+                    t2: "",
+                  };
+
                   return (
-                    <div key={match.id} className="p-4 bg-secondary/10 border border-border/60 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div
+                      key={match.id}
+                      className="p-4 bg-secondary/10 border border-border/60 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4"
+                    >
                       <div className="text-center md:text-left">
-                        <p className="text-[10px] text-muted-foreground font-semibold">{match.date}</p>
-                        <p className="text-xs font-bold text-foreground mt-0.5">{match.group} • {match.time}</p>
+                        <p className="text-[10px] text-muted-foreground font-semibold">
+                          {match.date}
+                        </p>
+                        <p className="text-xs font-bold text-foreground mt-0.5">
+                          {match.group} • {match.time}
+                        </p>
                       </div>
 
                       <div className="flex items-center justify-center gap-3">
-                        <span className="text-sm font-bold w-24 text-right">{match.teamA} {match.flagA}</span>
+                        <span className="text-sm font-bold w-24 text-right">
+                          {match.teamA} {match.flagA}
+                        </span>
                         <Input
                           type="number"
                           min="0"
                           placeholder="0"
                           disabled={hasPred}
                           className="w-12 h-8 text-center text-xs font-bold bg-background"
-                          value={hasPred ? dbPred.t1 : predictionsInput[match.id]?.t1 || ""}
-                          onChange={(e) => setPredictionsInput({
-                            ...predictionsInput,
-                            [match.id]: { ...predictionsInput[match.id], t1: e.target.value }
-                          })}
+                          value={
+                            hasPred
+                              ? dbPred.t1
+                              : predictionsInput[match.id]?.t1 || ""
+                          }
+                          onChange={(e) =>
+                            setPredictionsInput({
+                              ...predictionsInput,
+                              [match.id]: {
+                                ...predictionsInput[match.id],
+                                t1: e.target.value,
+                              },
+                            })
+                          }
                         />
-                        <span className="text-xs text-slate-400 font-bold">vs</span>
+                        <span className="text-xs text-slate-400 font-bold">
+                          vs
+                        </span>
                         <Input
                           type="number"
                           min="0"
                           placeholder="0"
                           disabled={hasPred}
                           className="w-12 h-8 text-center text-xs font-bold bg-background"
-                          value={hasPred ? dbPred.t2 : predictionsInput[match.id]?.t2 || ""}
-                          onChange={(e) => setPredictionsInput({
-                            ...predictionsInput,
-                            [match.id]: { ...predictionsInput[match.id], t2: e.target.value }
-                          })}
+                          value={
+                            hasPred
+                              ? dbPred.t2
+                              : predictionsInput[match.id]?.t2 || ""
+                          }
+                          onChange={(e) =>
+                            setPredictionsInput({
+                              ...predictionsInput,
+                              [match.id]: {
+                                ...predictionsInput[match.id],
+                                t2: e.target.value,
+                              },
+                            })
+                          }
                         />
-                        <span className="text-sm font-bold w-24 text-left">{match.flagB} {match.teamB}</span>
+                        <span className="text-sm font-bold w-24 text-left">
+                          {match.flagB} {match.teamB}
+                        </span>
                       </div>
 
                       <div>
@@ -1396,7 +1989,13 @@ export default function FutbolHubPage() {
                           </Badge>
                         ) : (
                           <Button
-                            onClick={() => handleSavePrediction(match.id, match.teamA, match.teamB)}
+                            onClick={() =>
+                              handleSavePrediction(
+                                match.id,
+                                match.teamA,
+                                match.teamB,
+                              )
+                            }
                             className="bg-primary hover:bg-primary/80 text-white text-[10px] font-bold h-8"
                           >
                             Enviar Pronóstico
@@ -1419,10 +2018,13 @@ export default function FutbolHubPage() {
             <CardContent className="p-4 sm:p-5 space-y-4">
               <div className="flex items-center gap-2">
                 <i className="fa-solid fa-ranking-star text-primary text-sm"></i>
-                <h3 className="text-sm font-extrabold uppercase">Tabla de Líderes de Pronósticos</h3>
+                <h3 className="text-sm font-extrabold uppercase">
+                  Tabla de Líderes de Pronósticos
+                </h3>
               </div>
               <p className="text-xs text-muted-foreground">
-                Los usuarios que aciertan los partidos oficiales del Mundial suben en el ranking del hotel para ganar placas y SpeedPoints.
+                Los usuarios que aciertan los partidos oficiales del Mundial
+                suben en el ranking del hotel para ganar placas y SpeedPoints.
               </p>
 
               <div className="overflow-x-auto pt-2">
@@ -1438,35 +2040,94 @@ export default function FutbolHubPage() {
                   </thead>
                   <tbody className="divide-y divide-border/40">
                     {[
-                      { pos: 1, name: "Dj_Invitado", points: 120, aciertos: 6, rank: "Pichichi" },
-                      { pos: 2, name: "HabboSpeed", points: 95, aciertos: 4, rank: "Goleador" },
-                      { pos: 3, name: "FrankManager", points: 80, aciertos: 3, rank: "Goleador" },
-                      { pos: 4, name: user.displayName, points: Object.keys(userPredictions).length * 15, aciertos: Object.keys(userPredictions).length, rank: "Defensa" },
-                      { pos: 5, name: "PixelKing", points: 30, aciertos: 1, rank: "Amateur" },
-                    ].sort((a, b) => b.points - a.points).map((row, idx) => {
-                      const isSelf = row.name === user.displayName;
-                      return (
-                        <tr key={idx} className={cn("hover:bg-secondary/10", isSelf && "bg-primary/5 font-bold border-l-2 border-primary")}>
-                          <td className="py-3 px-3">
-                            <Badge className={cn("text-[10px] font-mono", idx === 0 ? "bg-yellow-500 text-white" : idx === 1 ? "bg-slate-300 text-black" : idx === 2 ? "bg-amber-600 text-white" : "bg-card border text-foreground")}>
-                              #{idx + 1}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-3 flex items-center gap-2">
-                            <img
-                              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(row.name)}&size=s&headonly=1&head_direction=2`}
-                              alt=""
-                              className="w-5 h-5 bg-secondary/35 rounded-full object-contain"
-                              onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
-                            />
-                            <span>{row.name}</span>
-                          </td>
-                          <td className="py-3 px-3 text-center text-primary font-bold">{row.points}</td>
-                          <td className="py-3 px-3 text-center">{row.aciertos}</td>
-                          <td className="py-3 px-3 text-right text-muted-foreground text-[10px] font-semibold">{row.rank}</td>
-                        </tr>
-                      );
-                    })}
+                      {
+                        pos: 1,
+                        name: "Dj_Invitado",
+                        points: 120,
+                        aciertos: 6,
+                        rank: "Pichichi",
+                      },
+                      {
+                        pos: 2,
+                        name: "HabboSpeed",
+                        points: 95,
+                        aciertos: 4,
+                        rank: "Goleador",
+                      },
+                      {
+                        pos: 3,
+                        name: "FrankManager",
+                        points: 80,
+                        aciertos: 3,
+                        rank: "Goleador",
+                      },
+                      {
+                        pos: 4,
+                        name: user.displayName,
+                        points: Object.keys(userPredictions).length * 15,
+                        aciertos: Object.keys(userPredictions).length,
+                        rank: "Defensa",
+                      },
+                      {
+                        pos: 5,
+                        name: "PixelKing",
+                        points: 30,
+                        aciertos: 1,
+                        rank: "Amateur",
+                      },
+                    ]
+                      .sort((a, b) => b.points - a.points)
+                      .map((row, idx) => {
+                        const isSelf = row.name === user.displayName;
+                        return (
+                          <tr
+                            key={idx}
+                            className={cn(
+                              "hover:bg-secondary/10",
+                              isSelf &&
+                                "bg-primary/5 font-bold border-l-2 border-primary",
+                            )}
+                          >
+                            <td className="py-3 px-3">
+                              <Badge
+                                className={cn(
+                                  "text-[10px] font-mono",
+                                  idx === 0
+                                    ? "bg-yellow-500 text-white"
+                                    : idx === 1
+                                      ? "bg-slate-300 text-black"
+                                      : idx === 2
+                                        ? "bg-amber-600 text-white"
+                                        : "bg-card border text-foreground",
+                                )}
+                              >
+                                #{idx + 1}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-3 flex items-center gap-2">
+                              <img
+                                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(row.name)}&size=s&headonly=1&head_direction=2`}
+                                alt=""
+                                className="w-5 h-5 bg-secondary/35 rounded-full object-contain"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src =
+                                    "/habbo-radio/frank_small_03.gif";
+                                }}
+                              />
+                              <span>{row.name}</span>
+                            </td>
+                            <td className="py-3 px-3 text-center text-primary font-bold">
+                              {row.points}
+                            </td>
+                            <td className="py-3 px-3 text-center">
+                              {row.aciertos}
+                            </td>
+                            <td className="py-3 px-3 text-right text-muted-foreground text-[10px] font-semibold">
+                              {row.rank}
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
               </div>
@@ -1482,32 +2143,66 @@ export default function FutbolHubPage() {
             <CardContent className="p-4 sm:p-5 space-y-4">
               <div className="flex items-center gap-2">
                 <i className="fa-solid fa-users text-primary text-sm"></i>
-                <h3 className="text-sm font-extrabold uppercase">Selecciona tu Clan del Mundial</h3>
+                <h3 className="text-sm font-extrabold uppercase">
+                  Selecciona tu Clan del Mundial
+                </h3>
               </div>
               <p className="text-xs text-muted-foreground">
-                Únete a un grupo temático en el hotel de forma persistente para acumular puntos colectivos y competir en misiones del fansite.
+                Únete a un grupo temático en el hotel de forma persistente para
+                acumular puntos colectivos y competir en misiones del fansite.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                 {[
-                  { name: "Clan Gladiadores Neón", members: 14, icon: "fa-solid fa-shield-halved", color: "text-cyan-400 border-cyan-400/20 bg-cyan-950/20" },
-                  { name: "Clan Furia Píxel", members: 8, icon: "fa-solid fa-fire", color: "text-amber-400 border-amber-400/20 bg-amber-950/20" },
-                  { name: "Clan Fucsia Extremo", members: 19, icon: "fa-solid fa-bolt", color: "text-fuchsia-400 border-fuchsia-400/20 bg-fuchsia-950/20" },
+                  {
+                    name: "Clan Gladiadores Neón",
+                    members: 14,
+                    icon: "fa-solid fa-shield-halved",
+                    color: "text-cyan-400 border-cyan-400/20 bg-cyan-950/20",
+                  },
+                  {
+                    name: "Clan Furia Píxel",
+                    members: 8,
+                    icon: "fa-solid fa-fire",
+                    color: "text-amber-400 border-amber-400/20 bg-amber-950/20",
+                  },
+                  {
+                    name: "Clan Fucsia Extremo",
+                    members: 19,
+                    icon: "fa-solid fa-bolt",
+                    color:
+                      "text-fuchsia-400 border-fuchsia-400/20 bg-fuchsia-950/20",
+                  },
                 ].map((clan) => {
                   const isMyClan = selectedClan === clan.name;
                   return (
-                    <div key={clan.name} className={cn("border rounded-2xl p-4 flex flex-col justify-between text-center gap-3.5 transition-all duration-300", clan.color, isMyClan && "border-primary border-2 shadow-lg")}>
+                    <div
+                      key={clan.name}
+                      className={cn(
+                        "border rounded-2xl p-4 flex flex-col justify-between text-center gap-3.5 transition-all duration-300",
+                        clan.color,
+                        isMyClan && "border-primary border-2 shadow-lg",
+                      )}
+                    >
                       <div className="mx-auto w-12 h-12 rounded-full border border-current/25 flex items-center justify-center">
                         <i className={cn(clan.icon, "text-xl")}></i>
                       </div>
                       <div>
-                        <h4 className="text-xs font-black text-white">{clan.name}</h4>
-                        <p className="text-[10px] text-muted-foreground mt-1">Miembros: {clan.members + (isMyClan ? 1 : 0)}</p>
+                        <h4 className="text-xs font-black text-white">
+                          {clan.name}
+                        </h4>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          Miembros: {clan.members + (isMyClan ? 1 : 0)}
+                        </p>
                       </div>
                       <div className="pt-2">
                         {isMyClan ? (
-                          <Button disabled className="w-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold h-8">
-                            <i className="fa-solid fa-check mr-1.5"></i> ERES MIEMBRO
+                          <Button
+                            disabled
+                            className="w-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold h-8"
+                          >
+                            <i className="fa-solid fa-check mr-1.5"></i> ERES
+                            MIEMBRO
                           </Button>
                         ) : (
                           <Button
@@ -1534,24 +2229,49 @@ export default function FutbolHubPage() {
             <CardContent className="p-4 sm:p-5 space-y-4">
               <div className="flex items-center gap-2">
                 <i className="fa-solid fa-compass text-primary text-sm"></i>
-                <h3 className="text-sm font-extrabold uppercase">Aventura Futbolística: Misiones Activas</h3>
+                <h3 className="text-sm font-extrabold uppercase">
+                  Aventura Futbolística: Misiones Activas
+                </h3>
               </div>
               <p className="text-xs text-muted-foreground">
-                Completa estas misiones interactivas para acumular SpeedPoints adicionales de manera definitiva.
+                Completa estas misiones interactivas para acumular SpeedPoints
+                adicionales de manera definitiva.
               </p>
 
               <div className="space-y-3 pt-2">
                 {[
-                  { id: "mis1", title: "Inauguración de Radio", desc: "Sintoniza la radio durante 15 minutos en el reproductor." },
-                  { id: "mis2", title: "Saludo de Hincha", desc: "Envía un mensaje de saludo al DJ actual usando la barra de control." },
-                  { id: "mis3", title: "Goleador Exacto", desc: "Realiza tu primer pronóstico exacto de algún partido del Mundial." },
+                  {
+                    id: "mis1",
+                    title: "Inauguración de Radio",
+                    desc: "Sintoniza la radio durante 15 minutos en el reproductor.",
+                  },
+                  {
+                    id: "mis2",
+                    title: "Saludo de Hincha",
+                    desc: "Envía un mensaje de saludo al DJ actual usando la barra de control.",
+                  },
+                  {
+                    id: "mis3",
+                    title: "Goleador Exacto",
+                    desc: "Realiza tu primer pronóstico exacto de algún partido del Mundial.",
+                  },
                 ].map((mission) => {
-                  const isDone = adventureMissions[mission.id as keyof typeof adventureMissions];
+                  const isDone =
+                    adventureMissions[
+                      mission.id as keyof typeof adventureMissions
+                    ];
                   return (
-                    <div key={mission.id} className="p-4 bg-secondary/15 border border-border/60 rounded-2xl flex items-center justify-between gap-4">
+                    <div
+                      key={mission.id}
+                      className="p-4 bg-secondary/15 border border-border/60 rounded-2xl flex items-center justify-between gap-4"
+                    >
                       <div>
-                        <h4 className="text-xs font-black text-white">{mission.title}</h4>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{mission.desc}</p>
+                        <h4 className="text-xs font-black text-white">
+                          {mission.title}
+                        </h4>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {mission.desc}
+                        </p>
                       </div>
                       <div>
                         {isDone ? (
@@ -1560,7 +2280,9 @@ export default function FutbolHubPage() {
                           </Badge>
                         ) : (
                           <Button
-                            onClick={() => handleCompleteMission(mission.id, mission.title)}
+                            onClick={() =>
+                              handleCompleteMission(mission.id, mission.title)
+                            }
                             className="bg-primary hover:bg-primary/80 text-white text-[10px] font-bold h-8"
                           >
                             Completar Misión
@@ -1583,44 +2305,67 @@ export default function FutbolHubPage() {
             <CardContent className="p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-2">
-                  <i className="fa-solid fa-futbol text-primary text-sm animate-spin" style={{ animationDuration: "3s" }}></i>
-                  <h3 className="text-sm font-extrabold uppercase">Tanda de Penales contra el Bot Frank</h3>
+                  <i
+                    className="fa-solid fa-futbol text-primary text-sm animate-spin"
+                    style={{ animationDuration: "3s" }}
+                  ></i>
+                  <h3 className="text-sm font-extrabold uppercase">
+                    Tanda de Penales contra el Bot Frank
+                  </h3>
                 </div>
                 {penaltyStats.totalGames > 0 && (
                   <span className="text-[10px] text-muted-foreground font-mono">
-                    Récord: <strong className="text-primary">{penaltyStats.maxScore} goles</strong> | Jugados: {penaltyStats.totalGames}
+                    Récord:{" "}
+                    <strong className="text-primary">
+                      {penaltyStats.maxScore} goles
+                    </strong>{" "}
+                    | Jugados: {penaltyStats.totalGames}
                   </span>
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Frank es el portero. Elige a dónde patear el balón. Cada gol te recompensa con <strong>+2 SpeedPoints</strong> en el backend. ¡Logra 5/5 para obtener un bono de **+10 SP** y la estampa <strong>Guante del Campeón</strong>!
+                Frank es el portero. Elige a dónde patear el balón. Cada gol te
+                recompensa con <strong>+2 SpeedPoints</strong> en el backend.
+                ¡Logra 5/5 para obtener un bono de **+10 SP** y la estampa{" "}
+                <strong>Guante del Campeón</strong>!
               </p>
 
               <div className="bg-[#0b0632] border border-white/10 rounded-2xl p-6 text-center max-w-xl mx-auto flex flex-col justify-center items-center gap-5 relative overflow-hidden shadow-2xl">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(38,215,255,0.08),transparent_70%)] pointer-events-none" />
-                
+
                 {penaltyState.status === "idle" ? (
                   <div className="py-6 space-y-4 relative z-10">
-                    <i className="fa-solid fa-circle-play text-5xl text-primary animate-pulse cursor-pointer" onClick={handleResetPenaltyGame}></i>
-                    <h4 className="text-sm font-black text-white uppercase">¿Listo para patear?</h4>
-                    <Button onClick={handleResetPenaltyGame} className="bg-primary hover:bg-primary/80 text-white text-xs font-bold px-6">
+                    <i
+                      className="fa-solid fa-circle-play text-5xl text-primary animate-pulse cursor-pointer"
+                      onClick={handleResetPenaltyGame}
+                    ></i>
+                    <h4 className="text-sm font-black text-white uppercase">
+                      ¿Listo para patear?
+                    </h4>
+                    <Button
+                      onClick={handleResetPenaltyGame}
+                      className="bg-primary hover:bg-primary/80 text-white text-xs font-bold px-6"
+                    >
                       Iniciar Partido
                     </Button>
                   </div>
                 ) : (
                   <div className="w-full space-y-5 relative z-10">
-                    
                     {/* Cancha y Portería Visual */}
                     <div className="relative w-80 h-40 border-4 border-slate-200 bg-emerald-950/70 rounded-t-2xl overflow-hidden mx-auto flex items-center justify-center shadow-inner">
                       <div className="absolute inset-x-0 bottom-0 h-1 bg-white/30" />
-                      
+
                       {/* Portero (Frank) */}
                       <div
                         className={cn(
                           "absolute w-12 h-16 transition-all duration-500 bottom-2",
-                          keeperJump === "izq" ? "left-6 translate-y-3 rotate-[-45deg] scale-95" :
-                          keeperJump === "der" ? "right-6 translate-y-3 rotate-[45deg] scale-95" :
-                          keeperJump === "cen" ? "bottom-5 scale-110" : "left-[calc(50%-24px)]"
+                          keeperJump === "izq"
+                            ? "left-6 translate-y-3 rotate-[-45deg] scale-95"
+                            : keeperJump === "der"
+                              ? "right-6 translate-y-3 rotate-[45deg] scale-95"
+                              : keeperJump === "cen"
+                                ? "bottom-5 scale-110"
+                                : "left-[calc(50%-24px)]",
                         )}
                       >
                         <img
@@ -1634,10 +2379,13 @@ export default function FutbolHubPage() {
                       <div
                         className={cn(
                           "absolute w-6 h-6 transition-all duration-500 ease-out",
-                          userShot === "izq" ? "left-8 top-10 scale-75 rotate-[360deg]" :
-                          userShot === "der" ? "right-8 top-10 scale-75 rotate-[360deg]" :
-                          userShot === "cen" ? "left-[calc(50%-12px)] top-8 scale-75 rotate-[360deg]" :
-                          "bottom-2 left-[calc(50%-12px)] scale-100 cursor-pointer animate-pulse"
+                          userShot === "izq"
+                            ? "left-8 top-10 scale-75 rotate-[360deg]"
+                            : userShot === "der"
+                              ? "right-8 top-10 scale-75 rotate-[360deg]"
+                              : userShot === "cen"
+                                ? "left-[calc(50%-12px)] top-8 scale-75 rotate-[360deg]"
+                                : "bottom-2 left-[calc(50%-12px)] scale-100 cursor-pointer animate-pulse",
                         )}
                       >
                         <i className="fa-solid fa-futbol text-lg text-white"></i>
@@ -1646,11 +2394,21 @@ export default function FutbolHubPage() {
 
                     {/* Marcador */}
                     <div className="flex items-center justify-between bg-black/45 border border-white/5 rounded-xl px-4 py-2 text-xs">
-                      <span className="font-bold text-slate-400">Pateador: <strong className="text-white">{user.displayName}</strong></span>
+                      <span className="font-bold text-slate-400">
+                        Pateador:{" "}
+                        <strong className="text-white">
+                          {user.displayName}
+                        </strong>
+                      </span>
                       <span className="font-mono text-cyan-400 font-bold bg-[#140b49] px-2.5 py-0.5 rounded border border-white/10 text-xs">
                         {penaltyState.score} Goles
                       </span>
-                      <span className="font-bold text-slate-400">Tiros: <strong className="text-white">{penaltyState.shotsRemaining}</strong></span>
+                      <span className="font-bold text-slate-400">
+                        Tiros:{" "}
+                        <strong className="text-white">
+                          {penaltyState.shotsRemaining}
+                        </strong>
+                      </span>
                     </div>
 
                     {/* Animación o Mensaje de Estado */}
@@ -1658,30 +2416,46 @@ export default function FutbolHubPage() {
                       {penaltyState.lastResult === "scored" && (
                         <div className="space-y-1.5 animate-bounce">
                           <i className="fa-solid fa-circle-check text-3xl text-emerald-400"></i>
-                          <h5 className="text-emerald-400 font-black text-xs uppercase">¡GOLAZO! Frank no llegó.</h5>
+                          <h5 className="text-emerald-400 font-black text-xs uppercase">
+                            ¡GOLAZO! Frank no llegó.
+                          </h5>
                         </div>
                       )}
                       {penaltyState.lastResult === "missed" && (
                         <div className="space-y-1.5 animate-shake">
                           <i className="fa-solid fa-circle-xmark text-3xl text-rose-500"></i>
-                          <h5 className="text-rose-400 font-black text-xs uppercase">¡Atajadón! Frank la desvió.</h5>
+                          <h5 className="text-rose-400 font-black text-xs uppercase">
+                            ¡Atajadón! Frank la desvió.
+                          </h5>
                         </div>
                       )}
-                      {penaltyState.lastResult === null && penaltyState.status !== "over" && (
-                        <div className="space-y-1 text-slate-300">
-                          <i className="fa-solid fa-circle-info text-cyan-400 animate-pulse text-lg block"></i>
-                          <h5 className="font-bold text-[10px] uppercase">¡Haz tu tiro! Elige la dirección.</h5>
-                        </div>
-                      )}
+                      {penaltyState.lastResult === null &&
+                        penaltyState.status !== "over" && (
+                          <div className="space-y-1 text-slate-300">
+                            <i className="fa-solid fa-circle-info text-cyan-400 animate-pulse text-lg block"></i>
+                            <h5 className="font-bold text-[10px] uppercase">
+                              ¡Haz tu tiro! Elige la dirección.
+                            </h5>
+                          </div>
+                        )}
                       {penaltyState.status === "over" && (
                         <div className="space-y-1.5">
                           <i className="fa-solid fa-trophy text-3xl text-yellow-400"></i>
-                          <h5 className="text-yellow-400 font-black text-xs uppercase">Tanda Terminada</h5>
-                          <p className="text-[10px] text-slate-300">Lograste anotar {penaltyState.score} de 5 goles.</p>
+                          <h5 className="text-yellow-400 font-black text-xs uppercase">
+                            Tanda Terminada
+                          </h5>
+                          <p className="text-[10px] text-slate-300">
+                            Lograste anotar {penaltyState.score} de 5 goles.
+                          </p>
                           {penaltyState.score >= 5 ? (
-                            <p className="text-[10.5px] text-emerald-400 font-extrabold animate-pulse">🎉 ¡LOGRO CONSEGUIDO: Guante del Campeón! Ve al Álbum.</p>
+                            <p className="text-[10.5px] text-emerald-400 font-extrabold animate-pulse">
+                              🎉 ¡LOGRO CONSEGUIDO: Guante del Campeón! Ve al
+                              Álbum.
+                            </p>
                           ) : (
-                            <p className="text-[9.5px] text-slate-400 italic">Inténtalo de nuevo para lograr el tiro perfecto.</p>
+                            <p className="text-[9.5px] text-slate-400 italic">
+                              Inténtalo de nuevo para lograr el tiro perfecto.
+                            </p>
                           )}
                         </div>
                       )}
@@ -1713,7 +2487,10 @@ export default function FutbolHubPage() {
                         </Button>
                       </div>
                     ) : (
-                      <Button onClick={handleResetPenaltyGame} className="bg-primary hover:bg-primary/80 text-xs font-bold px-6">
+                      <Button
+                        onClick={handleResetPenaltyGame}
+                        className="bg-primary hover:bg-primary/80 text-xs font-bold px-6"
+                      >
                         Patear Otra Tanda
                       </Button>
                     )}
@@ -1733,27 +2510,35 @@ export default function FutbolHubPage() {
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <i className="fa-solid fa-gift text-primary text-sm animate-pulse"></i>
-                  <h3 className="text-sm font-extrabold uppercase">Sorteos de Placas del Mundial</h3>
+                  <h3 className="text-sm font-extrabold uppercase">
+                    Sorteos de Placas del Mundial
+                  </h3>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs font-bold bg-[#0e0a32] border border-white/10 px-3 py-1 rounded-full font-mono text-cyan-400">
                   <i className="fa-regular fa-clock"></i> Sorteo en: {countdown}
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Participa en la rifa de placas y estampas raras usando tus SpeedPoints. Cada boleto te cuesta 15 SP. ¡Cuantos más boletos compres, mayor probabilidad de ganar!
+                Participa en la rifa de placas y estampas raras usando tus
+                SpeedPoints. Cada boleto te cuesta 15 SP. ¡Cuantos más boletos
+                compres, mayor probabilidad de ganar!
               </p>
 
               <div className="grid gap-4 md:grid-cols-2 pt-2">
                 {/* Caja de Compra */}
                 <div className="p-5 bg-[#0e0a32]/45 border border-border/80 rounded-2xl flex flex-col justify-between items-center text-center gap-4 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none rounded-bl-full" />
-                  
+
                   <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary text-xl">
                     <i className="fa-solid fa-ticket-simple rotate-[-15deg]"></i>
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white">Comprar Boleto del Sorteo</h4>
-                    <p className="text-[10px] text-muted-foreground mt-1">Costo por boleto: 15 SpeedPoints</p>
+                    <h4 className="text-xs font-black text-white">
+                      Comprar Boleto del Sorteo
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Costo por boleto: 15 SpeedPoints
+                    </p>
                     <p className="text-[11px] text-cyan-400 font-extrabold mt-3 bg-cyan-950/20 border border-cyan-500/20 py-1 px-3 rounded-full">
                       Tienes {ticketsCount} boletos adquiridos
                     </p>
@@ -1769,7 +2554,9 @@ export default function FutbolHubPage() {
                 {/* Info de Sorteos */}
                 <div className="p-4 bg-secondary/10 border border-border/50 rounded-2xl space-y-3 flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xs font-black text-white uppercase tracking-wider">Premios del Sorteo de esta semana</h4>
+                    <h4 className="text-xs font-black text-white uppercase tracking-wider">
+                      Premios del Sorteo de esta semana
+                    </h4>
                     <ul className="text-xs space-y-2.5 text-slate-300 mt-2.5">
                       <li className="flex items-center gap-2">
                         <i className="fa-solid fa-circle-check text-emerald-400"></i>
@@ -1786,7 +2573,8 @@ export default function FutbolHubPage() {
                     </ul>
                   </div>
                   <p className="text-[10px] text-muted-foreground italic pt-2 border-t border-border/30">
-                    El sorteo se realiza automáticamente todos los domingos en la noche durante el programa en vivo de la radio.
+                    El sorteo se realiza automáticamente todos los domingos en
+                    la noche durante el programa en vivo de la radio.
                   </p>
                 </div>
               </div>
@@ -1800,51 +2588,61 @@ export default function FutbolHubPage() {
       {section === "torneos" && (
         <div className="space-y-6 animate-fade-in">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
             {/* Columna Izquierda: Formulario e Inscripciones */}
             <div className="lg:col-span-2 space-y-6">
-              
               {/* Formulario de Inscripción */}
               <Card className="bg-card border-border shadow-md">
                 <CardContent className="p-5 space-y-4">
                   <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
                     <i className="fa-solid fa-file-signature text-primary text-sm"></i>
-                    <h3 className="text-xs font-black uppercase tracking-wider">Inscripción Oficial de Equipos</h3>
+                    <h3 className="text-xs font-black uppercase tracking-wider">
+                      Inscripción Oficial de Equipos
+                    </h3>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Completa la ficha técnica para registrar a tu equipo de fútbol sala. Una vez enviado, tu equipo aparecerá en la cartelera general.
+                    Completa la ficha técnica para registrar a tu equipo de
+                    fútbol sala. Una vez enviado, tu equipo aparecerá en la
+                    cartelera general.
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase text-slate-400">Nombre de tu Equipo</label>
-                      <Input 
-                        placeholder="Ej: Manchester Píxel FC" 
-                        value={regTeamName} 
+                      <label className="text-[10px] font-black uppercase text-slate-400">
+                        Nombre de tu Equipo
+                      </label>
+                      <Input
+                        placeholder="Ej: Manchester Píxel FC"
+                        value={regTeamName}
                         onChange={(e) => setRegTeamName(e.target.value)}
                         className="bg-background/80 border-border/60 text-xs h-9"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase text-slate-400">Nombre del Capitán (Habbo)</label>
-                      <Input 
-                        placeholder="Ej: luisitoys12" 
-                        value={regCaptainName} 
+                      <label className="text-[10px] font-black uppercase text-slate-400">
+                        Nombre del Capitán (Habbo)
+                      </label>
+                      <Input
+                        placeholder="Ej: luisitoys12"
+                        value={regCaptainName}
                         onChange={(e) => setRegCaptainName(e.target.value)}
                         className="bg-background/80 border-border/60 text-xs h-9"
                       />
                     </div>
                     <div className="space-y-1 sm:col-span-2">
-                      <label className="text-[10px] font-black uppercase text-slate-400">Integrantes del Equipo (Nombres separados por comas)</label>
-                      <Input 
-                        placeholder="Ej: AlexPro, MasterHabbo, DJ_Pixel, GamerX" 
-                        value={regMembers} 
+                      <label className="text-[10px] font-black uppercase text-slate-400">
+                        Integrantes del Equipo (Nombres separados por comas)
+                      </label>
+                      <Input
+                        placeholder="Ej: AlexPro, MasterHabbo, DJ_Pixel, GamerX"
+                        value={regMembers}
                         onChange={(e) => setRegMembers(e.target.value)}
                         className="bg-background/80 border-border/60 text-xs h-9"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase text-slate-400">Color del Uniforme</label>
+                      <label className="text-[10px] font-black uppercase text-slate-400">
+                        Color del Uniforme
+                      </label>
                       <select
                         value={regColor}
                         onChange={(e) => setRegColor(e.target.value)}
@@ -1859,8 +2657,8 @@ export default function FutbolHubPage() {
                       </select>
                     </div>
                     <div className="flex items-end">
-                      <Button 
-                        onClick={handleRegisterTeam} 
+                      <Button
+                        onClick={handleRegisterTeam}
                         className="w-full bg-primary hover:bg-primary/90 text-white font-extrabold text-[10px] h-9 uppercase tracking-wider"
                       >
                         Registrar Equipo
@@ -1875,21 +2673,29 @@ export default function FutbolHubPage() {
                 <CardContent className="p-5 space-y-4">
                   <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
                     <i className="fa-solid fa-list-check text-primary text-sm"></i>
-                    <h3 className="text-xs font-black uppercase tracking-wider">Cartelera de Equipos Inscritos</h3>
+                    <h3 className="text-xs font-black uppercase tracking-wider">
+                      Cartelera de Equipos Inscritos
+                    </h3>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {registeredTeams.map((team) => (
-                      <div key={team.id} className="rounded-xl border border-border/60 bg-background/30 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-primary/25 transition-colors">
+                      <div
+                        key={team.id}
+                        className="rounded-xl border border-border/60 bg-background/30 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-primary/25 transition-colors"
+                      >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-extrabold text-xs text-white uppercase">{team.teamName}</span>
+                            <span className="font-extrabold text-xs text-white uppercase">
+                              {team.teamName}
+                            </span>
                             <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] font-bold px-1.5 py-0">
                               Uniforme: {team.color}
                             </Badge>
                           </div>
                           <p className="text-[10px] text-muted-foreground">
-                            <strong>Capitán:</strong> {team.captain} | <strong>Integrantes:</strong> {team.members}
+                            <strong>Capitán:</strong> {team.captain} |{" "}
+                            <strong>Integrantes:</strong> {team.members}
                           </p>
                         </div>
                         <div className="text-[9px] text-muted-foreground font-mono bg-black/25 px-2 py-1 rounded border border-border/20 self-start sm:self-center">
@@ -1900,32 +2706,41 @@ export default function FutbolHubPage() {
                   </div>
                 </CardContent>
               </Card>
-
             </div>
 
             {/* Columna Derecha: Bases y Reglas de Habbo Fútbol */}
             <div className="space-y-6">
-              
               {/* Bases del Torneo */}
               <Card className="bg-card border-border shadow-md">
                 <CardContent className="p-5 space-y-4">
                   <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
                     <i className="fa-solid fa-scroll text-yellow-400 text-sm"></i>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-yellow-400">Bases del Torneo</h3>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-yellow-400">
+                      Bases del Torneo
+                    </h3>
                   </div>
 
                   <ul className="space-y-3 text-[11px] text-slate-300 list-none pl-0">
                     <li className="flex gap-2 items-start">
                       <span className="text-yellow-400 font-bold">1.</span>
-                      <span><strong>Inscripción Gratuita:</strong> Registrar tu equipo es gratis y otorga 15 SP al capitán.</span>
+                      <span>
+                        <strong>Inscripción Gratuita:</strong> Registrar tu
+                        equipo es gratis y otorga 15 SP al capitán.
+                      </span>
                     </li>
                     <li className="flex gap-2 items-start">
                       <span className="text-yellow-400 font-bold">2.</span>
-                      <span><strong>Fase de Grupos:</strong> Se organizan 4 grupos de 4 equipos cada uno. Clasifican los 2 mejores.</span>
+                      <span>
+                        <strong>Fase de Grupos:</strong> Se organizan 4 grupos
+                        de 4 equipos cada uno. Clasifican los 2 mejores.
+                      </span>
                     </li>
                     <li className="flex gap-2 items-start">
                       <span className="text-yellow-400 font-bold">3.</span>
-                      <span><strong>Gran Premio:</strong> 500 SpeedPoints + Placa de Oro para el equipo ganador.</span>
+                      <span>
+                        <strong>Gran Premio:</strong> 500 SpeedPoints + Placa de
+                        Oro para el equipo ganador.
+                      </span>
                     </li>
                   </ul>
                 </CardContent>
@@ -1936,40 +2751,57 @@ export default function FutbolHubPage() {
                 <CardContent className="p-5 space-y-4">
                   <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
                     <i className="fa-solid fa-scale-balanced text-red-400 text-sm"></i>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-red-400">Reglas Habbo Fútbol</h3>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-red-400">
+                      Reglas Habbo Fútbol
+                    </h3>
                   </div>
 
                   <ul className="space-y-3.5 text-[11px] text-slate-300">
                     <li className="space-y-1">
-                      <h5 className="font-bold text-white uppercase text-[10px]">🚫 Prohibido Bloquear</h5>
+                      <h5 className="font-bold text-white uppercase text-[10px]">
+                        🚫 Prohibido Bloquear
+                      </h5>
                       <p className="text-muted-foreground leading-normal">
-                        No se permite colocarse frente al portero para bloquear el saque de puerta o empujar con clicks en momentos de saque.
+                        No se permite colocarse frente al portero para bloquear
+                        el saque de puerta o empujar con clicks en momentos de
+                        saque.
                       </p>
                     </li>
                     <li className="space-y-1">
-                      <h5 className="font-bold text-white uppercase text-[10px]">🤝 Fair Play Obligatorio</h5>
+                      <h5 className="font-bold text-white uppercase text-[10px]">
+                        🤝 Fair Play Obligatorio
+                      </h5>
                       <p className="text-muted-foreground leading-normal">
-                        Insultar a los rivales o al árbitro oficial del torneo provocará la expulsión inmediata del infractor y la derrota del equipo.
+                        Insultar a los rivales o al árbitro oficial del torneo
+                        provocará la expulsión inmediata del infractor y la
+                        derrota del equipo.
                       </p>
                     </li>
                     <li className="space-y-1">
-                      <h5 className="font-bold text-white uppercase text-[10px]">⏱️ Tiempo de Juego</h5>
+                      <h5 className="font-bold text-white uppercase text-[10px]">
+                        ⏱️ Tiempo de Juego
+                      </h5>
                       <p className="text-muted-foreground leading-normal">
-                        Los partidos duran 2 tiempos de 5 minutos. En caso de empate en eliminatorias directas, se decide por tanda de 3 penales.
+                        Los partidos duran 2 tiempos de 5 minutos. En caso de
+                        empate en eliminatorias directas, se decide por tanda de
+                        3 penales.
                       </p>
                     </li>
                   </ul>
                 </CardContent>
               </Card>
-
             </div>
-
           </div>
         </div>
       )}
 
       {/* MODAL / POPUP DE APERTURA DE SOBRES */}
-      <Dialog open={packModalOpen} onOpenChange={(open) => !open && !packOpening && setPackModalOpen(false)}>
+      <Dialog
+        open={packModalOpen}
+        onOpenChange={(open) =>
+          !open && !packOpening && setPackModalOpen(false)
+        }
+      >
         <DialogContent className="max-w-xs bg-slate-950/95 border-border/60 shadow-2xl rounded-3xl p-5 flex flex-col items-center justify-center min-h-[350px]">
           <DialogHeader className="w-full text-center">
             <DialogTitle className="text-xs font-black text-slate-300 uppercase tracking-widest">
@@ -1981,8 +2813,13 @@ export default function FutbolHubPage() {
             <div className="flex flex-col items-center justify-center space-y-6 py-6 animate-bounce">
               <div className="relative w-36 h-56 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 p-0.5 shadow-2xl animate-pulse">
                 <div className="w-full h-full bg-slate-900/90 rounded-[14px] flex flex-col items-center justify-center p-3 relative">
-                  <i className="fa-solid fa-futbol text-4xl text-white/20 animate-spin" style={{ animationDuration: "4s" }}></i>
-                  <p className="text-[10px] font-black text-white/60 tracking-wider uppercase mt-4">SACUDIENDO...</p>
+                  <i
+                    className="fa-solid fa-futbol text-4xl text-white/20 animate-spin"
+                    style={{ animationDuration: "4s" }}
+                  ></i>
+                  <p className="text-[10px] font-black text-white/60 tracking-wider uppercase mt-4">
+                    SACUDIENDO...
+                  </p>
                 </div>
               </div>
             </div>
@@ -1995,28 +2832,40 @@ export default function FutbolHubPage() {
                   {revealedStamp.rarity}
                 </Badge>
                 <div className="w-24 h-24 my-2 flex items-center justify-center bg-black/25 rounded-xl border border-white/5">
-                  <img src={revealedStamp.image} alt={revealedStamp.name} className="w-20 h-20 object-contain animate-pulse" />
+                  <img
+                    src={revealedStamp.image}
+                    alt={revealedStamp.name}
+                    className="w-20 h-20 object-contain animate-pulse"
+                  />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="text-[11px] font-black text-white leading-tight">{revealedStamp.name}</h4>
-                  <span className="text-[8px] text-slate-400 uppercase tracking-wider">¡Añadida al álbum!</span>
+                  <h4 className="text-[11px] font-black text-white leading-tight">
+                    {revealedStamp.name}
+                  </h4>
+                  <span className="text-[8px] text-slate-400 uppercase tracking-wider">
+                    ¡Añadida al álbum!
+                  </span>
                 </div>
               </div>
-              <Button onClick={() => setPackModalOpen(false)} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold h-8 mt-2">
+              <Button
+                onClick={() => setPackModalOpen(false)}
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold h-8 mt-2"
+              >
                 Aceptar
               </Button>
             </div>
           )}
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }
 
 // Subcomponente de Simulador de Partidos
 function LiveMatchesWidget() {
-  const [matches, setMatches] = useState<SimulatedMatch[]>(() => generateMatchesForDate(new Date()));
+  const [matches, setMatches] = useState<SimulatedMatch[]>(() =>
+    generateMatchesForDate(new Date()),
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -2034,21 +2883,42 @@ function LiveMatchesWidget() {
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
             Marcadores en Vivo
           </div>
-          <span className="text-[9px] text-muted-foreground font-mono">Actualizado</span>
+          <span className="text-[9px] text-muted-foreground font-mono">
+            Actualizado
+          </span>
         </div>
         <div className="space-y-2.5">
           {matches.map((m, idx) => (
-            <div key={idx} className="flex items-center justify-between bg-[#0e0a32]/20 border border-white/5 rounded-xl p-2 text-[10px]">
+            <div
+              key={idx}
+              className="flex items-center justify-between bg-[#0e0a32]/20 border border-white/5 rounded-xl p-2 text-[10px]"
+            >
               <div className="flex items-center gap-1.5 w-[42%] justify-end font-semibold">
-                <span className="font-bold truncate text-[10px]">{m.teamA} {m.flagA}</span>
-                <span className="font-mono bg-black/35 px-1 py-0.5 rounded font-black text-primary">{m.scoreA}</span>
+                <span className="font-bold truncate text-[10px]">
+                  {m.teamA} {m.flagA}
+                </span>
+                <span className="font-mono bg-black/35 px-1 py-0.5 rounded font-black text-primary">
+                  {m.scoreA}
+                </span>
               </div>
-              <span className="text-[9px] font-bold text-muted-foreground px-1">:</span>
+              <span className="text-[9px] font-bold text-muted-foreground px-1">
+                :
+              </span>
               <div className="flex items-center gap-1.5 w-[42%] justify-start font-semibold">
-                <span className="font-mono bg-black/35 px-1 py-0.5 rounded font-black text-primary">{m.scoreB}</span>
-                <span className="font-bold truncate text-[10px]">{m.flagB} {m.teamB}</span>
+                <span className="font-mono bg-black/35 px-1 py-0.5 rounded font-black text-primary">
+                  {m.scoreB}
+                </span>
+                <span className="font-bold truncate text-[10px]">
+                  {m.flagB} {m.teamB}
+                </span>
               </div>
-              <Badge className={m.status === "LIVE" ? "bg-red-500/15 text-red-400 border border-red-500/20 text-[8px] font-bold py-0.5 px-1 w-14 text-center flex justify-center" : "bg-secondary/40 text-muted-foreground text-[8px] py-0.5 px-1 w-14 text-center flex justify-center"}>
+              <Badge
+                className={
+                  m.status === "LIVE"
+                    ? "bg-red-500/15 text-red-400 border border-red-500/20 text-[8px] font-bold py-0.5 px-1 w-14 text-center flex justify-center"
+                    : "bg-secondary/40 text-muted-foreground text-[8px] py-0.5 px-1 w-14 text-center flex justify-center"
+                }
+              >
                 {m.status === "LIVE" ? `${m.min}` : m.status}
               </Badge>
             </div>

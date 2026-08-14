@@ -6,7 +6,9 @@ import { Calendar, Clock, Home, User, Globe } from "lucide-react";
 import type { Event } from "@shared/schema";
 
 export default function EventsPage() {
-  const { data: events, isLoading } = useQuery<Event[]>({ queryKey: ["/api/events"] });
+  const { data: events, isLoading } = useQuery<Event[]>({
+    queryKey: ["/api/events"],
+  });
 
   return (
     <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-5">
@@ -39,7 +41,9 @@ export default function EventsPage() {
                       src={event.imageUrl}
                       alt={event.title}
                       className="w-full h-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -47,11 +51,15 @@ export default function EventsPage() {
                     </div>
                   )}
                   <div className="absolute top-3 right-3">
-                    <Badge className="bg-primary/80 text-white text-[9px]">{event.server}</Badge>
+                    <Badge className="bg-primary/80 text-white text-[9px]">
+                      {event.server}
+                    </Badge>
                   </div>
                 </div>
                 <CardContent className="p-4 space-y-2">
-                  <h3 className="text-sm font-bold leading-tight">{event.title}</h3>
+                  <h3 className="text-sm font-bold leading-tight">
+                    {event.title}
+                  </h3>
 
                   <div className="flex items-center gap-1.5 text-xs text-primary">
                     <Calendar className="w-3 h-3" />

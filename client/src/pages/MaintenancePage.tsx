@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { Settings, Wrench, Radio, Lock, Eye, EyeOff, Headphones, Music } from "lucide-react";
+import {
+  Settings,
+  Wrench,
+  Radio,
+  Lock,
+  Eye,
+  EyeOff,
+  Headphones,
+  Music,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,7 +42,10 @@ function MiniRadioPlayer() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-3" data-testid="maintenance-radio">
+    <div
+      className="flex flex-col items-center gap-3"
+      data-testid="maintenance-radio"
+    >
       <audio ref={audioRef} />
       <div className="flex items-center gap-4">
         <button
@@ -92,18 +104,29 @@ function StaffLoginForm() {
     setIsLoading(true);
     try {
       await login(email, password);
-      toast({ title: "Acceso concedido", description: "Bienvenido al panel staff" });
+      toast({
+        title: "Acceso concedido",
+        description: "Bienvenido al panel staff",
+      });
       // After login, the App will redirect based on maintenance mode logic
       window.location.hash = "#/panel";
     } catch (err: any) {
-      toast({ title: "Error", description: err?.message || "Credenciales inválidas", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: err?.message || "Credenciales inválidas",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-3" data-testid="staff-login-form">
+    <form
+      onSubmit={handleSubmit}
+      className="w-full max-w-xs space-y-3"
+      data-testid="staff-login-form"
+    >
       <div className="flex items-center gap-2 justify-center mb-2">
         <Lock className="w-3.5 h-3.5 text-primary" />
         <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
@@ -132,7 +155,11 @@ function StaffLoginForm() {
           onClick={() => setShowPassword(!showPassword)}
           className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
-          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          {showPassword ? (
+            <EyeOff className="w-3.5 h-3.5" />
+          ) : (
+            <Eye className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
       <Button
@@ -160,10 +187,14 @@ export default function MaintenancePage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Animated background grid */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-        backgroundSize: "40px 40px",
-      }} />
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
       {/* Floating particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -173,7 +204,7 @@ export default function MaintenancePage() {
             className="absolute w-1 h-1 rounded-full bg-primary/20"
             style={{
               left: `${15 + i * 15}%`,
-              top: `${10 + (i * 20) % 80}%`,
+              top: `${10 + ((i * 20) % 80)}%`,
               animation: `float ${4 + i}s ease-in-out infinite alternate`,
               animationDelay: `${i * 0.5}s`,
             }}
@@ -186,7 +217,10 @@ export default function MaintenancePage() {
         <div className="space-y-4">
           <div className="relative mx-auto w-20 h-20">
             <div className="w-20 h-20 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
-              <Settings className="w-10 h-10 text-primary animate-spin" style={{ animationDuration: "10s" }} />
+              <Settings
+                className="w-10 h-10 text-primary animate-spin"
+                style={{ animationDuration: "10s" }}
+              />
             </div>
             <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-yellow-500/10 border-2 border-yellow-500/20 flex items-center justify-center">
               <Wrench className="w-4 h-4 text-yellow-400" />
@@ -194,7 +228,10 @@ export default function MaintenancePage() {
           </div>
 
           <div>
-            <h1 className="text-lg font-bold tracking-tight" data-testid="text-maintenance-title">
+            <h1
+              className="text-lg font-bold tracking-tight"
+              data-testid="text-maintenance-title"
+            >
               HabboSpeed
             </h1>
             <p className="text-xs text-muted-foreground mt-1">
@@ -207,11 +244,15 @@ export default function MaintenancePage() {
         <div className="flex gap-2 flex-wrap justify-center">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-[10px] font-medium text-green-400">Radio Online</span>
+            <span className="text-[10px] font-medium text-green-400">
+              Radio Online
+            </span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20">
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-            <span className="text-[10px] font-medium text-yellow-400">Web en Mantenimiento</span>
+            <span className="text-[10px] font-medium text-yellow-400">
+              Web en Mantenimiento
+            </span>
           </div>
         </div>
 

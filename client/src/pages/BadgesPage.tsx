@@ -4,10 +4,32 @@ import { apiRequest } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Award, Radio, Trophy, Sparkles, Compass, Cat, Hammer, CalendarDays, RefreshCw } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Search,
+  Award,
+  Radio,
+  Trophy,
+  Sparkles,
+  Compass,
+  Cat,
+  Hammer,
+  CalendarDays,
+  RefreshCw,
+} from "lucide-react";
 
 const HOTELS = [
   { value: "all", label: "Todos los Hoteles" },
@@ -36,18 +58,38 @@ const CATEGORIES = [
 const getBadgeCategory = (badge: any): string => {
   if (badge.category) {
     const cat = badge.category.toLowerCase();
-    if (cat === "especial" || cat === "especiales" || cat === "staff") return "special";
+    if (cat === "especial" || cat === "especiales" || cat === "staff")
+      return "special";
     if (cat === "radio" || cat === "música" || cat === "musica") return "radio";
-    if (cat === "logros" || cat === "achievements" || cat === "identity" || cat === "tutorial" || cat === "explore" || cat === "social") return "achievements";
+    if (
+      cat === "logros" ||
+      cat === "achievements" ||
+      cat === "identity" ||
+      cat === "tutorial" ||
+      cat === "explore" ||
+      cat === "social"
+    )
+      return "achievements";
     if (cat === "mascotas" || cat === "pets") return "pets";
     if (cat === "juegos" || cat === "games") return "games";
-    if (cat === "construcción" || cat === "construccion" || cat === "room_builder" || cat === "salas") return "building";
-    if (cat === "eventos" || cat === "events" || cat === "general") return "events";
+    if (
+      cat === "construcción" ||
+      cat === "construccion" ||
+      cat === "room_builder" ||
+      cat === "salas"
+    )
+      return "building";
+    if (cat === "eventos" || cat === "events" || cat === "general")
+      return "events";
   }
 
   const code = (badge.code || badge.badge_code || "").toUpperCase();
   const name = (badge.name || badge.badge_name || "").toLowerCase();
-  const desc = (badge.description || badge.badge_description || "").toLowerCase();
+  const desc = (
+    badge.description ||
+    badge.badge_description ||
+    ""
+  ).toLowerCase();
 
   if (
     code.startsWith("ADM") ||
@@ -137,7 +179,7 @@ export default function BadgesPage() {
   const [searchInput, setSearchInput] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  
+
   // Pagination State
   const [badges, setBadges] = useState<any[]>([]);
   const [page, setPage] = useState(0);
@@ -153,63 +195,80 @@ export default function BadgesPage() {
   const { data: localBadges } = useQuery<any[]>({
     queryKey: ["/api/badges", activeSearch],
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/badges${activeSearch ? `?q=${encodeURIComponent(activeSearch)}` : ""}`);
+      const res = await apiRequest(
+        "GET",
+        `/api/badges${activeSearch ? `?q=${encodeURIComponent(activeSearch)}` : ""}`,
+      );
       return res.json();
     },
   });
 
-  const fetchBadges = useCallback(async (pageNum: number, searchVal: string, hotelVal: string, catVal: string, append: boolean) => {
-    if (append) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-      setPage(0);
-    }
-
-    try {
-      // Map category to a typical term to help backend narrow it down if no search term is entered
-      let categoryTerm = "";
-      if (!searchVal && catVal !== "all") {
-        if (catVal === "special") categoryTerm = "staff";
-        else if (catVal === "radio") categoryTerm = "dj";
-        else if (catVal === "achievements") categoryTerm = "ACH";
-        else if (catVal === "pets") categoryTerm = "pet";
-        else if (catVal === "games") categoryTerm = "game";
-        else if (catVal === "building") categoryTerm = "build";
-        else if (catVal === "events") categoryTerm = "event";
-      }
-
-      const queryTerm = searchVal || categoryTerm;
-      const res = await apiRequest(
-        "GET", 
-        `/api/habbo/badges/${hotelVal}?limit=${LIMIT}&offset=${pageNum * LIMIT}&term=${encodeURIComponent(queryTerm)}`
-      );
-      
-      const d = await res.json();
-      const rawList = Array.isArray(d) ? d : (d.badges || d.data || d.items || []);
-      const mappedList = rawList.map((b: any) => ({
-        code: b.code || b.badge_code || "",
-        name: b.name || b.badge_name || b.code || "",
-        description: b.description || b.badge_description || "",
-        url_habbo: b.url_habbo || b.image_url || `https://images.habbo.com/c_images/album1584/${b.code}.gif`,
-      }));
-
+  const fetchBadges = useCallback(
+    async (
+      pageNum: number,
+      searchVal: string,
+      hotelVal: string,
+      catVal: string,
+      append: boolean,
+    ) => {
       if (append) {
-        setBadges(prev => [...prev, ...mappedList]);
+        setLoadingMore(true);
       } else {
-        setBadges(mappedList);
+        setLoading(true);
+        setPage(0);
       }
 
-      setHasMore(mappedList.length === LIMIT);
-    } catch (e) {
-      console.error("Error fetching badges:", e);
-      if (!append) setBadges([]);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, []);
+      try {
+        // Map category to a typical term to help backend narrow it down if no search term is entered
+        let categoryTerm = "";
+        if (!searchVal && catVal !== "all") {
+          if (catVal === "special") categoryTerm = "staff";
+          else if (catVal === "radio") categoryTerm = "dj";
+          else if (catVal === "achievements") categoryTerm = "ACH";
+          else if (catVal === "pets") categoryTerm = "pet";
+          else if (catVal === "games") categoryTerm = "game";
+          else if (catVal === "building") categoryTerm = "build";
+          else if (catVal === "events") categoryTerm = "event";
+        }
+
+        const queryTerm = searchVal || categoryTerm;
+        const res = await apiRequest(
+          "GET",
+          `/api/habbo/badges/${hotelVal}?limit=${LIMIT}&offset=${pageNum * LIMIT}&term=${encodeURIComponent(queryTerm)}`,
+        );
+
+        const d = await res.json();
+        const rawList = Array.isArray(d)
+          ? d
+          : d.badges || d.data || d.items || [];
+        const mappedList = rawList.map((b: any) => ({
+          code: b.code || b.badge_code || "",
+          name: b.name || b.badge_name || b.code || "",
+          description: b.description || b.badge_description || "",
+          url_habbo:
+            b.url_habbo ||
+            b.image_url ||
+            `https://images.habbo.com/c_images/album1584/${b.code}.gif`,
+        }));
+
+        if (append) {
+          setBadges((prev) => [...prev, ...mappedList]);
+        } else {
+          setBadges(mappedList);
+        }
+
+        setHasMore(mappedList.length === LIMIT);
+      } catch (e) {
+        console.error("Error fetching badges:", e);
+        if (!append) setBadges([]);
+        setHasMore(false);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [],
+  );
 
   // Initial load or filters change
   useEffect(() => {
@@ -224,12 +283,19 @@ export default function BadgesPage() {
 
   const handleLoadMore = useCallback(() => {
     if (loadingMore || !hasMore) return;
-    setPage(prev => {
+    setPage((prev) => {
       const nextPage = prev + 1;
       fetchBadges(nextPage, activeSearch, hotel, selectedCategory, true);
       return nextPage;
     });
-  }, [loadingMore, hasMore, activeSearch, hotel, selectedCategory, fetchBadges]);
+  }, [
+    loadingMore,
+    hasMore,
+    activeSearch,
+    hotel,
+    selectedCategory,
+    fetchBadges,
+  ]);
 
   // Automatic pagination loop for loading all badges
   useEffect(() => {
@@ -251,7 +317,7 @@ export default function BadgesPage() {
 
   // Combine fansite and habbo badges
   const allBadges = [
-    ...(localBadges || []).map(b => ({ ...b, category: "special" })),
+    ...(localBadges || []).map((b) => ({ ...b, category: "special" })),
     ...badges,
   ];
 
@@ -280,10 +346,14 @@ export default function BadgesPage() {
             Explorador de Placas
           </h1>
           <p className="text-xs text-muted-foreground mt-2 max-w-2xl">
-            Busca y explora la base de datos completa de placas de Habbo. Carga miles de placas con paginación optimizada.
+            Busca y explora la base de datos completa de placas de Habbo. Carga
+            miles de placas con paginación optimizada.
           </p>
         </div>
-        <Badge variant="outline" className="w-fit border-primary/30 bg-primary/5 text-primary text-[10px] py-1 font-bold">
+        <Badge
+          variant="outline"
+          className="w-fit border-primary/30 bg-primary/5 text-primary text-[10px] py-1 font-bold"
+        >
           {displayBadges.length} cargadas
         </Badge>
       </div>
@@ -302,18 +372,32 @@ export default function BadgesPage() {
               data-testid="input-badge-search"
             />
           </div>
-          <Button onClick={handleSearch} className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-5">
+          <Button
+            onClick={handleSearch}
+            className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-5"
+          >
             Buscar
           </Button>
         </div>
 
-        <Select value={hotel} onValueChange={(v) => { setHotel(v); setSelectedCategory("all"); }}>
-          <SelectTrigger className="w-full sm:w-52 bg-card/50 border-border/40 text-xs h-9" data-testid="select-hotel">
+        <Select
+          value={hotel}
+          onValueChange={(v) => {
+            setHotel(v);
+            setSelectedCategory("all");
+          }}
+        >
+          <SelectTrigger
+            className="w-full sm:w-52 bg-card/50 border-border/40 text-xs h-9"
+            data-testid="select-hotel"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {HOTELS.map((h) => (
-              <SelectItem key={h.value} value={h.value} className="text-xs">{h.label}</SelectItem>
+              <SelectItem key={h.value} value={h.value} className="text-xs">
+                {h.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -334,9 +418,10 @@ export default function BadgesPage() {
         {CATEGORIES.map((cat) => {
           const Icon = cat.icon;
           const isActive = selectedCategory === cat.id;
-          const count = cat.id === "all" 
-            ? allBadges.length 
-            : allBadges.filter(b => getBadgeCategory(b) === cat.id).length;
+          const count =
+            cat.id === "all"
+              ? allBadges.length
+              : allBadges.filter((b) => getBadgeCategory(b) === cat.id).length;
 
           return (
             <button
@@ -348,13 +433,17 @@ export default function BadgesPage() {
                   : "bg-card/40 text-muted-foreground border-border/40 hover:text-foreground hover:bg-card/70 hover:border-border/80"
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              <Icon
+                className={`w-3.5 h-3.5 ${isActive ? "text-primary" : "text-muted-foreground"}`}
+              />
               <span>{cat.label}</span>
-              <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
-                isActive 
-                  ? "bg-primary/30 text-primary-foreground" 
-                  : "bg-muted text-muted-foreground"
-              }`}>
+              <span
+                className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                  isActive
+                    ? "bg-primary/30 text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
                 {count}
               </span>
             </button>
@@ -372,7 +461,10 @@ export default function BadgesPage() {
       ) : displayBadges.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground bg-card/10 rounded-xl border border-dashed border-border/40">
           <Award className="w-10 h-10 mx-auto mb-3 opacity-30 text-primary" />
-          <p className="text-sm">No se encontraron placas. Intenta buscar por código o cambiar el hotel.</p>
+          <p className="text-sm">
+            No se encontraron placas. Intenta buscar por código o cambiar el
+            hotel.
+          </p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -380,9 +472,21 @@ export default function BadgesPage() {
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-3">
               {displayBadges.map((badge, i) => {
                 const code = badge.code || badge.badge_code || "";
-                const name = (badge.name || badge.badge_name || code).replace(/\n/g, "");
-                const description = (badge.description || badge.badge_description || "").replace(/\n/g, "");
-                const imgUrl = badge.url_habbo || badge.url_habboassets || badge.imageUrl || badge.image_url || `https://images.habbo.com/c_images/album1584/${code}.gif`;
+                const name = (badge.name || badge.badge_name || code).replace(
+                  /\n/g,
+                  "",
+                );
+                const description = (
+                  badge.description ||
+                  badge.badge_description ||
+                  ""
+                ).replace(/\n/g, "");
+                const imgUrl =
+                  badge.url_habbo ||
+                  badge.url_habboassets ||
+                  badge.imageUrl ||
+                  badge.image_url ||
+                  `https://images.habbo.com/c_images/album1584/${code}.gif`;
 
                 return (
                   <Tooltip key={`${code}-${i}`}>
@@ -397,14 +501,24 @@ export default function BadgesPage() {
                           className="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-110"
                           loading="lazy"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.opacity = "0.15";
+                            (e.target as HTMLImageElement).style.opacity =
+                              "0.15";
                           }}
                         />
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[220px] bg-card border-border/60 backdrop-blur-md p-3 rounded-2xl shadow-xl">
-                      <p className="text-xs font-bold text-foreground">{name}</p>
-                      {code && <p className="text-[10px] text-primary/80 font-mono mt-0.5 font-bold uppercase">{code}</p>}
+                    <TooltipContent
+                      side="top"
+                      className="max-w-[220px] bg-card border-border/60 backdrop-blur-md p-3 rounded-2xl shadow-xl"
+                    >
+                      <p className="text-xs font-bold text-foreground">
+                        {name}
+                      </p>
+                      {code && (
+                        <p className="text-[10px] text-primary/80 font-mono mt-0.5 font-bold uppercase">
+                          {code}
+                        </p>
+                      )}
                       {description && (
                         <p className="text-[10px] text-muted-foreground leading-normal mt-1.5 border-t border-border/40 pt-1.5">
                           {description}
@@ -427,13 +541,18 @@ export default function BadgesPage() {
                   CARGANDO TODAS LAS PLACAS DEL HOTEL HABBO...
                 </p>
                 <p className="text-xs text-muted-foreground leading-relaxed max-w-md mx-auto">
-                  Se han cargado <span className="font-bold text-foreground text-sm">{displayBadges.length}</span> placas.
-                  Habbo tiene miles de placas registradas, por lo que este proceso continuará solicitándolas de forma automática y secuencial.
+                  Se han cargado{" "}
+                  <span className="font-bold text-foreground text-sm">
+                    {displayBadges.length}
+                  </span>{" "}
+                  placas. Habbo tiene miles de placas registradas, por lo que
+                  este proceso continuará solicitándolas de forma automática y
+                  secuencial.
                 </p>
                 <div className="flex justify-center pt-2">
-                  <Button 
-                    onClick={() => setIsAutoLoadingAll(false)} 
-                    variant="destructive" 
+                  <Button
+                    onClick={() => setIsAutoLoadingAll(false)}
+                    variant="destructive"
                     size="sm"
                     className="font-extrabold text-xs h-8 px-6 rounded-full hover:scale-105 transition-transform"
                   >
@@ -453,7 +572,8 @@ export default function BadgesPage() {
                 >
                   {loadingMore ? (
                     <span className="flex items-center gap-2">
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" /> CARGANDO PLACAS...
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />{" "}
+                      CARGANDO PLACAS...
                     </span>
                   ) : (
                     <span>Cargar más placas (+{LIMIT})</span>

@@ -4,10 +4,21 @@ import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useLocation } from "wouter";
 
-type CatalogEntry = { id: string; name: string; classname?: string; iconUrl?: string; avgPrice?: number | null };
+type CatalogEntry = {
+  id: string;
+  name: string;
+  classname?: string;
+  iconUrl?: string;
+  avgPrice?: number | null;
+};
 
 export default function CatalogPage() {
   const [, setLocation] = useLocation();
@@ -22,7 +33,8 @@ export default function CatalogPage() {
         id: `${it.classname || it.id}-${it.revision ?? "0"}`,
         name: it.name || it.classname || it.itemName || it.classname,
         classname: it.classname,
-        iconUrl: it.iconUrl || it.thumbnail || it.image || it.icon || it.iconUrl,
+        iconUrl:
+          it.iconUrl || it.thumbnail || it.image || it.icon || it.iconUrl,
         avgPrice: it.averagePrice ?? it.avgPrice ?? null,
       }));
     },
@@ -41,12 +53,20 @@ export default function CatalogPage() {
   });
 
   const clothingEntries: CatalogEntry[] = useMemo(() => {
-    const src = figureparts && Object.keys(figureparts).length ? figureparts : {};
+    const src =
+      figureparts && Object.keys(figureparts).length ? figureparts : {};
     const built: CatalogEntry[] = [];
     if (Object.keys(src).length) {
       Object.keys(src).forEach((k) => {
         const list = (src as any)[k] || [];
-        list.forEach((it: any) => built.push({ id: `${k}-${it.id}`, name: it.label || it.name || `${k}-${it.id}`, classname: `${k}_${it.id}`, iconUrl: `/api/habbo/avatar-proxy?figure=${encodeURIComponent(`${k}-${it.id}-0`)}` }));
+        list.forEach((it: any) =>
+          built.push({
+            id: `${k}-${it.id}`,
+            name: it.label || it.name || `${k}-${it.id}`,
+            classname: `${k}_${it.id}`,
+            iconUrl: `/api/habbo/avatar-proxy?figure=${encodeURIComponent(`${k}-${it.id}-0`)}`,
+          }),
+        );
       });
     }
     return built.concat(furni || []);
@@ -71,14 +91,29 @@ export default function CatalogPage() {
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {clothingEntries.map((c) => (
-                <div key={c.id} className="bg-secondary/40 rounded p-2 flex flex-col items-center">
-                  <img src={c.iconUrl || "/public/fallback.png"} alt={c.name} className="w-20 h-20 object-contain mb-2" />
-                  <div className="text-xs truncate text-center w-full">{c.name}</div>
+                <div
+                  key={c.id}
+                  className="bg-secondary/40 rounded p-2 flex flex-col items-center"
+                >
+                  <img
+                    src={c.iconUrl || "/public/fallback.png"}
+                    alt={c.name}
+                    className="w-20 h-20 object-contain mb-2"
+                  />
+                  <div className="text-xs truncate text-center w-full">
+                    {c.name}
+                  </div>
                   <div className="mt-2 flex gap-1">
                     <Button size="sm" onClick={() => handleApply(c, "ch")}>
                       Aplicar
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard?.writeText(c.name); }}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(c.name);
+                      }}
+                    >
                       Copiar
                     </Button>
                   </div>

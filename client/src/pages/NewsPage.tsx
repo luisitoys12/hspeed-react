@@ -6,7 +6,14 @@ import { Newspaper, Star, Calendar, ArrowRight } from "lucide-react";
 import type { News } from "@shared/schema";
 import { proxyImage } from "@/lib/habboProxy";
 
-const CATEGORIES = ["Todas", "Noticias", "Eventos", "Actualizaciones", "Comunidad", "Exclusiva"];
+const CATEGORIES = [
+  "Todas",
+  "Noticias",
+  "Eventos",
+  "Actualizaciones",
+  "Comunidad",
+  "Exclusiva",
+];
 
 export default function NewsPage() {
   const { data: allNews, isLoading } = useQuery<News[]>({
@@ -26,7 +33,8 @@ export default function NewsPage() {
         <h1 className="text-xl font-bold">Noticias</h1>
         {featured.length > 0 && (
           <span className="flex items-center gap-1 text-[10px] font-bold text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 px-2 py-0.5 rounded-full">
-            <Star className="w-2.5 h-2.5" /> {featured.length} destacada{featured.length > 1 ? "s" : ""}
+            <Star className="w-2.5 h-2.5" /> {featured.length} destacada
+            {featured.length > 1 ? "s" : ""}
           </span>
         )}
       </div>
@@ -50,11 +58,15 @@ export default function NewsPage() {
                 <Star className="w-3 h-3" /> Destacada
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
-                <Badge className="bg-primary/90 text-white border-0 text-[9px] mb-2">{featured[0].category}</Badge>
+                <Badge className="bg-primary/90 text-white border-0 text-[9px] mb-2">
+                  {featured[0].category}
+                </Badge>
                 <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight group-hover:text-yellow-200 transition-colors">
                   {featured[0].title}
                 </h2>
-                <p className="text-sm text-white/70 mt-1 line-clamp-2">{featured[0].summary}</p>
+                <p className="text-sm text-white/70 mt-1 line-clamp-2">
+                  {featured[0].summary}
+                </p>
                 <div className="flex items-center gap-3 mt-3">
                   <span className="flex items-center gap-1 text-[10px] text-white/50">
                     <Calendar className="w-3 h-3" /> {featured[0].date}
@@ -73,7 +85,10 @@ export default function NewsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl overflow-hidden">
+            <div
+              key={i}
+              className="bg-card border border-border rounded-xl overflow-hidden"
+            >
               <Skeleton className="h-40" />
               <div className="p-4 space-y-2">
                 <Skeleton className="h-3 w-1/3" />
@@ -92,12 +107,17 @@ export default function NewsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sorted.map((article: any) => (
             <Link href={`/news/${article.id}`} key={article.id}>
-              <div className="block group h-full" data-testid={`card-news-${article.id}`}>
-                <div className={`bg-card border rounded-xl overflow-hidden hover:shadow-lg transition-all h-full flex flex-col ${
-                  article.featured
-                    ? "border-yellow-400/30 hover:border-yellow-400/50 shadow-yellow-400/5"
-                    : "border-border hover:border-primary/30"
-                }`}>
+              <div
+                className="block group h-full"
+                data-testid={`card-news-${article.id}`}
+              >
+                <div
+                  className={`bg-card border rounded-xl overflow-hidden hover:shadow-lg transition-all h-full flex flex-col ${
+                    article.featured
+                      ? "border-yellow-400/30 hover:border-yellow-400/50 shadow-yellow-400/5"
+                      : "border-border hover:border-primary/30"
+                  }`}
+                >
                   {/* Thumbnail */}
                   <div className="relative h-40 overflow-hidden bg-secondary/30">
                     {article.imageUrl ? (
@@ -105,7 +125,11 @@ export default function NewsPage() {
                         src={proxyImage(article.imageUrl)}
                         alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
+                        onError={(e) => {
+                          (
+                            e.target as HTMLImageElement
+                          ).parentElement!.style.display = "none";
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-card">
@@ -121,7 +145,12 @@ export default function NewsPage() {
                   {/* Content */}
                   <div className="p-4 flex flex-col flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="text-[8px] border-primary/20 text-primary/70 px-1.5 py-0">{article.category}</Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-[8px] border-primary/20 text-primary/70 px-1.5 py-0"
+                      >
+                        {article.category}
+                      </Badge>
                       <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground">
                         <Calendar className="w-2.5 h-2.5" /> {article.date}
                       </span>
@@ -129,7 +158,9 @@ export default function NewsPage() {
                     <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2 flex-1">
                       {article.title}
                     </h3>
-                    <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{article.summary}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">
+                      {article.summary}
+                    </p>
                     <span className="text-[10px] text-primary font-medium mt-3 flex items-center gap-1">
                       Leer más <ArrowRight className="w-2.5 h-2.5" />
                     </span>

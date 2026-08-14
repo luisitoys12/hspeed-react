@@ -8,15 +8,47 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Radio, Headphones, Clock, Trash2, Music, Award, MessageSquare, Shield,
-  Calendar, Plus, Send, Megaphone, BellRing, Ban, LayoutGrid
+  Radio,
+  Headphones,
+  Clock,
+  Trash2,
+  Music,
+  Award,
+  MessageSquare,
+  Shield,
+  Calendar,
+  Plus,
+  Send,
+  Megaphone,
+  BellRing,
+  Ban,
+  LayoutGrid,
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -32,16 +64,24 @@ const DJ_SECTIONS = [
   { id: "banned", label: "Canciones Baneadas", icon: Ban },
 ];
 
-const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const DAYS = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+];
 
 const DAY_COLORS: Record<string, string> = {
-  Lunes:     "bg-blue-500/20 text-blue-300 border-blue-500/30",
-  Martes:    "bg-purple-500/20 text-purple-300 border-purple-500/30",
+  Lunes: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+  Martes: "bg-purple-500/20 text-purple-300 border-purple-500/30",
   Miércoles: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
-  Jueves:    "bg-green-500/20 text-green-300 border-green-500/30",
-  Viernes:   "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  Sábado:    "bg-orange-500/20 text-orange-300 border-orange-500/30",
-  Domingo:   "bg-red-500/20 text-red-300 border-red-500/30",
+  Jueves: "bg-green-500/20 text-green-300 border-green-500/30",
+  Viernes: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+  Sábado: "bg-orange-500/20 text-orange-300 border-orange-500/30",
+  Domingo: "bg-red-500/20 text-red-300 border-red-500/30",
 };
 
 // ============ DJ STATUS SECTION ============
@@ -67,7 +107,12 @@ function DjStatusSection() {
 
   const updatePanelMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("PUT", "/api/dj-panel", data, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "PUT",
+        "/api/dj-panel",
+        data,
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
     onSuccess: () => {
@@ -75,7 +120,11 @@ function DjStatusSection() {
       toast({ title: "Panel DJ actualizado" });
     },
     onError: (err: any) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -101,7 +150,9 @@ function DjStatusSection() {
     <div className="space-y-5">
       <div>
         <h2 className="text-sm font-semibold mb-1">Estado del DJ</h2>
-        <p className="text-xs text-muted-foreground">Configura quién está en antena y el mensaje para los oyentes.</p>
+        <p className="text-xs text-muted-foreground">
+          Configura quién está en antena y el mensaje para los oyentes.
+        </p>
       </div>
 
       {/* Quick Info Cards */}
@@ -115,7 +166,9 @@ function DjStatusSection() {
                 className="w-8 h-8 rounded bg-secondary"
               />
             )}
-            <p className="text-sm font-bold text-primary">{djPanel?.currentDj || "HabboSpeed"}</p>
+            <p className="text-sm font-bold text-primary">
+              {djPanel?.currentDj || "HabboSpeed"}
+            </p>
           </div>
           <p className="text-[10px] text-muted-foreground">DJ Actual</p>
         </div>
@@ -128,7 +181,9 @@ function DjStatusSection() {
                 className="w-8 h-8 rounded bg-secondary"
               />
             )}
-            <p className="text-sm font-bold text-foreground">{djPanel?.nextDj || "—"}</p>
+            <p className="text-sm font-bold text-foreground">
+              {djPanel?.nextDj || "—"}
+            </p>
           </div>
           <p className="text-[10px] text-muted-foreground">Siguiente DJ</p>
         </div>
@@ -136,14 +191,18 @@ function DjStatusSection() {
 
       {djPanel?.djMessage && (
         <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
-          <p className="text-xs text-yellow-200/80 italic">"{djPanel.djMessage}"</p>
+          <p className="text-xs text-yellow-200/80 italic">
+            "{djPanel.djMessage}"
+          </p>
         </div>
       )}
 
       {/* Edit Form */}
       <div className="space-y-3 max-w-lg">
         <div>
-          <Label className="text-xs text-muted-foreground mb-1.5 block">DJ en antena ahora</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">
+            DJ en antena ahora
+          </Label>
           <div className="flex gap-2">
             <Input
               placeholder="HabboSpeed"
@@ -161,7 +220,9 @@ function DjStatusSection() {
           </div>
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground mb-1.5 block">Próximo DJ</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">
+            Próximo DJ
+          </Label>
           <div className="flex gap-2">
             <Input
               placeholder="Nombre del próximo DJ..."
@@ -179,7 +240,9 @@ function DjStatusSection() {
           </div>
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground mb-1.5 block">Mensaje del DJ</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">
+            Mensaje del DJ
+          </Label>
           <Textarea
             placeholder="Mensaje para los oyentes..."
             rows={3}
@@ -214,7 +277,12 @@ function RequestsSection() {
 
   const deleteRequestMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/requests/${id}`, undefined, token ? `Bearer ${token}` : undefined);
+      await apiRequest(
+        "DELETE",
+        `/api/requests/${id}`,
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/requests"] });
@@ -242,10 +310,17 @@ function RequestsSection() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-sm font-semibold mb-1">Peticiones de los oyentes</h2>
-          <p className="text-xs text-muted-foreground">Gestiona las solicitudes de saludos, canciones y más.</p>
+          <h2 className="text-sm font-semibold mb-1">
+            Peticiones de los oyentes
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Gestiona las solicitudes de saludos, canciones y más.
+          </p>
         </div>
-        <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+        <Badge
+          variant="outline"
+          className="text-[10px] border-primary/30 text-primary"
+        >
           {(requests || []).length} pendientes
         </Badge>
       </div>
@@ -259,7 +334,9 @@ function RequestsSection() {
       ) : (requests || []).length === 0 ? (
         <div className="text-center py-10">
           <Music className="w-10 h-10 text-muted-foreground/20 mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">No hay peticiones pendientes</p>
+          <p className="text-xs text-muted-foreground">
+            No hay peticiones pendientes
+          </p>
         </div>
       ) : (
         <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
@@ -271,17 +348,29 @@ function RequestsSection() {
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <Badge className={`text-[9px] px-1.5 py-0.5 ${requestTypeColors[req.type] || "bg-muted text-muted-foreground"}`}>
+                  <Badge
+                    className={`text-[9px] px-1.5 py-0.5 ${requestTypeColors[req.type] || "bg-muted text-muted-foreground"}`}
+                  >
                     {requestTypeLabels[req.type] || req.type}
                   </Badge>
                   <span className="text-[10px] text-muted-foreground">
-                    de <span className="text-foreground font-medium">{req.userName}</span>
+                    de{" "}
+                    <span className="text-foreground font-medium">
+                      {req.userName}
+                    </span>
                   </span>
                 </div>
-                <p className="text-xs text-foreground/80 break-words mt-0.5">{req.details}</p>
+                <p className="text-xs text-foreground/80 break-words mt-0.5">
+                  {req.details}
+                </p>
                 {req.createdAt && (
                   <p className="text-[9px] text-muted-foreground mt-1">
-                    {new Date(req.createdAt).toLocaleString("es-ES", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" })}
+                    {new Date(req.createdAt).toLocaleString("es-ES", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      day: "2-digit",
+                      month: "short",
+                    })}
                   </p>
                 )}
               </div>
@@ -313,14 +402,24 @@ function SpeedPointsSection() {
   const { data: users } = useQuery<any[]>({
     queryKey: ["/api/users"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/users", undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "GET",
+        "/api/users",
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
   });
 
   const givePointsMutation = useMutation({
     mutationFn: async ({ id, amount }: { id: string; amount: number }) => {
-      const res = await apiRequest("PUT", `/api/users/${id}/points`, { amount }, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "PUT",
+        `/api/users/${id}/points`,
+        { amount },
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
     onSuccess: () => {
@@ -329,19 +428,24 @@ function SpeedPointsSection() {
       setSelectedUserId("");
       toast({ title: "SpeedPoints asignados" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   return (
     <div className="space-y-5">
       <div>
         <h2 className="text-sm font-semibold mb-1">Dar SpeedPoints</h2>
-        <p className="text-xs text-muted-foreground">Recompensa a los oyentes con SpeedPoints durante tu turno.</p>
+        <p className="text-xs text-muted-foreground">
+          Recompensa a los oyentes con SpeedPoints durante tu turno.
+        </p>
       </div>
 
       <div className="space-y-3 max-w-lg">
         <div>
-          <Label className="text-xs text-muted-foreground mb-1.5 block">Seleccionar usuario</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">
+            Seleccionar usuario
+          </Label>
           <Select value={selectedUserId} onValueChange={setSelectedUserId}>
             <SelectTrigger className="text-xs" data-testid="select-points-user">
               <SelectValue placeholder="Selecciona usuario..." />
@@ -357,7 +461,9 @@ function SpeedPointsSection() {
         </div>
 
         <div>
-          <Label className="text-xs text-muted-foreground mb-1.5 block">Cantidad de puntos</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">
+            Cantidad de puntos
+          </Label>
           <div className="flex gap-2 mb-2">
             {[5, 10, 25, 50, 100].map((amt) => (
               <button
@@ -389,14 +495,21 @@ function SpeedPointsSection() {
           className="bg-primary hover:bg-primary/80 text-white text-xs"
           onClick={() => {
             if (selectedUserId && pointsAmount) {
-              givePointsMutation.mutate({ id: selectedUserId, amount: parseInt(pointsAmount) });
+              givePointsMutation.mutate({
+                id: selectedUserId,
+                amount: parseInt(pointsAmount),
+              });
             }
           }}
-          disabled={givePointsMutation.isPending || !selectedUserId || !pointsAmount}
+          disabled={
+            givePointsMutation.isPending || !selectedUserId || !pointsAmount
+          }
           data-testid="button-give-points"
         >
           <Award className="w-3 h-3 mr-1.5" />
-          {givePointsMutation.isPending ? "Otorgando..." : `Dar ${pointsAmount || "0"} SpeedPoints`}
+          {givePointsMutation.isPending
+            ? "Otorgando..."
+            : `Dar ${pointsAmount || "0"} SpeedPoints`}
         </Button>
       </div>
     </div>
@@ -408,7 +521,13 @@ function HorariosSection() {
   const { token } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ day: "Lunes", startTime: "", endTime: "", showName: "", djName: "" });
+  const [form, setForm] = useState({
+    day: "Lunes",
+    startTime: "",
+    endTime: "",
+    showName: "",
+    djName: "",
+  });
 
   const { data: schedule, isLoading } = useQuery<any[]>({
     queryKey: ["/api/schedule"],
@@ -416,34 +535,54 @@ function HorariosSection() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/schedule", data, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/schedule",
+        data,
+        token ? `Bearer ${token}` : undefined,
+      );
       if (!res.ok) throw new Error("Error al crear el horario");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/schedule"] });
       setOpen(false);
-      setForm({ day: "Lunes", startTime: "", endTime: "", showName: "", djName: "" });
+      setForm({
+        day: "Lunes",
+        startTime: "",
+        endTime: "",
+        showName: "",
+        djName: "",
+      });
       toast({ title: "Horario creado correctamente" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/schedule/${id}`, undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "DELETE",
+        `/api/schedule/${id}`,
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/schedule"] });
       toast({ title: "Horario eliminado" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   // Group schedule entries by day
   const scheduleByDay = DAYS.reduce<Record<string, any[]>>((acc, day) => {
-    acc[day] = (schedule || []).filter((s: any) => s.day === day).sort((a: any, b: any) => a.startTime.localeCompare(b.startTime));
+    acc[day] = (schedule || [])
+      .filter((s: any) => s.day === day)
+      .sort((a: any, b: any) => a.startTime.localeCompare(b.startTime));
     return acc;
   }, {});
 
@@ -452,25 +591,44 @@ function HorariosSection() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-sm font-semibold mb-1">Horarios Semanales</h2>
-          <p className="text-xs text-muted-foreground">Visualiza y gestiona la programación de la radio por días.</p>
+          <p className="text-xs text-muted-foreground">
+            Visualiza y gestiona la programación de la radio por días.
+          </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="bg-primary hover:bg-primary/80 text-white text-xs" data-testid="button-new-schedule">
-              <Plus className="w-3 h-3 mr-1" />Nuevo Horario
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/80 text-white text-xs"
+              data-testid="button-new-schedule"
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              Nuevo Horario
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-card border-border">
-            <DialogHeader><DialogTitle className="text-sm">Nuevo Horario</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle className="text-sm">Nuevo Horario</DialogTitle>
+            </DialogHeader>
             <div className="space-y-3">
               <div>
                 <Label className="text-xs">Día de la semana</Label>
-                <Select value={form.day} onValueChange={v => setForm(p => ({ ...p, day: v }))}>
-                  <SelectTrigger className="mt-1 text-xs" data-testid="select-schedule-day">
+                <Select
+                  value={form.day}
+                  onValueChange={(v) => setForm((p) => ({ ...p, day: v }))}
+                >
+                  <SelectTrigger
+                    className="mt-1 text-xs"
+                    data-testid="select-schedule-day"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {DAYS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    {DAYS.map((d) => (
+                      <SelectItem key={d} value={d}>
+                        {d}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -481,7 +639,9 @@ function HorariosSection() {
                     className="mt-1"
                     type="time"
                     value={form.startTime}
-                    onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, startTime: e.target.value }))
+                    }
                     data-testid="input-schedule-start"
                   />
                 </div>
@@ -491,7 +651,9 @@ function HorariosSection() {
                     className="mt-1"
                     type="time"
                     value={form.endTime}
-                    onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, endTime: e.target.value }))
+                    }
                     data-testid="input-schedule-end"
                   />
                 </div>
@@ -502,7 +664,9 @@ function HorariosSection() {
                   className="mt-1"
                   placeholder="Ej: Speed Nights, Morning Mix..."
                   value={form.showName}
-                  onChange={e => setForm(p => ({ ...p, showName: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, showName: e.target.value }))
+                  }
                   data-testid="input-schedule-showname"
                 />
               </div>
@@ -512,14 +676,22 @@ function HorariosSection() {
                   className="mt-1"
                   placeholder="Nombre del DJ..."
                   value={form.djName}
-                  onChange={e => setForm(p => ({ ...p, djName: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, djName: e.target.value }))
+                  }
                   data-testid="input-schedule-djname"
                 />
               </div>
               <Button
                 className="w-full bg-primary hover:bg-primary/80 text-white text-xs"
                 onClick={() => createMutation.mutate(form)}
-                disabled={createMutation.isPending || !form.showName || !form.djName || !form.startTime || !form.endTime}
+                disabled={
+                  createMutation.isPending ||
+                  !form.showName ||
+                  !form.djName ||
+                  !form.startTime ||
+                  !form.endTime
+                }
                 data-testid="button-submit-schedule"
               >
                 {createMutation.isPending ? "Creando..." : "Crear Horario"}
@@ -531,22 +703,33 @@ function HorariosSection() {
 
       {isLoading ? (
         <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-lg" />
+          ))}
         </div>
       ) : (
         <div className="space-y-3">
-          {DAYS.map(day => {
+          {DAYS.map((day) => {
             const entries = scheduleByDay[day];
             return (
-              <div key={day} className={`rounded-xl border p-3 ${DAY_COLORS[day]}`} data-testid={`card-day-${day}`}>
+              <div
+                key={day}
+                className={`rounded-xl border p-3 ${DAY_COLORS[day]}`}
+                data-testid={`card-day-${day}`}
+              >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-semibold">{day}</span>
-                  <Badge className={`text-[9px] px-1.5 py-0 ${DAY_COLORS[day]}`}>
-                    {entries.length} {entries.length === 1 ? "programa" : "programas"}
+                  <Badge
+                    className={`text-[9px] px-1.5 py-0 ${DAY_COLORS[day]}`}
+                  >
+                    {entries.length}{" "}
+                    {entries.length === 1 ? "programa" : "programas"}
                   </Badge>
                 </div>
                 {entries.length === 0 ? (
-                  <p className="text-[10px] opacity-50 italic">Sin programación</p>
+                  <p className="text-[10px] opacity-50 italic">
+                    Sin programación
+                  </p>
                 ) : (
                   <div className="space-y-1.5">
                     {entries.map((entry: any) => (
@@ -558,10 +741,16 @@ function HorariosSection() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <Clock className="w-3 h-3 opacity-60 flex-shrink-0" />
-                            <span className="text-[10px] font-mono opacity-80">{entry.startTime} – {entry.endTime}</span>
+                            <span className="text-[10px] font-mono opacity-80">
+                              {entry.startTime} – {entry.endTime}
+                            </span>
                           </div>
-                          <p className="text-xs font-medium truncate">{entry.showName}</p>
-                          <p className="text-[10px] opacity-60">DJ: {entry.djName}</p>
+                          <p className="text-xs font-medium truncate">
+                            {entry.showName}
+                          </p>
+                          <p className="text-[10px] opacity-60">
+                            DJ: {entry.djName}
+                          </p>
                         </div>
                         <Button
                           variant="ghost"
@@ -591,7 +780,16 @@ function EventosSection() {
   const { token } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", server: "es", date: "", time: "", roomName: "", roomOwner: "", host: "", imageUrl: "" });
+  const [form, setForm] = useState({
+    title: "",
+    server: "es",
+    date: "",
+    time: "",
+    roomName: "",
+    roomOwner: "",
+    host: "",
+    imageUrl: "",
+  });
 
   const { data: events, isLoading } = useQuery<any[]>({
     queryKey: ["/api/events"],
@@ -599,29 +797,50 @@ function EventosSection() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/events", data, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/events",
+        data,
+        token ? `Bearer ${token}` : undefined,
+      );
       if (!res.ok) throw new Error("Error al crear el evento");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       setOpen(false);
-      setForm({ title: "", server: "es", date: "", time: "", roomName: "", roomOwner: "", host: "", imageUrl: "" });
+      setForm({
+        title: "",
+        server: "es",
+        date: "",
+        time: "",
+        roomName: "",
+        roomOwner: "",
+        host: "",
+        imageUrl: "",
+      });
       toast({ title: "Evento creado" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/events/${id}`, undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "DELETE",
+        `/api/events/${id}`,
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       toast({ title: "Evento eliminado" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   // Sort upcoming events first
@@ -636,59 +855,133 @@ function EventosSection() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-sm font-semibold mb-1">Eventos</h2>
-          <p className="text-xs text-muted-foreground">Próximos eventos en Habbo Speed.</p>
+          <p className="text-xs text-muted-foreground">
+            Próximos eventos en Habbo Speed.
+          </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="bg-primary hover:bg-primary/80 text-white text-xs" data-testid="button-new-event">
-              <Plus className="w-3 h-3 mr-1" />Nuevo Evento
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/80 text-white text-xs"
+              data-testid="button-new-event"
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              Nuevo Evento
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-card border-border max-w-lg">
-            <DialogHeader><DialogTitle className="text-sm">Nuevo Evento</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle className="text-sm">Nuevo Evento</DialogTitle>
+            </DialogHeader>
             <div className="space-y-3">
               <div>
                 <Label className="text-xs">Título del evento</Label>
-                <Input className="mt-1" placeholder="Ej: Noche Speed..." value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} data-testid="input-event-title" />
+                <Input
+                  className="mt-1"
+                  placeholder="Ej: Noche Speed..."
+                  value={form.title}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, title: e.target.value }))
+                  }
+                  data-testid="input-event-title"
+                />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-xs">Fecha</Label>
-                  <Input className="mt-1" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} data-testid="input-event-date" />
+                  <Input
+                    className="mt-1"
+                    type="date"
+                    value={form.date}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, date: e.target.value }))
+                    }
+                    data-testid="input-event-date"
+                  />
                 </div>
                 <div>
                   <Label className="text-xs">Hora</Label>
-                  <Input className="mt-1" type="time" value={form.time} onChange={e => setForm(p => ({ ...p, time: e.target.value }))} data-testid="input-event-time" />
+                  <Input
+                    className="mt-1"
+                    type="time"
+                    value={form.time}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, time: e.target.value }))
+                    }
+                    data-testid="input-event-time"
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-xs">Nombre de la sala</Label>
-                  <Input className="mt-1" value={form.roomName} onChange={e => setForm(p => ({ ...p, roomName: e.target.value }))} data-testid="input-event-room" />
+                  <Input
+                    className="mt-1"
+                    value={form.roomName}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, roomName: e.target.value }))
+                    }
+                    data-testid="input-event-room"
+                  />
                 </div>
                 <div>
                   <Label className="text-xs">Dueño de la sala</Label>
-                  <Input className="mt-1" value={form.roomOwner} onChange={e => setForm(p => ({ ...p, roomOwner: e.target.value }))} data-testid="input-event-owner" />
+                  <Input
+                    className="mt-1"
+                    value={form.roomOwner}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, roomOwner: e.target.value }))
+                    }
+                    data-testid="input-event-owner"
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-xs">Anfitrión</Label>
-                  <Input className="mt-1" value={form.host} onChange={e => setForm(p => ({ ...p, host: e.target.value }))} data-testid="input-event-host" />
+                  <Input
+                    className="mt-1"
+                    value={form.host}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, host: e.target.value }))
+                    }
+                    data-testid="input-event-host"
+                  />
                 </div>
                 <div>
                   <Label className="text-xs">Servidor</Label>
-                  <Select value={form.server} onValueChange={v => setForm(p => ({ ...p, server: v }))}>
-                    <SelectTrigger className="mt-1 text-xs" data-testid="select-event-server"><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.server}
+                    onValueChange={(v) => setForm((p) => ({ ...p, server: v }))}
+                  >
+                    <SelectTrigger
+                      className="mt-1 text-xs"
+                      data-testid="select-event-server"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {["es", "com", "com.br", "de", "fr"].map(s => <SelectItem key={s} value={s}>.{s}</SelectItem>)}
+                      {["es", "com", "com.br", "de", "fr"].map((s) => (
+                        <SelectItem key={s} value={s}>
+                          .{s}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div>
                 <Label className="text-xs">URL de imagen (opcional)</Label>
-                <Input className="mt-1" placeholder="https://..." value={form.imageUrl} onChange={e => setForm(p => ({ ...p, imageUrl: e.target.value }))} data-testid="input-event-image" />
+                <Input
+                  className="mt-1"
+                  placeholder="https://..."
+                  value={form.imageUrl}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, imageUrl: e.target.value }))
+                  }
+                  data-testid="input-event-image"
+                />
               </div>
               <Button
                 className="w-full bg-primary hover:bg-primary/80 text-white text-xs"
@@ -705,12 +998,16 @@ function EventosSection() {
 
       {isLoading ? (
         <div className="space-y-2">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-lg" />
+          ))}
         </div>
       ) : sortedEvents.length === 0 ? (
         <div className="text-center py-10">
           <Calendar className="w-10 h-10 text-muted-foreground/20 mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">No hay eventos programados</p>
+          <p className="text-xs text-muted-foreground">
+            No hay eventos programados
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -726,18 +1023,34 @@ function EventosSection() {
                     src={item.imageUrl}
                     alt={item.title}
                     className="w-12 h-12 rounded object-cover flex-shrink-0 bg-secondary"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
                   />
                 )}
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{item.title}</p>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <Badge variant="outline" className="text-[9px] border-border">.{item.server}</Badge>
-                    <span className="text-[10px] text-muted-foreground">{item.date} · {item.time}</span>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] border-border"
+                    >
+                      .{item.server}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground">
+                      {item.date} · {item.time}
+                    </span>
                   </div>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Sala: <span className="text-foreground/70">{item.roomName}</span>
-                    {item.host && <> · Anfitrión: <span className="text-foreground/70">{item.host}</span></>}
+                    Sala:{" "}
+                    <span className="text-foreground/70">{item.roomName}</span>
+                    {item.host && (
+                      <>
+                        {" "}
+                        · Anfitrión:{" "}
+                        <span className="text-foreground/70">{item.host}</span>
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
@@ -767,7 +1080,12 @@ function ChatSection() {
   const { data: chatMessages, isLoading } = useQuery<any[]>({
     queryKey: ["/api/chat"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/chat?limit=100", undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "GET",
+        "/api/chat?limit=100",
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
     refetchInterval: 15000,
@@ -775,14 +1093,20 @@ function ChatSection() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/chat/${id}`, undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "DELETE",
+        `/api/chat/${id}`,
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat"] });
       toast({ title: "Mensaje eliminado" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   return (
@@ -790,21 +1114,30 @@ function ChatSection() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-sm font-semibold mb-1">Moderación del Chat</h2>
-          <p className="text-xs text-muted-foreground">Revisa y elimina mensajes inapropiados del chat.</p>
+          <p className="text-xs text-muted-foreground">
+            Revisa y elimina mensajes inapropiados del chat.
+          </p>
         </div>
-        <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+        <Badge
+          variant="outline"
+          className="text-[10px] border-primary/30 text-primary"
+        >
           {(chatMessages || []).length} mensajes
         </Badge>
       </div>
 
       {isLoading ? (
         <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-lg" />)}
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 rounded-lg" />
+          ))}
         </div>
       ) : (chatMessages || []).length === 0 ? (
         <div className="text-center py-10">
           <MessageSquare className="w-10 h-10 text-muted-foreground/20 mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">No hay mensajes en el chat</p>
+          <p className="text-xs text-muted-foreground">
+            No hay mensajes en el chat
+          </p>
         </div>
       ) : (
         <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1">
@@ -820,20 +1153,31 @@ function ChatSection() {
                     src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${msg.username}&size=s&headonly=1`}
                     alt={msg.username}
                     className="w-7 h-7 rounded bg-secondary flex-shrink-0 mt-0.5"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
                     data-testid={`img-chat-avatar-${msg.id}`}
                   />
                 )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-semibold text-primary">{msg.username || msg.displayName || "Anónimo"}</span>
+                    <span className="text-[10px] font-semibold text-primary">
+                      {msg.username || msg.displayName || "Anónimo"}
+                    </span>
                     {msg.createdAt && (
                       <span className="text-[9px] text-muted-foreground">
-                        {new Date(msg.createdAt).toLocaleString("es-ES", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" })}
+                        {new Date(msg.createdAt).toLocaleString("es-ES", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          day: "2-digit",
+                          month: "short",
+                        })}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-foreground/80 break-words">{msg.message || msg.content}</p>
+                  <p className="text-xs text-foreground/80 break-words">
+                    {msg.message || msg.content}
+                  </p>
                 </div>
               </div>
               <Button
@@ -879,16 +1223,24 @@ function MensajesSection() {
       const res = await apiRequest(
         "PUT",
         "/api/dj-panel",
-        { currentDj: currentDj || "HabboSpeed", nextDj, djMessage: announcement },
-        token ? `Bearer ${token}` : undefined
+        {
+          currentDj: currentDj || "HabboSpeed",
+          nextDj,
+          djMessage: announcement,
+        },
+        token ? `Bearer ${token}` : undefined,
       );
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/dj-panel"] });
-      toast({ title: "Anuncio publicado", description: "El mensaje del DJ ha sido actualizado." });
+      toast({
+        title: "Anuncio publicado",
+        description: "El mensaje del DJ ha sido actualizado.",
+      });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   if (isLoading) {
@@ -904,7 +1256,10 @@ function MensajesSection() {
     <div className="space-y-5">
       <div>
         <h2 className="text-sm font-semibold mb-1">Mensajes y Anuncios</h2>
-        <p className="text-xs text-muted-foreground">Publica anuncios que aparecerán en el panel del DJ para todos los oyentes.</p>
+        <p className="text-xs text-muted-foreground">
+          Publica anuncios que aparecerán en el panel del DJ para todos los
+          oyentes.
+        </p>
       </div>
 
       {/* Current broadcast preview */}
@@ -912,42 +1267,54 @@ function MensajesSection() {
         <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
           <div className="flex items-center gap-2 mb-1.5">
             <BellRing className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Mensaje actual en emisión</span>
+            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+              Mensaje actual en emisión
+            </span>
           </div>
-          <p className="text-xs text-foreground/80 italic">"{djPanel.djMessage}"</p>
+          <p className="text-xs text-foreground/80 italic">
+            "{djPanel.djMessage}"
+          </p>
         </div>
       )}
 
       <div className="space-y-3 max-w-lg">
         <div>
-          <Label className="text-xs text-muted-foreground mb-1.5 block">DJ en antena</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">
+            DJ en antena
+          </Label>
           <Input
             placeholder="HabboSpeed"
             value={currentDj}
-            onChange={e => setCurrentDj(e.target.value)}
+            onChange={(e) => setCurrentDj(e.target.value)}
             data-testid="input-msg-current-dj"
           />
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground mb-1.5 block">Próximo DJ</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">
+            Próximo DJ
+          </Label>
           <Input
             placeholder="Nombre del próximo DJ..."
             value={nextDj}
-            onChange={e => setNextDj(e.target.value)}
+            onChange={(e) => setNextDj(e.target.value)}
             data-testid="input-msg-next-dj"
           />
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground mb-1.5 block">Texto del anuncio</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block">
+            Texto del anuncio
+          </Label>
           <Textarea
             placeholder="Escribe aquí el anuncio o mensaje para los oyentes..."
             rows={4}
             value={announcement}
-            onChange={e => setAnnouncement(e.target.value)}
+            onChange={(e) => setAnnouncement(e.target.value)}
             className="resize-none"
             data-testid="input-announcement-text"
           />
-          <p className="text-[10px] text-muted-foreground mt-1">{announcement.length} caracteres</p>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            {announcement.length} caracteres
+          </p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -988,7 +1355,10 @@ function TimetableSection() {
   }, []);
 
   // Booking state: which cell is "pending click" for booking
-  const [pendingCell, setPendingCell] = useState<{ day: string; hour: string } | null>(null);
+  const [pendingCell, setPendingCell] = useState<{
+    day: string;
+    hour: string;
+  } | null>(null);
   const [bookingForm, setBookingForm] = useState({ showName: "", djName: "" });
 
   const { data: schedule, isLoading } = useQuery<any[]>({
@@ -998,7 +1368,12 @@ function TimetableSection() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/schedule", data, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "POST",
+        "/api/schedule",
+        data,
+        token ? `Bearer ${token}` : undefined,
+      );
       if (!res.ok) throw new Error("Error al reservar el slot");
       return res.json();
     },
@@ -1008,12 +1383,18 @@ function TimetableSection() {
       setBookingForm({ showName: "", djName: "" });
       toast({ title: "Slot reservado correctamente" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/schedule/${id}`, undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "DELETE",
+        `/api/schedule/${id}`,
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       if (!res.ok) throw new Error("Error al eliminar el slot");
       return res.json();
     },
@@ -1021,11 +1402,15 @@ function TimetableSection() {
       queryClient.invalidateQueries({ queryKey: ["/api/schedule"] });
       toast({ title: "Slot eliminado" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   // Generate hours 00:00..23:00
-  const HOURS = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
+  const HOURS = Array.from(
+    { length: 24 },
+    (_, i) => `${String(i).padStart(2, "0")}:00`,
+  );
 
   // Current week dates (Mon=0 ... Sun=6)
   const getWeekDates = () => {
@@ -1060,7 +1445,8 @@ function TimetableSection() {
   const getDjColor = (djName: string) => {
     if (!djColorMap[djName]) {
       let hash = 0;
-      for (let i = 0; i < djName.length; i++) hash = (hash * 31 + djName.charCodeAt(i)) >>> 0;
+      for (let i = 0; i < djName.length; i++)
+        hash = (hash * 31 + djName.charCodeAt(i)) >>> 0;
       djColorMap[djName] = DJ_PALETTE[hash % DJ_PALETTE.length];
     }
     return djColorMap[djName];
@@ -1069,12 +1455,14 @@ function TimetableSection() {
   // Find schedule entry for a specific day+hour cell
   const getEntryForCell = (day: string, hour: string) => {
     if (!schedule) return null;
-    return schedule.find((s: any) => {
-      if (s.day !== day) return false;
-      const start = s.startTime.slice(0, 5);
-      const end = s.endTime.slice(0, 5);
-      return hour >= start && hour < end;
-    }) || null;
+    return (
+      schedule.find((s: any) => {
+        if (s.day !== day) return false;
+        const start = s.startTime.slice(0, 5);
+        const end = s.endTime.slice(0, 5);
+        return hour >= start && hour < end;
+      }) || null
+    );
   };
 
   const handleCellClick = (day: string, hour: string) => {
@@ -1093,30 +1481,47 @@ function TimetableSection() {
     return user?.displayName === entry.djName;
   };
 
-  const clockStr = now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  const clockStr = now.toLocaleTimeString("es-MX", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h2 className="text-sm font-semibold mb-0.5">📻 Horario de Radio (Hora CDMX)</h2>
-          <p className="text-xs text-muted-foreground">Haz clic en una celda vacía para reservar tu slot.</p>
+          <h2 className="text-sm font-semibold mb-0.5">
+            📻 Horario de Radio (Hora CDMX)
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Haz clic en una celda vacía para reservar tu slot.
+          </p>
         </div>
-        <div className="font-mono text-lg font-bold text-primary tabular-nums bg-primary/10 px-3 py-1 rounded-lg border border-primary/20" data-testid="text-live-clock">
+        <div
+          className="font-mono text-lg font-bold text-primary tabular-nums bg-primary/10 px-3 py-1 rounded-lg border border-primary/20"
+          data-testid="text-live-clock"
+        >
           {clockStr}
         </div>
       </div>
 
       {isLoading ? (
         <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 rounded-lg" />)}
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 rounded-lg" />
+          ))}
         </div>
       ) : (
         <div className="overflow-x-auto -mx-1">
           <div className="min-w-[700px] px-1">
             {/* Column headers */}
-            <div className="grid gap-0.5 mb-1" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
+            <div
+              className="grid gap-0.5 mb-1"
+              style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}
+            >
               <div />
               {DAYS.map((day, idx) => (
                 <div
@@ -1142,22 +1547,29 @@ function TimetableSection() {
                 <div
                   key={hour}
                   className={`grid gap-0.5 ${
-                    hour === currentHourStr ? "ring-1 ring-primary/60 rounded" : ""
+                    hour === currentHourStr
+                      ? "ring-1 ring-primary/60 rounded"
+                      : ""
                   }`}
                   style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}
                   data-testid={`row-hour-${hour}`}
                 >
                   {/* Hour label */}
-                  <div className={`text-[10px] font-mono flex items-center justify-end pr-2 ${
-                    hour === currentHourStr ? "text-primary font-bold" : "text-muted-foreground"
-                  }`}>
+                  <div
+                    className={`text-[10px] font-mono flex items-center justify-end pr-2 ${
+                      hour === currentHourStr
+                        ? "text-primary font-bold"
+                        : "text-muted-foreground"
+                    }`}
+                  >
                     {hour}
                   </div>
 
                   {/* Day cells */}
                   {DAYS.map((day) => {
                     const entry = getEntryForCell(day, hour);
-                    const isPending = pendingCell?.day === day && pendingCell?.hour === hour;
+                    const isPending =
+                      pendingCell?.day === day && pendingCell?.hour === hour;
 
                     if (entry) {
                       const colorClass = getDjColor(entry.djName);
@@ -1167,8 +1579,14 @@ function TimetableSection() {
                           className={`relative rounded px-1.5 py-1 border text-[9px] leading-tight min-h-[32px] flex flex-col justify-center ${colorClass}`}
                           data-testid={`cell-${day}-${hour}-occupied`}
                         >
-                          <div className="font-semibold truncate">{entry.djName}</div>
-                          {entry.showName && <div className="opacity-70 truncate">{entry.showName}</div>}
+                          <div className="font-semibold truncate">
+                            {entry.djName}
+                          </div>
+                          {entry.showName && (
+                            <div className="opacity-70 truncate">
+                              {entry.showName}
+                            </div>
+                          )}
                           {canDelete(entry) && (
                             <button
                               className="absolute top-0.5 right-0.5 w-3.5 h-3.5 flex items-center justify-center rounded bg-black/30 hover:bg-red-500/60 text-white opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
@@ -1197,7 +1615,9 @@ function TimetableSection() {
                       >
                         {isPending && (
                           <div className="p-1 flex items-center justify-center">
-                            <span className="text-[9px] text-primary font-medium">+</span>
+                            <span className="text-[9px] text-primary font-medium">
+                              +
+                            </span>
                           </div>
                         )}
                       </div>
@@ -1212,27 +1632,38 @@ function TimetableSection() {
 
       {/* Booking inline form */}
       {pendingCell && (
-        <div className="mt-3 p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3 max-w-sm" data-testid="booking-form">
+        <div
+          className="mt-3 p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3 max-w-sm"
+          data-testid="booking-form"
+        >
           <p className="text-xs font-semibold text-primary">
             Reservar slot: {pendingCell.day} {pendingCell.hour}
           </p>
           <div>
-            <Label className="text-xs text-muted-foreground mb-1 block">Tu nombre DJ</Label>
+            <Label className="text-xs text-muted-foreground mb-1 block">
+              Tu nombre DJ
+            </Label>
             <Input
               className="text-xs"
               placeholder="Nombre del DJ"
               value={bookingForm.djName}
-              onChange={e => setBookingForm(p => ({ ...p, djName: e.target.value }))}
+              onChange={(e) =>
+                setBookingForm((p) => ({ ...p, djName: e.target.value }))
+              }
               data-testid="input-booking-djname"
             />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground mb-1 block">Nombre del programa</Label>
+            <Label className="text-xs text-muted-foreground mb-1 block">
+              Nombre del programa
+            </Label>
             <Input
               className="text-xs"
               placeholder="Ej: Speed Nights..."
               value={bookingForm.showName}
-              onChange={e => setBookingForm(p => ({ ...p, showName: e.target.value }))}
+              onChange={(e) =>
+                setBookingForm((p) => ({ ...p, showName: e.target.value }))
+              }
               data-testid="input-booking-showname"
             />
           </div>
@@ -1242,7 +1673,10 @@ function TimetableSection() {
               className="bg-primary hover:bg-primary/80 text-white text-xs flex-1"
               disabled={createMutation.isPending || !bookingForm.djName}
               onClick={() => {
-                const endHour = String((parseInt(pendingCell.hour.slice(0, 2)) + 1) % 24).padStart(2, "0") + ":00";
+                const endHour =
+                  String(
+                    (parseInt(pendingCell.hour.slice(0, 2)) + 1) % 24,
+                  ).padStart(2, "0") + ":00";
                 createMutation.mutate({
                   day: pendingCell.day,
                   startTime: pendingCell.hour,
@@ -1281,15 +1715,29 @@ function BannedSongsSection() {
   const { data: bannedSongs, isLoading } = useQuery<any[]>({
     queryKey: ["/api/banned-songs"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/banned-songs", undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "GET",
+        "/api/banned-songs",
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       if (!res.ok) throw new Error("Error al cargar canciones baneadas");
       return res.json();
     },
   });
 
   const banMutation = useMutation({
-    mutationFn: async (data: { title: string; artist: string; reason: string }) => {
-      const res = await apiRequest("POST", "/api/banned-songs", data, token ? `Bearer ${token}` : undefined);
+    mutationFn: async (data: {
+      title: string;
+      artist: string;
+      reason: string;
+    }) => {
+      const res = await apiRequest(
+        "POST",
+        "/api/banned-songs",
+        data,
+        token ? `Bearer ${token}` : undefined,
+      );
       if (!res.ok) throw new Error("Error al banear la canción");
       return res.json();
     },
@@ -1299,12 +1747,18 @@ function BannedSongsSection() {
       setForm({ title: "", artist: "", reason: "" });
       toast({ title: "Canción baneada correctamente" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const unbanMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/banned-songs/${id}`, undefined, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "DELETE",
+        `/api/banned-songs/${id}`,
+        undefined,
+        token ? `Bearer ${token}` : undefined,
+      );
       if (!res.ok) throw new Error("Error al desbanear la canción");
       return res.json();
     },
@@ -1312,7 +1766,8 @@ function BannedSongsSection() {
       queryClient.invalidateQueries({ queryKey: ["/api/banned-songs"] });
       toast({ title: "Canción desbaneada" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   return (
@@ -1324,7 +1779,9 @@ function BannedSongsSection() {
             <Ban className="w-4 h-4 text-red-400" />
             Canciones Baneadas
           </h2>
-          <p className="text-xs text-muted-foreground">Gestiona las canciones prohibidas en la radio.</p>
+          <p className="text-xs text-muted-foreground">
+            Gestiona las canciones prohibidas en la radio.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Badge className="bg-red-500/20 text-red-300 border-red-500/30 text-[10px]">
@@ -1333,7 +1790,7 @@ function BannedSongsSection() {
           <Button
             size="sm"
             className="bg-red-600 hover:bg-red-700 text-white text-xs"
-            onClick={() => setShowForm(p => !p)}
+            onClick={() => setShowForm((p) => !p)}
             data-testid="button-toggle-ban-form"
           >
             <Ban className="w-3 h-3 mr-1" />
@@ -1344,38 +1801,55 @@ function BannedSongsSection() {
 
       {/* Inline ban form */}
       {showForm && (
-        <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/5 space-y-3" data-testid="ban-song-form">
-          <p className="text-xs font-semibold text-red-400">Nueva canción baneada</p>
+        <div
+          className="p-4 rounded-xl border border-red-500/30 bg-red-500/5 space-y-3"
+          data-testid="ban-song-form"
+        >
+          <p className="text-xs font-semibold text-red-400">
+            Nueva canción baneada
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs text-muted-foreground mb-1 block">Título</Label>
+              <Label className="text-xs text-muted-foreground mb-1 block">
+                Título
+              </Label>
               <Input
                 className="text-xs"
                 placeholder="Nombre de la canción..."
                 value={form.title}
-                onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, title: e.target.value }))
+                }
                 data-testid="input-ban-title"
               />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground mb-1 block">Artista</Label>
+              <Label className="text-xs text-muted-foreground mb-1 block">
+                Artista
+              </Label>
               <Input
                 className="text-xs"
                 placeholder="Nombre del artista..."
                 value={form.artist}
-                onChange={e => setForm(p => ({ ...p, artist: e.target.value }))}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, artist: e.target.value }))
+                }
                 data-testid="input-ban-artist"
               />
             </div>
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground mb-1 block">Motivo del baneo</Label>
+            <Label className="text-xs text-muted-foreground mb-1 block">
+              Motivo del baneo
+            </Label>
             <Textarea
               className="text-xs resize-none"
               placeholder="Describe el motivo..."
               rows={3}
               value={form.reason}
-              onChange={e => setForm(p => ({ ...p, reason: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, reason: e.target.value }))
+              }
               data-testid="input-ban-reason"
             />
           </div>
@@ -1394,12 +1868,16 @@ function BannedSongsSection() {
       {/* Banned songs list */}
       {isLoading ? (
         <div className="space-y-2">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 rounded-lg" />
+          ))}
         </div>
       ) : (bannedSongs || []).length === 0 ? (
         <div className="text-center py-10">
           <Ban className="w-10 h-10 text-muted-foreground/20 mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">No hay canciones baneadas</p>
+          <p className="text-xs text-muted-foreground">
+            No hay canciones baneadas
+          </p>
         </div>
       ) : (
         <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
@@ -1411,22 +1889,35 @@ function BannedSongsSection() {
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold text-foreground">{song.title}</span>
+                  <span className="text-xs font-semibold text-foreground">
+                    {song.title}
+                  </span>
                   <span className="text-[10px] text-muted-foreground">—</span>
-                  <span className="text-[10px] text-foreground/70">{song.artist}</span>
+                  <span className="text-[10px] text-foreground/70">
+                    {song.artist}
+                  </span>
                 </div>
                 {song.reason && (
-                  <p className="text-[10px] text-red-300/70 mt-0.5 italic">Motivo: {song.reason}</p>
+                  <p className="text-[10px] text-red-300/70 mt-0.5 italic">
+                    Motivo: {song.reason}
+                  </p>
                 )}
                 <div className="flex items-center gap-3 mt-1 flex-wrap">
                   {song.bannedBy && (
                     <span className="text-[9px] text-muted-foreground">
-                      Baneado por: <span className="text-foreground/60">{song.bannedBy}</span>
+                      Baneado por:{" "}
+                      <span className="text-foreground/60">
+                        {song.bannedBy}
+                      </span>
                     </span>
                   )}
                   {song.createdAt && (
                     <span className="text-[9px] text-muted-foreground">
-                      {new Date(song.createdAt).toLocaleString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                      {new Date(song.createdAt).toLocaleString("es-ES", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
                     </span>
                   )}
                 </div>
@@ -1472,7 +1963,9 @@ export default function DJPanelPage() {
       <div className="p-6 flex flex-col items-center justify-center min-h-64 gap-4 text-center">
         <Shield className="w-14 h-14 text-muted-foreground/30" />
         <h2 className="text-lg font-bold">Acceso restringido</h2>
-        <p className="text-sm text-muted-foreground">Debes iniciar sesión para acceder al Panel DJ.</p>
+        <p className="text-sm text-muted-foreground">
+          Debes iniciar sesión para acceder al Panel DJ.
+        </p>
         <Link href="/login">
           <a className="text-primary text-sm hover:underline">Iniciar sesión</a>
         </Link>
@@ -1485,9 +1978,13 @@ export default function DJPanelPage() {
       <div className="p-6 flex flex-col items-center justify-center min-h-64 gap-4 text-center">
         <Shield className="w-14 h-14 text-muted-foreground/30" />
         <h2 className="text-lg font-bold">Acceso restringido</h2>
-        <p className="text-sm text-muted-foreground">Solo DJs y administradores pueden acceder a este panel.</p>
+        <p className="text-sm text-muted-foreground">
+          Solo DJs y administradores pueden acceder a este panel.
+        </p>
         <Link href="/">
-          <a className="text-primary text-sm hover:underline">Volver al Inicio</a>
+          <a className="text-primary text-sm hover:underline">
+            Volver al Inicio
+          </a>
         </Link>
       </div>
     );
@@ -1499,8 +1996,12 @@ export default function DJPanelPage() {
       items: [
         { id: "home", label: "Inicio DJ", icon: "fa-solid fa-house" },
         { id: "estado", label: "Estado Emisión", icon: "fa-solid fa-radio" },
-        { id: "timetable", label: "Timetable Horario", icon: "fa-solid fa-calendar-week" },
-      ]
+        {
+          id: "timetable",
+          label: "Timetable Horario",
+          icon: "fa-solid fa-calendar-week",
+        },
+      ],
     },
     {
       title: "Interacción",
@@ -1508,7 +2009,7 @@ export default function DJPanelPage() {
         { id: "peticiones", label: "Peticiones", icon: "fa-solid fa-music" },
         { id: "chat", label: "Chat de Muro", icon: "fa-solid fa-comments" },
         { id: "mensajes", label: "Mensajes DJ", icon: "fa-solid fa-bullhorn" },
-      ]
+      ],
     },
     {
       title: "Herramientas",
@@ -1517,14 +2018,13 @@ export default function DJPanelPage() {
         { id: "horarios", label: "Horarios DJ", icon: "fa-solid fa-clock" },
         { id: "eventos", label: "Eventos", icon: "fa-solid fa-calendar-days" },
         { id: "banned", label: "Canciones", icon: "fa-solid fa-ban" },
-      ]
-    }
+      ],
+    },
   ];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col lg:flex-row gap-8">
-        
         {/* Left Sidebar Menu */}
         <aside className="w-full lg:w-64 flex-shrink-0">
           <div className="bg-card border border-border rounded-xl p-4 sticky top-24">
@@ -1533,8 +2033,12 @@ export default function DJPanelPage() {
                 <i className="fa-solid fa-headphones"></i>
               </div>
               <div>
-                <h2 className="font-bold text-white text-xs uppercase tracking-wider font-cabinet">Panel DJ</h2>
-                <span className="text-[10px] text-muted-foreground uppercase font-semibold text-primary">Locución</span>
+                <h2 className="font-bold text-white text-xs uppercase tracking-wider font-cabinet">
+                  Panel DJ
+                </h2>
+                <span className="text-[10px] text-muted-foreground uppercase font-semibold text-primary">
+                  Locución
+                </span>
               </div>
             </div>
 
@@ -1557,7 +2061,9 @@ export default function DJPanelPage() {
                               : "text-muted-foreground hover:bg-zinc-800 hover:text-white"
                           }`}
                         >
-                          <span className="w-4 text-center"><i className={item.icon}></i></span>
+                          <span className="w-4 text-center">
+                            <i className={item.icon}></i>
+                          </span>
                           <span>{item.label}</span>
                         </button>
                       );
@@ -1580,7 +2086,9 @@ export default function DJPanelPage() {
                     ¡Al Aire, DJ {user.displayName}!
                   </h2>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Gestiona tu emisión en vivo, revisa las peticiones de canciones o saludos de los usuarios en tiempo real, y otorga SpeedPoints para premiar a tu audiencia.
+                    Gestiona tu emisión en vivo, revisa las peticiones de
+                    canciones o saludos de los usuarios en tiempo real, y otorga
+                    SpeedPoints para premiar a tu audiencia.
                   </p>
                 </div>
                 {user.habboUsername && (
@@ -1595,18 +2103,44 @@ export default function DJPanelPage() {
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: "Peticiones", value: requests.length || "0", icon: "fa-solid fa-music", color: "text-blue-400 bg-blue-500/5" },
-                  { label: "DJ en Transmisión", value: djPanel?.currentDj || "AutoDJ", icon: "fa-solid fa-radio", color: "text-primary bg-primary/5" },
-                  { label: "Rango", value: user.role.toUpperCase(), icon: "fa-solid fa-headphones", color: "text-red-400 bg-red-500/5" },
-                  { label: "Mis SP", value: `${user.speedPoints} SP`, icon: "fa-solid fa-coins", color: "text-yellow-400 bg-yellow-500/5" },
+                  {
+                    label: "Peticiones",
+                    value: requests.length || "0",
+                    icon: "fa-solid fa-music",
+                    color: "text-blue-400 bg-blue-500/5",
+                  },
+                  {
+                    label: "DJ en Transmisión",
+                    value: djPanel?.currentDj || "AutoDJ",
+                    icon: "fa-solid fa-radio",
+                    color: "text-primary bg-primary/5",
+                  },
+                  {
+                    label: "Rango",
+                    value: user.role.toUpperCase(),
+                    icon: "fa-solid fa-headphones",
+                    color: "text-red-400 bg-red-500/5",
+                  },
+                  {
+                    label: "Mis SP",
+                    value: `${user.speedPoints} SP`,
+                    icon: "fa-solid fa-coins",
+                    color: "text-yellow-400 bg-yellow-500/5",
+                  },
                 ].map((stat, i) => (
                   <Card key={i} className="border border-border bg-card/60">
                     <CardContent className="p-4 flex items-center justify-between gap-4">
                       <div>
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold">{stat.label}</span>
-                        <p className="text-lg font-black text-white mt-1 truncate max-w-[120px]">{stat.value}</p>
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold">
+                          {stat.label}
+                        </span>
+                        <p className="text-lg font-black text-white mt-1 truncate max-w-[120px]">
+                          {stat.value}
+                        </p>
                       </div>
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm ${stat.color}`}>
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm ${stat.color}`}
+                      >
                         <i className={stat.icon}></i>
                       </div>
                     </CardContent>
@@ -1618,14 +2152,31 @@ export default function DJPanelPage() {
               <Card className="border border-border bg-card">
                 <CardContent className="p-6">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-white font-cabinet mb-4 flex items-center gap-2">
-                    <i className="fa-solid fa-bolt text-primary"></i> Accesos Rápidos
+                    <i className="fa-solid fa-bolt text-primary"></i> Accesos
+                    Rápidos
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { label: "Estado Locución", action: () => setActiveTab("estado"), icon: "fa-solid fa-radio" },
-                      { label: "Ver Peticiones", action: () => setActiveTab("peticiones"), icon: "fa-solid fa-music" },
-                      { label: "Dar SpeedPoints", action: () => setActiveTab("puntos"), icon: "fa-solid fa-coins" },
-                      { label: "Chat del Hotel", action: () => setActiveTab("chat"), icon: "fa-solid fa-comments" },
+                      {
+                        label: "Estado Locución",
+                        action: () => setActiveTab("estado"),
+                        icon: "fa-solid fa-radio",
+                      },
+                      {
+                        label: "Ver Peticiones",
+                        action: () => setActiveTab("peticiones"),
+                        icon: "fa-solid fa-music",
+                      },
+                      {
+                        label: "Dar SpeedPoints",
+                        action: () => setActiveTab("puntos"),
+                        icon: "fa-solid fa-coins",
+                      },
+                      {
+                        label: "Chat del Hotel",
+                        action: () => setActiveTab("chat"),
+                        icon: "fa-solid fa-comments",
+                      },
                     ].map((act, i) => (
                       <Button
                         key={i}
@@ -1657,7 +2208,6 @@ export default function DJPanelPage() {
             </Card>
           )}
         </main>
-
       </div>
     </div>
   );

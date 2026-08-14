@@ -1379,6 +1379,68 @@ export async function registerRoutes(server: Server, app: Express) {
     }
   });
 
+  // Local fallback images for when upstream fails
+  function getLocalFallback(sourceUrl: string): Buffer | null {
+    try {
+      const url = new URL(sourceUrl);
+      const pathname = url.pathname.toLowerCase();
+
+      // News covers - images.habbo.com/c_images/...
+      if (
+        pathname.includes("/c_images/") ||
+        pathname.includes("official_room") ||
+        pathname.includes("reception/rec_background")
+      ) {
+        const fallbackPath = path.join(
+          process.cwd(),
+          "client",
+          "public",
+          "fallback-news.png",
+        );
+        if (fs.existsSync(fallbackPath)) return fs.readFileSync(fallbackPath);
+      }
+
+      // Furni icons - images.habbo.com/dcr/hof_furni/...
+      if (
+        pathname.includes("/dcr/hof_furni/") ||
+        pathname.includes("/hof_furni/")
+      ) {
+        const fallbackPath = path.join(
+          process.cwd(),
+          "client",
+          "public",
+          "fallback-furni.png",
+        );
+        if (fs.existsSync(fallbackPath)) return fs.readFileSync(fallbackPath);
+      }
+
+      // Badge images - images.habbo.com/c_images/album... or habboassets.com
+      if (
+        pathname.includes("/album") ||
+        pathname.includes("/badge") ||
+        url.hostname.includes("habboassets")
+      ) {
+        const fallbackPath = path.join(
+          process.cwd(),
+          "client",
+          "public",
+          "fallback-badge.png",
+        );
+        if (fs.existsSync(fallbackPath)) return fs.readFileSync(fallbackPath);
+      }
+
+      // Avatar images - habbo-imaging/avatarimage
+      if (pathname.includes("/habbo-imaging/avatarimage")) {
+        // Return a simple transparent PNG for avatars
+        return Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          "base64",
+        );
+      }
+    } catch (e) {}
+    return null;
+  }
+
   // Proxy image endpoint to avoid CORS/ORB blocking for external images
   app.get("/api/habbo/proxy-image", async (req, res) => {
     try {
@@ -1528,10 +1590,25 @@ export async function registerRoutes(server: Server, app: Express) {
       // Fetch upstream using standard Chrome User-Agent to bypass Cloudflare
       const userAgent =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-      const upstream = await fetch(sourceUrl, {
-        headers: { "User-Agent": userAgent },
-      });
-      if (!upstream.ok) return res.status(502).send("bad upstream");
+      let upstream: Response;
+      try {
+        upstream = await fetch(sourceUrl, {
+          headers: { "User-Agent": userAgent },
+        });
+      } catch (fetchError) {
+        upstream = { ok: false, status: 0 } as Response;
+      }
+
+      // If upstream fails, serve local fallback based on URL pattern
+      if (!upstream.ok) {
+        const fallbackBuffer = getLocalFallback(sourceUrl);
+        if (fallbackBuffer) {
+          res.setHeader("Content-Type", "image/png");
+          res.setHeader("Cache-Control", `public, max-age=${ttlSeconds}`);
+          return res.send(fallbackBuffer);
+        }
+        return res.status(502).send("bad upstream");
+      }
       const contentType = upstream.headers.get("content-type") || "image/png";
       const buffer = Buffer.from(await upstream.arrayBuffer());
 

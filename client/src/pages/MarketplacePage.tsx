@@ -6,12 +6,31 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { proxyImage } from "@/lib/habboProxy";
 import {
-  ShoppingBag, Search, TrendingUp, TrendingDown, Flame, Tag, Coins, Star, X
+  ShoppingBag,
+  Search,
+  TrendingUp,
+  TrendingDown,
+  Flame,
+  Tag,
+  Coins,
+  Star,
+  X,
 } from "lucide-react";
 
 const HOTELS = ["es", "com", "com.br", "de", "fi", "fr", "it", "nl"];
@@ -35,7 +54,8 @@ type FurniItem = {
 };
 
 function getPrice(item: FurniItem): number {
-  const avg = item?.marketData?.averagePrice ?? item?.avgPrice ?? item?.avg_price;
+  const avg =
+    item?.marketData?.averagePrice ?? item?.avgPrice ?? item?.avg_price;
   if (avg) return avg;
   const hist = item?.marketData?.history || [];
   if (hist.length > 0) {
@@ -47,25 +67,44 @@ function getPrice(item: FurniItem): number {
 
 function getImageUrl(item: FurniItem): string | null {
   const revision = item?.Revision ?? (item as any)?.revision ?? 0;
-  const classname = item?.ClassName ?? item?.className ?? (item as any)?.classname;
+  const classname =
+    item?.ClassName ?? item?.className ?? (item as any)?.classname;
   if (classname) {
-    return proxyImage(`https://images.habbo.com/dcr/hof_furni/${revision}/${classname}_icon.png`);
+    return proxyImage(
+      `https://images.habbo.com/dcr/hof_furni/${revision}/${classname}_icon.png`,
+    );
   }
   return null;
 }
 
 function getName(item: FurniItem): string {
-  return item?.FurniName || item?.itemName || (item as any)?.name || item?.ClassName || item?.className || (item as any)?.classname || "—";
+  return (
+    item?.FurniName ||
+    item?.itemName ||
+    (item as any)?.name ||
+    item?.ClassName ||
+    item?.className ||
+    (item as any)?.classname ||
+    "—"
+  );
 }
 
-function FurniImage({ item, className = "w-12 h-12" }: { item: FurniItem; className?: string }) {
+function FurniImage({
+  item,
+  className = "w-12 h-12",
+}: {
+  item: FurniItem;
+  className?: string;
+}) {
   const [error, setError] = useState(false);
   const imgUrl = getImageUrl(item);
   const name = getName(item);
-  
+
   if (!imgUrl || error) {
     return (
-      <div className={`${className} flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20 text-primary font-black text-[10px] sm:text-xs shadow-inner shadow-primary/10 select-none`}>
+      <div
+        className={`${className} flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20 text-primary font-black text-[10px] sm:text-xs shadow-inner shadow-primary/10 select-none`}
+      >
         {name.slice(0, 2).toUpperCase()}
       </div>
     );
@@ -81,14 +120,27 @@ function FurniImage({ item, className = "w-12 h-12" }: { item: FurniItem; classN
   );
 }
 
-function FurniCard({ item, onClick }: { item: FurniItem; onClick: () => void }) {
+function FurniCard({
+  item,
+  onClick,
+}: {
+  item: FurniItem;
+  onClick: () => void;
+}) {
   const price = getPrice(item);
   const name = getName(item);
   const hist = item?.marketData?.history || [];
-  const prices = hist.map((h: any) => Array.isArray(h) ? h[0] : h.price).filter(Boolean);
+  const prices = hist
+    .map((h: any) => (Array.isArray(h) ? h[0] : h.price))
+    .filter(Boolean);
   const minP = prices.length ? Math.min(...prices) : null;
   const maxP = prices.length ? Math.max(...prices) : null;
-  const trend = prices.length >= 2 ? (prices[prices.length - 1] > prices[0] ? "up" : "down") : null;
+  const trend =
+    prices.length >= 2
+      ? prices[prices.length - 1] > prices[0]
+        ? "up"
+        : "down"
+      : null;
 
   return (
     <button
@@ -100,7 +152,9 @@ function FurniCard({ item, onClick }: { item: FurniItem; onClick: () => void }) 
         <FurniImage item={item} className="w-12 h-12" />
       </div>
       <div className="w-full text-center space-y-1">
-        <p className="text-[11px] font-bold leading-tight line-clamp-2 text-foreground/90 group-hover:text-primary transition-colors duration-200">{name}</p>
+        <p className="text-[11px] font-bold leading-tight line-clamp-2 text-foreground/90 group-hover:text-primary transition-colors duration-200">
+          {name}
+        </p>
         <p className="text-sm font-black text-yellow-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
           {price > 0 ? `${price.toLocaleString()}c` : "—"}
         </p>
@@ -111,12 +165,18 @@ function FurniCard({ item, onClick }: { item: FurniItem; onClick: () => void }) 
         )}
       </div>
       {trend && (
-        <div className={`flex items-center gap-0.5 text-[9px] font-black px-2 py-0.5 rounded-full ${
-          trend === "up" 
-            ? "bg-green-500/10 text-green-400 border border-green-500/20" 
-            : "bg-red-500/10 text-red-400 border border-red-500/20"
-        }`}>
-          {trend === "up" ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+        <div
+          className={`flex items-center gap-0.5 text-[9px] font-black px-2 py-0.5 rounded-full ${
+            trend === "up"
+              ? "bg-green-500/10 text-green-400 border border-green-500/20"
+              : "bg-red-500/10 text-red-400 border border-red-500/20"
+          }`}
+        >
+          {trend === "up" ? (
+            <TrendingUp className="w-2.5 h-2.5" />
+          ) : (
+            <TrendingDown className="w-2.5 h-2.5" />
+          )}
           {trend === "up" ? "Subiendo" : "Bajando"}
         </div>
       )}
@@ -124,7 +184,15 @@ function FurniCard({ item, onClick }: { item: FurniItem; onClick: () => void }) 
   );
 }
 
-function FurniModal({ item, hotel, onClose }: { item: FurniItem; hotel: string; onClose: () => void }) {
+function FurniModal({
+  item,
+  hotel,
+  onClose,
+}: {
+  item: FurniItem;
+  hotel: string;
+  onClose: () => void;
+}) {
   const price = getPrice(item);
   const name = getName(item);
   const hist = (item?.marketData?.history || []).map((h: any) => {
@@ -159,51 +227,105 @@ function FurniModal({ item, hotel, onClose }: { item: FurniItem; hotel: string; 
             </div>
             <div className="flex flex-col text-left">
               <span className="text-sm font-black text-foreground">{name}</span>
-              <span className="text-[10px] text-muted-foreground font-mono font-bold uppercase">{item.ClassName || (item as any).classname || "—"}</span>
+              <span className="text-[10px] text-muted-foreground font-mono font-bold uppercase">
+                {item.ClassName || (item as any).classname || "—"}
+              </span>
             </div>
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-5">
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: "Precio Promedio", val: price > 0 ? `${price.toLocaleString()}c` : "—", color: "text-yellow-400" },
-              { label: "Precio Mínimo", val: minP ? `${minP.toLocaleString()}c` : "—", color: "text-green-400" },
-              { label: "Precio Máximo", val: maxP ? `${maxP.toLocaleString()}c` : "—", color: "text-red-400" },
+              {
+                label: "Precio Promedio",
+                val: price > 0 ? `${price.toLocaleString()}c` : "—",
+                color: "text-yellow-400",
+              },
+              {
+                label: "Precio Mínimo",
+                val: minP ? `${minP.toLocaleString()}c` : "—",
+                color: "text-green-400",
+              },
+              {
+                label: "Precio Máximo",
+                val: maxP ? `${maxP.toLocaleString()}c` : "—",
+                color: "text-red-400",
+              },
             ].map((s) => (
-              <div key={s.label} className="bg-secondary/40 hover:bg-secondary/60 border border-border/40 rounded-2xl p-3 text-center transition-colors">
-                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">{s.label}</p>
-                <p className={`text-sm font-black ${s.color} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{s.val}</p>
+              <div
+                key={s.label}
+                className="bg-secondary/40 hover:bg-secondary/60 border border-border/40 rounded-2xl p-3 text-center transition-colors"
+              >
+                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">
+                  {s.label}
+                </p>
+                <p
+                  className={`text-sm font-black ${s.color} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}
+                >
+                  {s.val}
+                </p>
               </div>
             ))}
           </div>
-          
+
           <div className="flex gap-2">
-            <Badge variant="outline" className="bg-primary/5 border-primary/30 text-primary font-bold text-[10px] px-2.5 py-0.5">Hotel Habbo.{hotel.toUpperCase()}</Badge>
-            {item.Revision && <Badge variant="outline" className="bg-secondary/30 text-muted-foreground border-border/60 font-mono text-[10px] px-2.5 py-0.5">Rev: {item.Revision}</Badge>}
+            <Badge
+              variant="outline"
+              className="bg-primary/5 border-primary/30 text-primary font-bold text-[10px] px-2.5 py-0.5"
+            >
+              Hotel Habbo.{hotel.toUpperCase()}
+            </Badge>
+            {item.Revision && (
+              <Badge
+                variant="outline"
+                className="bg-secondary/30 text-muted-foreground border-border/60 font-mono text-[10px] px-2.5 py-0.5"
+              >
+                Rev: {item.Revision}
+              </Badge>
+            )}
           </div>
 
           {hist.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs font-black text-foreground flex items-center gap-1.5 uppercase tracking-wider">
-                <TrendingUp className="w-4 h-4 text-primary" /> Historial de Mercado (15 Días)
+                <TrendingUp className="w-4 h-4 text-primary" /> Historial de
+                Mercado (15 Días)
               </p>
               <div className="overflow-x-auto border border-border/50 rounded-2xl max-h-48 overflow-y-auto shadow-inner bg-secondary/10 font-sans">
                 <table className="w-full text-[11px] border-collapse">
                   <thead>
                     <tr className="border-b border-border bg-secondary/50 text-[10px] uppercase font-bold tracking-wider">
-                      <th className="text-left py-2 px-3 text-muted-foreground">Fecha de Venta</th>
-                      <th className="text-right py-2 px-3 text-muted-foreground">Precio Promedio</th>
-                      <th className="text-right py-2 px-3 text-muted-foreground">Volumen</th>
+                      <th className="text-left py-2 px-3 text-muted-foreground">
+                        Fecha de Venta
+                      </th>
+                      <th className="text-right py-2 px-3 text-muted-foreground">
+                        Precio Promedio
+                      </th>
+                      <th className="text-right py-2 px-3 text-muted-foreground">
+                        Volumen
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {hist.slice(-20).reverse().map((h: any, i: number) => (
-                      <tr key={i} className="border-b border-border/20 hover:bg-primary/5 transition-colors">
-                        <td className="py-2 px-3 text-muted-foreground font-medium">{h.date}</td>
-                        <td className="py-2 px-3 text-right font-mono font-bold text-yellow-400">{h.price?.toLocaleString()}c</td>
-                        <td className="py-2 px-3 text-right text-muted-foreground font-mono">{h.amount ?? "—"} uds.</td>
-                      </tr>
-                    ))}
+                    {hist
+                      .slice(-20)
+                      .reverse()
+                      .map((h: any, i: number) => (
+                        <tr
+                          key={i}
+                          className="border-b border-border/20 hover:bg-primary/5 transition-colors"
+                        >
+                          <td className="py-2 px-3 text-muted-foreground font-medium">
+                            {h.date}
+                          </td>
+                          <td className="py-2 px-3 text-right font-mono font-bold text-yellow-400">
+                            {h.price?.toLocaleString()}c
+                          </td>
+                          <td className="py-2 px-3 text-right text-muted-foreground font-mono">
+                            {h.amount ?? "—"} uds.
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -229,7 +351,10 @@ export default function MarketplacePage() {
   const { data: catalogRaw, isLoading: catalogLoading } = useQuery<any[]>({
     queryKey: ["/api/habbo/furni", hotel],
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/habbo/furni?hotel=${hotel}&limit=0`);
+      const res = await apiRequest(
+        "GET",
+        `/api/habbo/furni?hotel=${hotel}&limit=0`,
+      );
       return res.json();
     },
     staleTime: 1000 * 60 * 5,
@@ -241,7 +366,10 @@ export default function MarketplacePage() {
     queryKey: ["/api/habbo/marketplace", searchQuery, hotel],
     queryFn: async () => {
       if (!searchQuery) return null;
-      const res = await apiRequest("GET", `/api/habbo/marketplace/${encodeURIComponent(searchQuery)}?hotel=${hotel}`);
+      const res = await apiRequest(
+        "GET",
+        `/api/habbo/marketplace/${encodeURIComponent(searchQuery)}?hotel=${hotel}`,
+      );
       if (!res.ok) throw new Error("no results");
       return res.json();
     },
@@ -252,17 +380,26 @@ export default function MarketplacePage() {
   const catalog: FurniItem[] = Array.isArray(catalogRaw) ? catalogRaw : [];
 
   const sorted = [...catalog].sort((a, b) =>
-    sortOrder === "desc" ? getPrice(b) - getPrice(a) : getPrice(a) - getPrice(b)
+    sortOrder === "desc"
+      ? getPrice(b) - getPrice(a)
+      : getPrice(a) - getPrice(b),
   );
 
-  const topExpensive = [...catalog].sort((a, b) => getPrice(b) - getPrice(a)).slice(0, 50);
-  const topCheap = [...catalog].filter(i => getPrice(i) > 0).sort((a, b) => getPrice(a) - getPrice(b)).slice(0, 50);
+  const topExpensive = [...catalog]
+    .sort((a, b) => getPrice(b) - getPrice(a))
+    .slice(0, 50);
+  const topCheap = [...catalog]
+    .filter((i) => getPrice(i) > 0)
+    .sort((a, b) => getPrice(a) - getPrice(b))
+    .slice(0, 50);
 
   const totalPages = Math.ceil(sorted.length / PER_PAGE);
   const paginated = sorted.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const searchResults: FurniItem[] = searchData
-    ? Array.isArray(searchData) ? searchData : [searchData]
+    ? Array.isArray(searchData)
+      ? searchData
+      : [searchData]
     : [];
 
   const handleSearch = () => {
@@ -274,25 +411,39 @@ export default function MarketplacePage() {
 
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ["/api/habbo/furni"] });
-    await queryClient.invalidateQueries({ queryKey: ["/api/habbo/marketplace"] });
+    await queryClient.invalidateQueries({
+      queryKey: ["/api/habbo/marketplace"],
+    });
   };
 
-  const renderGrid = (items: FurniItem[], loading: boolean, emptyMsg: string) => {
-    if (loading) return (
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-        {Array.from({ length: 24 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
-      </div>
-    );
-    if (!items.length) return (
-      <div className="text-center py-16 text-muted-foreground">
-        <ShoppingBag className="w-10 h-10 mx-auto mb-3 opacity-20" />
-        <p className="text-sm">{emptyMsg}</p>
-      </div>
-    );
+  const renderGrid = (
+    items: FurniItem[],
+    loading: boolean,
+    emptyMsg: string,
+  ) => {
+    if (loading)
+      return (
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+          {Array.from({ length: 24 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 rounded-xl" />
+          ))}
+        </div>
+      );
+    if (!items.length)
+      return (
+        <div className="text-center py-16 text-muted-foreground">
+          <ShoppingBag className="w-10 h-10 mx-auto mb-3 opacity-20" />
+          <p className="text-sm">{emptyMsg}</p>
+        </div>
+      );
     return (
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
         {items.map((item, i) => (
-          <FurniCard key={i} item={item} onClick={() => setSelectedItem(item)} />
+          <FurniCard
+            key={i}
+            item={item}
+            onClick={() => setSelectedItem(item)}
+          />
         ))}
       </div>
     );
@@ -309,17 +460,36 @@ export default function MarketplacePage() {
             Marketplace
           </h1>
           <p className="text-xs text-muted-foreground mt-2 max-w-2xl">
-            Explora furnis, compara precios y sigue el pulso del mercado con una interfaz más clara.
+            Explora furnis, compara precios y sigue el pulso del mercado con una
+            interfaz más clara.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary/80 text-[10px]">Habbo.{hotel}</Badge>
-          <Select value={hotel} onValueChange={(v) => { setHotel(v); setPage(1); }}>
-            <SelectTrigger className="w-28 h-8 text-xs" data-testid="select-marketplace-hotel">
+          <Badge
+            variant="outline"
+            className="border-primary/30 bg-primary/5 text-primary/80 text-[10px]"
+          >
+            Habbo.{hotel}
+          </Badge>
+          <Select
+            value={hotel}
+            onValueChange={(v) => {
+              setHotel(v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger
+              className="w-28 h-8 text-xs"
+              data-testid="select-marketplace-hotel"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {HOTELS.map((h) => <SelectItem key={h} value={h}>.{h}</SelectItem>)}
+              {HOTELS.map((h) => (
+                <SelectItem key={h} value={h}>
+                  .{h}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Button
@@ -347,7 +517,12 @@ export default function MarketplacePage() {
             data-testid="input-marketplace-search"
           />
         </div>
-        <Button size="sm" onClick={handleSearch} className="bg-primary hover:bg-primary/80 text-white text-xs px-4" data-testid="button-marketplace-search">
+        <Button
+          size="sm"
+          onClick={handleSearch}
+          className="bg-primary hover:bg-primary/80 text-white text-xs px-4"
+          data-testid="button-marketplace-search"
+        >
           Buscar
         </Button>
       </div>
@@ -375,7 +550,13 @@ export default function MarketplacePage() {
       {tab === "catalog" && (
         <div className="site-panel p-3 flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Ordenar:</span>
-          <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v as any); setPage(1); }}>
+          <Select
+            value={sortOrder}
+            onValueChange={(v) => {
+              setSortOrder(v as any);
+              setPage(1);
+            }}
+          >
             <SelectTrigger className="w-44 h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
@@ -385,7 +566,9 @@ export default function MarketplacePage() {
             </SelectContent>
           </Select>
           {catalog.length > 0 && (
-            <span className="text-xs text-muted-foreground ml-auto">{catalog.length} furnis</span>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {catalog.length} furnis
+            </span>
           )}
         </div>
       )}
@@ -393,11 +576,31 @@ export default function MarketplacePage() {
       {/* Tab Content */}
       {tab === "catalog" && (
         <div className="space-y-4">
-          {renderGrid(paginated, catalogLoading, "No se encontraron furnis. Intenta cambiar el hotel.")}
+          {renderGrid(
+            paginated,
+            catalogLoading,
+            "No se encontraron furnis. Intenta cambiar el hotel.",
+          )}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-1 pt-2">
-              <Button variant="outline" size="sm" onClick={() => setPage(1)} disabled={page === 1} className="text-xs px-2 h-7">«</Button>
-              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="text-xs px-2 h-7">‹</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(1)}
+                disabled={page === 1}
+                className="text-xs px-2 h-7"
+              >
+                «
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="text-xs px-2 h-7"
+              >
+                ‹
+              </Button>
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 const p = Math.max(1, Math.min(totalPages - 4, page - 2)) + i;
                 return (
@@ -412,8 +615,24 @@ export default function MarketplacePage() {
                   </Button>
                 );
               })}
-              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs px-2 h-7">›</Button>
-              <Button variant="outline" size="sm" onClick={() => setPage(totalPages)} disabled={page === totalPages} className="text-xs px-2 h-7">»</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="text-xs px-2 h-7"
+              >
+                ›
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(totalPages)}
+                disabled={page === totalPages}
+                className="text-xs px-2 h-7"
+              >
+                »
+              </Button>
             </div>
           )}
         </div>
@@ -444,16 +663,24 @@ export default function MarketplacePage() {
           {!searchQuery ? (
             <div className="text-center py-16 text-muted-foreground">
               <Search className="w-10 h-10 mx-auto mb-3 opacity-20" />
-              <p className="text-sm">Escribe el nombre de un furni y presiona Buscar</p>
-              <p className="text-xs mt-1 opacity-60">Ej: throne, disco_ball, rare_dragonlamp</p>
+              <p className="text-sm">
+                Escribe el nombre de un furni y presiona Buscar
+              </p>
+              <p className="text-xs mt-1 opacity-60">
+                Ej: throne, disco_ball, rare_dragonlamp
+              </p>
             </div>
           ) : searchLoading ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-28 rounded-xl" />
+              ))}
             </div>
           ) : searchResults.length > 0 ? (
             <>
-              <p className="text-xs text-muted-foreground">{searchResults.length} resultado(s) para "{searchQuery}"</p>
+              <p className="text-xs text-muted-foreground">
+                {searchResults.length} resultado(s) para "{searchQuery}"
+              </p>
               {renderGrid(searchResults, false, "")}
             </>
           ) : (
@@ -467,7 +694,11 @@ export default function MarketplacePage() {
 
       {/* Furni Detail Modal */}
       {selectedItem && (
-        <FurniModal item={selectedItem} hotel={hotel} onClose={() => setSelectedItem(null)} />
+        <FurniModal
+          item={selectedItem}
+          hotel={hotel}
+          onClose={() => setSelectedItem(null)}
+        />
       )}
     </div>
   );

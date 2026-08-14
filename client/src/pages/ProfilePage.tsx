@@ -13,32 +13,104 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  User, Zap, Calendar, Shield, Users, Home,
-  Star, Edit3, Save, X, Wifi, WifiOff, Trophy,
-  Coins, Crown, MessageCircle, Image, Heart, Award,
-  Info, Youtube, Twitter, Instagram, Link as LinkIcon,
-  Trash2, LogIn, UserPlus
+  User,
+  Zap,
+  Calendar,
+  Shield,
+  Users,
+  Home,
+  Star,
+  Edit3,
+  Save,
+  X,
+  Wifi,
+  WifiOff,
+  Trophy,
+  Coins,
+  Crown,
+  MessageCircle,
+  Image,
+  Heart,
+  Award,
+  Info,
+  Youtube,
+  Twitter,
+  Instagram,
+  Link as LinkIcon,
+  Trash2,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const ROLE_LABELS: Record<string, { label: string; color: string; icon?: any }> = {
-  admin: { label: "Administrador", color: "bg-red-500/10 text-red-400 border-red-500/30", icon: Crown },
-  dj: { label: "DJ", color: "bg-primary/10 text-primary border-primary/30", icon: Star },
-  moderador: { label: "Moderador", color: "bg-orange-500/10 text-orange-400 border-orange-500/30", icon: Shield },
-  colaborador: { label: "Colaborador", color: "bg-green-500/10 text-green-400 border-green-500/30" },
-  user: { label: "Usuario", color: "bg-secondary text-muted-foreground border-border" },
-  pending: { label: "Pendiente", color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30" },
+const ROLE_LABELS: Record<
+  string,
+  { label: string; color: string; icon?: any }
+> = {
+  admin: {
+    label: "Administrador",
+    color: "bg-red-500/10 text-red-400 border-red-500/30",
+    icon: Crown,
+  },
+  dj: {
+    label: "DJ",
+    color: "bg-primary/10 text-primary border-primary/30",
+    icon: Star,
+  },
+  moderador: {
+    label: "Moderador",
+    color: "bg-orange-500/10 text-orange-400 border-orange-500/30",
+    icon: Shield,
+  },
+  colaborador: {
+    label: "Colaborador",
+    color: "bg-green-500/10 text-green-400 border-green-500/30",
+  },
+  user: {
+    label: "Usuario",
+    color: "bg-secondary text-muted-foreground border-border",
+  },
+  pending: {
+    label: "Pendiente",
+    color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
+  },
 };
 
 function SpeedPointsBadge({ points }: { points: number }) {
   const level =
-    points >= 10000 ? { name: "Leyenda", color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/30" } :
-    points >= 5000  ? { name: "Élite",   color: "text-purple-400", bg: "bg-purple-400/10 border-purple-400/30" } :
-    points >= 2000  ? { name: "Pro",     color: "text-blue-400",   bg: "bg-blue-400/10 border-blue-400/30" } :
-    points >= 500   ? { name: "Activo",  color: "text-green-400",  bg: "bg-green-400/10 border-green-400/30" } :
-                      { name: "Nuevo",   color: "text-muted-foreground", bg: "bg-secondary border-border" };
+    points >= 10000
+      ? {
+          name: "Leyenda",
+          color: "text-yellow-400",
+          bg: "bg-yellow-400/10 border-yellow-400/30",
+        }
+      : points >= 5000
+        ? {
+            name: "Élite",
+            color: "text-purple-400",
+            bg: "bg-purple-400/10 border-purple-400/30",
+          }
+        : points >= 2000
+          ? {
+              name: "Pro",
+              color: "text-blue-400",
+              bg: "bg-blue-400/10 border-blue-400/30",
+            }
+          : points >= 500
+            ? {
+                name: "Activo",
+                color: "text-green-400",
+                bg: "bg-green-400/10 border-green-400/30",
+              }
+            : {
+                name: "Nuevo",
+                color: "text-muted-foreground",
+                bg: "bg-secondary border-border",
+              };
   return (
-    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-bold ${level.bg} ${level.color}`}>
+    <div
+      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-bold ${level.bg} ${level.color}`}
+    >
       <Coins className="w-3.5 h-3.5" />
       <span>{points.toLocaleString()} SP</span>
       <span className="text-[10px] opacity-70">· {level.name}</span>
@@ -50,7 +122,10 @@ export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
   const { user: currentUser } = useAuth();
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ displayName: "", habboUsername: "" });
+  const [editForm, setEditForm] = useState({
+    displayName: "",
+    habboUsername: "",
+  });
   const qc = useQueryClient();
   const { toast } = useToast();
 
@@ -101,12 +176,20 @@ export default function ProfilePage() {
     enabled: !!username,
   });
 
-  const isOwnProfile = currentUser?.habboUsername?.toLowerCase() === username?.toLowerCase()
-    || currentUser?.displayName?.toLowerCase() === username?.toLowerCase();
+  const isOwnProfile =
+    currentUser?.habboUsername?.toLowerCase() === username?.toLowerCase() ||
+    currentUser?.displayName?.toLowerCase() === username?.toLowerCase();
 
   const updateMutation = useMutation({
-    mutationFn: async (data: { displayName?: string; habboUsername?: string }) => {
-      const res = await apiRequest("PATCH", `/api/users/${currentUser?.id}`, data);
+    mutationFn: async (data: {
+      displayName?: string;
+      habboUsername?: string;
+    }) => {
+      const res = await apiRequest(
+        "PATCH",
+        `/api/users/${currentUser?.id}`,
+        data,
+      );
       return res.json();
     },
     onSuccess: () => {
@@ -123,7 +206,6 @@ export default function ProfilePage() {
 
   return (
     <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-5">
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -156,20 +238,28 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <Label className="text-xs text-muted-foreground">Nombre a mostrar</Label>
+              <Label className="text-xs text-muted-foreground">
+                Nombre a mostrar
+              </Label>
               <Input
                 className="mt-1"
                 value={editForm.displayName}
-                onChange={(e) => setEditForm((p) => ({ ...p, displayName: e.target.value }))}
+                onChange={(e) =>
+                  setEditForm((p) => ({ ...p, displayName: e.target.value }))
+                }
                 placeholder="Tu nombre..."
               />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Usuario Habbo</Label>
+              <Label className="text-xs text-muted-foreground">
+                Usuario Habbo
+              </Label>
               <Input
                 className="mt-1"
                 value={editForm.habboUsername}
-                onChange={(e) => setEditForm((p) => ({ ...p, habboUsername: e.target.value }))}
+                onChange={(e) =>
+                  setEditForm((p) => ({ ...p, habboUsername: e.target.value }))
+                }
                 placeholder="Tu username en Habbo..."
               />
             </div>
@@ -182,7 +272,11 @@ export default function ProfilePage() {
               >
                 <Save className="w-3.5 h-3.5" /> Guardar
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditing(false)}
+              >
                 <X className="w-3.5 h-3.5" />
               </Button>
             </div>
@@ -203,36 +297,50 @@ export default function ProfilePage() {
         </div>
       ) : (
         <div className="flex flex-col sm:flex-row gap-6">
-
           {/* Avatar column */}
           <div className="flex flex-col items-center gap-3 flex-shrink-0">
             <div className="relative">
               <div className="bg-secondary/50 rounded-2xl border border-border overflow-hidden w-36 h-52 flex items-end justify-center">
                 <img
-                  src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${username}&size=b`)}
+                  src={proxyImage(
+                    `https://www.habbo.es/habbo-imaging/avatarimage?user=${username}&size=b`,
+                  )}
                   alt={username}
                   className="h-full w-auto object-contain"
-                  onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.opacity = "0.2";
+                  }}
                   data-testid="img-profile-avatar"
                 />
               </div>
               {/* Online/Offline badge */}
               {hasHabboData && (
-                <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold shadow ${
-                  isOnline
-                    ? "bg-green-500/20 text-green-400 border-green-500/40"
-                    : "bg-muted text-muted-foreground border-border"
-                }`}>
-                  {isOnline
-                    ? <><Wifi className="w-2.5 h-2.5" /> En línea</>
-                    : <><WifiOff className="w-2.5 h-2.5" /> Desconectado</>}
+                <div
+                  className={`absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold shadow ${
+                    isOnline
+                      ? "bg-green-500/20 text-green-400 border-green-500/40"
+                      : "bg-muted text-muted-foreground border-border"
+                  }`}
+                >
+                  {isOnline ? (
+                    <>
+                      <Wifi className="w-2.5 h-2.5" /> En línea
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="w-2.5 h-2.5" /> Desconectado
+                    </>
+                  )}
                 </div>
               )}
             </div>
 
             {/* Role badge */}
             {localUser?.role && ROLE_LABELS[localUser.role] && (
-              <Badge variant="outline" className={`text-[10px] ${ROLE_LABELS[localUser.role].color}`}>
+              <Badge
+                variant="outline"
+                className={`text-[10px] ${ROLE_LABELS[localUser.role].color}`}
+              >
                 {ROLE_LABELS[localUser.role].label}
               </Badge>
             )}
@@ -241,9 +349,16 @@ export default function ProfilePage() {
           {/* Info column */}
           <div className="flex-1 space-y-4">
             <div>
-              <h2 className="text-2xl font-black" data-testid="text-profile-username">@{username}</h2>
+              <h2
+                className="text-2xl font-black"
+                data-testid="text-profile-username"
+              >
+                @{username}
+              </h2>
               {habboUser?.motto && (
-                <p className="text-sm text-muted-foreground mt-1 italic">"{habboUser.motto}"</p>
+                <p className="text-sm text-muted-foreground mt-1 italic">
+                  "{habboUser.motto}"
+                </p>
               )}
             </div>
 
@@ -256,16 +371,32 @@ export default function ProfilePage() {
             {hasHabboData && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { icon: Star,    label: "Nivel",    value: habboUser.level ?? "—" },
-                  { icon: Users,   label: "Likes",    value: (habboUser.totalLikes ?? 0).toLocaleString() },
-                  { icon: Home,    label: "Salas",    value: habboUser.roomCount ?? 0 },
-                  { icon: Trophy,  label: "Estrellas", value: habboUser.starGemCount ?? 0 },
+                  { icon: Star, label: "Nivel", value: habboUser.level ?? "—" },
+                  {
+                    icon: Users,
+                    label: "Likes",
+                    value: (habboUser.totalLikes ?? 0).toLocaleString(),
+                  },
+                  {
+                    icon: Home,
+                    label: "Salas",
+                    value: habboUser.roomCount ?? 0,
+                  },
+                  {
+                    icon: Trophy,
+                    label: "Estrellas",
+                    value: habboUser.starGemCount ?? 0,
+                  },
                 ].map((s) => (
                   <Card key={s.label} className="bg-card border-border">
                     <CardContent className="p-3 text-center">
                       <s.icon className="w-4 h-4 text-primary mx-auto mb-1" />
-                      <p className="text-base font-bold text-primary">{s.value}</p>
-                      <p className="text-[10px] text-muted-foreground">{s.label}</p>
+                      <p className="text-base font-bold text-primary">
+                        {s.value}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {s.label}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}
@@ -276,7 +407,13 @@ export default function ProfilePage() {
             {habboUser?.memberSince && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Miembro de Habbo desde {new Date(habboUser.memberSince).toLocaleDateString("es-ES", { year: "numeric", month: "long" })}</span>
+                <span>
+                  Miembro de Habbo desde{" "}
+                  {new Date(habboUser.memberSince).toLocaleDateString("es-ES", {
+                    year: "numeric",
+                    month: "long",
+                  })}
+                </span>
               </div>
             )}
 
@@ -284,7 +421,9 @@ export default function ProfilePage() {
               <Card className="bg-card border-border">
                 <CardContent className="p-4 text-center">
                   <WifiOff className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
-                  <p className="text-sm text-muted-foreground">Usuario de Habbo no encontrado o perfil privado</p>
+                  <p className="text-sm text-muted-foreground">
+                    Usuario de Habbo no encontrado o perfil privado
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -297,24 +436,34 @@ export default function ProfilePage() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Home className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold">Salas públicas ({habboRooms.length})</h3>
+            <h3 className="text-sm font-bold">
+              Salas públicas ({habboRooms.length})
+            </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {habboRooms.slice(0, 6).map((room: any, i: number) => (
-              <Card key={i} className="bg-card border-border hover:border-primary/30 transition-colors">
+              <Card
+                key={i}
+                className="bg-card border-border hover:border-primary/30 transition-colors"
+              >
                 <CardContent className="p-3 flex items-center gap-3">
                   {room.thumbnailUrl && (
                     <img
                       src={room.thumbnailUrl}
                       alt={room.name}
                       className="w-14 h-10 rounded-lg object-cover bg-secondary flex-shrink-0"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
                     />
                   )}
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold truncate">{room.name}</p>
+                    <p className="text-xs font-semibold truncate">
+                      {room.name}
+                    </p>
                     <p className="text-[10px] text-muted-foreground">
-                      {room.usersCount ?? 0} usuarios · {room.description?.slice(0, 40) || ""}
+                      {room.usersCount ?? 0} usuarios ·{" "}
+                      {room.description?.slice(0, 40) || ""}
                     </p>
                   </div>
                 </CardContent>
@@ -333,13 +482,18 @@ export default function ProfilePage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {habboGroups.slice(0, 12).map((g: any, i: number) => (
-              <div key={i} className="flex items-center gap-1.5 bg-secondary/60 hover:bg-secondary rounded-xl px-3 py-1.5 text-xs transition-colors">
+              <div
+                key={i}
+                className="flex items-center gap-1.5 bg-secondary/60 hover:bg-secondary rounded-xl px-3 py-1.5 text-xs transition-colors"
+              >
                 {g.badgeUrl && (
                   <img
                     src={g.badgeUrl}
                     alt={g.name}
                     className="w-5 h-5 object-contain"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
                   />
                 )}
                 <span className="font-medium">{g.name}</span>
@@ -353,11 +507,23 @@ export default function ProfilePage() {
       {(hasHabboData || localUser) && (
         <Tabs defaultValue="badges" className="w-full">
           <TabsList className="bg-secondary/50 border border-border h-auto flex-wrap gap-0.5 w-full">
-            <TabsTrigger value="badges" className="text-xs gap-1.5"><Award className="w-3 h-3" /> Placas</TabsTrigger>
-            <TabsTrigger value="rooms" className="text-xs gap-1.5"><Home className="w-3 h-3" /> Salas</TabsTrigger>
-            <TabsTrigger value="friends" className="text-xs gap-1.5"><Users className="w-3 h-3" /> Amigos</TabsTrigger>
-            <TabsTrigger value="groups" className="text-xs gap-1.5"><Heart className="w-3 h-3" /> Grupos</TabsTrigger>
-            {localUser && <TabsTrigger value="muro" className="text-xs gap-1.5"><MessageCircle className="w-3 h-3" /> Muro</TabsTrigger>}
+            <TabsTrigger value="badges" className="text-xs gap-1.5">
+              <Award className="w-3 h-3" /> Placas
+            </TabsTrigger>
+            <TabsTrigger value="rooms" className="text-xs gap-1.5">
+              <Home className="w-3 h-3" /> Salas
+            </TabsTrigger>
+            <TabsTrigger value="friends" className="text-xs gap-1.5">
+              <Users className="w-3 h-3" /> Amigos
+            </TabsTrigger>
+            <TabsTrigger value="groups" className="text-xs gap-1.5">
+              <Heart className="w-3 h-3" /> Grupos
+            </TabsTrigger>
+            {localUser && (
+              <TabsTrigger value="muro" className="text-xs gap-1.5">
+                <MessageCircle className="w-3 h-3" /> Muro
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="badges">
@@ -378,7 +544,10 @@ export default function ProfilePage() {
 
           {localUser && (
             <TabsContent value="muro">
-              <WallTab profileUserId={localUser.id} isOwnProfile={isOwnProfile} />
+              <WallTab
+                profileUserId={localUser.id}
+                isOwnProfile={isOwnProfile}
+              />
             </TabsContent>
           )}
         </Tabs>
@@ -396,22 +565,37 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Puntos acumulados</span>
-                <span className="text-sm font-black text-yellow-400">{(localUser.speedPoints ?? 0).toLocaleString()} SP</span>
+                <span className="text-xs text-muted-foreground">
+                  Puntos acumulados
+                </span>
+                <span className="text-sm font-black text-yellow-400">
+                  {(localUser.speedPoints ?? 0).toLocaleString()} SP
+                </span>
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-theme-gradient rounded-full transition-all" style={{ width: `${Math.min(100, ((localUser.speedPoints ?? 0) / 10000) * 100)}%` }} />
+                <div
+                  className="h-full bg-theme-gradient rounded-full transition-all"
+                  style={{
+                    width: `${Math.min(100, ((localUser.speedPoints ?? 0) / 10000) * 100)}%`,
+                  }}
+                />
               </div>
-              <p className="text-[10px] text-muted-foreground">Gana SP participando en el chat, solicitando canciones y asistiendo a eventos.</p>
-              <Button size="sm" variant="outline" className="text-[10px] w-full" onClick={() => window.location.hash = "#/tienda"}>
+              <p className="text-[10px] text-muted-foreground">
+                Gana SP participando en el chat, solicitando canciones y
+                asistiendo a eventos.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-[10px] w-full"
+                onClick={() => (window.location.hash = "#/tienda")}
+              >
                 <Coins className="w-3 h-3 mr-1" /> Ir a la Tienda
               </Button>
             </CardContent>
           </Card>
         )}
-        {isOwnProfile && (
-          <ProfileSettings userId={currentUser!.id} />
-        )}
+        {isOwnProfile && <ProfileSettings userId={currentUser!.id} />}
       </div>
 
       {/* Support / Tickets quick access — only own profile */}
@@ -423,11 +607,16 @@ export default function ProfilePage() {
             </div>
             <div>
               <p className="text-sm font-black text-white">Centro de Soporte</p>
-              <p className="text-[11px] text-muted-foreground">¿Tienes un problema? Crea un ticket y te ayudamos.</p>
+              <p className="text-[11px] text-muted-foreground">
+                ¿Tienes un problema? Crea un ticket y te ayudamos.
+              </p>
             </div>
           </div>
           <Link href="/soporte">
-            <Button size="sm" className="bg-primary hover:bg-primary/80 text-white text-xs whitespace-nowrap">
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/80 text-white text-xs whitespace-nowrap"
+            >
               <i className="fa-solid fa-ticket mr-2"></i> Ir a Soporte
             </Button>
           </Link>
@@ -435,11 +624,12 @@ export default function ProfilePage() {
       )}
 
       {/* About Me / Social */}
-      {localUser && <AboutSection userId={localUser.id} isOwnProfile={isOwnProfile} />}
+      {localUser && (
+        <AboutSection userId={localUser.id} isOwnProfile={isOwnProfile} />
+      )}
     </div>
   );
 }
-
 
 // ===== BADGES TAB =====
 function BadgesTab({ username }: { username: string }) {
@@ -459,20 +649,29 @@ function BadgesTab({ username }: { username: string }) {
   return (
     <Card className="bg-card border-border">
       <CardHeader className="pb-2">
-        <p className="text-sm font-bold">Placas de {username} ({badges.length})</p>
+        <p className="text-sm font-bold">
+          Placas de {username} ({badges.length})
+        </p>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 justify-items-center">
           {badges.length === 0 ? (
-            <p className="text-xs text-muted-foreground col-span-full text-center py-4">Este usuario no tiene placas visibles</p>
+            <p className="text-xs text-muted-foreground col-span-full text-center py-4">
+              Este usuario no tiene placas visibles
+            </p>
           ) : (
             badges.map((badge: any, i: number) => (
               <div key={i} className="group relative">
                 <img
-                  src={badge.imageUrl || `https://images.habbo.com/c_images/album1584/${badge.code}.gif`}
+                  src={
+                    badge.imageUrl ||
+                    `https://images.habbo.com/c_images/album1584/${badge.code}.gif`
+                  }
                   alt={badge.code}
                   className="w-10 h-10 object-contain hover:scale-110 transition-transform cursor-pointer"
-                  onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.opacity = "0.2";
+                  }}
                 />
                 <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-popover text-[9px] px-2 py-1 rounded border border-border whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
                   {badge.code}
@@ -506,13 +705,25 @@ function RoomsTab({ rooms }: { rooms: any[] | undefined }) {
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {rooms.slice(0, 8).map((room: any, i: number) => (
-            <div key={i} className="flex items-center gap-3 bg-secondary/20 rounded-lg p-2.5 border border-border/40 hover:border-primary/30 transition-colors">
+            <div
+              key={i}
+              className="flex items-center gap-3 bg-secondary/20 rounded-lg p-2.5 border border-border/40 hover:border-primary/30 transition-colors"
+            >
               {room.thumbnailUrl && (
-                <img src={room.thumbnailUrl} alt={room.name} className="w-14 h-10 rounded object-cover bg-secondary flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                <img
+                  src={room.thumbnailUrl}
+                  alt={room.name}
+                  className="w-14 h-10 rounded object-cover bg-secondary flex-shrink-0"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
               )}
               <div className="min-w-0">
                 <p className="text-xs font-semibold truncate">{room.name}</p>
-                <p className="text-[10px] text-muted-foreground">{room.usersCount ?? 0} usuarios</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {room.usersCount ?? 0} usuarios
+                </p>
               </div>
             </div>
           ))}
@@ -529,7 +740,9 @@ function FriendsTab({ username }: { username: string }) {
     queryFn: async () => {
       const uid = await resolveHabboUserIdLocal(username);
       if (!uid) return [];
-      const r = await fetch(`https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/friends`);
+      const r = await fetch(
+        `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/friends`,
+      );
       return r.ok ? r.json() : [];
     },
     retry: false,
@@ -546,17 +759,29 @@ function FriendsTab({ username }: { username: string }) {
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {friendList.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Lista de amigos privada o sin amigos</p>
+            <p className="text-xs text-muted-foreground">
+              Lista de amigos privada o sin amigos
+            </p>
           ) : (
             friendList.slice(0, 24).map((f: any, i: number) => (
-              <div key={i} className="flex items-center gap-1.5 bg-secondary/30 rounded-full px-2 py-1 text-[10px]" title={f.name}>
+              <div
+                key={i}
+                className="flex items-center gap-1.5 bg-secondary/30 rounded-full px-2 py-1 text-[10px]"
+                title={f.name}
+              >
                 <img
-                  src={proxyImage(`https://www.habbo.es/habbo-imaging/avatarimage?user=${f.name}&size=s&headonly=1`)}
+                  src={proxyImage(
+                    `https://www.habbo.es/habbo-imaging/avatarimage?user=${f.name}&size=s&headonly=1`,
+                  )}
                   alt={f.name}
                   className="w-5 h-5 rounded-full"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
                 />
-                <span className="font-medium truncate max-w-[60px]">{f.name}</span>
+                <span className="font-medium truncate max-w-[60px]">
+                  {f.name}
+                </span>
               </div>
             ))
           )}
@@ -586,8 +811,20 @@ function GroupsTab({ groups }: { groups: any[] | undefined }) {
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {groups.slice(0, 12).map((g: any, i: number) => (
-            <div key={i} className="flex items-center gap-1.5 bg-secondary/40 rounded-xl px-3 py-1.5 text-xs border border-border/40">
-              {g.badgeUrl && <img src={g.badgeUrl} alt={g.name} className="w-5 h-5 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
+            <div
+              key={i}
+              className="flex items-center gap-1.5 bg-secondary/40 rounded-xl px-3 py-1.5 text-xs border border-border/40"
+            >
+              {g.badgeUrl && (
+                <img
+                  src={g.badgeUrl}
+                  alt={g.name}
+                  className="w-5 h-5 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              )}
               <span className="font-medium">{g.name}</span>
             </div>
           ))}
@@ -598,7 +835,13 @@ function GroupsTab({ groups }: { groups: any[] | undefined }) {
 }
 
 // ===== WALL TAB / MURO =====
-function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwnProfile: boolean }) {
+function WallTab({
+  profileUserId,
+  isOwnProfile,
+}: {
+  profileUserId: number;
+  isOwnProfile: boolean;
+}) {
   const { user: currentUser, token } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -620,10 +863,12 @@ function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwn
         "POST",
         `/api/wall/${profileUserId}`,
         { message: messageText },
-        token ? `Bearer ${token}` : undefined
+        token ? `Bearer ${token}` : undefined,
       );
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ message: "Error al publicar" }));
+        const err = await res
+          .json()
+          .catch(() => ({ message: "Error al publicar" }));
         throw new Error(err.message || "Error al publicar mensaje");
       }
       return res.json();
@@ -631,10 +876,17 @@ function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwn
     onSuccess: () => {
       setNewMsg("");
       qc.invalidateQueries({ queryKey: ["/api/wall", profileUserId] });
-      toast({ title: "¡Mensaje publicado!", description: "Se ha agregado al muro." });
+      toast({
+        title: "¡Mensaje publicado!",
+        description: "Se ha agregado al muro.",
+      });
     },
     onError: (err: any) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -644,10 +896,12 @@ function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwn
         "DELETE",
         `/api/wall/${msgId}`,
         undefined,
-        token ? `Bearer ${token}` : undefined
+        token ? `Bearer ${token}` : undefined,
       );
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ message: "Error al eliminar" }));
+        const err = await res
+          .json()
+          .catch(() => ({ message: "Error al eliminar" }));
         throw new Error(err.message || "Error al eliminar mensaje");
       }
       return res.json();
@@ -657,7 +911,11 @@ function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwn
       toast({ title: "¡Mensaje eliminado!" });
     },
     onError: (err: any) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -680,7 +938,9 @@ function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwn
         {/* Form para nuevo mensaje */}
         {currentUser ? (
           <form onSubmit={handleSubmit} className="space-y-2">
-            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Dejar un mensaje en el muro</Label>
+            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              Dejar un mensaje en el muro
+            </Label>
             <div className="flex gap-2">
               <Textarea
                 placeholder="Escribe algo simpático en este muro..."
@@ -702,15 +962,24 @@ function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwn
           </form>
         ) : (
           <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 text-center space-y-2">
-            <p className="text-xs text-muted-foreground">Debes estar registrado o iniciar sesión para firmar el muro.</p>
+            <p className="text-xs text-muted-foreground">
+              Debes estar registrado o iniciar sesión para firmar el muro.
+            </p>
             <div className="flex justify-center gap-3">
               <Link href="/login">
-                <Button variant="outline" size="sm" className="text-xs h-8 border-primary/30 text-primary hover:bg-primary/10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 border-primary/30 text-primary hover:bg-primary/10"
+                >
                   <LogIn className="w-3.5 h-3.5 mr-1" /> Iniciar Sesión
                 </Button>
               </Link>
               <Link href="/register">
-                <Button size="sm" className="text-xs h-8 bg-primary hover:bg-primary/80 text-white">
+                <Button
+                  size="sm"
+                  className="text-xs h-8 bg-primary hover:bg-primary/80 text-white"
+                >
                   <UserPlus className="w-3.5 h-3.5 mr-1" /> Registrarse
                 </Button>
               </Link>
@@ -721,7 +990,9 @@ function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwn
         {/* Lista de mensajes */}
         <div className="space-y-3 pt-2">
           {msgs.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-6">El muro está vacío. ¡Sé el primero en firmar!</p>
+            <p className="text-xs text-muted-foreground text-center py-6">
+              El muro está vacío. ¡Sé el primero en firmar!
+            </p>
           ) : (
             msgs.map((msg: any) => {
               const canDelete =
@@ -731,21 +1002,29 @@ function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwn
                   currentUser.role === "admin");
 
               return (
-                <div key={msg.id} className="flex gap-3 bg-secondary/15 rounded-2xl p-3 border border-border/30 hover:border-primary/20 transition-all group">
+                <div
+                  key={msg.id}
+                  className="flex gap-3 bg-secondary/15 rounded-2xl p-3 border border-border/30 hover:border-primary/20 transition-all group"
+                >
                   <Link href={`/profile/${msg.authorName}`}>
                     <div className="w-9 h-9 rounded-xl bg-secondary/50 border border-border flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all flex-shrink-0 cursor-pointer">
                       <img
                         src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(msg.authorName)}&size=s&headonly=1`}
                         alt={msg.authorName}
                         className="w-full h-full object-contain"
-                        onError={(e) => { (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif"; }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "/habbo-radio/frank_small_03.gif";
+                        }}
                       />
                     </div>
                   </Link>
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center justify-between">
                       <Link href={`/profile/${msg.authorName}`}>
-                        <span className="text-xs font-bold text-primary hover:underline cursor-pointer">{msg.authorName}</span>
+                        <span className="text-xs font-bold text-primary hover:underline cursor-pointer">
+                          {msg.authorName}
+                        </span>
                       </Link>
                       <div className="flex items-center gap-2">
                         {msg.createdAt && (
@@ -770,7 +1049,9 @@ function WallTab({ profileUserId, isOwnProfile }: { profileUserId: number; isOwn
                         )}
                       </div>
                     </div>
-                    <p className="text-xs text-foreground/90 whitespace-pre-wrap break-words">{msg.message}</p>
+                    <p className="text-xs text-foreground/90 whitespace-pre-wrap break-words">
+                      {msg.message}
+                    </p>
                   </div>
                 </div>
               );
@@ -824,7 +1105,12 @@ function ProfileSettings({ userId }: { userId: number }) {
 
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("PUT", "/api/profiles", data, token ? `Bearer ${token}` : undefined);
+      const res = await apiRequest(
+        "PUT",
+        "/api/profiles",
+        data,
+        token ? `Bearer ${token}` : undefined,
+      );
       return res.json();
     },
     onSuccess: () => {
@@ -845,40 +1131,102 @@ function ProfileSettings({ userId }: { userId: number }) {
       <CardContent className="space-y-3">
         <div>
           <Label className="text-[10px] text-muted-foreground">Bio corta</Label>
-          <Textarea className="mt-1 text-xs resize-none" rows={2} value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} placeholder="Una breve descripción..." />
+          <Textarea
+            className="mt-1 text-xs resize-none"
+            rows={2}
+            value={form.bio}
+            onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
+            placeholder="Una breve descripción..."
+          />
         </div>
         <div>
-          <Label className="text-[10px] text-muted-foreground">Acerca de mí</Label>
-          <Textarea className="mt-1 text-xs resize-none" rows={3} value={form.aboutMe} onChange={e => setForm(p => ({ ...p, aboutMe: e.target.value }))} placeholder="Cuéntanos sobre ti..." />
+          <Label className="text-[10px] text-muted-foreground">
+            Acerca de mí
+          </Label>
+          <Textarea
+            className="mt-1 text-xs resize-none"
+            rows={3}
+            value={form.aboutMe}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, aboutMe: e.target.value }))
+            }
+            placeholder="Cuéntanos sobre ti..."
+          />
         </div>
         <div>
-          <Label className="text-[10px] text-muted-foreground">URL de fondo de perfil</Label>
-          <Input className="mt-1 text-xs" value={form.backgroundUrl} onChange={e => setForm(p => ({ ...p, backgroundUrl: e.target.value }))} placeholder="https://..." />
+          <Label className="text-[10px] text-muted-foreground">
+            URL de fondo de perfil
+          </Label>
+          <Input
+            className="mt-1 text-xs"
+            value={form.backgroundUrl}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, backgroundUrl: e.target.value }))
+            }
+            placeholder="https://..."
+          />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-[10px] text-muted-foreground">Color de fondo</Label>
-            <Input className="mt-1 text-xs" type="color" value={form.backgroundColor} onChange={e => setForm(p => ({ ...p, backgroundColor: e.target.value }))} />
+            <Label className="text-[10px] text-muted-foreground">
+              Color de fondo
+            </Label>
+            <Input
+              className="mt-1 text-xs"
+              type="color"
+              value={form.backgroundColor}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, backgroundColor: e.target.value }))
+              }
+            />
           </div>
         </div>
         <div>
-          <Label className="text-[10px] text-muted-foreground">Redes sociales</Label>
+          <Label className="text-[10px] text-muted-foreground">
+            Redes sociales
+          </Label>
           <div className="space-y-2 mt-1">
             <div className="flex items-center gap-2">
               <Youtube className="w-4 h-4 text-red-400" />
-              <Input className="text-xs flex-1" placeholder="URL de YouTube" value={form.socialYoutube} onChange={e => setForm(p => ({ ...p, socialYoutube: e.target.value }))} />
+              <Input
+                className="text-xs flex-1"
+                placeholder="URL de YouTube"
+                value={form.socialYoutube}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, socialYoutube: e.target.value }))
+                }
+              />
             </div>
             <div className="flex items-center gap-2">
               <Twitter className="w-4 h-4 text-sky-400" />
-              <Input className="text-xs flex-1" placeholder="URL de Twitter/X" value={form.socialTwitter} onChange={e => setForm(p => ({ ...p, socialTwitter: e.target.value }))} />
+              <Input
+                className="text-xs flex-1"
+                placeholder="URL de Twitter/X"
+                value={form.socialTwitter}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, socialTwitter: e.target.value }))
+                }
+              />
             </div>
             <div className="flex items-center gap-2">
               <Instagram className="w-4 h-4 text-pink-400" />
-              <Input className="text-xs flex-1" placeholder="URL de Instagram" value={form.socialInstagram} onChange={e => setForm(p => ({ ...p, socialInstagram: e.target.value }))} />
+              <Input
+                className="text-xs flex-1"
+                placeholder="URL de Instagram"
+                value={form.socialInstagram}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, socialInstagram: e.target.value }))
+                }
+              />
             </div>
           </div>
         </div>
-        <Button size="sm" className="w-full text-xs" onClick={() => saveMutation.mutate(form)} disabled={saveMutation.isPending}>
+        <Button
+          size="sm"
+          className="w-full text-xs"
+          onClick={() => saveMutation.mutate(form)}
+          disabled={saveMutation.isPending}
+        >
           <Save className="w-3 h-3 mr-1" /> Guardar perfil
         </Button>
       </CardContent>
@@ -887,7 +1235,13 @@ function ProfileSettings({ userId }: { userId: number }) {
 }
 
 // ===== ABOUT SECTION =====
-function AboutSection({ userId, isOwnProfile }: { userId: number; isOwnProfile: boolean }) {
+function AboutSection({
+  userId,
+  isOwnProfile,
+}: {
+  userId: number;
+  isOwnProfile: boolean;
+}) {
   const { data: profile } = useQuery<any>({
     queryKey: ["/api/profiles", userId],
     queryFn: async () => {
@@ -898,12 +1252,24 @@ function AboutSection({ userId, isOwnProfile }: { userId: number; isOwnProfile: 
     retry: false,
   });
 
-  if (!profile || (!profile.bio && !profile.aboutMe && !profile.socialYoutube && !profile.socialTwitter && !profile.socialInstagram)) {
+  if (
+    !profile ||
+    (!profile.bio &&
+      !profile.aboutMe &&
+      !profile.socialYoutube &&
+      !profile.socialTwitter &&
+      !profile.socialInstagram)
+  ) {
     return null;
   }
 
   return (
-    <Card className="bg-card border-border" style={profile.backgroundColor ? { borderColor: profile.backgroundColor } : {}}>
+    <Card
+      className="bg-card border-border"
+      style={
+        profile.backgroundColor ? { borderColor: profile.backgroundColor } : {}
+      }
+    >
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <Heart className="w-4 h-4 text-pink-400" />
@@ -911,22 +1277,43 @@ function AboutSection({ userId, isOwnProfile }: { userId: number; isOwnProfile: 
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {profile.bio && <p className="text-xs text-foreground/80 italic">"{profile.bio}"</p>}
-        {profile.aboutMe && <p className="text-xs text-muted-foreground">{profile.aboutMe}</p>}
-        {(profile.socialYoutube || profile.socialTwitter || profile.socialInstagram) && (
+        {profile.bio && (
+          <p className="text-xs text-foreground/80 italic">"{profile.bio}"</p>
+        )}
+        {profile.aboutMe && (
+          <p className="text-xs text-muted-foreground">{profile.aboutMe}</p>
+        )}
+        {(profile.socialYoutube ||
+          profile.socialTwitter ||
+          profile.socialInstagram) && (
           <div className="flex gap-2 pt-1">
             {profile.socialYoutube && (
-              <a href={profile.socialYoutube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] text-red-400 hover:underline">
+              <a
+                href={profile.socialYoutube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[10px] text-red-400 hover:underline"
+              >
                 <Youtube className="w-3 h-3" /> YouTube
               </a>
             )}
             {profile.socialTwitter && (
-              <a href={profile.socialTwitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] text-sky-400 hover:underline">
+              <a
+                href={profile.socialTwitter}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[10px] text-sky-400 hover:underline"
+              >
                 <Twitter className="w-3 h-3" /> X
               </a>
             )}
             {profile.socialInstagram && (
-              <a href={profile.socialInstagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] text-pink-400 hover:underline">
+              <a
+                href={profile.socialInstagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[10px] text-pink-400 hover:underline"
+              >
                 <Instagram className="w-3 h-3" /> Instagram
               </a>
             )}
@@ -937,11 +1324,18 @@ function AboutSection({ userId, isOwnProfile }: { userId: number; isOwnProfile: 
   );
 }
 
-async function resolveHabboUserIdLocal(username: string): Promise<string | null> {
+async function resolveHabboUserIdLocal(
+  username: string,
+): Promise<string | null> {
   try {
-    const r = await fetch(`https://www.habbo.es/api/public/users?name=${encodeURIComponent(username)}`, { headers: { "User-Agent": "HabboSpeed/1.0" } });
+    const r = await fetch(
+      `https://www.habbo.es/api/public/users?name=${encodeURIComponent(username)}`,
+      { headers: { "User-Agent": "HabboSpeed/1.0" } },
+    );
     if (!r.ok) return null;
-    const data = await r.json() as any;
+    const data = (await r.json()) as any;
     return data.uniqueId || null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
