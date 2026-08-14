@@ -61,6 +61,40 @@ import {
   type InsertSupportTicket,
   type Alliance,
   type InsertAlliance,
+  type ReactionIcon,
+  type InsertReactionIcon,
+  type UserReactionIcon,
+  type InsertUserReactionIcon,
+  type Card,
+  type InsertCard,
+  type UserCard,
+  type InsertUserCard,
+  type MiniGame,
+  type InsertMiniGame,
+  type UserMiniGameScore,
+  type InsertUserMiniGameScore,
+  type SpeedMission,
+  type InsertSpeedMission,
+  type UserMission,
+  type InsertUserMission,
+  type SeasonalStamp,
+  type InsertSeasonalStamp,
+  type UserStamp,
+  type InsertUserStamp,
+  type UserYoutubeEmbed,
+  type InsertUserYoutubeEmbed,
+  type CineSession,
+  type InsertCineSession,
+  type DjSlot,
+  type InsertDjSlot,
+  type DjSlotRequest,
+  type InsertDjSlotRequest,
+  type UserRole,
+  type InsertUserRole,
+  type NewsSection,
+  type InsertNewsSection,
+  type NewsSectionLink,
+  type InsertNewsSectionLink,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -306,6 +340,140 @@ export interface IStorage {
     data: Partial<InsertAlliance>,
   ): Promise<Alliance | undefined>;
   deleteAlliance(id: number): Promise<boolean>;
+
+  // Reaction Icons
+  getAllReactionIcons(): Promise<ReactionIcon[]>;
+  getReactionIconByCode(code: string): Promise<ReactionIcon | undefined>;
+  createReactionIcon(data: InsertReactionIcon): Promise<ReactionIcon>;
+  updateReactionIcon(
+    id: number,
+    data: Partial<InsertReactionIcon>,
+  ): Promise<ReactionIcon | undefined>;
+  deleteReactionIcon(id: number): Promise<boolean>;
+  getUserReactionIcons(userId: number): Promise<UserReactionIcon[]>;
+  unlockUserReactionIcon(
+    userId: number,
+    iconId: number,
+  ): Promise<UserReactionIcon>;
+  incrementReactionIconUsage(userId: number, iconId: number): Promise<void>;
+
+  // Cards
+  getAllCards(): Promise<Card[]>;
+  getCardByCode(code: string): Promise<Card | undefined>;
+  createCard(data: InsertCard): Promise<Card>;
+  getUserCards(userId: number): Promise<UserCard[]>;
+  equipUserCard(
+    userId: number,
+    cardId: number,
+    slot: number,
+  ): Promise<UserCard>;
+  grantUserCard(userId: number, cardId: number, qty: number): Promise<UserCard>;
+
+  // Mini Games
+  getAllMiniGames(): Promise<MiniGame[]>;
+  getMiniGameByCode(code: string): Promise<MiniGame | undefined>;
+  createMiniGame(data: InsertMiniGame): Promise<MiniGame>;
+  getUserMiniGameScores(userId: number): Promise<UserMiniGameScore[]>;
+  submitMiniGameScore(
+    userId: number,
+    gameCode: string,
+    score: number,
+    gameData?: any,
+  ): Promise<UserMiniGameScore>;
+  getMiniGameLeaderboard(gameCode: string, limit: number): Promise<any[]>;
+
+  // Speed Missions
+  getActiveSpeedMissions(season?: string): Promise<SpeedMission[]>;
+  getSpeedMissionByCode(code: string): Promise<SpeedMission | undefined>;
+  createSpeedMission(data: InsertSpeedMission): Promise<SpeedMission>;
+  getUserMissions(userId: number): Promise<UserMission[]>;
+  updateMissionProgress(
+    userId: number,
+    missionId: number,
+    action: string,
+    metadata?: any,
+  ): Promise<UserMission>;
+  claimMissionReward(userId: number, missionId: number): Promise<UserMission>;
+
+  // Seasonal Stamps
+  getSeasonalStamps(season?: string): Promise<SeasonalStamp[]>;
+  getSeasonalStampByCode(code: string): Promise<SeasonalStamp | undefined>;
+  createSeasonalStamp(data: InsertSeasonalStamp): Promise<SeasonalStamp>;
+  getUserStamps(userId: number): Promise<UserStamp[]>;
+
+  // YouTube Embeds (Speed Shorts)
+  getUserYoutubeEmbeds(userId: number): Promise<UserYoutubeEmbed[]>;
+  createUserYoutubeEmbed(
+    userId: number,
+    data: InsertUserYoutubeEmbed,
+  ): Promise<UserYoutubeEmbed>;
+  updateUserYoutubeEmbed(
+    id: number,
+    userId: number,
+    data: Partial<InsertUserYoutubeEmbed>,
+  ): Promise<UserYoutubeEmbed | undefined>;
+  deleteUserYoutubeEmbed(id: number, userId: number): Promise<boolean>;
+  approveYoutubeEmbed(id: number): Promise<UserYoutubeEmbed | undefined>;
+
+  // Cine Mode
+  getCineSessions(status?: string): Promise<CineSession[]>;
+  getCineSession(id: number): Promise<CineSession | undefined>;
+  createCineSession(
+    hostUserId: number,
+    data: InsertCineSession,
+  ): Promise<CineSession>;
+  updateCineSession(
+    id: number,
+    hostUserId: number,
+    data: Partial<InsertCineSession>,
+  ): Promise<CineSession | undefined>;
+  joinCineSession(sessionId: number, userId: number): Promise<CineSession>;
+  leaveCineSession(sessionId: number, userId: number): Promise<void>;
+
+  // DJ Slots
+  getAllDjSlots(): Promise<DjSlot[]>;
+  getDjSlot(id: number): Promise<DjSlot | undefined>;
+  createDjSlot(data: InsertDjSlot): Promise<DjSlot>;
+  updateDjSlot(
+    id: number,
+    data: Partial<InsertDjSlot>,
+  ): Promise<DjSlot | undefined>;
+  deleteDjSlot(id: number): Promise<boolean>;
+  requestDjSlot(
+    slotId: number,
+    userId: number,
+    data: InsertDjSlotRequest,
+  ): Promise<DjSlotRequest>;
+  getDjSlotRequests(): Promise<DjSlotRequest[]>;
+  reviewDjSlotRequest(
+    id: number,
+    reviewedBy: number,
+    data: { status: string },
+  ): Promise<DjSlotRequest>;
+
+  // User Roles
+  getUserRoles(userId: number): Promise<UserRole[]>;
+  grantUserRole(
+    userId: number,
+    grantedBy: number,
+    data: InsertUserRole,
+  ): Promise<UserRole>;
+  revokeUserRole(userId: number, roleId: number): Promise<boolean>;
+
+  // News Sections
+  getAllNewsSections(): Promise<NewsSection[]>;
+  createNewsSection(data: InsertNewsSection): Promise<NewsSection>;
+  updateNewsSection(
+    id: number,
+    data: Partial<InsertNewsSection>,
+  ): Promise<NewsSection | undefined>;
+  getNewsSections(newsId: number): Promise<NewsSection[]>;
+  linkNewsToSection(
+    newsId: number,
+    sectionId: number,
+    isPrimary: boolean,
+  ): Promise<void>;
+  unlinkNewsFromSection(newsId: number, sectionId: number): Promise<void>;
 }
 
 // Helper to map snake_case DB rows to camelCase TypeScript objects
@@ -2509,5 +2677,1077 @@ export class SupabaseStorage implements IStorage {
   async deleteAlliance(id: number): Promise<boolean> {
     const r = await this.query("DELETE FROM alliances WHERE id = $1", [id]);
     return (r.rowCount ?? 0) > 0;
+  }
+
+  // Reaction Icons
+  async getAllReactionIcons(): Promise<ReactionIcon[]> {
+    const r = await this.query(
+      "SELECT * FROM reaction_icons WHERE is_active = true ORDER BY sort_order ASC",
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name,
+      label: row.label,
+      iconUrl: row.icon_url,
+      animatedIconUrl: row.animated_icon_url,
+      category: row.category,
+      rarity: row.rarity,
+      speedPointsCost: row.speed_points_cost,
+      unlockCondition: row.unlock_condition,
+      isActive: row.is_active,
+      sortOrder: row.sort_order,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async getReactionIconByCode(code: string): Promise<ReactionIcon | undefined> {
+    const r = await this.query("SELECT * FROM reaction_icons WHERE code = $1", [
+      code,
+    ]);
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async createReactionIcon(data: InsertReactionIcon): Promise<ReactionIcon> {
+    const r = await this.query(
+      `INSERT INTO reaction_icons (code, name, label, icon_url, animated_icon_url, category, rarity, speed_points_cost, unlock_condition, is_active, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+      [
+        data.code,
+        data.name,
+        data.label,
+        data.iconUrl,
+        data.animatedIconUrl || null,
+        data.category || "general",
+        data.rarity || "common",
+        data.speedPointsCost || 0,
+        data.unlockCondition || {},
+        data.isActive ?? true,
+        data.sortOrder || 0,
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async updateReactionIcon(
+    id: number,
+    data: Partial<InsertReactionIcon>,
+  ): Promise<ReactionIcon | undefined> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.name !== undefined) {
+      fields.push(`name = $${i++}`);
+      values.push(data.name);
+    }
+    if (data.label !== undefined) {
+      fields.push(`label = $${i++}`);
+      values.push(data.label);
+    }
+    if (data.iconUrl !== undefined) {
+      fields.push(`icon_url = $${i++}`);
+      values.push(data.iconUrl);
+    }
+    if (data.animatedIconUrl !== undefined) {
+      fields.push(`animated_icon_url = $${i++}`);
+      values.push(data.animatedIconUrl);
+    }
+    if (data.category !== undefined) {
+      fields.push(`category = $${i++}`);
+      values.push(data.category);
+    }
+    if (data.rarity !== undefined) {
+      fields.push(`rarity = $${i++}`);
+      values.push(data.rarity);
+    }
+    if (data.speedPointsCost !== undefined) {
+      fields.push(`speed_points_cost = $${i++}`);
+      values.push(data.speedPointsCost);
+    }
+    if (data.unlockCondition !== undefined) {
+      fields.push(`unlock_condition = $${i++}`);
+      values.push(data.unlockCondition);
+    }
+    if (data.isActive !== undefined) {
+      fields.push(`is_active = $${i++}`);
+      values.push(data.isActive);
+    }
+    if (data.sortOrder !== undefined) {
+      fields.push(`sort_order = $${i++}`);
+      values.push(data.sortOrder);
+    }
+    if (fields.length === 0) return this.getReactionIconByCode("");
+    values.push(id);
+    const r = await this.query(
+      `UPDATE reaction_icons SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async deleteReactionIcon(id: number): Promise<boolean> {
+    const r = await this.query("DELETE FROM reaction_icons WHERE id = $1", [
+      id,
+    ]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async getUserReactionIcons(userId: number): Promise<UserReactionIcon[]> {
+    const r = await this.query(
+      "SELECT * FROM user_reaction_icons WHERE user_id = $1",
+      [userId],
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      reactionIconId: row.reaction_icon_id,
+      unlockedAt: row.unlocked_at,
+      usageCount: row.usage_count,
+    }));
+  }
+
+  async unlockUserReactionIcon(
+    userId: number,
+    iconId: number,
+  ): Promise<UserReactionIcon> {
+    const r = await this.query(
+      `INSERT INTO user_reaction_icons (user_id, reaction_icon_id) VALUES ($1, $2) 
+       ON CONFLICT (user_id, reaction_icon_id) DO NOTHING RETURNING *`,
+      [userId, iconId],
+    );
+    if (r.rows[0]) return r.rows[0];
+    const existing = await this.query(
+      "SELECT * FROM user_reaction_icons WHERE user_id = $1 AND reaction_icon_id = $2",
+      [userId, iconId],
+    );
+    return existing.rows[0];
+  }
+
+  async incrementReactionIconUsage(
+    userId: number,
+    iconId: number,
+  ): Promise<void> {
+    await this.query(
+      "UPDATE user_reaction_icons SET usage_count = usage_count + 1 WHERE user_id = $1 AND reaction_icon_id = $2",
+      [userId, iconId],
+    );
+  }
+
+  // Cards
+  async getAllCards(): Promise<Card[]> {
+    const r = await this.query(
+      "SELECT * FROM cards WHERE is_active = true ORDER BY sort_order ASC",
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name,
+      description: row.description,
+      imageUrl: row.image_url,
+      animatedImageUrl: row.animated_image_url,
+      category: row.category,
+      rarity: row.rarity,
+      series: row.series,
+      earnCondition: row.earn_condition,
+      speedPointsValue: row.speed_points_value,
+      stats: row.stats,
+      isActive: row.is_active,
+      sortOrder: row.sort_order,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async getCardByCode(code: string): Promise<Card | undefined> {
+    const r = await this.query("SELECT * FROM cards WHERE code = $1", [code]);
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async createCard(data: InsertCard): Promise<Card> {
+    const r = await this.query(
+      `INSERT INTO cards (code, name, description, image_url, animated_image_url, category, rarity, series, earn_condition, speed_points_value, stats, is_active, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+      [
+        data.code,
+        data.name,
+        data.description || null,
+        data.imageUrl,
+        data.animatedImageUrl || null,
+        data.category,
+        data.rarity || "common",
+        data.series || "base",
+        data.earnCondition || {},
+        data.speedPointsValue || 0,
+        data.stats || {},
+        data.isActive ?? true,
+        data.sortOrder || 0,
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async getUserCards(userId: number): Promise<UserCard[]> {
+    const r = await this.query("SELECT * FROM user_cards WHERE user_id = $1", [
+      userId,
+    ]);
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      cardId: row.card_id,
+      quantity: row.quantity,
+      obtainedAt: row.obtained_at,
+      isFavorite: row.is_favorite,
+      equippedSlot: row.equipped_slot,
+    }));
+  }
+
+  async equipUserCard(
+    userId: number,
+    cardId: number,
+    slot: number,
+  ): Promise<UserCard> {
+    await this.query(
+      "UPDATE user_cards SET equipped_slot = NULL WHERE user_id = $1 AND equipped_slot = $2",
+      [userId, slot],
+    );
+    const r = await this.query(
+      `UPDATE user_cards SET equipped_slot = $3 WHERE user_id = $1 AND card_id = $2 RETURNING *`,
+      [userId, cardId, slot],
+    );
+    return r.rows[0];
+  }
+
+  async grantUserCard(
+    userId: number,
+    cardId: number,
+    qty: number,
+  ): Promise<UserCard> {
+    const r = await this.query(
+      `INSERT INTO user_cards (user_id, card_id, quantity) VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, card_id) DO UPDATE SET quantity = user_cards.quantity + EXCLUDED.quantity RETURNING *`,
+      [userId, cardId, qty],
+    );
+    return r.rows[0];
+  }
+
+  // Mini Games
+  async getAllMiniGames(): Promise<MiniGame[]> {
+    const r = await this.query(
+      "SELECT * FROM mini_games WHERE is_active = true ORDER BY id ASC",
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name,
+      description: row.description,
+      thumbnailUrl: row.thumbnail_url,
+      category: row.category,
+      maxScore: row.max_score,
+      rewardConfig: row.reward_config,
+      isActive: row.is_active,
+      config: row.config,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async getMiniGameByCode(code: string): Promise<MiniGame | undefined> {
+    const r = await this.query("SELECT * FROM mini_games WHERE code = $1", [
+      code,
+    ]);
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async createMiniGame(data: InsertMiniGame): Promise<MiniGame> {
+    const r = await this.query(
+      `INSERT INTO mini_games (code, name, description, thumbnail_url, category, max_score, reward_config, is_active, config)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [
+        data.code,
+        data.name,
+        data.description || null,
+        data.thumbnailUrl || null,
+        data.category,
+        data.maxScore || 0,
+        data.rewardConfig || {},
+        data.isActive ?? true,
+        data.config || {},
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async getUserMiniGameScores(userId: number): Promise<UserMiniGameScore[]> {
+    const r = await this.query(
+      "SELECT * FROM user_mini_game_scores WHERE user_id = $1",
+      [userId],
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      miniGameId: row.mini_game_id,
+      score: row.score,
+      maxScore: row.max_score,
+      playsCount: row.plays_count,
+      lastPlayedAt: row.last_played_at,
+      bestRunData: row.best_run_data,
+    }));
+  }
+
+  async submitMiniGameScore(
+    userId: number,
+    gameCode: string,
+    score: number,
+    gameData?: any,
+  ): Promise<UserMiniGameScore> {
+    const game = await this.getMiniGameByCode(gameCode);
+    if (!game) throw new Error("Juego no encontrado");
+    const r = await this.query(
+      `INSERT INTO user_mini_game_scores (user_id, mini_game_id, score, max_score, plays_count, best_run_data)
+       VALUES ($1, $2, $3, GREATEST($3, COALESCE((SELECT max_score FROM user_mini_game_scores WHERE user_id = $1 AND mini_game_id = $2), 0)), 1, $4)
+       ON CONFLICT (user_id, mini_game_id) DO UPDATE SET
+         score = GREATEST(EXCLUDED.score, user_mini_game_scores.score),
+         max_score = GREATEST(EXCLUDED.max_score, user_mini_game_scores.max_score),
+         plays_count = user_mini_game_scores.plays_count + 1,
+         last_played_at = NOW(),
+         best_run_data = CASE WHEN EXCLUDED.score > user_mini_game_scores.score THEN EXCLUDED.best_run_data ELSE user_mini_game_scores.best_run_data END
+       RETURNING *`,
+      [userId, game.id, score, gameData || {}],
+    );
+    return r.rows[0];
+  }
+
+  async getMiniGameLeaderboard(
+    gameCode: string,
+    limit: number,
+  ): Promise<any[]> {
+    const game = await this.getMiniGameByCode(gameCode);
+    if (!game) return [];
+    const r = await this.query(
+      `SELECT ums.*, u.display_name, u.habbo_username, u.avatar_url
+       FROM user_mini_game_scores ums
+       JOIN users u ON u.id = ums.user_id
+       WHERE ums.mini_game_id = $1
+       ORDER BY ums.max_score DESC, ums.plays_count ASC
+       LIMIT $2`,
+      [game.id, limit],
+    );
+    return r.rows;
+  }
+
+  // Speed Missions
+  async getActiveSpeedMissions(season?: string): Promise<SpeedMission[]> {
+    const now = new Date();
+    let query =
+      "SELECT * FROM speed_missions WHERE is_active = true AND (starts_at IS NULL OR starts_at <= $1) AND (ends_at IS NULL OR ends_at >= $1)";
+    const params: any[] = [now];
+    if (season) {
+      query += " AND season = $2";
+      params.push(season);
+    }
+    query += " ORDER BY sort_order ASC";
+    const r = await this.query(query, params);
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name,
+      description: row.description,
+      category: row.category,
+      season: row.season,
+      type: row.type,
+      target: row.target,
+      rewardConfig: row.reward_config,
+      iconUrl: row.icon_url,
+      isRepeatable: row.is_repeatable,
+      cooldownHours: row.cooldown_hours,
+      isActive: row.is_active,
+      startsAt: row.starts_at,
+      endsAt: row.ends_at,
+      sortOrder: row.sort_order,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async getSpeedMissionByCode(code: string): Promise<SpeedMission | undefined> {
+    const r = await this.query("SELECT * FROM speed_missions WHERE code = $1", [
+      code,
+    ]);
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async createSpeedMission(data: InsertSpeedMission): Promise<SpeedMission> {
+    const r = await this.query(
+      `INSERT INTO speed_missions (code, name, description, category, season, type, target, reward_config, icon_url, is_repeatable, cooldown_hours, is_active, starts_at, ends_at, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
+      [
+        data.code,
+        data.name,
+        data.description || null,
+        data.category,
+        data.season || null,
+        data.type,
+        data.target || {},
+        data.rewardConfig || {},
+        data.iconUrl || null,
+        data.isRepeatable ?? false,
+        data.cooldownHours || 24,
+        data.isActive ?? true,
+        data.startsAt || null,
+        data.endsAt || null,
+        data.sortOrder || 0,
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async getUserMissions(userId: number): Promise<UserMission[]> {
+    const r = await this.query(
+      "SELECT * FROM user_missions WHERE user_id = $1",
+      [userId],
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      missionId: row.mission_id,
+      progress: row.progress,
+      status: row.status,
+      completedAt: row.completed_at,
+      claimedAt: row.claimed_at,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async updateMissionProgress(
+    userId: number,
+    missionId: number,
+    action: string,
+    metadata?: any,
+  ): Promise<UserMission> {
+    const r = await this.query(
+      `INSERT INTO user_missions (user_id, mission_id, progress, status) VALUES ($1, $2, $3, 'active')
+       ON CONFLICT (user_id, mission_id) DO UPDATE SET progress = EXCLUDED.progress, status = CASE WHEN user_missions.status = 'active' THEN 'active' ELSE user_missions.status END
+       RETURNING *`,
+      [userId, missionId, { action, metadata, updatedAt: new Date() }],
+    );
+    return r.rows[0];
+  }
+
+  async claimMissionReward(
+    userId: number,
+    missionId: number,
+  ): Promise<UserMission> {
+    const r = await this.query(
+      `UPDATE user_missions SET status = 'claimed', claimed_at = NOW() WHERE user_id = $1 AND mission_id = $2 RETURNING *`,
+      [userId, missionId],
+    );
+    return r.rows[0];
+  }
+
+  // Seasonal Stamps
+  async getSeasonalStamps(season?: string): Promise<SeasonalStamp[]> {
+    let query = "SELECT * FROM seasonal_stamps WHERE is_active = true";
+    const params: any[] = [];
+    if (season) {
+      query += " AND season = $1";
+      params.push(season);
+    }
+    query += " ORDER BY sort_order ASC";
+    const r = await this.query(query, params);
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name,
+      description: row.description,
+      imageUrl: row.image_url,
+      season: row.season,
+      rarity: row.rarity,
+      obtainMethod: row.obtain_method,
+      rewardConfig: row.reward_config,
+      isActive: row.is_active,
+      sortOrder: row.sort_order,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async getSeasonalStampByCode(
+    code: string,
+  ): Promise<SeasonalStamp | undefined> {
+    const r = await this.query(
+      "SELECT * FROM seasonal_stamps WHERE code = $1",
+      [code],
+    );
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async createSeasonalStamp(data: InsertSeasonalStamp): Promise<SeasonalStamp> {
+    const r = await this.query(
+      `INSERT INTO seasonal_stamps (code, name, description, image_url, season, rarity, obtain_method, reward_config, is_active, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [
+        data.code,
+        data.name,
+        data.description || null,
+        data.imageUrl,
+        data.season,
+        data.rarity || "common",
+        data.obtainMethod || {},
+        data.rewardConfig || {},
+        data.isActive ?? true,
+        data.sortOrder || 0,
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async getUserStamps(userId: number): Promise<UserStamp[]> {
+    const r = await this.query("SELECT * FROM user_stamps WHERE user_id = $1", [
+      userId,
+    ]);
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      stampId: row.stamp_id,
+      quantity: row.quantity,
+      obtainedAt: row.obtained_at,
+      isRepeated: row.is_repeated,
+    }));
+  }
+
+  // YouTube Embeds (Speed Shorts)
+  async getUserYoutubeEmbeds(userId: number): Promise<UserYoutubeEmbed[]> {
+    const r = await this.query(
+      "SELECT * FROM user_youtube_embeds WHERE user_id = $1 AND is_approved = true ORDER BY created_at DESC",
+      [userId],
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      videoId: row.video_id,
+      title: row.title,
+      thumbnailUrl: row.thumbnail_url,
+      description: row.description,
+      isFeatured: row.is_featured,
+      isApproved: row.is_approved,
+      views: row.views,
+      likes: row.likes,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async createUserYoutubeEmbed(
+    userId: number,
+    data: InsertUserYoutubeEmbed,
+  ): Promise<UserYoutubeEmbed> {
+    const r = await this.query(
+      `INSERT INTO user_youtube_embeds (user_id, video_id, title, thumbnail_url, description, is_approved)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [
+        userId,
+        data.videoId,
+        data.title,
+        data.thumbnailUrl || null,
+        data.description || null,
+        false,
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async updateUserYoutubeEmbed(
+    id: number,
+    userId: number,
+    data: Partial<InsertUserYoutubeEmbed>,
+  ): Promise<UserYoutubeEmbed | undefined> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.title !== undefined) {
+      fields.push(`title = $${i++}`);
+      values.push(data.title);
+    }
+    if (data.thumbnailUrl !== undefined) {
+      fields.push(`thumbnail_url = $${i++}`);
+      values.push(data.thumbnailUrl);
+    }
+    if (data.description !== undefined) {
+      fields.push(`description = $${i++}`);
+      values.push(data.description);
+    }
+    if (data.isFeatured !== undefined) {
+      fields.push(`is_featured = $${i++}`);
+      values.push(data.isFeatured);
+    }
+    if (fields.length === 0) return undefined;
+    values.push(id, userId);
+    const r = await this.query(
+      `UPDATE user_youtube_embeds SET ${fields.join(", ")} WHERE id = $${i} AND user_id = $${i + 1} RETURNING *`,
+      values,
+    );
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async deleteUserYoutubeEmbed(id: number, userId: number): Promise<boolean> {
+    const r = await this.query(
+      "DELETE FROM user_youtube_embeds WHERE id = $1 AND user_id = $2",
+      [id, userId],
+    );
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async approveYoutubeEmbed(id: number): Promise<UserYoutubeEmbed | undefined> {
+    const r = await this.query(
+      "UPDATE user_youtube_embeds SET is_approved = true WHERE id = $1 RETURNING *",
+      [id],
+    );
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  // Cine Mode
+  async getCineSessions(status?: string): Promise<CineSession[]> {
+    let query = "SELECT * FROM cine_sessions";
+    const params: any[] = [];
+    if (status) {
+      query += " WHERE status = $1";
+      params.push(status);
+    }
+    query += " ORDER BY created_at DESC";
+    const r = await this.query(query, params);
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      hostUserId: row.host_user_id,
+      videoId: row.video_id,
+      title: row.title,
+      thumbnailUrl: row.thumbnail_url,
+      status: row.status,
+      currentTime: row.current_time,
+      participants: row.participants,
+      isPublic: row.is_public,
+      password: row.password,
+      createdAt: row.created_at,
+      startedAt: row.started_at,
+      endedAt: row.ended_at,
+    }));
+  }
+
+  async getCineSession(id: number): Promise<CineSession | undefined> {
+    const r = await this.query("SELECT * FROM cine_sessions WHERE id = $1", [
+      id,
+    ]);
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async createCineSession(
+    hostUserId: number,
+    data: InsertCineSession,
+  ): Promise<CineSession> {
+    const r = await this.query(
+      `INSERT INTO cine_sessions (host_user_id, video_id, title, thumbnail_url, status, current_time, participants, is_public, password)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [
+        hostUserId,
+        data.videoId,
+        data.title,
+        data.thumbnailUrl || null,
+        data.status || "waiting",
+        data.currentTime || 0,
+        data.participants || [],
+        data.isPublic ?? true,
+        data.password || null,
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async updateCineSession(
+    id: number,
+    hostUserId: number,
+    data: Partial<InsertCineSession>,
+  ): Promise<CineSession | undefined> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.videoId !== undefined) {
+      fields.push(`video_id = $${i++}`);
+      values.push(data.videoId);
+    }
+    if (data.title !== undefined) {
+      fields.push(`title = $${i++}`);
+      values.push(data.title);
+    }
+    if (data.thumbnailUrl !== undefined) {
+      fields.push(`thumbnail_url = $${i++}`);
+      values.push(data.thumbnailUrl);
+    }
+    if (data.status !== undefined) {
+      fields.push(`status = $${i++}`);
+      values.push(data.status);
+    }
+    if (data.currentTime !== undefined) {
+      fields.push(`current_time = $${i++}`);
+      values.push(data.currentTime);
+    }
+    if (data.participants !== undefined) {
+      fields.push(`participants = $${i++}`);
+      values.push(data.participants);
+    }
+    if (data.isPublic !== undefined) {
+      fields.push(`is_public = $${i++}`);
+      values.push(data.isPublic);
+    }
+    if (data.password !== undefined) {
+      fields.push(`password = $${i++}`);
+      values.push(data.password);
+    }
+    if (fields.length === 0) return undefined;
+    values.push(id, hostUserId);
+    const r = await this.query(
+      `UPDATE cine_sessions SET ${fields.join(", ")} WHERE id = $${i} AND host_user_id = $${i + 1} RETURNING *`,
+      values,
+    );
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async joinCineSession(
+    sessionId: number,
+    userId: number,
+  ): Promise<CineSession> {
+    const r = await this.query(
+      `UPDATE cine_sessions SET participants = jsonb_set(
+         COALESCE(participants, '[]'::jsonb),
+         '{0}', 
+         (SELECT jsonb_agg(elem) FROM jsonb_array_elements(
+           COALESCE(participants, '[]'::jsonb) || jsonb_build_array(jsonb_build_object('userId', $1, 'joinedAt', NOW()))
+         ) elem)
+       ) WHERE id = $2 RETURNING *`,
+      [userId, sessionId],
+    );
+    return r.rows[0];
+  }
+
+  async leaveCineSession(sessionId: number, userId: number): Promise<void> {
+    await this.query(
+      `UPDATE cine_sessions SET participants = (
+         SELECT jsonb_agg(elem) FROM jsonb_array_elements(participants) elem WHERE (elem->>'userId')::int != $1
+       ) WHERE id = $2`,
+      [userId, sessionId],
+    );
+  }
+
+  // DJ Slots
+  async getAllDjSlots(): Promise<DjSlot[]> {
+    const r = await this.query(
+      "SELECT * FROM dj_slots ORDER BY day_of_week ASC, start_time ASC",
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      dayOfWeek: row.day_of_week,
+      startTime: row.start_time,
+      endTime: row.end_time,
+      djUserId: row.dj_user_id,
+      djName: row.dj_name,
+      showName: row.show_name,
+      description: row.description,
+      status: row.status,
+      recurring: row.recurring,
+      notes: row.notes,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  async getDjSlot(id: number): Promise<DjSlot | undefined> {
+    const r = await this.query("SELECT * FROM dj_slots WHERE id = $1", [id]);
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async createDjSlot(data: InsertDjSlot): Promise<DjSlot> {
+    const r = await this.query(
+      `INSERT INTO dj_slots (day_of_week, start_time, end_time, dj_user_id, dj_name, show_name, description, status, recurring, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [
+        data.dayOfWeek,
+        data.startTime,
+        data.endTime,
+        data.djUserId || null,
+        data.djName || null,
+        data.showName || null,
+        data.description || null,
+        data.status || "available",
+        data.recurring ?? true,
+        data.notes || null,
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async updateDjSlot(
+    id: number,
+    data: Partial<InsertDjSlot>,
+  ): Promise<DjSlot | undefined> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.dayOfWeek !== undefined) {
+      fields.push(`day_of_week = $${i++}`);
+      values.push(data.dayOfWeek);
+    }
+    if (data.startTime !== undefined) {
+      fields.push(`start_time = $${i++}`);
+      values.push(data.startTime);
+    }
+    if (data.endTime !== undefined) {
+      fields.push(`end_time = $${i++}`);
+      values.push(data.endTime);
+    }
+    if (data.djUserId !== undefined) {
+      fields.push(`dj_user_id = $${i++}`);
+      values.push(data.djUserId);
+    }
+    if (data.djName !== undefined) {
+      fields.push(`dj_name = $${i++}`);
+      values.push(data.djName);
+    }
+    if (data.showName !== undefined) {
+      fields.push(`show_name = $${i++}`);
+      values.push(data.showName);
+    }
+    if (data.description !== undefined) {
+      fields.push(`description = $${i++}`);
+      values.push(data.description);
+    }
+    if (data.status !== undefined) {
+      fields.push(`status = $${i++}`);
+      values.push(data.status);
+    }
+    if (data.recurring !== undefined) {
+      fields.push(`recurring = $${i++}`);
+      values.push(data.recurring);
+    }
+    if (data.notes !== undefined) {
+      fields.push(`notes = $${i++}`);
+      values.push(data.notes);
+    }
+    if (fields.length === 0) return this.getDjSlot(id);
+    values.push(id);
+    const r = await this.query(
+      `UPDATE dj_slots SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async deleteDjSlot(id: number): Promise<boolean> {
+    const r = await this.query("DELETE FROM dj_slots WHERE id = $1", [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async requestDjSlot(
+    slotId: number,
+    userId: number,
+    data: InsertDjSlotRequest,
+  ): Promise<DjSlotRequest> {
+    const r = await this.query(
+      `INSERT INTO dj_slot_requests (slot_id, user_id, show_name, description, status)
+       VALUES ($1,$2,$3,$4,'pending') RETURNING *`,
+      [slotId, userId, data.showName, data.description || null],
+    );
+    return r.rows[0];
+  }
+
+  async getDjSlotRequests(): Promise<DjSlotRequest[]> {
+    const r = await this.query(
+      "SELECT * FROM dj_slot_requests ORDER BY created_at DESC",
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      slotId: row.slot_id,
+      userId: row.user_id,
+      showName: row.show_name,
+      description: row.description,
+      status: row.status,
+      reviewedBy: row.reviewed_by,
+      reviewedAt: row.reviewed_at,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async reviewDjSlotRequest(
+    id: number,
+    reviewedBy: number,
+    data: { status: string },
+  ): Promise<DjSlotRequest> {
+    const r = await this.query(
+      `UPDATE dj_slot_requests SET status = $1, reviewed_by = $2, reviewed_at = NOW() WHERE id = $3 RETURNING *`,
+      [data.status, reviewedBy, id],
+    );
+    return r.rows[0];
+  }
+
+  // User Roles
+  async getUserRoles(userId: number): Promise<UserRole[]> {
+    const r = await this.query(
+      "SELECT * FROM user_roles WHERE user_id = $1 AND is_active = true",
+      [userId],
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      role: row.role,
+      grantedBy: row.granted_by,
+      grantedAt: row.granted_at,
+      expiresAt: row.expires_at,
+      isActive: row.is_active,
+      metadata: row.metadata,
+    }));
+  }
+
+  async grantUserRole(
+    userId: number,
+    grantedBy: number,
+    data: InsertUserRole,
+  ): Promise<UserRole> {
+    const r = await this.query(
+      `INSERT INTO user_roles (user_id, role, granted_by, expires_at, is_active, metadata)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [
+        userId,
+        data.role,
+        grantedBy,
+        data.expiresAt || null,
+        data.isActive ?? true,
+        data.metadata || {},
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async revokeUserRole(userId: number, roleId: number): Promise<boolean> {
+    const r = await this.query(
+      "UPDATE user_roles SET is_active = false WHERE user_id = $1 AND id = $2",
+      [userId, roleId],
+    );
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  // News Sections
+  async getAllNewsSections(): Promise<NewsSection[]> {
+    const r = await this.query(
+      "SELECT * FROM news_sections WHERE is_active = true ORDER BY sort_order ASC",
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name,
+      description: row.description,
+      icon: row.icon,
+      color: row.color,
+      parentSectionId: row.parent_section_id,
+      sortOrder: row.sort_order,
+      isActive: row.is_active,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async createNewsSection(data: InsertNewsSection): Promise<NewsSection> {
+    const r = await this.query(
+      `INSERT INTO news_sections (code, name, description, icon, color, parent_section_id, sort_order, is_active)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+      [
+        data.code,
+        data.name,
+        data.description || null,
+        data.icon || null,
+        data.color || null,
+        data.parentSectionId || null,
+        data.sortOrder || 0,
+        data.isActive ?? true,
+      ],
+    );
+    return r.rows[0];
+  }
+
+  async updateNewsSection(
+    id: number,
+    data: Partial<InsertNewsSection>,
+  ): Promise<NewsSection | undefined> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (data.name !== undefined) {
+      fields.push(`name = $${i++}`);
+      values.push(data.name);
+    }
+    if (data.description !== undefined) {
+      fields.push(`description = $${i++}`);
+      values.push(data.description);
+    }
+    if (data.icon !== undefined) {
+      fields.push(`icon = $${i++}`);
+      values.push(data.icon);
+    }
+    if (data.color !== undefined) {
+      fields.push(`color = $${i++}`);
+      values.push(data.color);
+    }
+    if (data.parentSectionId !== undefined) {
+      fields.push(`parent_section_id = $${i++}`);
+      values.push(data.parentSectionId);
+    }
+    if (data.sortOrder !== undefined) {
+      fields.push(`sort_order = $${i++}`);
+      values.push(data.sortOrder);
+    }
+    if (data.isActive !== undefined) {
+      fields.push(`is_active = $${i++}`);
+      values.push(data.isActive);
+    }
+    if (fields.length === 0) return undefined;
+    values.push(id);
+    const r = await this.query(
+      `UPDATE news_sections SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`,
+      values,
+    );
+    return r.rows[0] ? r.rows[0] : undefined;
+  }
+
+  async getNewsSections(newsId: number): Promise<NewsSection[]> {
+    const r = await this.query(
+      `SELECT ns.* FROM news_sections ns
+       JOIN news_section_links nsl ON nsl.section_id = ns.id
+       WHERE nsl.news_id = $1 AND ns.is_active = true`,
+      [newsId],
+    );
+    return r.rows.map((row: any) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name,
+      description: row.description,
+      icon: row.icon,
+      color: row.color,
+      parentSectionId: row.parent_section_id,
+      sortOrder: row.sort_order,
+      isActive: row.is_active,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async linkNewsToSection(
+    newsId: number,
+    sectionId: number,
+    isPrimary: boolean,
+  ): Promise<void> {
+    await this.query(
+      `INSERT INTO news_section_links (news_id, section_id, is_primary) VALUES ($1,$2,$3)
+       ON CONFLICT (news_id, section_id) DO UPDATE SET is_primary = EXCLUDED.is_primary`,
+      [newsId, sectionId, isPrimary],
+    );
+  }
+
+  async unlinkNewsFromSection(
+    newsId: number,
+    sectionId: number,
+  ): Promise<void> {
+    await this.query(
+      "DELETE FROM news_section_links WHERE news_id = $1 AND section_id = $2",
+      [newsId, sectionId],
+    );
   }
 }

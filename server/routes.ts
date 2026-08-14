@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { storage } from "./storage-instance";
 import fs from "fs";
@@ -8,13 +8,22 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: number;
+      user?: any;
+    }
+  }
+}
+
 const JWT_SECRET = process.env.JWT_SECRET || "habbospeed_secret_key_2026";
 
 function generateToken(id: number): string {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: "7d" });
 }
 
-function authMiddleware(req: any, res: any, next: any) {
+function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const token = req.headers.authorization?.replace("Bearer ", "");
   if (!token) return res.status(401).json({ message: "No autorizado" });
   try {
@@ -26,9 +35,9 @@ function authMiddleware(req: any, res: any, next: any) {
   }
 }
 
-function adminMiddleware(req: any, res: any, next: any) {
+function adminMiddleware(req: Request, res: Response, next: NextFunction) {
   authMiddleware(req, res, async () => {
-    const user = await storage.getUser(req.userId);
+    const user = await storage.getUser(req.userId!);
     if (!user || user.role !== "admin")
       return res.status(403).json({ message: "Acceso denegado" });
     req.user = user;
@@ -36,9 +45,9 @@ function adminMiddleware(req: any, res: any, next: any) {
   });
 }
 
-function djMiddleware(req: any, res: any, next: any) {
+function djMiddleware(req: Request, res: Response, next: NextFunction) {
   authMiddleware(req, res, async () => {
-    const user = await storage.getUser(req.userId);
+    const user = await storage.getUser(req.userId!);
     if (!user || (user.role !== "admin" && user.role !== "dj")) {
       return res
         .status(403)
@@ -47,6 +56,11 @@ function djMiddleware(req: any, res: any, next: any) {
     req.user = user;
     next();
   });
+}
+
+function qp(req: Request, key: string): string {
+  const v = req.query[key];
+  return ((Array.isArray(v) ? v[0] : v) as string) || "";
 }
 
 export async function registerRoutes(server: Server, app: Express) {
@@ -258,12 +272,10 @@ export async function registerRoutes(server: Server, app: Express) {
         req.body;
 
       if (!habboUsername || !verificationCode) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "El usuario de Habbo y el código de verificación son obligatorios para evitar robos de identidad.",
-          });
+        return res.status(400).json({
+          message:
+            "El usuario de Habbo y el código de verificación son obligatorios para evitar robos de identidad.",
+        });
       }
 
       // Verify the user in Habbo API
@@ -275,11 +287,9 @@ export async function registerRoutes(server: Server, app: Express) {
           },
         );
         if (!r.ok) {
-          return res
-            .status(400)
-            .json({
-              message: `El usuario de Habbo '${habboUsername}' no fue encontrado en Habbo.es.`,
-            });
+          return res.status(400).json({
+            message: `El usuario de Habbo '${habboUsername}' no fue encontrado en Habbo.es.`,
+          });
         }
         const profile = await r.json();
 
@@ -292,12 +302,10 @@ export async function registerRoutes(server: Server, app: Express) {
           });
         }
       } catch (err: any) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Error de conexión al verificar tu cuenta con la API oficial de Habbo. Inténtalo de nuevo.",
-          });
+        return res.status(400).json({
+          message:
+            "Error de conexión al verificar tu cuenta con la API oficial de Habbo. Inténtalo de nuevo.",
+        });
       }
 
       const existing = await storage.getUserByEmail(email);
@@ -595,15 +603,13 @@ export async function registerRoutes(server: Server, app: Express) {
   app.post("/api/forum/posts", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
     if (!user) return res.status(401).json({ message: "No autorizado" });
-    res
-      .status(201)
-      .json(
-        await storage.createPost({
-          ...req.body,
-          authorId: user.id,
-          authorName: user.displayName,
-        }),
-      );
+    res.status(201).json(
+      await storage.createPost({
+        ...req.body,
+        authorId: user.id,
+        authorName: user.displayName,
+      }),
+    );
   });
 
   // ============ MARKETPLACE ============
@@ -2570,14 +2576,12 @@ export async function registerRoutes(server: Server, app: Express) {
   });
   app.post("/api/messages", authMiddleware, async (req: any, res) => {
     try {
-      res
-        .status(201)
-        .json(
-          await storage.createPrivateMessage({
-            ...req.body,
-            fromUserId: req.userId,
-          }),
-        );
+      res.status(201).json(
+        await storage.createPrivateMessage({
+          ...req.body,
+          fromUserId: req.userId,
+        }),
+      );
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
@@ -2626,12 +2630,10 @@ export async function registerRoutes(server: Server, app: Express) {
           (b: any) => b.code === badgeCode || b.badgeIndex === badgeCode,
         );
         if (!hasBadge)
-          return res
-            .status(400)
-            .json({
-              message: "Badge no encontrado en el perfil de Habbo",
-              verified: false,
-            });
+          return res.status(400).json({
+            message: "Badge no encontrado en el perfil de Habbo",
+            verified: false,
+          });
         const badge = await storage.createVerifiedBadge({
           userId: req.userId,
           badgeCode,
@@ -2729,11 +2731,9 @@ export async function registerRoutes(server: Server, app: Express) {
         if (!user)
           return res.status(404).json({ message: "Usuario no encontrado" });
         if ((user.speedPoints ?? 0) < cost)
-          return res
-            .status(400)
-            .json({
-              message: `SpeedPoints insuficientes (necesitas ${cost} SP)`,
-            });
+          return res.status(400).json({
+            message: `SpeedPoints insuficientes (necesitas ${cost} SP)`,
+          });
 
         const currentStamps = user.mundialStamps || [];
         if (currentStamps.includes(stampId))
@@ -3261,11 +3261,9 @@ export async function registerRoutes(server: Server, app: Express) {
       if (!user)
         return res.status(404).json({ message: "Usuario no encontrado" });
       if (user.speedPoints < totalCost) {
-        return res
-          .status(400)
-          .json({
-            message: `No tienes suficientes SpeedPoints. Necesitas ${totalCost} SP y tienes ${user.speedPoints} SP.`,
-          });
+        return res.status(400).json({
+          message: `No tienes suficientes SpeedPoints. Necesitas ${totalCost} SP y tienes ${user.speedPoints} SP.`,
+        });
       }
 
       await storage.updateUser(req.userId, {
@@ -3542,4 +3540,625 @@ export async function registerRoutes(server: Server, app: Express) {
       res.status(500).json({ message: e.message });
     }
   });
+
+  // ============ REACTION ICONS ============
+  app.get("/api/reaction-icons", async (_req, res) => {
+    try {
+      const icons = await storage.getAllReactionIcons();
+      res.json(icons);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/users/:id/reaction-icons", authMiddleware, async (req, res) => {
+    try {
+      const userIcons = await storage.getUserReactionIcons(req.userId);
+      res.json(userIcons);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post(
+    "/api/users/:id/reaction-icons/:iconId/unlock",
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const unlocked = await storage.unlockUserReactionIcon(
+          req.userId,
+          parseInt(req.params.iconId),
+        );
+        res.json(unlocked);
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.post("/api/reaction-icons", adminMiddleware, async (req, res) => {
+    try {
+      const icon = await storage.createReactionIcon(req.body);
+      res.status(201).json(icon);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/reaction-icons/:id", adminMiddleware, async (req, res) => {
+    try {
+      const icon = await storage.updateReactionIcon(
+        parseInt(req.params.id),
+        req.body,
+      );
+      res.json(icon);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.delete("/api/reaction-icons/:id", adminMiddleware, async (req, res) => {
+    try {
+      await storage.deleteReactionIcon(parseInt(req.params.id));
+      res.json({ message: "Icono eliminado" });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ CARDS ============
+  app.get("/api/cards", async (_req, res) => {
+    try {
+      const cards = await storage.getAllCards();
+      res.json(cards);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/users/:id/cards", authMiddleware, async (req, res) => {
+    try {
+      const userCards = await storage.getUserCards(req.userId);
+      res.json(userCards);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post(
+    "/api/users/:id/cards/:cardId/equip",
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const slot = parseInt(req.query.slot as string) || 0;
+        const result = await storage.equipUserCard(
+          req.userId,
+          parseInt(req.params.cardId),
+          slot,
+        );
+        res.json(result);
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.post("/api/cards", adminMiddleware, async (req, res) => {
+    try {
+      const card = await storage.createCard(req.body);
+      res.status(201).json(card);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post(
+    "/api/admin/users/:userId/cards/:cardId/grant",
+    adminMiddleware,
+    async (req, res) => {
+      try {
+        const qty = parseInt(req.query.qty as string) || 1;
+        const userCard = await storage.grantUserCard(
+          parseInt(req.params.userId),
+          parseInt(req.params.cardId),
+          qty,
+        );
+        res.json(userCard);
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  // ============ MINI GAMES ============
+  app.get("/api/mini-games", async (_req, res) => {
+    try {
+      const games = await storage.getAllMiniGames();
+      res.json(games);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/mini-games/:code", async (req, res) => {
+    try {
+      const game = await storage.getMiniGameByCode(req.params.code);
+      if (!game)
+        return res.status(404).json({ message: "Juego no encontrado" });
+      res.json(game);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get(
+    "/api/users/:id/mini-game-scores",
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const scores = await storage.getUserMiniGameScores(req.userId);
+        res.json(scores);
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.post("/api/mini-games/:code/play", authMiddleware, async (req, res) => {
+    try {
+      const { score, gameData } = req.body;
+      const result = await storage.submitMiniGameScore(
+        req.userId,
+        req.params.code,
+        score,
+        gameData,
+      );
+      res.json(result);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/mini-games/:code/leaderboard", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const leaderboard = await storage.getMiniGameLeaderboard(
+        req.params.code,
+        limit,
+      );
+      res.json(leaderboard);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/mini-games", adminMiddleware, async (req, res) => {
+    try {
+      const game = await storage.createMiniGame(req.body);
+      res.status(201).json(game);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ SPEED MISSIONS ============
+  app.get("/api/speed-missions", async (req, res) => {
+    try {
+      const season = req.query.season as string | undefined;
+      const missions = await storage.getActiveSpeedMissions(season);
+      res.json(missions);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/users/:id/missions", authMiddleware, async (req, res) => {
+    try {
+      const missions = await storage.getUserMissions(req.userId);
+      res.json(missions);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post(
+    "/api/speed-missions/:id/progress",
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const { action, metadata } = req.body;
+        const result = await storage.updateMissionProgress(
+          req.userId,
+          parseInt(req.params.id),
+          action,
+          metadata,
+        );
+        res.json(result);
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.post(
+    "/api/speed-missions/:id/claim",
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const result = await storage.claimMissionReward(
+          req.userId,
+          parseInt(req.params.id),
+        );
+        res.json(result);
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.post("/api/speed-missions", adminMiddleware, async (req, res) => {
+    try {
+      const mission = await storage.createSpeedMission(req.body);
+      res.status(201).json(mission);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ SEASONAL STAMPS ============
+  app.get("/api/seasonal-stamps", async (req, res) => {
+    try {
+      const season = req.query.season as string | undefined;
+      const stamps = await storage.getSeasonalStamps(season);
+      res.json(stamps);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/users/:id/stamps", authMiddleware, async (req, res) => {
+    try {
+      const stamps = await storage.getUserStamps(req.userId);
+      res.json(stamps);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/seasonal-stamps", adminMiddleware, async (req, res) => {
+    try {
+      const stamp = await storage.createSeasonalStamp(req.body);
+      res.status(201).json(stamp);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ SPEED SHORTS (YOUTUBE EMBEDS) ============
+  app.get("/api/users/:id/youtube-embeds", async (req, res) => {
+    try {
+      const embeds = await storage.getUserYoutubeEmbeds(
+        parseInt(req.params.id),
+      );
+      res.json(embeds);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post(
+    "/api/users/:id/youtube-embeds",
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const embed = await storage.createUserYoutubeEmbed(
+          req.userId,
+          req.body,
+        );
+        res.status(201).json(embed);
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.put("/api/youtube-embeds/:id", authMiddleware, async (req, res) => {
+    try {
+      const embed = await storage.updateUserYoutubeEmbed(
+        parseInt(req.params.id),
+        req.userId,
+        req.body,
+      );
+      res.json(embed);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.delete("/api/youtube-embeds/:id", authMiddleware, async (req, res) => {
+    try {
+      await storage.deleteUserYoutubeEmbed(parseInt(req.params.id), req.userId);
+      res.json({ message: "Video eliminado" });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post(
+    "/api/admin/youtube-embeds/:id/approve",
+    adminMiddleware,
+    async (req, res) => {
+      try {
+        const embed = await storage.approveYoutubeEmbed(
+          parseInt(req.params.id),
+        );
+        res.json(embed);
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  // ============ CINE MODE ============
+  app.get("/api/cine-sessions", async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const sessions = await storage.getCineSessions(status);
+      res.json(sessions);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/cine-sessions", authMiddleware, async (req, res) => {
+    try {
+      const session = await storage.createCineSession(req.userId, req.body);
+      res.status(201).json(session);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/cine-sessions/:id", async (req, res) => {
+    try {
+      const session = await storage.getCineSession(parseInt(req.params.id));
+      if (!session)
+        return res.status(404).json({ message: "Sesión no encontrada" });
+      res.json(session);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/cine-sessions/:id/join", authMiddleware, async (req, res) => {
+    try {
+      const result = await storage.joinCineSession(
+        parseInt(req.params.id),
+        req.userId,
+      );
+      res.json(result);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/cine-sessions/:id/leave", authMiddleware, async (req, res) => {
+    try {
+      await storage.leaveCineSession(parseInt(req.params.id), req.userId);
+      res.json({ message: "Saliste de la sesión" });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/cine-sessions/:id", authMiddleware, async (req, res) => {
+    try {
+      const session = await storage.updateCineSession(
+        parseInt(req.params.id),
+        req.userId,
+        req.body,
+      );
+      res.json(session);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ DJ SLOTS ============
+  app.get("/api/dj-slots", async (_req, res) => {
+    try {
+      const slots = await storage.getAllDjSlots();
+      res.json(slots);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/dj-slots/:id", async (req, res) => {
+    try {
+      const slot = await storage.getDjSlot(parseInt(req.params.id));
+      if (!slot) return res.status(404).json({ message: "Slot no encontrado" });
+      res.json(slot);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/dj-slots", adminMiddleware, async (req, res) => {
+    try {
+      const slot = await storage.createDjSlot(req.body);
+      res.status(201).json(slot);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/dj-slots/:id", adminMiddleware, async (req, res) => {
+    try {
+      const slot = await storage.updateDjSlot(
+        parseInt(req.params.id),
+        req.body,
+      );
+      res.json(slot);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.delete("/api/dj-slots/:id", adminMiddleware, async (req, res) => {
+    try {
+      await storage.deleteDjSlot(parseInt(req.params.id));
+      res.json({ message: "Slot eliminado" });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/dj-slots/:id/request", authMiddleware, async (req, res) => {
+    try {
+      const request = await storage.requestDjSlot(
+        parseInt(req.params.id),
+        req.userId,
+        req.body,
+      );
+      res.status(201).json(request);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/dj-slot-requests", adminMiddleware, async (_req, res) => {
+    try {
+      const requests = await storage.getDjSlotRequests();
+      res.json(requests);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/dj-slot-requests/:id", adminMiddleware, async (req, res) => {
+    try {
+      const request = await storage.reviewDjSlotRequest(
+        parseInt(req.params.id),
+        req.userId,
+        req.body,
+      );
+      res.json(request);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ============ USER ROLES ============
+  app.get("/api/users/:id/roles", async (req, res) => {
+    try {
+      const roles = await storage.getUserRoles(parseInt(req.params.id));
+      res.json(roles);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/admin/users/:id/roles", adminMiddleware, async (req, res) => {
+    try {
+      const role = await storage.grantUserRole(
+        parseInt(req.params.id),
+        req.userId,
+        req.body,
+      );
+      res.status(201).json(role);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.delete(
+    "/api/admin/users/:userId/roles/:roleId",
+    adminMiddleware,
+    async (req, res) => {
+      try {
+        await storage.revokeUserRole(
+          parseInt(req.params.userId),
+          parseInt(req.params.roleId),
+        );
+        res.json({ message: "Rol revocado" });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  // ============ NEWS SECTIONS ============
+  app.get("/api/news-sections", async (_req, res) => {
+    try {
+      const sections = await storage.getAllNewsSections();
+      res.json(sections);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/news/:id/sections", async (req, res) => {
+    try {
+      const sections = await storage.getNewsSections(parseInt(req.params.id));
+      res.json(sections);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/news-sections", adminMiddleware, async (req, res) => {
+    try {
+      const section = await storage.createNewsSection(req.body);
+      res.status(201).json(section);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/news-sections/:id", adminMiddleware, async (req, res) => {
+    try {
+      const section = await storage.updateNewsSection(
+        parseInt(req.params.id),
+        req.body,
+      );
+      res.json(section);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post(
+    "/api/news/:id/sections/:sectionId",
+    adminMiddleware,
+    async (req, res) => {
+      try {
+        const isPrimary = req.query.primary === "true";
+        await storage.linkNewsToSection(
+          parseInt(req.params.id),
+          parseInt(req.params.sectionId),
+          isPrimary,
+        );
+        res.json({ message: "Sección vinculada" });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
+
+  app.delete(
+    "/api/news/:id/sections/:sectionId",
+    adminMiddleware,
+    async (req, res) => {
+      try {
+        await storage.unlinkNewsFromSection(
+          parseInt(req.params.id),
+          parseInt(req.params.sectionId),
+        );
+        res.json({ message: "Sección desvinculada" });
+      } catch (e: any) {
+        res.status(500).json({ message: e.message });
+      }
+    },
+  );
 }

@@ -1,31 +1,92 @@
 import {
-  type User, type InsertUser,
-  type News, type InsertNews,
-  type Event, type InsertEvent,
-  type Schedule, type InsertSchedule,
-  type Comment, type InsertComment,
-  type Poll, type InsertPoll,
-  type Config, type InsertConfig,
-  type Theme, type InsertTheme,
-  type ForumCategory, type InsertForumCategory,
-  type ForumThread, type InsertForumThread,
-  type ForumPost, type InsertForumPost,
-  type MarketplaceItem, type InsertMarketplaceItem,
-  type Badge, type InsertBadge,
-  type Request, type InsertRequest,
-  type TeamMember, type InsertTeamMember,
-  type Download, type InsertDownload,
-  type BannedSong, type InsertBannedSong,
-  type ContactMessage, type InsertContactMessage,
-  type PanelLog, type InsertPanelLog,
-  type ReportedMessage, type InsertReportedMessage,
-  type InsertProfileWall, type ProfileWallMessage,
-  type SongHistory, type InsertSongHistory,
-  type VipMembership, type InsertVipMembership,
-  type VipPerkLog, type InsertVipPerkLog,
-  type HSpeedRoom, type InsertHSpeedRoom,
-  type SupportTicket, type InsertSupportTicket,
-  type Alliance, type InsertAlliance,
+  type User,
+  type InsertUser,
+  type News,
+  type InsertNews,
+  type Event,
+  type InsertEvent,
+  type Schedule,
+  type InsertSchedule,
+  type Comment,
+  type InsertComment,
+  type Poll,
+  type InsertPoll,
+  type Config,
+  type InsertConfig,
+  type Theme,
+  type InsertTheme,
+  type ForumCategory,
+  type InsertForumCategory,
+  type ForumThread,
+  type InsertForumThread,
+  type ForumPost,
+  type InsertForumPost,
+  type MarketplaceItem,
+  type InsertMarketplaceItem,
+  type Badge,
+  type InsertBadge,
+  type Request,
+  type InsertRequest,
+  type TeamMember,
+  type InsertTeamMember,
+  type Download,
+  type InsertDownload,
+  type BannedSong,
+  type InsertBannedSong,
+  type ContactMessage,
+  type InsertContactMessage,
+  type PanelLog,
+  type InsertPanelLog,
+  type ReportedMessage,
+  type InsertReportedMessage,
+  type InsertProfileWall,
+  type ProfileWallMessage,
+  type SongHistory,
+  type InsertSongHistory,
+  type VipMembership,
+  type InsertVipMembership,
+  type VipPerkLog,
+  type InsertVipPerkLog,
+  type HSpeedRoom,
+  type InsertHSpeedRoom,
+  type SupportTicket,
+  type InsertSupportTicket,
+  type Alliance,
+  type InsertAlliance,
+  type ReactionIcon,
+  type InsertReactionIcon,
+  type UserReactionIcon,
+  type InsertUserReactionIcon,
+  type Card,
+  type InsertCard,
+  type UserCard,
+  type InsertUserCard,
+  type MiniGame,
+  type InsertMiniGame,
+  type UserMiniGameScore,
+  type InsertUserMiniGameScore,
+  type SpeedMission,
+  type InsertSpeedMission,
+  type UserMission,
+  type InsertUserMission,
+  type SeasonalStamp,
+  type InsertSeasonalStamp,
+  type UserStamp,
+  type InsertUserStamp,
+  type UserYoutubeEmbed,
+  type InsertUserYoutubeEmbed,
+  type CineSession,
+  type InsertCineSession,
+  type DjSlot,
+  type InsertDjSlot,
+  type DjSlotRequest,
+  type InsertDjSlotRequest,
+  type UserRole,
+  type InsertUserRole,
+  type NewsSection,
+  type InsertNewsSection,
+  type NewsSectionLink,
+  type InsertNewsSectionLink,
 } from "@shared/schema";
 import { type IStorage } from "./storage";
 import bcrypt from "bcryptjs";
@@ -50,7 +111,7 @@ export class MemStorage implements IStorage {
   private contactMessages: Map<number, ContactMessage> = new Map();
   private panelLogs: Map<number, PanelLog> = new Map();
   private reportedMessages: Map<number, ReportedMessage> = new Map();
-  
+
   private songHistoryList: Map<number, SongHistory> = new Map();
   private vipMembershipsList: Map<number, VipMembership> = new Map();
   private vipPerkLogsList: Map<number, VipPerkLog> = new Map();
@@ -81,14 +142,25 @@ export class MemStorage implements IStorage {
       radioService: "azuracast",
       apiUrl: "https://radio.kusmedios.lat/api/nowplaying",
       listenUrl: "https://radio.kusmedios.lat/listen/runa-fm/radio.mp3",
-      homePlayerBgUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+      homePlayerBgUrl:
+        "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       slideshow: [
-        { image: "https://images.habbo.com/c_images/reception/rec_background_beach.png", title: "¡Bienvenidos a HabboSpeed!", link: "#" },
-        { image: "https://images.habbo.com/c_images/reception/rec_background_habboween.png", title: "¡Sintoniza nuestra Radio 24/7!", link: "#" }
+        {
+          image:
+            "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+          title: "¡Bienvenidos a HabboSpeed!",
+          link: "#",
+        },
+        {
+          image:
+            "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
+          title: "¡Sintoniza nuestra Radio 24/7!",
+          link: "#",
+        },
       ],
       discordWebhooks: {},
       activeTheme: "nubis",
-      maintenanceMode: false
+      maintenanceMode: false,
     };
 
     // DJ Panel por defecto
@@ -97,7 +169,7 @@ export class MemStorage implements IStorage {
       currentDj: "AutoDJ",
       nextDj: "Dj_Invitado",
       djMessage: "Sintoniza la mejor música en HabboSpeed!",
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     // Crear usuario admin de prueba (password: admin123)
@@ -108,7 +180,8 @@ export class MemStorage implements IStorage {
       passwordHash: adminPassHash,
       displayName: "Administrador",
       habboUsername: "HabboSpeed",
-      avatarUrl: "https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=b",
+      avatarUrl:
+        "https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=b",
       role: "admin",
       approved: true,
       speedPoints: 500,
@@ -124,7 +197,7 @@ export class MemStorage implements IStorage {
       bio: null,
       socialLinks: {},
       badgesEarned: [],
-      createdAt: new Date()
+      createdAt: new Date(),
     });
     this.currentId = 2;
 
@@ -132,7 +205,12 @@ export class MemStorage implements IStorage {
     const catNames = ["General", "Soporte", "Radio", "Juegos & Concursos"];
     catNames.forEach((name, i) => {
       const id = i + 1;
-      this.forumCategories.set(id, { id, name, description: `Foro sobre ${name}`, sortOrder: i });
+      this.forumCategories.set(id, {
+        id,
+        name,
+        description: `Foro sobre ${name}`,
+        sortOrder: i,
+      });
     });
 
     // Mocks de noticias
@@ -140,42 +218,50 @@ export class MemStorage implements IStorage {
       id: 1,
       title: "¡Gran Apertura de HabboSpeed!",
       summary: "Iniciamos el rebranding y lanzamiento del nuevo sitio web.",
-      content: "Bienvenidos a HabboSpeed. Disfruta de la mejor radio, noticias al instante, guías actualizadas, foros interactivos y eventos diarios. ¡Regístrate ya y gana SpeedPoints para canjear en nuestro catálogo!",
-      imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+      content:
+        "Bienvenidos a HabboSpeed. Disfruta de la mejor radio, noticias al instante, guías actualizadas, foros interactivos y eventos diarios. ¡Regístrate ya y gana SpeedPoints para canjear en nuestro catálogo!",
+      imageUrl:
+        "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       imageHint: "Apertura oficial",
       category: "Noticias",
       date: new Date().toLocaleDateString("es-ES"),
       reactions: { "❤️": 5, "🔥": 8 },
       authorId: 1,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     this.news.set(2, {
       id: 2,
       title: "Mega Fix: mejoras y correcciones en todo el sitio",
-      summary: "Aplicamos un paquete completo de mejoras para estabilidad, radio, Habbo API y experiencia de usuario.",
-      content: "Resumen de cambios recientes:\n\n- Radio actualizada: stream AzuraCast y Now Playing configurados.\n- Habbo API reforzada: proxy de imagenes para evitar bloqueos y carga correcta de avatares.\n- Hot Looks: fallback con looks curados si la API falla.\n- Armario: busqueda y previsualizacion de avatares mas estables.\n- Barra DJ: mensaje mas creativo y consistente.\n- Emojis utiles: ahora funcionan como accesos rapidos.\n- Menu superior simplificado: queda solo el menu del boton de tres rayitas.\n- Popups estaticos: se corrigio el movimiento para poder usarlos sin problemas.\n\nSeguimos optimizando velocidad y detalles visuales para que la fansite se vea como las top de Habbo.es.",
-      imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+      summary:
+        "Aplicamos un paquete completo de mejoras para estabilidad, radio, Habbo API y experiencia de usuario.",
+      content:
+        "Resumen de cambios recientes:\n\n- Radio actualizada: stream AzuraCast y Now Playing configurados.\n- Habbo API reforzada: proxy de imagenes para evitar bloqueos y carga correcta de avatares.\n- Hot Looks: fallback con looks curados si la API falla.\n- Armario: busqueda y previsualizacion de avatares mas estables.\n- Barra DJ: mensaje mas creativo y consistente.\n- Emojis utiles: ahora funcionan como accesos rapidos.\n- Menu superior simplificado: queda solo el menu del boton de tres rayitas.\n- Popups estaticos: se corrigio el movimiento para poder usarlos sin problemas.\n\nSeguimos optimizando velocidad y detalles visuales para que la fansite se vea como las top de Habbo.es.",
+      imageUrl:
+        "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       imageHint: "Actualizacion del sitio",
       category: "Actualizaciones",
       date: new Date().toLocaleDateString("es-ES"),
       reactions: { "🔥": 12, "✅": 9 },
       authorId: 1,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     this.news.set(3, {
       id: 3,
       title: "Mega Actualización HSpeed: Nueva Era Noir + Gold y Roadmap",
-      summary: "Presentamos oficialmente nuestro rediseño visual Noir + Gold, el historial de canciones en vivo, membresías VIP, catálogo de salas y nuestro plan de desarrollo.",
-      content: "¡Hola a todos los apasionados de HabboSpeed! \n\nEstamos sumamente orgullosos de presentarles la **Mega Actualización** de nuestra fansite, un cambio completo tanto estético como funcional que redefine lo que un fansite de Habbo puede ofrecer.\n\n### 🎨 Nueva Identidad Visual: Noir + Gold\nHemos dejado atrás el tema azul y morado genérico para adoptar un estilo **Noir + Gold** de calidad editorial y premium. Con tipografías sofisticadas como `Cabinet Grotesk` para títulos y `Satoshi` para cuerpo de texto, logramos una lectura cómoda y un diseño que se ve espectacular en computadoras y móviles.\n\n### 🎵 Historial de Canciones (`/song-history`)\nSintoniza nuestra radio y mira el historial en tiempo real de las canciones reproducidas por nuestros DJs. ¡Incluso puedes volver a pedir tus temas favoritos con un solo clic!\n\n### 💎 Membresía VIP con 3 Niveles\nYa están disponibles los rangos **Silver, Gold y Diamond**. Consigue SpeedPoints en los juegos del sitio y canjéalos para obtener multiplicadores de puntos, insignias doradas en tu perfil y comandos premium.\n\n### 🏠 Buscador de Salas (`/rooms`)\nUn catálogo interactivo para compartir tus salas de Habbo con códigos copiables al portapapeles y efectos de confetti.\n\n### 🔔 Notificaciones en Tiempo Real y Soporte\nAhora recibirás avisos importantes en tu campana de notificaciones y lanzamos el sistema de **Soporte en Vivo mediante Tickets** directo en tu sección de mensajes personales.\n\n---\n\n## 🚀 Hoja de Ruta (Roadmap): 10 Funciones Únicas Esperadas\nSeguimos mejorando constantemente. Aquí están las 10 funciones exclusivas que llegarán próximamente a HabboSpeed:\n\n1. **Álbum de Estampas Interactivo en Tiempo Real:** Intercambia tus estampas repetidas del mundial y colecciones especiales directamente con otros usuarios en línea.\n2. **Conexión Directa de Inventario con Habbo:** Vincula tus raros y furnis reales del hotel y muéstralos en tu perfil de HabboSpeed.\n3. **Misiones de Aventura Diarias:** Misiones de rol al estilo RPG dentro de nuestra web para ganar placas y SpeedPoints.\n4. **Guerra de Clanes HSpeed:** Crea tu clan, recluta amigos y compite por el control del ranking de SpeedPoints semanal.\n5. **Minijuegos 8-Bit Integrados:** Juega a los Penales Retro, la Lotería de Píxeles y el Casino Speed desde tu navegador.\n6. **Transmisiones de Voz en Vivo de DJs:** Escucha la voz de nuestros DJs en cabina con latencia cero usando WebRTC.\n7. **Chat Personal Encriptado:** Envía mensajes directos seguros con soporte para emojis, stickers y Habbo widgets.\n8. **Bot de Radio para Discord:** Sintoniza la música de HabboSpeed directamente en los canales de voz de tu servidor de Discord.\n9. **Canje Directo de Placas en Habbo:** Sistema automatizado para recibir tus placas ganadas en la web directamente dentro del hotel Habbo.es.\n10. **Centro de Ayuda con Chat en Vivo:** Soporte técnico con chat en vivo atendido por moderadores oficiales las 24 horas del día.\n\nComenta aquí abajo qué te parece esta actualización y cuál de las nuevas funciones del Roadmap estás más ansioso por probar. ¡Gracias por ser parte de HabboSpeed!",
-      imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+      summary:
+        "Presentamos oficialmente nuestro rediseño visual Noir + Gold, el historial de canciones en vivo, membresías VIP, catálogo de salas y nuestro plan de desarrollo.",
+      content:
+        "¡Hola a todos los apasionados de HabboSpeed! \n\nEstamos sumamente orgullosos de presentarles la **Mega Actualización** de nuestra fansite, un cambio completo tanto estético como funcional que redefine lo que un fansite de Habbo puede ofrecer.\n\n### 🎨 Nueva Identidad Visual: Noir + Gold\nHemos dejado atrás el tema azul y morado genérico para adoptar un estilo **Noir + Gold** de calidad editorial y premium. Con tipografías sofisticadas como `Cabinet Grotesk` para títulos y `Satoshi` para cuerpo de texto, logramos una lectura cómoda y un diseño que se ve espectacular en computadoras y móviles.\n\n### 🎵 Historial de Canciones (`/song-history`)\nSintoniza nuestra radio y mira el historial en tiempo real de las canciones reproducidas por nuestros DJs. ¡Incluso puedes volver a pedir tus temas favoritos con un solo clic!\n\n### 💎 Membresía VIP con 3 Niveles\nYa están disponibles los rangos **Silver, Gold y Diamond**. Consigue SpeedPoints en los juegos del sitio y canjéalos para obtener multiplicadores de puntos, insignias doradas en tu perfil y comandos premium.\n\n### 🏠 Buscador de Salas (`/rooms`)\nUn catálogo interactivo para compartir tus salas de Habbo con códigos copiables al portapapeles y efectos de confetti.\n\n### 🔔 Notificaciones en Tiempo Real y Soporte\nAhora recibirás avisos importantes en tu campana de notificaciones y lanzamos el sistema de **Soporte en Vivo mediante Tickets** directo en tu sección de mensajes personales.\n\n---\n\n## 🚀 Hoja de Ruta (Roadmap): 10 Funciones Únicas Esperadas\nSeguimos mejorando constantemente. Aquí están las 10 funciones exclusivas que llegarán próximamente a HabboSpeed:\n\n1. **Álbum de Estampas Interactivo en Tiempo Real:** Intercambia tus estampas repetidas del mundial y colecciones especiales directamente con otros usuarios en línea.\n2. **Conexión Directa de Inventario con Habbo:** Vincula tus raros y furnis reales del hotel y muéstralos en tu perfil de HabboSpeed.\n3. **Misiones de Aventura Diarias:** Misiones de rol al estilo RPG dentro de nuestra web para ganar placas y SpeedPoints.\n4. **Guerra de Clanes HSpeed:** Crea tu clan, recluta amigos y compite por el control del ranking de SpeedPoints semanal.\n5. **Minijuegos 8-Bit Integrados:** Juega a los Penales Retro, la Lotería de Píxeles y el Casino Speed desde tu navegador.\n6. **Transmisiones de Voz en Vivo de DJs:** Escucha la voz de nuestros DJs en cabina con latencia cero usando WebRTC.\n7. **Chat Personal Encriptado:** Envía mensajes directos seguros con soporte para emojis, stickers y Habbo widgets.\n8. **Bot de Radio para Discord:** Sintoniza la música de HabboSpeed directamente en los canales de voz de tu servidor de Discord.\n9. **Canje Directo de Placas en Habbo:** Sistema automatizado para recibir tus placas ganadas en la web directamente dentro del hotel Habbo.es.\n10. **Centro de Ayuda con Chat en Vivo:** Soporte técnico con chat en vivo atendido por moderadores oficiales las 24 horas del día.\n\nComenta aquí abajo qué te parece esta actualización y cuál de las nuevas funciones del Roadmap estás más ansioso por probar. ¡Gracias por ser parte de HabboSpeed!",
+      imageUrl:
+        "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       imageHint: "Apertura e Identidad",
       category: "Actualizaciones",
       date: new Date().toLocaleDateString("es-ES"),
       reactions: { "🔥": 15, "❤️": 22 },
       authorId: 1,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     // Mocks de eventos
@@ -188,9 +274,10 @@ export class MemStorage implements IStorage {
       roomName: "[HS] Central de Eventos",
       roomOwner: "HabboSpeed",
       host: "DJ_Speedy",
-      imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+      imageUrl:
+        "https://images.habbo.com/c_images/reception/rec_background_beach.png",
       imageHint: "Fiesta playera",
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     this.events.set(2, {
@@ -202,9 +289,10 @@ export class MemStorage implements IStorage {
       roomName: "[HS] Main Stage Festival",
       roomOwner: "HabboSpeed",
       host: "DJ_Loco",
-      imageUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
+      imageUrl:
+        "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
       imageHint: "Festival de Fans",
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     this.events.set(3, {
@@ -216,17 +304,46 @@ export class MemStorage implements IStorage {
       roomName: "[HS] Rock Arena",
       roomOwner: "HabboSpeed",
       host: "DJ_RockStar",
-      imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+      imageUrl:
+        "https://images.habbo.com/c_images/reception/rec_background_beach.png",
       imageHint: "Batalla de Bandas",
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     // Mock de badges
-    this.badges.set("HS1", { id: 1, code: "HS1", name: "Fundador HabboSpeed", description: "Otorgado a los miembros fundadores.", hotel: "es", category: "Especial", imageUrl: "https://images.habbo.com/c_images/album1584/ADM.gif", discoveredAt: new Date() });
-    this.badges.set("HS2", { id: 2, code: "HS2", name: "Fiel Sintonizador", description: "Por escuchar la radio frecuentemente.", hotel: "es", category: "Radio", imageUrl: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif", discoveredAt: new Date() });
+    this.badges.set("HS1", {
+      id: 1,
+      code: "HS1",
+      name: "Fundador HabboSpeed",
+      description: "Otorgado a los miembros fundadores.",
+      hotel: "es",
+      category: "Especial",
+      imageUrl: "https://images.habbo.com/c_images/album1584/ADM.gif",
+      discoveredAt: new Date(),
+    });
+    this.badges.set("HS2", {
+      id: 2,
+      code: "HS2",
+      name: "Fiel Sintonizador",
+      description: "Por escuchar la radio frecuentemente.",
+      hotel: "es",
+      category: "Radio",
+      imageUrl: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif",
+      discoveredAt: new Date(),
+    });
 
     // Mock de Marketplace
-    this.marketplaceItems.set("throne", { id: 1, itemName: "Trono", className: "throne", hotel: "es", currentPrice: 1500, avgPrice: 1480, priceHistory: [1450, 1470, 1500], imageUrl: "https://images.habbo.com/dcr/hof_furni/123/throne_icon.png", lastUpdated: new Date() });
+    this.marketplaceItems.set("throne", {
+      id: 1,
+      itemName: "Trono",
+      className: "throne",
+      hotel: "es",
+      currentPrice: 1500,
+      avgPrice: 1480,
+      priceHistory: [1450, 1470, 1500],
+      imageUrl: "https://images.habbo.com/dcr/hof_furni/123/throne_icon.png",
+      lastUpdated: new Date(),
+    });
 
     // Seed Themes
     this.themes.set("circo", {
@@ -246,23 +363,25 @@ export class MemStorage implements IStorage {
         glowColor: "225, 29, 72",
         gradientFrom: "#e11d48",
         gradientTo: "#f59e0b",
-        secondary: "42 80% 60%"
+        secondary: "42 80% 60%",
       },
-      bannerUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+      bannerUrl:
+        "https://images.habbo.com/c_images/reception/rec_background_beach.png",
       logoUrl: null,
       decorations: {
         emoji: "🎪",
         pattern: "stripes",
-        particleType: "confetti"
+        particleType: "confetti",
       },
-      isDefault: true
+      isDefault: true,
     });
 
     this.themes.set("nubis", {
       id: 2,
       slug: "nubis",
       name: "HabNubis Premium",
-      description: "Estilo elegante y moderno inspirado en HabNubis.es con degradados neón y transparencias premium.",
+      description:
+        "Estilo elegante y moderno inspirado en HabNubis.es con degradados neón y transparencias premium.",
       colors: {
         primary: "260 70% 68%",
         primaryForeground: "0 0% 100%",
@@ -274,23 +393,25 @@ export class MemStorage implements IStorage {
         muted: "222 30% 18%",
         glowColor: "167, 139, 250",
         gradientFrom: "#a78bfa",
-        gradientTo: "#67e8f9"
+        gradientTo: "#67e8f9",
       },
-      bannerUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
+      bannerUrl:
+        "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
       logoUrl: null,
       decorations: {
         emoji: "🔮",
         pattern: "grid",
-        particleType: "float"
+        particleType: "float",
       },
-      isDefault: false
+      isDefault: false,
     });
 
     this.themes.set("lapis", {
       id: 3,
       slug: "lapis",
       name: "Obsidiana Lapis",
-      description: "Un tema oscuro relajante y suave con tonos azul slate, lavanda y turquesa. Protege tu vista con contrastes balanceados.",
+      description:
+        "Un tema oscuro relajante y suave con tonos azul slate, lavanda y turquesa. Protege tu vista con contrastes balanceados.",
       colors: {
         primary: "245 80% 70%",
         primaryForeground: "0 0% 100%",
@@ -303,23 +424,25 @@ export class MemStorage implements IStorage {
         glowColor: "99, 102, 241",
         gradientFrom: "#6366f1",
         gradientTo: "#06b6d4",
-        secondary: "174 75% 45%"
+        secondary: "174 75% 45%",
       },
-      bannerUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+      bannerUrl:
+        "https://images.habbo.com/c_images/reception/rec_background_beach.png",
       logoUrl: null,
       decorations: {
         emoji: "💎",
         pattern: "grid",
-        particleType: "float"
+        particleType: "float",
       },
-      isDefault: false
+      isDefault: false,
     });
 
     this.themes.set("bosque", {
       id: 4,
       slug: "bosque",
       name: "Bosque de Jade",
-      description: "Un tema premium cálido y relajante con tonos verdes esmeralda, musgo y salvia. Diseñado para eliminar la fatiga visual.",
+      description:
+        "Un tema premium cálido y relajante con tonos verdes esmeralda, musgo y salvia. Diseñado para eliminar la fatiga visual.",
       colors: {
         primary: "150 60% 55%",
         primaryForeground: "160 80% 5%",
@@ -332,26 +455,83 @@ export class MemStorage implements IStorage {
         glowColor: "52, 211, 153",
         gradientFrom: "#10b981",
         gradientTo: "#059669",
-        secondary: "45 85% 65%"
+        secondary: "45 85% 65%",
       },
-      bannerUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+      bannerUrl:
+        "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       logoUrl: null,
       decorations: {
         emoji: "🌿",
         pattern: "waves",
-        particleType: "float"
+        particleType: "float",
       },
-      isDefault: false
+      isDefault: false,
     });
 
     // Seed rooms por defecto
     const defaultRooms = [
-      { id: 1, name: "[HS] Central de HabboSpeed", description: "La sala oficial de HabboSpeed. Música en vivo, eventos y convivencia con la comunidad. ¡Siempre hay algo que hacer!", roomCode: "r-hs001", ownerHabbo: "HabboSpeed", hotel: "es", category: "oficial", capacity: 50, currentVisitors: 24, isActive: true, thumbnailUrl: null, featured: true },
-      { id: 2, name: "[HS] Radio Lounge", description: "Sala temática de la radio. Escucha a nuestros DJs en vivo mientras convives con fans. Decoración premium estilo club nocturno.", roomCode: "r-hs002", ownerHabbo: "DJ_Speedy", hotel: "es", category: "musica", capacity: 50, currentVisitors: 15, isActive: true, thumbnailUrl: null, featured: true },
-      { id: 3, name: "[HS] VIP Zone", description: "Sala exclusiva para miembros VIP de HabboSpeed. Acceso restringido a usuarios con membresía Gold o Diamond activa.", roomCode: "r-hs003", ownerHabbo: "AdminHS", hotel: "es", category: "vip", capacity: 25, currentVisitors: 8, isActive: true, thumbnailUrl: null, featured: false },
-      { id: 4, name: "[HS] Fan Festival 2026", description: "Sala especial del Habbo Fan Festival 2026. Eventos, concursos y transmisiones especiales durante todo el mundial.", roomCode: "r-hs004", ownerHabbo: "HabboSpeed", hotel: "es", category: "evento", capacity: 100, currentVisitors: 37, isActive: true, thumbnailUrl: null, featured: true },
+      {
+        id: 1,
+        name: "[HS] Central de HabboSpeed",
+        description:
+          "La sala oficial de HabboSpeed. Música en vivo, eventos y convivencia con la comunidad. ¡Siempre hay algo que hacer!",
+        roomCode: "r-hs001",
+        ownerHabbo: "HabboSpeed",
+        hotel: "es",
+        category: "oficial",
+        capacity: 50,
+        currentVisitors: 24,
+        isActive: true,
+        thumbnailUrl: null,
+        featured: true,
+      },
+      {
+        id: 2,
+        name: "[HS] Radio Lounge",
+        description:
+          "Sala temática de la radio. Escucha a nuestros DJs en vivo mientras convives con fans. Decoración premium estilo club nocturno.",
+        roomCode: "r-hs002",
+        ownerHabbo: "DJ_Speedy",
+        hotel: "es",
+        category: "musica",
+        capacity: 50,
+        currentVisitors: 15,
+        isActive: true,
+        thumbnailUrl: null,
+        featured: true,
+      },
+      {
+        id: 3,
+        name: "[HS] VIP Zone",
+        description:
+          "Sala exclusiva para miembros VIP de HabboSpeed. Acceso restringido a usuarios con membresía Gold o Diamond activa.",
+        roomCode: "r-hs003",
+        ownerHabbo: "AdminHS",
+        hotel: "es",
+        category: "vip",
+        capacity: 25,
+        currentVisitors: 8,
+        isActive: true,
+        thumbnailUrl: null,
+        featured: false,
+      },
+      {
+        id: 4,
+        name: "[HS] Fan Festival 2026",
+        description:
+          "Sala especial del Habbo Fan Festival 2026. Eventos, concursos y transmisiones especiales durante todo el mundial.",
+        roomCode: "r-hs004",
+        ownerHabbo: "HabboSpeed",
+        hotel: "es",
+        category: "evento",
+        capacity: 100,
+        currentVisitors: 37,
+        isActive: true,
+        thumbnailUrl: null,
+        featured: true,
+      },
     ];
-    defaultRooms.forEach(r => {
+    defaultRooms.forEach((r) => {
       this.hspeedRoomsList.set(r.id, { ...r, createdAt: new Date() });
       if (r.id > this._hspeedRoomId) this._hspeedRoomId = r.id;
     });
@@ -359,40 +539,208 @@ export class MemStorage implements IStorage {
     // Seed productos de tienda
     const shopSeedProducts = [
       // Decoración
-      { name: "Fondo Galaxia", description: "Un fondo cósmico para tu perfil con estrellas animadas.", category: "decoracion", price: 150, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png", isActive: true, isLimited: false, stock: 0 },
-      { name: "Marco Dorado VIP", description: "Marco elegante dorado para resaltar tu avatar.", category: "decoracion", price: 300, imageUrl: "https://images.habbo.com/c_images/album1584/ADM.gif", isActive: true, isLimited: false, stock: 0 },
-      { name: "Fondo Neón Retro", description: "Fondo estilo synthwave con luces de neón.", category: "decoracion", price: 200, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png", isActive: true, isLimited: false, stock: 0 },
-      { name: "Banner Personalizado", description: "Banner animado para la cabecera de tu perfil.", category: "decoracion", price: 250, imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png", isActive: true, isLimited: false, stock: 0 },
+      {
+        name: "Fondo Galaxia",
+        description: "Un fondo cósmico para tu perfil con estrellas animadas.",
+        category: "decoracion",
+        price: 150,
+        imageUrl:
+          "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Marco Dorado VIP",
+        description: "Marco elegante dorado para resaltar tu avatar.",
+        category: "decoracion",
+        price: 300,
+        imageUrl: "https://images.habbo.com/c_images/album1584/ADM.gif",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Fondo Neón Retro",
+        description: "Fondo estilo synthwave con luces de neón.",
+        category: "decoracion",
+        price: 200,
+        imageUrl:
+          "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Banner Personalizado",
+        description: "Banner animado para la cabecera de tu perfil.",
+        category: "decoracion",
+        price: 250,
+        imageUrl:
+          "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
       // Objetos
-      { name: "Sticker Pack Habbo", description: "Pack de 20 stickers exclusivos para chat.", category: "objeto", price: 100, imageUrl: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif", isActive: true, isLimited: false, stock: 0 },
-      { name: "Badge Coleccionista", description: "Insignia especial de coleccionista en tu perfil.", category: "objeto", price: 500, imageUrl: "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif", isActive: true, isLimited: true, stock: 50 },
-      { name: "Emoji Pack Premium", description: "Emojis animados exclusivos para mensajes.", category: "objeto", price: 75, imageUrl: "https://images.habbo.com/c_images/album1584/ADM.gif", isActive: true, isLimited: false, stock: 0 },
-      { name: "Título Personalizado", description: "Elige un título único que aparece bajo tu nombre.", category: "objeto", price: 400, imageUrl: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif", isActive: true, isLimited: false, stock: 0 },
+      {
+        name: "Sticker Pack Habbo",
+        description: "Pack de 20 stickers exclusivos para chat.",
+        category: "objeto",
+        price: 100,
+        imageUrl:
+          "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Badge Coleccionista",
+        description: "Insignia especial de coleccionista en tu perfil.",
+        category: "objeto",
+        price: 500,
+        imageUrl:
+          "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif",
+        isActive: true,
+        isLimited: true,
+        stock: 50,
+      },
+      {
+        name: "Emoji Pack Premium",
+        description: "Emojis animados exclusivos para mensajes.",
+        category: "objeto",
+        price: 75,
+        imageUrl: "https://images.habbo.com/c_images/album1584/ADM.gif",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Título Personalizado",
+        description: "Elige un título único que aparece bajo tu nombre.",
+        category: "objeto",
+        price: 400,
+        imageUrl:
+          "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
       // Temas
-      { name: "Tema Sakura", description: "Tema con tonos rosa pastel y flores de cerezo.", category: "tema", price: 350, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png", isActive: true, isLimited: false, stock: 0 },
-      { name: "Tema Cyberpunk", description: "Estilo futurista con neones azul y magenta.", category: "tema", price: 400, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png", isActive: true, isLimited: false, stock: 0 },
-      { name: "Tema Bosque Encantado", description: "Paleta natural con verdes musgo y dorados suaves.", category: "tema", price: 300, imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png", isActive: true, isLimited: false, stock: 0 },
-      { name: "Tema Obsidiana", description: "Negro profundo con acentos plateados y azules.", category: "tema", price: 350, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png", isActive: true, isLimited: true, stock: 100 },
+      {
+        name: "Tema Sakura",
+        description: "Tema con tonos rosa pastel y flores de cerezo.",
+        category: "tema",
+        price: 350,
+        imageUrl:
+          "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Tema Cyberpunk",
+        description: "Estilo futurista con neones azul y magenta.",
+        category: "tema",
+        price: 400,
+        imageUrl:
+          "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Tema Bosque Encantado",
+        description: "Paleta natural con verdes musgo y dorados suaves.",
+        category: "tema",
+        price: 300,
+        imageUrl:
+          "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Tema Obsidiana",
+        description: "Negro profundo con acentos plateados y azules.",
+        category: "tema",
+        price: 350,
+        imageUrl:
+          "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+        isActive: true,
+        isLimited: true,
+        stock: 100,
+      },
       // Fondos
-      { name: "Wallpaper Playa Tropical", description: "Fondo animado de playa con olas y palmeras.", category: "fondo", price: 200, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_beach.png", isActive: true, isLimited: false, stock: 0 },
-      { name: "Wallpaper Ciudad Nocturna", description: "Skyline nocturno con luces de ciudad.", category: "fondo", price: 250, imageUrl: "https://images.habbo.com/c_images/reception/rec_background_habboween.png", isActive: true, isLimited: false, stock: 0 },
-      { name: "Wallpaper Aurora Boreal", description: "Espectáculo de luces nórdicas en el cielo nocturno.", category: "fondo", price: 300, imageUrl: "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png", isActive: true, isLimited: false, stock: 0 },
+      {
+        name: "Wallpaper Playa Tropical",
+        description: "Fondo animado de playa con olas y palmeras.",
+        category: "fondo",
+        price: 200,
+        imageUrl:
+          "https://images.habbo.com/c_images/reception/rec_background_beach.png",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Wallpaper Ciudad Nocturna",
+        description: "Skyline nocturno con luces de ciudad.",
+        category: "fondo",
+        price: 250,
+        imageUrl:
+          "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
+      {
+        name: "Wallpaper Aurora Boreal",
+        description: "Espectáculo de luces nórdicas en el cielo nocturno.",
+        category: "fondo",
+        price: 300,
+        imageUrl:
+          "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
+        isActive: true,
+        isLimited: false,
+        stock: 0,
+      },
     ];
-    shopSeedProducts.forEach(p => this.createShopProduct(p));
+    shopSeedProducts.forEach((p) => this.createShopProduct(p));
 
     // Seed alianzas por defecto
     const defaultAlliances = [
-      { name: "HabNubis", logoUrl: "https://images.habbo.com/c_images/album1584/ADM.gif", websiteUrl: "https://habnubis.es", description: "Fansite oficial aliada de Habbo.es" },
-      { name: "HabboBites", logoUrl: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif", websiteUrl: "https://habbobites.com", description: "Comunidad de noticias y guías" },
-      { name: "HabboRPG", logoUrl: "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif", websiteUrl: "https://habborpg.net", description: "La comunidad de rol de Habbo" },
+      {
+        name: "HabNubis",
+        logoUrl: "https://images.habbo.com/c_images/album1584/ADM.gif",
+        websiteUrl: "https://habnubis.es",
+        description: "Fansite oficial aliada de Habbo.es",
+      },
+      {
+        name: "HabboBites",
+        logoUrl: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif",
+        websiteUrl: "https://habbobites.com",
+        description: "Comunidad de noticias y guías",
+      },
+      {
+        name: "HabboRPG",
+        logoUrl:
+          "https://images.habbo.com/c_images/album1584/ACH_RoomDecoHalloween10.gif",
+        websiteUrl: "https://habborpg.net",
+        description: "La comunidad de rol de Habbo",
+      },
     ];
-    defaultAlliances.forEach(a => this.createAlliance(a as InsertAlliance));
+    defaultAlliances.forEach((a) => this.createAlliance(a as InsertAlliance));
   }
 
   // Users
-  async getUser(id: number) { return this.users.get(id); }
+  async getUser(id: number) {
+    return this.users.get(id);
+  }
   async getUserByEmail(email: string) {
-    return Array.from(this.users.values()).find(u => u.email.toLowerCase() === email.toLowerCase());
+    return Array.from(this.users.values()).find(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
+    );
   }
   async createUser(user: InsertUser) {
     const id = this.currentId++;
@@ -418,7 +766,7 @@ export class MemStorage implements IStorage {
       bio: user.bio || null,
       socialLinks: user.socialLinks || {},
       badgesEarned: user.badgesEarned || [],
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     this.users.set(id, newUser);
     return newUser;
@@ -430,11 +778,17 @@ export class MemStorage implements IStorage {
     this.users.set(id, updated);
     return updated;
   }
-  async getAllUsers() { return Array.from(this.users.values()); }
+  async getAllUsers() {
+    return Array.from(this.users.values());
+  }
 
   // News
-  async getAllNews() { return Array.from(this.news.values()).sort((a, b) => b.id - a.id); }
-  async getNewsById(id: number) { return this.news.get(id); }
+  async getAllNews() {
+    return Array.from(this.news.values()).sort((a, b) => b.id - a.id);
+  }
+  async getNewsById(id: number) {
+    return this.news.get(id);
+  }
   async createNews(article: InsertNews) {
     const id = this.currentId++;
     const item: News = {
@@ -448,7 +802,7 @@ export class MemStorage implements IStorage {
       date: article.date,
       reactions: article.reactions || {},
       authorId: article.authorId || null,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     this.news.set(id, item);
     return item;
@@ -460,11 +814,17 @@ export class MemStorage implements IStorage {
     this.news.set(id, updated);
     return updated;
   }
-  async deleteNews(id: number) { return this.news.delete(id); }
+  async deleteNews(id: number) {
+    return this.news.delete(id);
+  }
 
   // Events
-  async getAllEvents() { return Array.from(this.events.values()).sort((a, b) => b.id - a.id); }
-  async getEventById(id: number) { return this.events.get(id); }
+  async getAllEvents() {
+    return Array.from(this.events.values()).sort((a, b) => b.id - a.id);
+  }
+  async getEventById(id: number) {
+    return this.events.get(id);
+  }
   async createEvent(event: InsertEvent) {
     const id = this.currentId++;
     const item: Event = {
@@ -478,7 +838,7 @@ export class MemStorage implements IStorage {
       host: event.host,
       imageUrl: event.imageUrl,
       imageHint: event.imageHint || "",
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     this.events.set(id, item);
     return item;
@@ -490,10 +850,14 @@ export class MemStorage implements IStorage {
     this.events.set(id, updated);
     return updated;
   }
-  async deleteEvent(id: number) { return this.events.delete(id); }
+  async deleteEvent(id: number) {
+    return this.events.delete(id);
+  }
 
   // Schedule
-  async getAllSchedule() { return Array.from(this.schedule.values()); }
+  async getAllSchedule() {
+    return Array.from(this.schedule.values());
+  }
   async createScheduleItem(item: InsertSchedule) {
     const id = this.currentId++;
     const newItem: Schedule = { id, ...item };
@@ -507,11 +871,15 @@ export class MemStorage implements IStorage {
     this.schedule.set(id, updated);
     return updated;
   }
-  async deleteScheduleItem(id: number) { return this.schedule.delete(id); }
+  async deleteScheduleItem(id: number) {
+    return this.schedule.delete(id);
+  }
 
   // Comments
   async getCommentsByArticle(articleId: number) {
-    return Array.from(this.comments.values()).filter(c => c.articleId === articleId);
+    return Array.from(this.comments.values()).filter(
+      (c) => c.articleId === articleId,
+    );
   }
   async createComment(comment: InsertComment) {
     const id = this.currentId++;
@@ -521,15 +889,19 @@ export class MemStorage implements IStorage {
       authorId: comment.authorId || null,
       authorName: comment.authorName,
       content: comment.content,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     this.comments.set(id, item);
     return item;
   }
-  async deleteComment(id: number) { return this.comments.delete(id); }
+  async deleteComment(id: number) {
+    return this.comments.delete(id);
+  }
 
   // Polls
-  async getAllPolls() { return Array.from(this.polls.values()); }
+  async getAllPolls() {
+    return Array.from(this.polls.values());
+  }
   async createPoll(poll: InsertPoll) {
     const id = this.currentId++;
     const item: Poll = {
@@ -537,7 +909,7 @@ export class MemStorage implements IStorage {
       title: poll.title,
       options: poll.options || [],
       isActive: poll.isActive ?? true,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     this.polls.set(id, item);
     return item;
@@ -551,17 +923,28 @@ export class MemStorage implements IStorage {
   }
 
   // Config
-  async getConfig() { return this.configItem; }
+  async getConfig() {
+    return this.configItem;
+  }
   async updateConfig(data: Partial<InsertConfig>) {
     this.configItem = { ...this.configItem, ...data } as Config;
     return this.configItem;
   }
 
   // Forum
-  async getAllForumCategories() { return Array.from(this.forumCategories.values()).sort((a, b) => a.sortOrder - b.sortOrder); }
+  async getAllForumCategories() {
+    return Array.from(this.forumCategories.values()).sort(
+      (a, b) => a.sortOrder - b.sortOrder,
+    );
+  }
   async createForumCategory(cat: InsertForumCategory) {
     const id = this.currentId++;
-    const item: ForumCategory = { id, name: cat.name, description: cat.description || null, sortOrder: cat.sortOrder ?? 0 };
+    const item: ForumCategory = {
+      id,
+      name: cat.name,
+      description: cat.description || null,
+      sortOrder: cat.sortOrder ?? 0,
+    };
     this.forumCategories.set(id, item);
     return item;
   }
@@ -571,8 +954,12 @@ export class MemStorage implements IStorage {
     const updated: ForumCategory = {
       ...existing,
       name: data.name !== undefined ? data.name : existing.name,
-      description: data.description !== undefined ? data.description : existing.description,
-      sortOrder: data.sortOrder !== undefined ? data.sortOrder : existing.sortOrder,
+      description:
+        data.description !== undefined
+          ? data.description
+          : existing.description,
+      sortOrder:
+        data.sortOrder !== undefined ? data.sortOrder : existing.sortOrder,
     };
     this.forumCategories.set(id, updated);
     return updated;
@@ -581,9 +968,13 @@ export class MemStorage implements IStorage {
     return this.forumCategories.delete(id);
   }
   async getThreadsByCategory(categoryId: number) {
-    return Array.from(this.forumThreads.values()).filter(t => t.categoryId === categoryId);
+    return Array.from(this.forumThreads.values()).filter(
+      (t) => t.categoryId === categoryId,
+    );
   }
-  async getThreadById(id: number) { return this.forumThreads.get(id); }
+  async getThreadById(id: number) {
+    return this.forumThreads.get(id);
+  }
   async createThread(thread: InsertForumThread) {
     const id = this.currentId++;
     const item: ForumThread = {
@@ -595,7 +986,7 @@ export class MemStorage implements IStorage {
       isPinned: thread.isPinned ?? false,
       isLocked: thread.isLocked ?? false,
       views: thread.views ?? 0,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     this.forumThreads.set(id, item);
     return item;
@@ -608,7 +999,9 @@ export class MemStorage implements IStorage {
     }
   }
   async getPostsByThread(threadId: number) {
-    return Array.from(this.forumPosts.values()).filter(p => p.threadId === threadId);
+    return Array.from(this.forumPosts.values()).filter(
+      (p) => p.threadId === threadId,
+    );
   }
   async createPost(post: InsertForumPost) {
     const id = this.currentId++;
@@ -618,16 +1011,22 @@ export class MemStorage implements IStorage {
       authorId: post.authorId || null,
       authorName: post.authorName,
       content: post.content,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     this.forumPosts.set(id, item);
     return item;
   }
-  async deletePost(id: number) { return this.forumPosts.delete(id); }
+  async deletePost(id: number) {
+    return this.forumPosts.delete(id);
+  }
 
   // Marketplace
-  async getAllMarketplaceItems() { return Array.from(this.marketplaceItems.values()); }
-  async getMarketplaceItemByClass(className: string) { return this.marketplaceItems.get(className); }
+  async getAllMarketplaceItems() {
+    return Array.from(this.marketplaceItems.values());
+  }
+  async getMarketplaceItemByClass(className: string) {
+    return this.marketplaceItems.get(className);
+  }
   async upsertMarketplaceItem(item: InsertMarketplaceItem) {
     const existing = this.marketplaceItems.get(item.className);
     const id = existing ? existing.id : this.currentId++;
@@ -640,17 +1039,22 @@ export class MemStorage implements IStorage {
       avgPrice: item.avgPrice ?? null,
       priceHistory: item.priceHistory || [],
       imageUrl: item.imageUrl || null,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
     this.marketplaceItems.set(item.className, newItem);
     return newItem;
   }
 
   // Badges
-  async getAllBadges() { return Array.from(this.badges.values()); }
+  async getAllBadges() {
+    return Array.from(this.badges.values());
+  }
   async searchBadges(query: string) {
     const q = query.toLowerCase();
-    return Array.from(this.badges.values()).filter(b => b.name.toLowerCase().includes(q) || b.code.toLowerCase().includes(q));
+    return Array.from(this.badges.values()).filter(
+      (b) =>
+        b.name.toLowerCase().includes(q) || b.code.toLowerCase().includes(q),
+    );
   }
   async upsertBadge(badge: InsertBadge) {
     const existing = this.badges.get(badge.code);
@@ -663,27 +1067,46 @@ export class MemStorage implements IStorage {
       hotel: badge.hotel || "es",
       category: badge.category || null,
       imageUrl: badge.imageUrl || null,
-      discoveredAt: new Date()
+      discoveredAt: new Date(),
     };
     this.badges.set(badge.code, newItem);
     return newItem;
   }
 
   // Requests
-  async getAllRequests() { return Array.from(this.requests.values()).sort((a, b) => b.id - a.id); }
+  async getAllRequests() {
+    return Array.from(this.requests.values()).sort((a, b) => b.id - a.id);
+  }
   async createRequest(req: InsertRequest) {
     const id = this.currentId++;
-    const item: Request = { id, type: req.type, details: req.details, userName: req.userName, createdAt: new Date() };
+    const item: Request = {
+      id,
+      type: req.type,
+      details: req.details,
+      userName: req.userName,
+      createdAt: new Date(),
+    };
     this.requests.set(id, item);
     return item;
   }
-  async deleteRequest(id: number) { return this.requests.delete(id); }
+  async deleteRequest(id: number) {
+    return this.requests.delete(id);
+  }
 
   // Team
-  async getAllTeamMembers() { return Array.from(this.teamMembers.values()); }
+  async getAllTeamMembers() {
+    return Array.from(this.teamMembers.values());
+  }
   async createTeamMember(member: InsertTeamMember) {
     const id = this.currentId++;
-    const item: TeamMember = { id, displayName: member.displayName, habboUsername: member.habboUsername, role: member.role, motto: member.motto || null, joinedAt: new Date() };
+    const item: TeamMember = {
+      id,
+      displayName: member.displayName,
+      habboUsername: member.habboUsername,
+      role: member.role,
+      motto: member.motto || null,
+      joinedAt: new Date(),
+    };
     this.teamMembers.set(id, item);
     return item;
   }
@@ -694,12 +1117,23 @@ export class MemStorage implements IStorage {
     this.teamMembers.set(id, updated);
     return updated;
   }
-  async deleteTeamMember(id: number) { return this.teamMembers.delete(id); }
+  async deleteTeamMember(id: number) {
+    return this.teamMembers.delete(id);
+  }
 
   // Themes
-  async getAllThemes() { return Array.from(this.themes.values()); }
-  async getThemeBySlug(slug: string) { return this.themes.get(slug); }
-  async getActiveTheme() { return this.themes.get(this.configItem.activeTheme) || Array.from(this.themes.values())[0]; }
+  async getAllThemes() {
+    return Array.from(this.themes.values());
+  }
+  async getThemeBySlug(slug: string) {
+    return this.themes.get(slug);
+  }
+  async getActiveTheme() {
+    return (
+      this.themes.get(this.configItem.activeTheme) ||
+      Array.from(this.themes.values())[0]
+    );
+  }
   async createTheme(theme: InsertTheme) {
     const item: Theme = {
       id: this.currentId++,
@@ -710,13 +1144,13 @@ export class MemStorage implements IStorage {
       bannerUrl: theme.bannerUrl || null,
       logoUrl: theme.logoUrl || null,
       decorations: theme.decorations || {},
-      isDefault: theme.isDefault ?? false
+      isDefault: theme.isDefault ?? false,
     };
     this.themes.set(theme.slug, item);
     return item;
   }
   async updateTheme(id: number, data: Partial<InsertTheme>) {
-    const t = Array.from(this.themes.values()).find(x => x.id === id);
+    const t = Array.from(this.themes.values()).find((x) => x.id === id);
     if (!t) return undefined;
     const updated = { ...t, ...data } as Theme;
     this.themes.set(t.slug, updated);
@@ -728,9 +1162,15 @@ export class MemStorage implements IStorage {
   }
 
   // DJ Panel
-  async getDjPanel() { return this.djPanelState; }
+  async getDjPanel() {
+    return this.djPanelState;
+  }
   async updateDjPanel(data: any) {
-    this.djPanelState = { ...this.djPanelState, ...data, updatedAt: new Date() };
+    this.djPanelState = {
+      ...this.djPanelState,
+      ...data,
+      updatedAt: new Date(),
+    };
     return this.djPanelState;
   }
 
@@ -745,52 +1185,56 @@ export class MemStorage implements IStorage {
       userName: data.userName,
       habboUsername: data.habboUsername || null,
       message: data.message,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     this.chatMessagesList.push(msg);
     return msg;
   }
   async deleteChatMessage(id: number) {
-    this.chatMessagesList = this.chatMessagesList.filter(m => m.id !== id);
+    this.chatMessagesList = this.chatMessagesList.filter((m) => m.id !== id);
     return true;
   }
 
   // Private Messages
   async getMessagesByUser(userId: number) {
-    return this.privateMessagesList.filter(m => m.toUserId === userId || m.fromUserId === userId);
+    return this.privateMessagesList.filter(
+      (m) => m.toUserId === userId || m.fromUserId === userId,
+    );
   }
   async getUnreadCount(userId: number) {
-    return this.privateMessagesList.filter(m => m.toUserId === userId && !m.isRead).length;
+    return this.privateMessagesList.filter(
+      (m) => m.toUserId === userId && !m.isRead,
+    ).length;
   }
   async createPrivateMessage(data: any) {
     const msg = {
       id: this.currentId++,
       fromUserId: data.fromUserId,
       toUserId: data.toUserId,
-      subject: data.subject || '',
+      subject: data.subject || "",
       content: data.content,
       isRead: false,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     this.privateMessagesList.push(msg);
     return msg;
   }
   async markMessageRead(id: number) {
-    const msg = this.privateMessagesList.find(m => m.id === id);
+    const msg = this.privateMessagesList.find((m) => m.id === id);
     if (msg) msg.isRead = true;
     return msg;
   }
 
   // Verified Badges
   async getVerifiedBadges(userId: number) {
-    return this.verifiedBadgesList.filter(b => b.userId === userId);
+    return this.verifiedBadgesList.filter((b) => b.userId === userId);
   }
   async createVerifiedBadge(data: any) {
     const b = {
       id: this.currentId++,
       userId: data.userId,
       badgeCode: data.badgeCode,
-      verifiedAt: new Date()
+      verifiedAt: new Date(),
     };
     this.verifiedBadgesList.push(b);
     return b;
@@ -798,11 +1242,15 @@ export class MemStorage implements IStorage {
 
   // Team from Users
   async getTeamUsers() {
-    return Array.from(this.users.values()).filter(u => u.approved && (u.role === "admin" || u.role === "dj"));
+    return Array.from(this.users.values()).filter(
+      (u) => u.approved && (u.role === "admin" || u.role === "dj"),
+    );
   }
 
   // Downloads
-  async getAllDownloads() { return Array.from(this.downloads.values()); }
+  async getAllDownloads() {
+    return Array.from(this.downloads.values());
+  }
   async createDownload(d: InsertDownload) {
     const id = this.currentId++;
     const item: Download = {
@@ -818,7 +1266,9 @@ export class MemStorage implements IStorage {
     this.downloads.set(id, item);
     return item;
   }
-  async deleteDownload(id: number) { return this.downloads.delete(id); }
+  async deleteDownload(id: number) {
+    return this.downloads.delete(id);
+  }
   async incrementDownloadCount(id: number) {
     const d = this.downloads.get(id);
     if (d) {
@@ -828,7 +1278,9 @@ export class MemStorage implements IStorage {
   }
 
   // Banned Songs
-  async getAllBannedSongs() { return Array.from(this.bannedSongs.values()); }
+  async getAllBannedSongs() {
+    return Array.from(this.bannedSongs.values());
+  }
   async createBannedSong(s: InsertBannedSong) {
     const id = this.currentId++;
     const item: BannedSong = {
@@ -842,10 +1294,14 @@ export class MemStorage implements IStorage {
     this.bannedSongs.set(id, item);
     return item;
   }
-  async deleteBannedSong(id: number) { return this.bannedSongs.delete(id); }
+  async deleteBannedSong(id: number) {
+    return this.bannedSongs.delete(id);
+  }
 
   // Contact Messages
-  async getAllContactMessages() { return Array.from(this.contactMessages.values()); }
+  async getAllContactMessages() {
+    return Array.from(this.contactMessages.values());
+  }
   async createContactMessage(msg: InsertContactMessage) {
     const id = this.currentId++;
     const item: ContactMessage = {
@@ -868,11 +1324,15 @@ export class MemStorage implements IStorage {
     this.contactMessages.set(id, m);
     return m;
   }
-  async deleteContactMessage(id: number) { return this.contactMessages.delete(id); }
+  async deleteContactMessage(id: number) {
+    return this.contactMessages.delete(id);
+  }
 
   // Panel Logs
   async getPanelLogs(limit = 200) {
-    return Array.from(this.panelLogs.values()).sort((a, b) => b.id - a.id).slice(0, limit);
+    return Array.from(this.panelLogs.values())
+      .sort((a, b) => b.id - a.id)
+      .slice(0, limit);
   }
   async createPanelLog(log: InsertPanelLog) {
     const id = this.currentId++;
@@ -891,8 +1351,8 @@ export class MemStorage implements IStorage {
 
   // Reported Messages
   async getAllReportedMessages() {
-    return Array.from(this.reportedMessages.values()).map(r => {
-      const pm = this.privateMessagesList.find(x => x.id === r.messageId);
+    return Array.from(this.reportedMessages.values()).map((r) => {
+      const pm = this.privateMessagesList.find((x) => x.id === r.messageId);
       const sender = pm ? this.users.get(pm.fromUserId) : null;
       const reporter = this.users.get(r.reportedBy || 0);
       return {
@@ -901,7 +1361,7 @@ export class MemStorage implements IStorage {
         messageSubject: pm ? pm.subject : "",
         senderName: sender ? sender.displayName : "",
         senderHabbo: sender ? sender.habboUsername : "",
-        reporterName: reporter ? reporter.displayName : ""
+        reporterName: reporter ? reporter.displayName : "",
       };
     });
   }
@@ -925,13 +1385,21 @@ export class MemStorage implements IStorage {
     this.reportedMessages.set(id, r);
     return r;
   }
-  async deleteReport(id: number) { return this.reportedMessages.delete(id); }
+  async deleteReport(id: number) {
+    return this.reportedMessages.delete(id);
+  }
 
   // Shop Products (MemStorage stubs)
   private shopProducts: Map<number, any> = new Map();
   private _shopId = 0;
-  async getAllShopProducts(includeInactive?: boolean) { return Array.from(this.shopProducts.values()).filter((p: any) => includeInactive || p.isActive); }
-  async getShopProductById(id: number) { return this.shopProducts.get(id); }
+  async getAllShopProducts(includeInactive?: boolean) {
+    return Array.from(this.shopProducts.values()).filter(
+      (p: any) => includeInactive || p.isActive,
+    );
+  }
+  async getShopProductById(id: number) {
+    return this.shopProducts.get(id);
+  }
   async createShopProduct(product: any) {
     const id = ++this._shopId;
     const item = { id, ...product, createdAt: new Date() };
@@ -945,19 +1413,29 @@ export class MemStorage implements IStorage {
     this.shopProducts.set(id, item);
     return item;
   }
-  async deleteShopProduct(id: number) { return this.shopProducts.delete(id); }
+  async deleteShopProduct(id: number) {
+    return this.shopProducts.delete(id);
+  }
 
   // User Inventory (MemStorage stubs)
   private userInventory: Map<number, any> = new Map();
   private _invId = 0;
   async getUserInventory(userId: number) {
-    return Array.from(this.userInventory.values()).filter((i: any) => i.userId === userId);
+    return Array.from(this.userInventory.values()).filter(
+      (i: any) => i.userId === userId,
+    );
   }
   async purchaseProduct(userId: number, productId: number) {
     const product = this.shopProducts.get(productId);
     if (!product) throw new Error("Producto no encontrado");
     const id = ++this._invId;
-    const item = { id, userId, productId, isEquipped: false, purchasedAt: new Date() };
+    const item = {
+      id,
+      userId,
+      productId,
+      isEquipped: false,
+      purchasedAt: new Date(),
+    };
     this.userInventory.set(id, item);
     return item;
   }
@@ -974,12 +1452,16 @@ export class MemStorage implements IStorage {
   private _notifId = 0;
   async getUserNotifications(userId: number, limit = 50) {
     const arr: any[] = [];
-    this.notifs.forEach((n) => { if (n.userId === userId) arr.push(n); });
+    this.notifs.forEach((n) => {
+      if (n.userId === userId) arr.push(n);
+    });
     arr.sort((a: any, b: any) => b.createdAt - a.createdAt);
     return arr.slice(0, limit);
   }
   async getUnreadNotificationCount(userId: number) {
-    return Array.from(this.notifs.values()).filter((n: any) => n.userId === userId && !n.isRead).length;
+    return Array.from(this.notifs.values()).filter(
+      (n: any) => n.userId === userId && !n.isRead,
+    ).length;
   }
   async createNotification(notif: any) {
     const id = ++this._notifId;
@@ -994,7 +1476,9 @@ export class MemStorage implements IStorage {
     return n;
   }
   async markAllNotificationsRead(userId: number) {
-    this.notifs.forEach((n) => { if (n.userId === userId) n.isRead = true; });
+    this.notifs.forEach((n) => {
+      if (n.userId === userId) n.isRead = true;
+    });
   }
 
   // Profile Wall (MemStorage stubs)
@@ -1004,7 +1488,9 @@ export class MemStorage implements IStorage {
   // User Profiles (MemStorage stubs)
   private userProfiles: Map<number, any> = new Map();
   async getUserProfile(userId: number) {
-    return Array.from(this.userProfiles.values()).find((p: any) => p.userId === userId);
+    return Array.from(this.userProfiles.values()).find(
+      (p: any) => p.userId === userId,
+    );
   }
   async upsertUserProfile(userId: number, data: any) {
     const existing = await this.getUserProfile(userId);
@@ -1015,7 +1501,12 @@ export class MemStorage implements IStorage {
     return this.createUserProfile(userId, data);
   }
   async createUserProfile(userId: number, data: any) {
-    const item = { id: this.userProfiles.size + 1, userId, ...data, updatedAt: new Date() };
+    const item = {
+      id: this.userProfiles.size + 1,
+      userId,
+      ...data,
+      updatedAt: new Date(),
+    };
     this.userProfiles.set(item.id, item);
     return item;
   }
@@ -1024,7 +1515,10 @@ export class MemStorage implements IStorage {
   async getWallMessages(profileUserId: number) {
     return Array.from(this.profileWall.values())
       .filter((msg: any) => msg.profileUserId === profileUserId)
-      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
   }
 
   async createWallMessage(msg: InsertProfileWall) {
@@ -1045,7 +1539,11 @@ export class MemStorage implements IStorage {
   // Song History
   async getSongHistory(limit: number = 20): Promise<SongHistory[]> {
     return Array.from(this.songHistoryList.values())
-      .sort((a, b) => (b.playedAt ? new Date(b.playedAt).getTime() : 0) - (a.playedAt ? new Date(a.playedAt).getTime() : 0))
+      .sort(
+        (a, b) =>
+          (b.playedAt ? new Date(b.playedAt).getTime() : 0) -
+          (a.playedAt ? new Date(a.playedAt).getTime() : 0),
+      )
       .slice(0, limit);
   }
 
@@ -1068,8 +1566,8 @@ export class MemStorage implements IStorage {
   }
 
   async getMostPlayedSongs(limit: number = 10): Promise<SongHistory[]> {
-    const counts: { [key: string]: { song: SongHistory, count: number } } = {};
-    this.songHistoryList.forEach(item => {
+    const counts: { [key: string]: { song: SongHistory; count: number } } = {};
+    this.songHistoryList.forEach((item) => {
       const key = `${item.title} - ${item.artist}`;
       if (counts[key]) {
         counts[key].count += item.playCount;
@@ -1090,11 +1588,14 @@ export class MemStorage implements IStorage {
 
   // VIP Memberships
   async getVipMembership(userId: number): Promise<VipMembership | undefined> {
-    return Array.from(this.vipMembershipsList.values())
-      .find(m => m.userId === userId && m.isActive);
+    return Array.from(this.vipMembershipsList.values()).find(
+      (m) => m.userId === userId && m.isActive,
+    );
   }
 
-  async createVipMembership(membership: InsertVipMembership): Promise<VipMembership> {
+  async createVipMembership(
+    membership: InsertVipMembership,
+  ): Promise<VipMembership> {
     const id = ++this._vipMembershipId;
     const item: VipMembership = {
       id,
@@ -1106,7 +1607,7 @@ export class MemStorage implements IStorage {
       isActive: membership.isActive ?? true,
     };
     this.vipMembershipsList.set(id, item);
-    
+
     // Update user in users map
     const user = this.users.get(membership.userId);
     if (user) {
@@ -1116,12 +1617,15 @@ export class MemStorage implements IStorage {
     return item;
   }
 
-  async updateVipMembership(userId: number, data: Partial<InsertVipMembership>): Promise<VipMembership | undefined> {
+  async updateVipMembership(
+    userId: number,
+    data: Partial<InsertVipMembership>,
+  ): Promise<VipMembership | undefined> {
     const active = await this.getVipMembership(userId);
     if (!active) return undefined;
 
     Object.assign(active, data);
-    
+
     if (data.tier !== undefined || data.isActive === false) {
       const user = this.users.get(userId);
       if (user) {
@@ -1133,13 +1637,13 @@ export class MemStorage implements IStorage {
   }
 
   async getAllVipMemberships(): Promise<any[]> {
-    return Array.from(this.vipMembershipsList.values()).map(m => {
+    return Array.from(this.vipMembershipsList.values()).map((m) => {
       const user = this.users.get(m.userId);
       return {
         ...m,
         displayName: user?.displayName || "Desconocido",
         email: user?.email || "",
-        habboUsername: user?.habboUsername || ""
+        habboUsername: user?.habboUsername || "",
       };
     });
   }
@@ -1159,25 +1663,36 @@ export class MemStorage implements IStorage {
 
   async getVipPerkLogs(userId: number): Promise<VipPerkLog[]> {
     return Array.from(this.vipPerkLogsList.values())
-      .filter(l => l.userId === userId)
-      .sort((a, b) => (b.usedAt ? new Date(b.usedAt).getTime() : 0) - (a.usedAt ? new Date(a.usedAt).getTime() : 0));
+      .filter((l) => l.userId === userId)
+      .sort(
+        (a, b) =>
+          (b.usedAt ? new Date(b.usedAt).getTime() : 0) -
+          (a.usedAt ? new Date(a.usedAt).getTime() : 0),
+      );
   }
 
   // Rooms
   async getAllRooms(includeInactive: boolean = false): Promise<HSpeedRoom[]> {
     return Array.from(this.hspeedRoomsList.values())
-      .filter(r => includeInactive || r.isActive)
+      .filter((r) => includeInactive || r.isActive)
       .sort((a, b) => {
         if (a.featured && !b.featured) return -1;
         if (!a.featured && b.featured) return 1;
-        return (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        return (
+          (b.createdAt ? new Date(b.createdAt).getTime() : 0) -
+          (a.createdAt ? new Date(a.createdAt).getTime() : 0)
+        );
       });
   }
 
   async getFeaturedRooms(): Promise<HSpeedRoom[]> {
     return Array.from(this.hspeedRoomsList.values())
-      .filter(r => r.isActive && r.featured)
-      .sort((a, b) => (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0));
+      .filter((r) => r.isActive && r.featured)
+      .sort(
+        (a, b) =>
+          (b.createdAt ? new Date(b.createdAt).getTime() : 0) -
+          (a.createdAt ? new Date(a.createdAt).getTime() : 0),
+      );
   }
 
   async createRoom(room: InsertHSpeedRoom): Promise<HSpeedRoom> {
@@ -1201,7 +1716,10 @@ export class MemStorage implements IStorage {
     return item;
   }
 
-  async updateRoom(id: number, data: Partial<InsertHSpeedRoom>): Promise<HSpeedRoom | undefined> {
+  async updateRoom(
+    id: number,
+    data: Partial<InsertHSpeedRoom>,
+  ): Promise<HSpeedRoom | undefined> {
     const item = this.hspeedRoomsList.get(id);
     if (!item) return undefined;
     Object.assign(item, data);
@@ -1216,7 +1734,11 @@ export class MemStorage implements IStorage {
   async getTicketsByUser(userId: number): Promise<SupportTicket[]> {
     return Array.from(this.supportTicketsList.values())
       .filter((t) => t.userId === userId)
-      .sort((a, b) => (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0));
+      .sort(
+        (a, b) =>
+          (b.createdAt ? new Date(b.createdAt).getTime() : 0) -
+          (a.createdAt ? new Date(a.createdAt).getTime() : 0),
+      );
   }
 
   async createTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
@@ -1234,7 +1756,10 @@ export class MemStorage implements IStorage {
     return item;
   }
 
-  async updateTicketStatus(id: number, status: string): Promise<SupportTicket | undefined> {
+  async updateTicketStatus(
+    id: number,
+    status: string,
+  ): Promise<SupportTicket | undefined> {
     const item = this.supportTicketsList.get(id);
     if (!item) return undefined;
     item.status = status;
@@ -1242,26 +1767,310 @@ export class MemStorage implements IStorage {
   }
 
   async getAllTickets(): Promise<SupportTicket[]> {
-    return Array.from(this.supportTicketsList.values())
-      .sort((a, b) => (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0));
+    return Array.from(this.supportTicketsList.values()).sort(
+      (a, b) =>
+        (b.createdAt ? new Date(b.createdAt).getTime() : 0) -
+        (a.createdAt ? new Date(a.createdAt).getTime() : 0),
+    );
   }
 
   // Alliances
   private alliancesList: Map<number, Alliance> = new Map();
   private _allianceId = 0;
-  async getAllAlliances(): Promise<Alliance[]> { return Array.from(this.alliancesList.values()).filter((a) => a.isActive).sort((a, b) => a.sortOrder - b.sortOrder); }
+  async getAllAlliances(): Promise<Alliance[]> {
+    return Array.from(this.alliancesList.values())
+      .filter((a) => a.isActive)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }
   async createAlliance(data: InsertAlliance): Promise<Alliance> {
     const id = ++this._allianceId;
-    const item: Alliance = { id, name: data.name, logoUrl: data.logoUrl, websiteUrl: data.websiteUrl ?? null, description: data.description ?? null, isActive: data.isActive ?? true, sortOrder: data.sortOrder ?? 0, createdAt: new Date() };
+    const item: Alliance = {
+      id,
+      name: data.name,
+      logoUrl: data.logoUrl,
+      websiteUrl: data.websiteUrl ?? null,
+      description: data.description ?? null,
+      isActive: data.isActive ?? true,
+      sortOrder: data.sortOrder ?? 0,
+      createdAt: new Date(),
+    };
     this.alliancesList.set(id, item);
     return item;
   }
-  async updateAlliance(id: number, data: Partial<InsertAlliance>): Promise<Alliance | undefined> {
+  async updateAlliance(
+    id: number,
+    data: Partial<InsertAlliance>,
+  ): Promise<Alliance | undefined> {
     const item = this.alliancesList.get(id);
     if (!item) return undefined;
     Object.assign(item, data);
     this.alliancesList.set(id, item);
     return item;
   }
-  async deleteAlliance(id: number): Promise<boolean> { return this.alliancesList.delete(id); }
+  async deleteAlliance(id: number): Promise<boolean> {
+    return this.alliancesList.delete(id);
+  }
+
+  // Reaction Icons
+  async getAllReactionIcons(): Promise<ReactionIcon[]> {
+    return [];
+  }
+  async getReactionIconByCode(code: string): Promise<ReactionIcon | undefined> {
+    return undefined;
+  }
+  async createReactionIcon(data: InsertReactionIcon): Promise<ReactionIcon> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async updateReactionIcon(
+    id: number,
+    data: Partial<InsertReactionIcon>,
+  ): Promise<ReactionIcon | undefined> {
+    return undefined;
+  }
+  async deleteReactionIcon(id: number): Promise<boolean> {
+    return false;
+  }
+  async getUserReactionIcons(userId: number): Promise<UserReactionIcon[]> {
+    return [];
+  }
+  async unlockUserReactionIcon(
+    userId: number,
+    iconId: number,
+  ): Promise<UserReactionIcon> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async incrementReactionIconUsage(
+    userId: number,
+    iconId: number,
+  ): Promise<void> {}
+
+  // Cards
+  async getAllCards(): Promise<Card[]> {
+    return [];
+  }
+  async getCardByCode(code: string): Promise<Card | undefined> {
+    return undefined;
+  }
+  async createCard(data: InsertCard): Promise<Card> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async getUserCards(userId: number): Promise<UserCard[]> {
+    return [];
+  }
+  async equipUserCard(
+    userId: number,
+    cardId: number,
+    slot: number,
+  ): Promise<UserCard> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async grantUserCard(
+    userId: number,
+    cardId: number,
+    qty: number,
+  ): Promise<UserCard> {
+    throw new Error("Not implemented in MemStorage");
+  }
+
+  // Mini Games
+  async getAllMiniGames(): Promise<MiniGame[]> {
+    return [];
+  }
+  async getMiniGameByCode(code: string): Promise<MiniGame | undefined> {
+    return undefined;
+  }
+  async createMiniGame(data: InsertMiniGame): Promise<MiniGame> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async getUserMiniGameScores(userId: number): Promise<UserMiniGameScore[]> {
+    return [];
+  }
+  async submitMiniGameScore(
+    userId: number,
+    gameCode: string,
+    score: number,
+    gameData?: any,
+  ): Promise<UserMiniGameScore> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async getMiniGameLeaderboard(
+    gameCode: string,
+    limit: number,
+  ): Promise<any[]> {
+    return [];
+  }
+
+  // Speed Missions
+  async getActiveSpeedMissions(season?: string): Promise<SpeedMission[]> {
+    return [];
+  }
+  async getSpeedMissionByCode(code: string): Promise<SpeedMission | undefined> {
+    return undefined;
+  }
+  async createSpeedMission(data: InsertSpeedMission): Promise<SpeedMission> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async getUserMissions(userId: number): Promise<UserMission[]> {
+    return [];
+  }
+  async updateMissionProgress(
+    userId: number,
+    missionId: number,
+    action: string,
+    metadata?: any,
+  ): Promise<UserMission> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async claimMissionReward(
+    userId: number,
+    missionId: number,
+  ): Promise<UserMission> {
+    throw new Error("Not implemented in MemStorage");
+  }
+
+  // Seasonal Stamps
+  async getSeasonalStamps(season?: string): Promise<SeasonalStamp[]> {
+    return [];
+  }
+  async getSeasonalStampByCode(
+    code: string,
+  ): Promise<SeasonalStamp | undefined> {
+    return undefined;
+  }
+  async createSeasonalStamp(data: InsertSeasonalStamp): Promise<SeasonalStamp> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async getUserStamps(userId: number): Promise<UserStamp[]> {
+    return [];
+  }
+
+  // YouTube Embeds (Speed Shorts)
+  async getUserYoutubeEmbeds(userId: number): Promise<UserYoutubeEmbed[]> {
+    return [];
+  }
+  async createUserYoutubeEmbed(
+    userId: number,
+    data: InsertUserYoutubeEmbed,
+  ): Promise<UserYoutubeEmbed> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async updateUserYoutubeEmbed(
+    id: number,
+    userId: number,
+    data: Partial<InsertUserYoutubeEmbed>,
+  ): Promise<UserYoutubeEmbed | undefined> {
+    return undefined;
+  }
+  async deleteUserYoutubeEmbed(id: number, userId: number): Promise<boolean> {
+    return false;
+  }
+  async approveYoutubeEmbed(id: number): Promise<UserYoutubeEmbed | undefined> {
+    return undefined;
+  }
+
+  // Cine Mode
+  async getCineSessions(status?: string): Promise<CineSession[]> {
+    return [];
+  }
+  async getCineSession(id: number): Promise<CineSession | undefined> {
+    return undefined;
+  }
+  async createCineSession(
+    hostUserId: number,
+    data: InsertCineSession,
+  ): Promise<CineSession> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async updateCineSession(
+    id: number,
+    hostUserId: number,
+    data: Partial<InsertCineSession>,
+  ): Promise<CineSession | undefined> {
+    return undefined;
+  }
+  async joinCineSession(
+    sessionId: number,
+    userId: number,
+  ): Promise<CineSession> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async leaveCineSession(sessionId: number, userId: number): Promise<void> {}
+
+  // DJ Slots
+  async getAllDjSlots(): Promise<DjSlot[]> {
+    return [];
+  }
+  async getDjSlot(id: number): Promise<DjSlot | undefined> {
+    return undefined;
+  }
+  async createDjSlot(data: InsertDjSlot): Promise<DjSlot> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async updateDjSlot(
+    id: number,
+    data: Partial<InsertDjSlot>,
+  ): Promise<DjSlot | undefined> {
+    return undefined;
+  }
+  async deleteDjSlot(id: number): Promise<boolean> {
+    return false;
+  }
+  async requestDjSlot(
+    slotId: number,
+    userId: number,
+    data: InsertDjSlotRequest,
+  ): Promise<DjSlotRequest> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async getDjSlotRequests(): Promise<DjSlotRequest[]> {
+    return [];
+  }
+  async reviewDjSlotRequest(
+    id: number,
+    reviewedBy: number,
+    data: { status: string },
+  ): Promise<DjSlotRequest> {
+    throw new Error("Not implemented in MemStorage");
+  }
+
+  // User Roles
+  async getUserRoles(userId: number): Promise<UserRole[]> {
+    return [];
+  }
+  async grantUserRole(
+    userId: number,
+    grantedBy: number,
+    data: InsertUserRole,
+  ): Promise<UserRole> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async revokeUserRole(userId: number, roleId: number): Promise<boolean> {
+    return false;
+  }
+
+  // News Sections
+  async getAllNewsSections(): Promise<NewsSection[]> {
+    return [];
+  }
+  async createNewsSection(data: InsertNewsSection): Promise<NewsSection> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async updateNewsSection(
+    id: number,
+    data: Partial<InsertNewsSection>,
+  ): Promise<NewsSection | undefined> {
+    return undefined;
+  }
+  async getNewsSections(newsId: number): Promise<NewsSection[]> {
+    return [];
+  }
+  async linkNewsToSection(
+    newsId: number,
+    sectionId: number,
+    isPrimary: boolean,
+  ): Promise<void> {}
+  async unlinkNewsFromSection(
+    newsId: number,
+    sectionId: number,
+  ): Promise<void> {}
 }
