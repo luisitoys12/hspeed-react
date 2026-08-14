@@ -476,6 +476,11 @@ export default function TopNavBar() {
       iconClass: "fa-solid fa-fire-flame-curved",
     },
     {
+      href: "/memes",
+      label: "Creador de Memes",
+      iconClass: "fa-solid fa-image",
+    },
+    {
       href: "/herramientas",
       label: "Centro de Herramientas",
       iconClass: "fa-solid fa-screwdriver-wrench",

@@ -42,6 +42,7 @@ import RoomsPage from "@/pages/RoomsPage";
 import FeriaPage from "@/pages/FeriaPage";
 import SupportPage from "@/pages/SupportPage";
 import TendenciasPage from "@/pages/TendenciasPage";
+import MemeCreatorPage from "@/pages/MemeCreatorPage";
 import NotFound from "@/pages/not-found";
 
 function AppContent() {
@@ -105,6 +106,7 @@ function AppContent() {
             <Route path="/feria" component={FeriaPage} />
             <Route path="/soporte" component={SupportPage} />
             <Route path="/tendencias" component={TendenciasPage} />
+            <Route path="/memes" component={MemeCreatorPage} />
             <Route component={NotFound} />
           </Switch>
         </Suspense>
