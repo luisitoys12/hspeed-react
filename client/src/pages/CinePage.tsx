@@ -389,7 +389,7 @@ export default function CinePage() {
                 </Card>
               ))}
             </div>
-          ) : sessions?.length === 0 ? (
+          ) : !sessions || sessions.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Play className="w-10 h-10 mx-auto mb-2 opacity-20" />
               <p>No hay salas activas. ¡Crea la primera!</p>

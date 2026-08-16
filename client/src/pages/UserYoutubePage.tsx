@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth, useParams } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
+import { useParams, Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,9 +29,10 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  Clock,
+  Star,
 } from "lucide-react";
 import { proxyImage } from "@/lib/habboProxy";
-import { Link } from "wouter";
 
 interface YoutubeEmbed {
   id: number;

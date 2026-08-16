@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { proxyImage } from "@/lib/habboProxy";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -874,6 +874,256 @@ function StatsBar() {
 }
 
 /* ============================================================
+   DISCORD WIDGET
+   ============================================================ */
+function DiscordWidget() {
+  const [widgetData, setWidgetData] = useState<{
+    online: number;
+    members: number;
+    invite: string;
+    loading: boolean;
+  }>({
+    online: 0,
+    members: 0,
+    invite: "https://discord.gg/habbospeed",
+    loading: true,
+  });
+
+  useEffect(() => {
+    const fetchWidget = async () => {
+      try {
+        const res = await fetch(
+          "https://discord.com/api/guilds/123456789012345678/widget.json",
+          {
+            headers: { Accept: "application/json" },
+          },
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setWidgetData({
+            online: data.presence_count || 0,
+            members: data.members?.length || 0,
+            invite: data.instant_invite || "https://discord.gg/habbospeed",
+            loading: false,
+          });
+        } else {
+          setWidgetData((prev) => ({ ...prev, loading: false }));
+        }
+      } catch (e) {
+        setWidgetData((prev) => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchWidget();
+    const interval = setInterval(fetchWidget, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Card className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/20">
+      <CardHeader className="flex items-center justify-between pb-3">
+        <div className="flex items-center gap-2">
+          <i className="fa-brands fa-discord text-purple-500 text-xl"></i>
+          <span className="text-xs font-bold uppercase tracking-wider text-purple-400">
+            Discord
+          </span>
+        </div>
+        <Badge variant="secondary" className="text-[9px]">
+          {widgetData.loading ? (
+            <span className="animate-pulse">Cargando...</span>
+          ) : (
+            <>
+              <i className="fa-solid fa-circle text-green-400 mr-1" />
+              {widgetData.online} en línea
+            </>
+          )}
+        </Badge>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-black/20 rounded-xl p-3 text-center">
+            <p className="text-2xl font-bold text-white">
+              {widgetData.loading ? "—" : widgetData.online}
+            </p>
+            <p className="text-[10px] text-muted-foreground">En línea ahora</p>
+          </div>
+          <div className="bg-black/20 rounded-xl p-3 text-center">
+            <p className="text-2xl font-bold text-white">
+              {widgetData.loading ? "—" : widgetData.members}
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              Miembros totales
+            </p>
+          </div>
+        </div>
+        <a
+          href="https://discord.gg/habbospeed"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
+        >
+          <i className="fa-brands fa-discord text-lg"></i>
+          Únete a nuestro Discord
+        </a>
+        <p className="text-[10px] text-muted-foreground text-center">
+          Soporte · Anuncios · Comunidad · Eventos en vivo
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ============================================================
+   VACANTES STAFF - RECLUTAMIENTO
+   ============================================================ */
+function VacantesStaff() {
+  const vacantes = [
+    {
+      departamento: "Moderación",
+      icon: "fa-solid fa-shield",
+      color: "text-blue-400",
+      bg: "bg-blue-500/10 border-blue-500/20",
+      vacantes: [
+        {
+          rol: "Moderador Principal",
+          descripcion: "Gestión de reportes, bans, appeals",
+        },
+        {
+          rol: "Moderador de Chat",
+          descripcion: "Supervisión de chat público y privado",
+        },
+        {
+          rol: "Moderador de Eventos",
+          descripcion: "Control de eventos y torneos",
+        },
+      ],
+    },
+    {
+      departamento: "Contenido",
+      icon: "fa-solid fa-newspaper",
+      color: "text-green-400",
+      bg: "bg-green-500/10 border-green-500/20",
+      vacantes: [
+        {
+          rol: "Redactor de Noticias",
+          descripcion: "Redacción de noticias, guías, eventos",
+        },
+        {
+          rol: "Creador de Guías",
+          descripcion: "Tutoriales, tips, secretos de Habbo",
+        },
+        {
+          rol: "Community Manager",
+          descripcion: "Redes sociales, Discord, engagement",
+        },
+      ],
+    },
+    {
+      departamento: "Eventos",
+      icon: "fa-solid fa-calendar-star",
+      color: "text-purple-400",
+      bg: "bg-purple-500/10 border-purple-500/20",
+      vacantes: [
+        {
+          rol: "Organizador de Eventos",
+          descripcion: "Planificación y ejecución de eventos",
+        },
+        { rol: "Host de Eventos", descripcion: "Animación y hosting en vivo" },
+        {
+          rol: "DJ Residente",
+          descripcion: "Sesiones de radio y eventos musicales",
+        },
+      ],
+    },
+    {
+      departamento: "Técnico",
+      icon: "fa-solid fa-code",
+      color: "text-orange-400",
+      bg: "bg-orange-500/10 border-orange-500/20",
+      vacantes: [
+        {
+          rol: "Desarrollador Frontend",
+          descripcion: "React, TypeScript, Tailwind",
+        },
+        {
+          rol: "Desarrollador Backend",
+          descripcion: "Node.js, PostgreSQL, APIs",
+        },
+        {
+          rol: "Diseñador UI/UX",
+          descripcion: "Interfaces, prototipos, design system",
+        },
+      ],
+    },
+  ];
+
+  return (
+    <Card className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
+      <CardHeader className="flex items-center justify-between pb-3">
+        <div className="flex items-center gap-2">
+          <i className="fa-solid fa-briefcase text-yellow-500 text-xl"></i>
+          <span className="text-xs font-bold uppercase tracking-wider text-yellow-400">
+            Vacantes Staff - ¡Únete al equipo!
+          </span>
+        </div>
+        <Badge variant="secondary" className="text-[9px]">
+          <i className="fa-solid fa-bolt mr-1" /> Reclutamiento Activo
+        </Badge>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-[10px] text-muted-foreground text-center">
+          Buscamos personas apasionadas por Habbo para crecer la comunidad. No
+          se requiere experiencia previa, solo ganas de aprender y compromiso.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {vacantes.map((dept) => (
+            <Card
+              key={dept.departamento}
+              className={`overflow-hidden ${dept.bg}`}
+            >
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <i className={`${dept.icon} ${dept.color} text-lg`}></i>
+                  <h4 className="font-bold text-sm text-white">
+                    {dept.departamento}
+                  </h4>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2 pb-3">
+                {dept.vacantes.map((vacante, i) => (
+                  <div
+                    key={i}
+                    className="bg-black/20 rounded-lg p-2 hover:bg-black/30 transition-colors"
+                  >
+                    <p className="font-semibold text-[10px] text-white">
+                      {vacante.rol}
+                    </p>
+                    <p className="text-[9px] text-muted-foreground">
+                      {vacante.descripcion}
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="text-center pt-2">
+          <a
+            href="https://discord.gg/habbospeed"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-2.5 rounded-xl font-bold text-sm transition-colors"
+          >
+            <i className="fa-brands fa-discord"></i>
+            Postula en Discord
+          </a>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ============================================================
    HOME HERO BANNER (Slideshow)
    ============================================================ */
 function HomeHeroBanner({ slideshow }: { slideshow: any[] }) {
@@ -1264,6 +1514,12 @@ export default function HomePage() {
             </div>
           </div>
         )}
+
+        {/* Discord Widget */}
+        <DiscordWidget />
+
+        {/* Vacantes - Reclutamiento Staff */}
+        <VacantesStaff />
 
         <div className="mt-4 space-y-4">
           <FutbolHubPanel />

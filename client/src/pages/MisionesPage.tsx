@@ -24,6 +24,12 @@ import {
   Stamp,
 } from "lucide-react";
 import { proxyImage } from "@/lib/habboProxy";
+import type {
+  SpeedMission,
+  UserMission,
+  SeasonalStamp,
+  UserStamp,
+} from "@shared/schema";
 
 const MISSION_CATEGORY_COLORS: Record<string, string> = {
   daily: "bg-blue-500/20 text-blue-400",
@@ -41,25 +47,41 @@ const MISSION_CATEGORY_ICONS: Record<string, any> = {
   achievement: Trophy,
 };
 
+const RARITY_COLORS: Record<string, string> = {
+  common: "bg-gray-500/20 text-gray-400",
+  rare: "bg-blue-500/20 text-blue-400",
+  epic: "bg-purple-500/20 text-purple-400",
+  legendary: "bg-yellow-500/20 text-yellow-400",
+  mythic: "bg-orange-500/20 text-orange-400",
+};
+
 export default function MisionesPage() {
   const { user, token } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: allMissions, isLoading: loadingMissions } = useQuery({
+  const { data: allMissions, isLoading: loadingMissions } = useQuery<
+    SpeedMission[]
+  >({
     queryKey: ["/api/speed-missions"],
   });
 
-  const { data: userMissions, isLoading: loadingUserMissions } = useQuery({
+  const { data: userMissions, isLoading: loadingUserMissions } = useQuery<
+    UserMission[]
+  >({
     queryKey: ["/api/users", user?.id, "missions"],
     enabled: !!user,
   });
 
-  const { data: allStamps, isLoading: loadingStamps } = useQuery({
+  const { data: allStamps, isLoading: loadingStamps } = useQuery<
+    SeasonalStamp[]
+  >({
     queryKey: ["/api/seasonal-stamps"],
   });
 
-  const { data: userStamps, isLoading: loadingUserStamps } = useQuery({
+  const { data: userStamps, isLoading: loadingUserStamps } = useQuery<
+    UserStamp[]
+  >({
     queryKey: ["/api/users", user?.id, "stamps"],
     enabled: !!user,
   });

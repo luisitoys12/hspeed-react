@@ -20,11 +20,11 @@ import {
   Gamepad2,
   Brain,
   Target,
-  Leaderboard,
   Clock,
   Play,
 } from "lucide-react";
 import { proxyImage } from "@/lib/habboProxy";
+import type { MiniGame, UserMiniGameScore } from "@shared/schema";
 
 const GAME_CONFIG: Record<string, { icon: any; color: string; label: string }> =
   {
@@ -39,11 +39,13 @@ export default function JuegosPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: allGames, isLoading: loadingGames } = useQuery({
+  const { data: allGames, isLoading: loadingGames } = useQuery<MiniGame[]>({
     queryKey: ["/api/mini-games"],
   });
 
-  const { data: userScores, isLoading: loadingScores } = useQuery({
+  const { data: userScores, isLoading: loadingScores } = useQuery<
+    UserMiniGameScore[]
+  >({
     queryKey: ["/api/users", user?.id, "mini-game-scores"],
     enabled: !!user,
   });
@@ -86,7 +88,7 @@ export default function JuegosPage() {
       }),
   });
 
-  const games = allGames || [];
+  const games: MiniGame[] = allGames || [];
 
   return (
     <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
@@ -119,7 +121,7 @@ export default function JuegosPage() {
 
           <TabsContent value="jugar">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {games.map((game: any) => {
+              {games.map((game) => {
                 const config = GAME_CONFIG[game.code] || {
                   icon: Gamepad2,
                   color: "text-primary",
@@ -127,7 +129,7 @@ export default function JuegosPage() {
                 };
                 const GameIcon = config.icon;
                 const userScore = userScores?.find(
-                  (s: any) => s.miniGameId === game.id,
+                  (s) => s.miniGameId === game.id,
                 );
                 const bestScore = userScore?.maxScore || 0;
 
@@ -191,7 +193,7 @@ export default function JuegosPage() {
                           className="w-8"
                           onClick={() => {}}
                         >
-                          <Leaderboard className="w-4 h-4" />
+                          <Trophy className="w-4 h-4" />
                         </Button>
                       </div>
                     </CardContent>
@@ -203,7 +205,7 @@ export default function JuegosPage() {
 
           <TabsContent value="ranking">
             <div className="space-y-4">
-              {games.map((game: any) => {
+              {games.map((game) => {
                 const config = GAME_CONFIG[game.code] || {
                   icon: Gamepad2,
                   color: "text-primary",

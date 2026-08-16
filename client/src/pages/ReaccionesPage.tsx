@@ -20,6 +20,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { proxyImage } from "@/lib/habboProxy";
+import type { ReactionIcon, UserReactionIcon } from "@shared/schema";
 
 const RARITY_COLORS: Record<string, string> = {
   common: "bg-gray-500/20 text-gray-400",
@@ -40,11 +41,13 @@ export default function ReaccionesPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: allIcons, isLoading: loadingIcons } = useQuery({
+  const { data: allIcons, isLoading: loadingIcons } = useQuery<ReactionIcon[]>({
     queryKey: ["/api/reaction-icons"],
   });
 
-  const { data: userIcons, isLoading: loadingUserIcons } = useQuery({
+  const { data: userIcons, isLoading: loadingUserIcons } = useQuery<
+    UserReactionIcon[]
+  >({
     queryKey: ["/api/users", user?.id, "reaction-icons"],
     enabled: !!user,
   });

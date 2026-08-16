@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import type { Card as CardType, UserCard } from "@shared/schema";
 import {
   Zap,
   Trophy,
@@ -22,6 +24,10 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { proxyImage } from "@/lib/habboProxy";
+
+interface CardWithEarnCondition extends CardType {
+  earnCondition: { type: string; [key: string]: unknown } | null;
+}
 
 const RARITY_CONFIG: Record<
   string,
@@ -65,14 +71,18 @@ export default function CartasPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: allCards, isLoading: loadingCards } = useQuery({
+  const { data: allCards, isLoading: loadingCards } = useQuery<
+    CardWithEarnCondition[]
+  >({
     queryKey: ["/api/cards"],
   });
 
-  const { data: userCards, isLoading: loadingUserCards } = useQuery({
-    queryKey: ["/api/users", user?.id, "cards"],
-    enabled: !!user,
-  });
+  const { data: userCards, isLoading: loadingUserCards } = useQuery<UserCard[]>(
+    {
+      queryKey: ["/api/users", user?.id, "cards"],
+      enabled: !!user,
+    },
+  );
 
   const equipMutation = useMutation({
     mutationFn: async ({ cardId, slot }: { cardId: number; slot: number }) => {
@@ -102,17 +112,17 @@ export default function CartasPage() {
   });
 
   const cards = allCards || [];
-  const userCardMap = new Map(
-    (userCards || []).map((uc: any) => [uc.cardId, uc]),
+  const userCardMap = new Map<number, UserCard>(
+    (userCards || []).map((uc) => [uc.cardId, uc]),
   );
   const equippedCards = (userCards || []).filter(
-    (uc: any) => uc.equippedSlot !== null && uc.equippedSlot !== undefined,
+    (uc) => uc.equippedSlot !== null && uc.equippedSlot !== undefined,
   );
 
-  const seriesList = [
-    ...new Set(cards.map((c: any) => c.series || "base")),
-  ].sort();
-  const categoryList = [...new Set(cards.map((c: any) => c.category))].sort();
+  const seriesList = Array.from(
+    new Set(cards.map((c) => c.series || "base")),
+  ).sort();
+  const categoryList = Array.from(new Set(cards.map((c) => c.category))).sort();
   const rarityList = ["common", "rare", "epic", "legendary", "mythic"];
 
   const [activeSeries, setActiveSeries] = useState("all");
@@ -120,7 +130,7 @@ export default function CartasPage() {
   const [activeRarity, setActiveRarity] = useState("all");
   const [showOnlyOwned, setShowOnlyOwned] = useState(false);
 
-  const filteredCards = cards.filter((c: any) => {
+  const filteredCards = cards.filter((c) => {
     if (activeSeries !== "all" && c.series !== activeSeries) return false;
     if (activeCategory !== "all" && c.category !== activeCategory) return false;
     if (activeRarity !== "all" && c.rarity !== activeRarity) return false;
@@ -162,10 +172,10 @@ export default function CartasPage() {
             <div className="grid grid-cols-5 gap-3">
               {[0, 1, 2, 3, 4].map((slot) => {
                 const equipped = equippedCards.find(
-                  (c: any) => c.equippedSlot === slot,
+                  (c) => c.equippedSlot === slot,
                 );
                 const card = equipped
-                  ? cards.find((c: any) => c.id === equipped.cardId)
+                  ? cards.find((c) => c.id === equipped.cardId)
                   : null;
                 return (
                   <div
@@ -295,7 +305,7 @@ export default function CartasPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {filteredCards.map((card: any) => {
+          {filteredCards.map((card) => {
             const userCard = getUserCard(card.id);
             const isOwned = !!userCard;
             const quantity = userCard?.quantity || 0;
@@ -445,9 +455,9 @@ export default function CartasPage() {
         <CardContent>
           <div className="grid grid-cols-5 gap-4">
             {rarityList.map((r) => {
-              const total = cards.filter((c: any) => c.rarity === r).length;
+              const total = cards.filter((c) => c.rarity === r).length;
               const owned = cards.filter(
-                (c: any) => c.rarity === r && userCardMap.has(c.id),
+                (c) => c.rarity === r && userCardMap.has(c.id),
               ).length;
               const config = RARITY_CONFIG[r];
               return (

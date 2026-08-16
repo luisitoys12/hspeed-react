@@ -63,6 +63,11 @@ function qp(req: Request, key: string): string {
   return ((Array.isArray(v) ? v[0] : v) as string) || "";
 }
 
+function rp(req: Request, key: string): string {
+  const v = req.params[key];
+  return (Array.isArray(v) ? v[0] : v) as string;
+}
+
 export async function registerRoutes(server: Server, app: Express) {
   // Health check: usado por Docker HEALTHCHECK, balanceadores y monitoreo externo.
   // No depende de la base de datos para que el contenedor no se marque "unhealthy"
@@ -356,7 +361,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   // ============ PROFILE WALL / MURO ============
   app.get("/api/wall/:userId", async (req, res) => {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = parseInt(rp(req, "userId"), 10);
     if (!Number.isFinite(userId))
       return res.status(400).json({ message: "ID inválido" });
 
@@ -370,7 +375,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   app.post("/api/wall/:userId", authMiddleware, async (req: any, res) => {
-    const profileUserId = parseInt(req.params.userId, 10);
+    const profileUserId = parseInt(rp(req, "userId"), 10);
     if (!Number.isFinite(profileUserId))
       return res.status(400).json({ message: "ID inválido" });
 
@@ -410,7 +415,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   app.delete("/api/wall/:id", authMiddleware, async (req: any, res) => {
-    const messageId = parseInt(req.params.id, 10);
+    const messageId = parseInt(rp(req, "id"), 10);
     if (!Number.isFinite(messageId))
       return res.status(400).json({ message: "ID inválido" });
 
@@ -437,7 +442,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(await storage.getAllNews());
   });
   app.get("/api/news/:id", async (req, res) => {
-    const item = await storage.getNewsById(parseInt(req.params.id));
+    const item = await storage.getNewsById(parseInt(rp(req, "id")));
     if (!item)
       return res.status(404).json({ message: "Noticia no encontrada" });
     res.json(item);
@@ -448,13 +453,13 @@ export async function registerRoutes(server: Server, app: Express) {
       .json(await storage.createNews({ ...req.body, authorId: req.user.id }));
   });
   app.put("/api/news/:id", adminMiddleware, async (req, res) => {
-    const item = await storage.updateNews(parseInt(req.params.id), req.body);
+    const item = await storage.updateNews(parseInt(rp(req, "id")), req.body);
     if (!item)
       return res.status(404).json({ message: "Noticia no encontrada" });
     res.json(item);
   });
   app.delete("/api/news/:id", adminMiddleware, async (req, res) => {
-    await storage.deleteNews(parseInt(req.params.id));
+    await storage.deleteNews(parseInt(rp(req, "id")));
     res.json({ message: "Eliminada" });
   });
 
@@ -463,7 +468,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(await storage.getAllEvents());
   });
   app.get("/api/events/:id", async (req, res) => {
-    const item = await storage.getEventById(parseInt(req.params.id));
+    const item = await storage.getEventById(parseInt(rp(req, "id")));
     if (!item) return res.status(404).json({ message: "Evento no encontrado" });
     res.json(item);
   });
@@ -471,12 +476,12 @@ export async function registerRoutes(server: Server, app: Express) {
     res.status(201).json(await storage.createEvent(req.body));
   });
   app.put("/api/events/:id", adminMiddleware, async (req, res) => {
-    const item = await storage.updateEvent(parseInt(req.params.id), req.body);
+    const item = await storage.updateEvent(parseInt(rp(req, "id")), req.body);
     if (!item) return res.status(404).json({ message: "Evento no encontrado" });
     res.json(item);
   });
   app.delete("/api/events/:id", adminMiddleware, async (req, res) => {
-    await storage.deleteEvent(parseInt(req.params.id));
+    await storage.deleteEvent(parseInt(rp(req, "id")));
     res.json({ message: "Eliminado" });
   });
 
@@ -489,7 +494,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
   app.put("/api/schedule/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateScheduleItem(
-      parseInt(req.params.id),
+      parseInt(rp(req, "id")),
       req.body,
     );
     if (!item)
@@ -497,14 +502,14 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(item);
   });
   app.delete("/api/schedule/:id", adminMiddleware, async (req, res) => {
-    await storage.deleteScheduleItem(parseInt(req.params.id));
+    await storage.deleteScheduleItem(parseInt(rp(req, "id")));
     res.json({ message: "Eliminado" });
   });
 
   // ============ COMMENTS ============
   app.get("/api/comments/article/:articleId", async (req, res) => {
     res.json(
-      await storage.getCommentsByArticle(parseInt(req.params.articleId)),
+      await storage.getCommentsByArticle(parseInt(rp(req, "articleId"))),
     );
   });
   app.post("/api/comments", authMiddleware, async (req: any, res) => {
@@ -520,7 +525,7 @@ export async function registerRoutes(server: Server, app: Express) {
       .json({ ...comment, habboUsername: user.habboUsername || null });
   });
   app.delete("/api/comments/:id", adminMiddleware, async (req, res) => {
-    await storage.deleteComment(parseInt(req.params.id));
+    await storage.deleteComment(parseInt(rp(req, "id")));
     res.json({ message: "Eliminado" });
   });
 
@@ -532,7 +537,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.status(201).json(await storage.createPoll(req.body));
   });
   app.put("/api/polls/:id", adminMiddleware, async (req, res) => {
-    const item = await storage.updatePoll(parseInt(req.params.id), req.body);
+    const item = await storage.updatePoll(parseInt(rp(req, "id")), req.body);
     if (!item)
       return res.status(404).json({ message: "Encuesta no encontrada" });
     res.json(item);
@@ -555,7 +560,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
   app.put("/api/forum/categories/:id", adminMiddleware, async (req, res) => {
     const updated = await storage.updateForumCategory(
-      parseInt(req.params.id),
+      parseInt(rp(req, "id")),
       req.body,
     );
     if (!updated)
@@ -563,16 +568,16 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(updated);
   });
   app.delete("/api/forum/categories/:id", adminMiddleware, async (req, res) => {
-    const ok = await storage.deleteForumCategory(parseInt(req.params.id));
+    const ok = await storage.deleteForumCategory(parseInt(rp(req, "id")));
     if (!ok)
       return res.status(404).json({ message: "Categoría no encontrada" });
     res.status(204).send();
   });
   app.get("/api/forum/categories/:id/threads", async (req, res) => {
-    res.json(await storage.getThreadsByCategory(parseInt(req.params.id)));
+    res.json(await storage.getThreadsByCategory(parseInt(rp(req, "id"))));
   });
   app.get("/api/forum/threads/:id", async (req, res) => {
-    const thread = await storage.getThreadById(parseInt(req.params.id));
+    const thread = await storage.getThreadById(parseInt(rp(req, "id")));
     if (!thread) return res.status(404).json({ message: "Hilo no encontrado" });
     await storage.incrementThreadViews(thread.id);
     res.json(thread);
@@ -598,7 +603,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.status(201).json(thread);
   });
   app.get("/api/forum/threads/:id/posts", async (req, res) => {
-    res.json(await storage.getPostsByThread(parseInt(req.params.id)));
+    res.json(await storage.getPostsByThread(parseInt(rp(req, "id"))));
   });
   app.post("/api/forum/posts", authMiddleware, async (req: any, res) => {
     const user = await storage.getUser(req.userId);
@@ -617,7 +622,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(await storage.getAllMarketplaceItems());
   });
   app.get("/api/marketplace/:className", async (req, res) => {
-    const item = await storage.getMarketplaceItemByClass(req.params.className);
+    const item = await storage.getMarketplaceItemByClass(rp(req, "className"));
     if (!item) return res.status(404).json({ message: "Item no encontrado" });
     res.json(item);
   });
@@ -667,7 +672,7 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const host = getHabboHost(hotel);
       const r = await fetch(
-        `${host}/api/public/users?name=${encodeURIComponent(req.params.username)}`,
+        `${host}/api/public/users?name=${encodeURIComponent(rp(req, "username"))}`,
         { headers: HABBO_HEADERS },
       );
       if (!r.ok)
@@ -682,7 +687,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.get("/api/habbo/rooms/:username", async (req, res) => {
     const hotel = (req.query.hotel as string) || "es";
     try {
-      const uniqueId = await resolveHabboUserId(req.params.username, hotel);
+      const uniqueId = await resolveHabboUserId(rp(req, "username"), hotel);
       if (!uniqueId) return res.json([]);
       const host = getHabboHost(hotel);
       const r = await fetch(
@@ -700,7 +705,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.get("/api/habbo/groups/:username", async (req, res) => {
     const hotel = (req.query.hotel as string) || "es";
     try {
-      const uniqueId = await resolveHabboUserId(req.params.username, hotel);
+      const uniqueId = await resolveHabboUserId(rp(req, "username"), hotel);
       if (!uniqueId) return res.json([]);
       const host = getHabboHost(hotel);
       const r = await fetch(
@@ -720,7 +725,7 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const host = `https://origins.habbo.${hotel}`;
       const r = await fetch(
-        `${host}/api/public/users?name=${encodeURIComponent(req.params.username)}`,
+        `${host}/api/public/users?name=${encodeURIComponent(rp(req, "username"))}`,
         { headers: HABBO_HEADERS },
       );
       if (!r.ok)
@@ -734,7 +739,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   app.get("/api/habbo/badges/:hotel", async (req, res) => {
-    const hotel = req.params.hotel || "es";
+    const hotel = rp(req, "hotel") || "es";
     const FALLBACK_BADGES = [
       {
         code: "ADM",
@@ -1144,7 +1149,7 @@ export async function registerRoutes(server: Server, app: Express) {
   ];
 
   app.get("/api/habbo/marketplace/:item", async (req, res) => {
-    const itemQuery = req.params.item;
+    const itemQuery = rp(req, "item");
     const hotel = (req.query.hotel || "es") as string;
     try {
       const controller = new AbortController();
@@ -1590,13 +1595,13 @@ export async function registerRoutes(server: Server, app: Express) {
       // Fetch upstream using standard Chrome User-Agent to bypass Cloudflare
       const userAgent =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-      let upstream: Response;
+      let upstream: any;
       try {
         upstream = await fetch(sourceUrl, {
           headers: { "User-Agent": userAgent },
         });
       } catch (fetchError) {
-        upstream = { ok: false, status: 0 } as Response;
+        upstream = { ok: false, status: 0, headers: new Headers() };
       }
 
       // If upstream fails, serve local fallback based on URL pattern
@@ -1643,7 +1648,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.get("/api/habbo/room/:roomId", async (req, res) => {
     try {
       const r = await fetch(
-        `https://www.habbo.es/api/public/rooms/${encodeURIComponent(req.params.roomId)}`,
+        `https://www.habbo.es/api/public/rooms/${encodeURIComponent(rp(req, "roomId"))}`,
         { headers: HABBO_HEADERS },
       );
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
@@ -1655,7 +1660,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/user/:username/profile", async (req, res) => {
     try {
-      const uid = await resolveHabboUserId(req.params.username);
+      const uid = await resolveHabboUserId(rp(req, "username"));
       if (!uid) return res.status(404).json({ message: "Error" });
       const r = await fetch(
         `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/profile`,
@@ -1670,7 +1675,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/user/:username/friends", async (req, res) => {
     try {
-      const uid = await resolveHabboUserId(req.params.username);
+      const uid = await resolveHabboUserId(rp(req, "username"));
       if (!uid) return res.status(404).json({ message: "Error" });
       const r = await fetch(
         `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/friends`,
@@ -1684,7 +1689,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/user/:username/rooms", async (req, res) => {
     try {
-      const uid = await resolveHabboUserId(req.params.username);
+      const uid = await resolveHabboUserId(rp(req, "username"));
       if (!uid) return res.json([]);
       const r = await fetch(
         `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/rooms`,
@@ -1698,7 +1703,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/user/:username/badges", async (req, res) => {
     try {
-      const uid = await resolveHabboUserId(req.params.username);
+      const uid = await resolveHabboUserId(rp(req, "username"));
       if (!uid) return res.json([]);
       const r = await fetch(
         `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/badges`,
@@ -1712,7 +1717,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/habbo/user/:username/groups", async (req, res) => {
     try {
-      const uid = await resolveHabboUserId(req.params.username);
+      const uid = await resolveHabboUserId(rp(req, "username"));
       if (!uid) return res.json([]);
       const r = await fetch(
         `https://www.habbo.es/api/public/users/${encodeURIComponent(uid)}/groups`,
@@ -1727,7 +1732,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.get("/api/habbo/group/:id", async (req, res) => {
     try {
       const r = await fetch(
-        `https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}`,
+        `https://www.habbo.es/api/public/groups/${encodeURIComponent(rp(req, "id"))}`,
         { headers: HABBO_HEADERS },
       );
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
@@ -1740,7 +1745,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.get("/api/habbo/group/:id/members", async (req, res) => {
     try {
       const r = await fetch(
-        `https://www.habbo.es/api/public/groups/${encodeURIComponent(req.params.id)}/members`,
+        `https://www.habbo.es/api/public/groups/${encodeURIComponent(rp(req, "id"))}/members`,
         { headers: HABBO_HEADERS },
       );
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
@@ -1893,7 +1898,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.get("/api/habbo/badge-owners/:badgeCode", async (req, res) => {
     try {
       const r = await fetch(
-        `https://www.habbo.es/api/public/badge/owners/${encodeURIComponent(req.params.badgeCode)}`,
+        `https://www.habbo.es/api/public/badge/owners/${encodeURIComponent(rp(req, "badgeCode"))}`,
         { headers: HABBO_HEADERS },
       );
       if (!r.ok) return res.status(r.status).json({ message: "Error" });
@@ -1922,7 +1927,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.status(201).json(await storage.createRequest(req.body));
   });
   app.delete("/api/requests/:id", adminMiddleware, async (req, res) => {
-    await storage.deleteRequest(parseInt(req.params.id));
+    await storage.deleteRequest(parseInt(rp(req, "id")));
     res.json({ message: "Eliminado" });
   });
 
@@ -1935,7 +1940,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
   app.put("/api/team/:id", adminMiddleware, async (req, res) => {
     const item = await storage.updateTeamMember(
-      parseInt(req.params.id),
+      parseInt(rp(req, "id")),
       req.body,
     );
     if (!item)
@@ -1943,7 +1948,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(item);
   });
   app.delete("/api/team/:id", adminMiddleware, async (req, res) => {
-    await storage.deleteTeamMember(parseInt(req.params.id));
+    await storage.deleteTeamMember(parseInt(rp(req, "id")));
     res.json({ message: "Eliminado" });
   });
 
@@ -2017,7 +2022,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   // Self-update (PATCH — propio perfil)
   app.patch("/api/users/:id", authMiddleware, async (req: any, res) => {
-    const targetId = parseInt(req.params.id);
+    const targetId = parseInt(rp(req, "id"));
     // Solo puede editarse a sí mismo (a menos que sea admin)
     const caller = await storage.getUser(req.userId);
     if (!caller) return res.status(401).json({ message: "No autorizado" });
@@ -2037,7 +2042,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   // Admin full update
   app.put("/api/users/:id", adminMiddleware, async (req, res) => {
-    const item = await storage.updateUser(parseInt(req.params.id), req.body);
+    const item = await storage.updateUser(parseInt(rp(req, "id")), req.body);
     if (!item)
       return res.status(404).json({ message: "Usuario no encontrado" });
     res.json({ ...item, passwordHash: undefined });
@@ -2049,7 +2054,7 @@ export async function registerRoutes(server: Server, app: Express) {
       const users = await storage.getAllUsers();
       const user = users.find(
         (u: any) =>
-          u.habboUsername?.toLowerCase() === req.params.username.toLowerCase(),
+          u.habboUsername?.toLowerCase() === rp(req, "username").toLowerCase(),
       );
       if (!user) return res.status(404).json({ message: "No encontrado" });
       res.json({ ...user, passwordHash: undefined });
@@ -2068,7 +2073,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(theme);
   });
   app.get("/api/themes/:slug", async (req, res) => {
-    const theme = await storage.getThemeBySlug(req.params.slug);
+    const theme = await storage.getThemeBySlug(rp(req, "slug"));
     if (!theme) return res.status(404).json({ message: "Tema no encontrado" });
     res.json(theme);
   });
@@ -2080,7 +2085,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(config);
   });
   app.put("/api/themes/:id", adminMiddleware, async (req, res) => {
-    const theme = await storage.updateTheme(parseInt(req.params.id), req.body);
+    const theme = await storage.updateTheme(parseInt(rp(req, "id")), req.body);
     if (!theme) return res.status(404).json({ message: "Tema no encontrado" });
     res.json(theme);
   });
@@ -2614,7 +2619,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
   app.delete("/api/chat/:id", djMiddleware, async (req: any, res) => {
     try {
-      await storage.deleteChatMessage(parseInt(req.params.id));
+      await storage.deleteChatMessage(parseInt(rp(req, "id")));
       res.json({ message: "Mensaje eliminado" });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -2665,7 +2670,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
   app.put("/api/messages/:id/read", authMiddleware, async (req: any, res) => {
     try {
-      const msg = await storage.markMessageRead(parseInt(req.params.id));
+      const msg = await storage.markMessageRead(parseInt(rp(req, "id")));
       if (!msg)
         return res.status(404).json({ message: "Mensaje no encontrado" });
       res.json(msg);
@@ -2677,7 +2682,7 @@ export async function registerRoutes(server: Server, app: Express) {
   // ============ VERIFIED BADGES ============
   app.get("/api/verified-badges/:userId", async (req, res) => {
     try {
-      res.json(await storage.getVerifiedBadges(parseInt(req.params.userId)));
+      res.json(await storage.getVerifiedBadges(parseInt(rp(req, "userId"))));
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
@@ -2735,7 +2740,7 @@ export async function registerRoutes(server: Server, app: Express) {
   // ============ SPEED POINTS ============
   app.put("/api/users/:id/points", djMiddleware, async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = parseInt(rp(req, "id"));
       const points =
         req.body.points !== undefined ? req.body.points : req.body.amount;
       if (points === undefined || isNaN(Number(points)))
@@ -3039,16 +3044,16 @@ export async function registerRoutes(server: Server, app: Express) {
     }
   });
   app.delete("/api/downloads/:id", adminMiddleware, async (req: any, res) => {
-    await storage.deleteDownload(parseInt(req.params.id));
+    await storage.deleteDownload(parseInt(rp(req, "id")));
     await storage.createPanelLog({
       userName: req.user?.displayName || "Sistema",
       action: "Descarga eliminada",
-      details: `ID: ${req.params.id}`,
+      details: `ID: ${rp(req, "id")}`,
     });
     res.json({ message: "Eliminada" });
   });
   app.put("/api/downloads/:id/count", async (req, res) => {
-    await storage.incrementDownloadCount(parseInt(req.params.id));
+    await storage.incrementDownloadCount(parseInt(rp(req, "id")));
     res.json({ message: "OK" });
   });
 
@@ -3073,11 +3078,11 @@ export async function registerRoutes(server: Server, app: Express) {
     }
   });
   app.delete("/api/banned-songs/:id", djMiddleware, async (req: any, res) => {
-    await storage.deleteBannedSong(parseInt(req.params.id));
+    await storage.deleteBannedSong(parseInt(rp(req, "id")));
     await storage.createPanelLog({
       userName: req.user?.displayName || "Sistema",
       action: "Canción desbaneada",
-      details: `ID: ${req.params.id}`,
+      details: `ID: ${rp(req, "id")}`,
     });
     res.json({ message: "Desbaneada" });
   });
@@ -3100,13 +3105,13 @@ export async function registerRoutes(server: Server, app: Express) {
     adminMiddleware,
     async (req: any, res) => {
       const updated = await storage.updateContactMessageStatus(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.body.status,
       );
       await storage.createPanelLog({
         userName: req.user?.displayName || "Sistema",
         action: "Contacto actualizado",
-        details: `ID: ${req.params.id} → ${req.body.status}`,
+        details: `ID: ${rp(req, "id")} → ${req.body.status}`,
       });
       res.json(updated);
     },
@@ -3115,11 +3120,11 @@ export async function registerRoutes(server: Server, app: Express) {
     "/api/contact-messages/:id",
     adminMiddleware,
     async (req: any, res) => {
-      await storage.deleteContactMessage(parseInt(req.params.id));
+      await storage.deleteContactMessage(parseInt(rp(req, "id")));
       await storage.createPanelLog({
         userName: req.user?.displayName || "Sistema",
         action: "Contacto eliminado",
-        details: `ID: ${req.params.id}`,
+        details: `ID: ${rp(req, "id")}`,
       });
       res.json({ message: "Eliminado" });
     },
@@ -3151,13 +3156,13 @@ export async function registerRoutes(server: Server, app: Express) {
     adminMiddleware,
     async (req: any, res) => {
       const updated = await storage.updateReportStatus(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.body.status,
       );
       await storage.createPanelLog({
         userName: req.user?.displayName || "Sistema",
         action: "Reporte actualizado",
-        details: `ID: ${req.params.id} → ${req.body.status}`,
+        details: `ID: ${rp(req, "id")} → ${req.body.status}`,
       });
       res.json(updated);
     },
@@ -3166,7 +3171,7 @@ export async function registerRoutes(server: Server, app: Express) {
     "/api/reported-messages/:id",
     adminMiddleware,
     async (req: any, res) => {
-      await storage.deleteReport(parseInt(req.params.id));
+      await storage.deleteReport(parseInt(rp(req, "id")));
       res.json({ message: "Eliminado" });
     },
   );
@@ -3177,7 +3182,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(await storage.getAllShopProducts(includeInactive));
   });
   app.get("/api/shop/products/:id", async (req, res) => {
-    const product = await storage.getShopProductById(parseInt(req.params.id));
+    const product = await storage.getShopProductById(parseInt(rp(req, "id")));
     if (!product)
       return res.status(404).json({ message: "Producto no encontrado" });
     res.json(product);
@@ -3187,7 +3192,7 @@ export async function registerRoutes(server: Server, app: Express) {
   });
   app.put("/api/shop/products/:id", adminMiddleware, async (req, res) => {
     const product = await storage.updateShopProduct(
-      parseInt(req.params.id),
+      parseInt(rp(req, "id")),
       req.body,
     );
     if (!product)
@@ -3195,7 +3200,7 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(product);
   });
   app.delete("/api/shop/products/:id", adminMiddleware, async (req, res) => {
-    await storage.deleteShopProduct(parseInt(req.params.id));
+    await storage.deleteShopProduct(parseInt(rp(req, "id")));
     res.json({ message: "Eliminado" });
   });
 
@@ -3229,7 +3234,7 @@ export async function registerRoutes(server: Server, app: Express) {
       try {
         const item = await storage.toggleEquipItem(
           req.userId,
-          parseInt(req.params.id),
+          parseInt(rp(req, "id")),
         );
         res.json(item);
       } catch (e: any) {
@@ -3254,7 +3259,7 @@ export async function registerRoutes(server: Server, app: Express) {
     "/api/notifications/:id/read",
     authMiddleware,
     async (req: any, res) => {
-      const notif = await storage.markNotificationRead(parseInt(req.params.id));
+      const notif = await storage.markNotificationRead(parseInt(rp(req, "id")));
       if (!notif)
         return res.status(404).json({ message: "Notificación no encontrada" });
       res.json(notif);
@@ -3271,7 +3276,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   // ============ USER PROFILES ============
   app.get("/api/profiles/:userId", async (req, res) => {
-    const profile = await storage.getUserProfile(parseInt(req.params.userId));
+    const profile = await storage.getUserProfile(parseInt(rp(req, "userId")));
     if (!profile)
       return res.status(404).json({ message: "Perfil no encontrado" });
     res.json(profile);
@@ -3395,7 +3400,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.put("/api/vip/admin/:userId", adminMiddleware, async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = parseInt(rp(req, "userId"));
       const vip = await storage.updateVipMembership(userId, req.body);
       if (!vip)
         return res.status(404).json({ message: "Membresía VIP no encontrada" });
@@ -3433,7 +3438,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.put("/api/rooms/:id", adminMiddleware, async (req, res) => {
     try {
-      const room = await storage.updateRoom(parseInt(req.params.id), req.body);
+      const room = await storage.updateRoom(parseInt(rp(req, "id")), req.body);
       if (!room) return res.status(404).json({ message: "Sala no encontrada" });
       res.json(room);
     } catch (e: any) {
@@ -3443,7 +3448,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.delete("/api/rooms/:id", adminMiddleware, async (req, res) => {
     try {
-      const success = await storage.deleteRoom(parseInt(req.params.id));
+      const success = await storage.deleteRoom(parseInt(rp(req, "id")));
       if (!success)
         return res.status(404).json({ message: "Sala no encontrada" });
       res.json({ message: "Sala eliminada con éxito" });
@@ -3496,7 +3501,7 @@ export async function registerRoutes(server: Server, app: Express) {
       if (!status)
         return res.status(400).json({ message: "Estado obligatorio" });
       const ticket = await storage.updateTicketStatus(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         status,
       );
       if (!ticket)
@@ -3528,7 +3533,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.put("/api/alliances/:id", adminMiddleware, async (req, res) => {
     try {
       const alliance = await storage.updateAlliance(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.body,
       );
       if (!alliance)
@@ -3541,7 +3546,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.delete("/api/alliances/:id", adminMiddleware, async (req, res) => {
     try {
-      const success = await storage.deleteAlliance(parseInt(req.params.id));
+      const success = await storage.deleteAlliance(parseInt(rp(req, "id")));
       if (!success)
         return res.status(404).json({ message: "Alianza no encontrada" });
       res.json({ message: "Alianza eliminada" });
@@ -3644,7 +3649,7 @@ export async function registerRoutes(server: Server, app: Express) {
       try {
         const unlocked = await storage.unlockUserReactionIcon(
           req.userId,
-          parseInt(req.params.iconId),
+          parseInt(rp(req, "iconId")),
         );
         res.json(unlocked);
       } catch (e: any) {
@@ -3665,7 +3670,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.put("/api/reaction-icons/:id", adminMiddleware, async (req, res) => {
     try {
       const icon = await storage.updateReactionIcon(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.body,
       );
       res.json(icon);
@@ -3676,7 +3681,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.delete("/api/reaction-icons/:id", adminMiddleware, async (req, res) => {
     try {
-      await storage.deleteReactionIcon(parseInt(req.params.id));
+      await storage.deleteReactionIcon(parseInt(rp(req, "id")));
       res.json({ message: "Icono eliminado" });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -3710,7 +3715,7 @@ export async function registerRoutes(server: Server, app: Express) {
         const slot = parseInt(req.query.slot as string) || 0;
         const result = await storage.equipUserCard(
           req.userId,
-          parseInt(req.params.cardId),
+          parseInt(rp(req, "cardId")),
           slot,
         );
         res.json(result);
@@ -3736,8 +3741,8 @@ export async function registerRoutes(server: Server, app: Express) {
       try {
         const qty = parseInt(req.query.qty as string) || 1;
         const userCard = await storage.grantUserCard(
-          parseInt(req.params.userId),
-          parseInt(req.params.cardId),
+          parseInt(rp(req, "userId")),
+          parseInt(rp(req, "cardId")),
           qty,
         );
         res.json(userCard);
@@ -3759,7 +3764,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/mini-games/:code", async (req, res) => {
     try {
-      const game = await storage.getMiniGameByCode(req.params.code);
+      const game = await storage.getMiniGameByCode(rp(req, "code"));
       if (!game)
         return res.status(404).json({ message: "Juego no encontrado" });
       res.json(game);
@@ -3786,7 +3791,7 @@ export async function registerRoutes(server: Server, app: Express) {
       const { score, gameData } = req.body;
       const result = await storage.submitMiniGameScore(
         req.userId,
-        req.params.code,
+        rp(req, "code"),
         score,
         gameData,
       );
@@ -3800,7 +3805,7 @@ export async function registerRoutes(server: Server, app: Express) {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
       const leaderboard = await storage.getMiniGameLeaderboard(
-        req.params.code,
+        rp(req, "code"),
         limit,
       );
       res.json(leaderboard);
@@ -3846,7 +3851,7 @@ export async function registerRoutes(server: Server, app: Express) {
         const { action, metadata } = req.body;
         const result = await storage.updateMissionProgress(
           req.userId,
-          parseInt(req.params.id),
+          parseInt(rp(req, "id")),
           action,
           metadata,
         );
@@ -3864,7 +3869,7 @@ export async function registerRoutes(server: Server, app: Express) {
       try {
         const result = await storage.claimMissionReward(
           req.userId,
-          parseInt(req.params.id),
+          parseInt(rp(req, "id")),
         );
         res.json(result);
       } catch (e: any) {
@@ -3915,7 +3920,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.get("/api/users/:id/youtube-embeds", async (req, res) => {
     try {
       const embeds = await storage.getUserYoutubeEmbeds(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
       );
       res.json(embeds);
     } catch (e: any) {
@@ -3942,7 +3947,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.put("/api/youtube-embeds/:id", authMiddleware, async (req, res) => {
     try {
       const embed = await storage.updateUserYoutubeEmbed(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.userId,
         req.body,
       );
@@ -3954,7 +3959,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.delete("/api/youtube-embeds/:id", authMiddleware, async (req, res) => {
     try {
-      await storage.deleteUserYoutubeEmbed(parseInt(req.params.id), req.userId);
+      await storage.deleteUserYoutubeEmbed(parseInt(rp(req, "id")), req.userId);
       res.json({ message: "Video eliminado" });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -3967,7 +3972,7 @@ export async function registerRoutes(server: Server, app: Express) {
     async (req, res) => {
       try {
         const embed = await storage.approveYoutubeEmbed(
-          parseInt(req.params.id),
+          parseInt(rp(req, "id")),
         );
         res.json(embed);
       } catch (e: any) {
@@ -3998,7 +4003,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/cine-sessions/:id", async (req, res) => {
     try {
-      const session = await storage.getCineSession(parseInt(req.params.id));
+      const session = await storage.getCineSession(parseInt(rp(req, "id")));
       if (!session)
         return res.status(404).json({ message: "Sesión no encontrada" });
       res.json(session);
@@ -4010,7 +4015,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.post("/api/cine-sessions/:id/join", authMiddleware, async (req, res) => {
     try {
       const result = await storage.joinCineSession(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.userId,
       );
       res.json(result);
@@ -4021,7 +4026,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.post("/api/cine-sessions/:id/leave", authMiddleware, async (req, res) => {
     try {
-      await storage.leaveCineSession(parseInt(req.params.id), req.userId);
+      await storage.leaveCineSession(parseInt(rp(req, "id")), req.userId);
       res.json({ message: "Saliste de la sesión" });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -4031,7 +4036,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.put("/api/cine-sessions/:id", authMiddleware, async (req, res) => {
     try {
       const session = await storage.updateCineSession(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.userId,
         req.body,
       );
@@ -4053,7 +4058,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/dj-slots/:id", async (req, res) => {
     try {
-      const slot = await storage.getDjSlot(parseInt(req.params.id));
+      const slot = await storage.getDjSlot(parseInt(rp(req, "id")));
       if (!slot) return res.status(404).json({ message: "Slot no encontrado" });
       res.json(slot);
     } catch (e: any) {
@@ -4073,7 +4078,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.put("/api/dj-slots/:id", adminMiddleware, async (req, res) => {
     try {
       const slot = await storage.updateDjSlot(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.body,
       );
       res.json(slot);
@@ -4084,7 +4089,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.delete("/api/dj-slots/:id", adminMiddleware, async (req, res) => {
     try {
-      await storage.deleteDjSlot(parseInt(req.params.id));
+      await storage.deleteDjSlot(parseInt(rp(req, "id")));
       res.json({ message: "Slot eliminado" });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -4094,7 +4099,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.post("/api/dj-slots/:id/request", authMiddleware, async (req, res) => {
     try {
       const request = await storage.requestDjSlot(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.userId,
         req.body,
       );
@@ -4116,7 +4121,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.put("/api/dj-slot-requests/:id", adminMiddleware, async (req, res) => {
     try {
       const request = await storage.reviewDjSlotRequest(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.userId,
         req.body,
       );
@@ -4129,7 +4134,7 @@ export async function registerRoutes(server: Server, app: Express) {
   // ============ USER ROLES ============
   app.get("/api/users/:id/roles", async (req, res) => {
     try {
-      const roles = await storage.getUserRoles(parseInt(req.params.id));
+      const roles = await storage.getUserRoles(parseInt(rp(req, "id")));
       res.json(roles);
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -4139,7 +4144,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.post("/api/admin/users/:id/roles", adminMiddleware, async (req, res) => {
     try {
       const role = await storage.grantUserRole(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.userId,
         req.body,
       );
@@ -4155,8 +4160,8 @@ export async function registerRoutes(server: Server, app: Express) {
     async (req, res) => {
       try {
         await storage.revokeUserRole(
-          parseInt(req.params.userId),
-          parseInt(req.params.roleId),
+          parseInt(rp(req, "userId")),
+          parseInt(rp(req, "roleId")),
         );
         res.json({ message: "Rol revocado" });
       } catch (e: any) {
@@ -4177,7 +4182,7 @@ export async function registerRoutes(server: Server, app: Express) {
 
   app.get("/api/news/:id/sections", async (req, res) => {
     try {
-      const sections = await storage.getNewsSections(parseInt(req.params.id));
+      const sections = await storage.getNewsSections(parseInt(rp(req, "id")));
       res.json(sections);
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -4196,7 +4201,7 @@ export async function registerRoutes(server: Server, app: Express) {
   app.put("/api/news-sections/:id", adminMiddleware, async (req, res) => {
     try {
       const section = await storage.updateNewsSection(
-        parseInt(req.params.id),
+        parseInt(rp(req, "id")),
         req.body,
       );
       res.json(section);
@@ -4212,8 +4217,8 @@ export async function registerRoutes(server: Server, app: Express) {
       try {
         const isPrimary = req.query.primary === "true";
         await storage.linkNewsToSection(
-          parseInt(req.params.id),
-          parseInt(req.params.sectionId),
+          parseInt(rp(req, "id")),
+          parseInt(rp(req, "sectionId")),
           isPrimary,
         );
         res.json({ message: "Sección vinculada" });
@@ -4229,8 +4234,8 @@ export async function registerRoutes(server: Server, app: Express) {
     async (req, res) => {
       try {
         await storage.unlinkNewsFromSection(
-          parseInt(req.params.id),
-          parseInt(req.params.sectionId),
+          parseInt(rp(req, "id")),
+          parseInt(rp(req, "sectionId")),
         );
         res.json({ message: "Sección desvinculada" });
       } catch (e: any) {

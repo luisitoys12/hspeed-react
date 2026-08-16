@@ -13,7 +13,9 @@ try {
 let pool: any = null;
 
 if (!process.env.DATABASE_URL) {
-  console.warn("⚠️ DATABASE_URL is not set. Database integration will be disabled.");
+  console.warn(
+    "⚠️ DATABASE_URL is not set. Database integration will be disabled.",
+  );
 } else {
   // Conexión a PostgreSQL. Los proveedores gestionados (Neon, Supabase) requieren SSL,
   // pero el Postgres local de docker-compose no lo soporta. Se puede desactivar
@@ -22,7 +24,7 @@ if (!process.env.DATABASE_URL) {
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: sslDisabled ? false : { rejectUnauthorized: false },
-    max: 10,
+    max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
   });
