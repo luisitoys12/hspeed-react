@@ -1,0 +1,20 @@
+# Habbospeed AdSense ads.txt
+# Replace PUBLISHER_ID with your actual AdSense publisher ID after approval
+
+# Google AdSense
+google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+
+# Adsterra (replace with your Adsterra ID after approval)
+# adsterra.com, YOUR_ADSTERRA_ID, RESELLER
+
+# Ezoic (replace with your Ezoic ID after approval)
+# ezoic.com, YOUR_EZOIC_ID, RESELLER
+
+# AdMaven
+# ad-maven.com, YOUR_ADMAVEN_ID, RESELLER
+
+# HilltopAds
+# hilltopads.com, YOUR_HILLTOPADS_ID, RESELLER
+
+# AdMaven (additional)
+# ad-maven.com, YOUR_ADMAVEN_ID, RESELLER

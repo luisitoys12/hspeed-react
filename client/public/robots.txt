@@ -1,0 +1,15 @@
+# Habbospeed Robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://habbospeed.net/sitemap.xml
+
+# Disallow admin/private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /panel/
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 10

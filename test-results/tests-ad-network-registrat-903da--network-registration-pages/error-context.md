@@ -1,0 +1,770 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: tests/ad-network-registration.spec.ts >> Ad Network Registration Helper >> Open all ad network registration pages
+- Location: tests/ad-network-registration.spec.ts:58:3
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+    - banner [ref=e2]:
+        - link "Logo" [ref=e4] [cursor=pointer]:
+            - /url: https://hilltopads.com/
+            - img "Logo" [ref=e5]
+        - navigation [ref=e6]:
+            - button "Publisher" [ref=e8] [cursor=pointer]:
+                - generic [ref=e9]: Publisher
+            - button "Advertiser" [ref=e11] [cursor=pointer]:
+                - generic [ref=e12]: Advertiser
+            - button "Ad formats" [ref=e14] [cursor=pointer]:
+                - generic [ref=e15]: Ad formats
+            - button "Free resources" [ref=e17] [cursor=pointer]:
+                - generic [ref=e18]: Free resources
+            - link "Blog" [ref=e20] [cursor=pointer]:
+                - /url: https://hilltopads.com/blog
+        - generic [ref=e22]:
+            - button "en EN" [ref=e24] [cursor=pointer]:
+                - img "en" [ref=e25]
+                - generic [ref=e26]: EN
+            - paragraph [ref=e27] [cursor=pointer]:
+                - img [ref=e28]
+                - generic [ref=e31]: Log in
+            - paragraph [ref=e32] [cursor=pointer]:
+                - img [ref=e33]
+                - generic [ref=e36]: Sign up
+    - main [ref=e37]:
+        - generic [ref=e39]:
+            - generic [ref=e40]:
+                - heading "Best ad network and traffic monetization platform HilltopAds" [level=1] [ref=e41]
+                - generic [ref=e42]:
+                    - paragraph [ref=e43]: Best ad network for advertisers and publishers with user-friendly self-serve platform, personal support, and global reach.
+                    - paragraph [ref=e44]: Advertisers will get direct traffic sources that will perform all offers while publishers will earn the highest CPM rates for their traffic.
+            - generic [ref=e45]:
+                - generic [ref=e46]:
+                    - generic [ref=e47]:
+                        - img "CPM" [ref=e49]
+                        - paragraph [ref=e50]: CPM
+                    - generic [ref=e51]:
+                        - img "CPC" [ref=e53]
+                        - paragraph [ref=e54]: CPC
+                    - generic [ref=e55]:
+                        - img "CPA Goal" [ref=e57]
+                        - paragraph [ref=e58]: CPA Goal
+                - generic [ref=e59]:
+                    - link "Create Ads" [ref=e60] [cursor=pointer]:
+                        - /url: https://hilltopads.com/signup?who=advertiser
+                        - img [ref=e61]
+                        - generic [ref=e64]: Create Ads
+                    - link "Monetize Traffic" [ref=e65] [cursor=pointer]:
+                        - /url: https://hilltopads.com/signup?who=publisher
+                        - img [ref=e66]
+                        - generic [ref=e69]: Monetize Traffic
+                    - generic [ref=e70] [cursor=pointer]:
+                        - img [ref=e71]
+                        - generic [ref=e74]: Connect RTB
+                - generic [ref=e75]:
+                    - generic [ref=e76]:
+                        - generic [ref=e77]:
+                            - img "SourceForge" [ref=e78]
+                            - strong [ref=e79]: SourceForge
+                        - generic [ref=e80]:
+                            - list [ref=e81]:
+                                - listitem [ref=e82]:
+                                    - img [ref=e83]
+                                - listitem [ref=e85]:
+                                    - img [ref=e86]
+                                - listitem [ref=e88]:
+                                    - img [ref=e89]
+                                - listitem [ref=e91]:
+                                    - img [ref=e92]
+                                - listitem [ref=e94]:
+                                    - img [ref=e95]
+                            - generic [ref=e97]:
+                                - text: User
+                                - text: Reviews
+                    - generic [ref=e98]:
+                        - generic [ref=e99]:
+                            - img "TopGold.Forum" [ref=e100]
+                            - strong [ref=e101]: TopGold.Forum
+                        - paragraph [ref=e103]: Best Advertising Network 2023
+                    - img "Capterra" [ref=e106]
+                    - img "Trustpilot" [ref=e109]
+                    - img "Capterra" [ref=e112]
+        - generic [ref=e113]:
+            - img "Lines divider" [ref=e114]
+            - generic [ref=e116]:
+                - generic [ref=e117]:
+                    - generic [ref=e118]:
+                        - paragraph [ref=e119]: Founded
+                        - generic [ref=e120]:
+                            - img [ref=e121]
+                            - paragraph [ref=e123]: "2013"
+                    - img [ref=e125]
+                - generic [ref=e129]:
+                    - generic [ref=e130]:
+                        - paragraph [ref=e131]: Monthly Impressions
+                        - generic [ref=e132]:
+                            - img [ref=e133]
+                            - paragraph [ref=e135]: 273B+
+                    - img [ref=e137]
+                - generic [ref=e141]:
+                    - generic [ref=e142]:
+                        - paragraph [ref=e143]: Ad formats
+                        - generic [ref=e144]:
+                            - img [ref=e145]
+                            - paragraph [ref=e147]: "6"
+                    - img [ref=e149]
+                - generic [ref=e153]:
+                    - generic [ref=e154]:
+                        - paragraph [ref=e155]: Countries
+                        - generic [ref=e156]:
+                            - img [ref=e157]
+                            - paragraph [ref=e159]: 250+
+                    - img [ref=e161]
+        - generic [ref=e167]:
+            - generic [ref=e168]:
+                - heading "The best ad network for advertisers, publishers and agencies" [level=2] [ref=e169]
+                - paragraph [ref=e170]: HilltopAds is a leading online advertising platform with billions of high-quality impressions (273B+ in month), performance-based targeting options and anti-fraud solutions that connects brands with their potential customers from all over the world and helps publishers make money online.
+            - generic [ref=e171]:
+                - img "Hilltopads panel screen" [ref=e172]
+                - list [ref=e173]:
+                    - listitem [ref=e174]:
+                        - img [ref=e176]
+                        - paragraph [ref=e178]: High quality traffic
+                    - listitem [ref=e179]:
+                        - img [ref=e181]
+                        - paragraph [ref=e183]: Advanced API tools
+                    - listitem [ref=e184]:
+                        - img [ref=e186]
+                        - paragraph [ref=e188]: Worldwide coverage
+        - generic [ref=e191]:
+            - generic [ref=e192]:
+                - generic [ref=e193]:
+                    - generic [ref=e194]:
+                        - heading "Advertisers card icon Advertisers" [level=3] [ref=e195]:
+                            - img "Advertisers card icon" [ref=e196]
+                            - generic [ref=e197]: Advertisers
+                        - paragraph [ref=e198]: HilltopAds is the best ad network for advertisers from all over the world
+                    - list [ref=e200]:
+                        - listitem [ref=e201]:
+                            - generic [ref=e202]: Advanced targeting options
+                        - listitem [ref=e203]:
+                            - generic [ref=e204]: Direct traffic sources
+                        - listitem [ref=e205]:
+                            - generic [ref=e206]: Self-serve platform
+                        - listitem [ref=e207]:
+                            - generic [ref=e208]: Fully-managed service
+                        - listitem [ref=e209]:
+                            - generic [ref=e210]: Postback tracking
+                        - listitem [ref=e211]:
+                            - generic [ref=e212]: Advanced API tools
+                        - listitem [ref=e213]:
+                            - generic [ref=e214]: Work with Agencies
+                    - link "Benefits for advertisers" [ref=e216] [cursor=pointer]:
+                        - /url: https://hilltopads.com/advertisers
+                - generic [ref=e217]:
+                    - generic [ref=e218]:
+                        - heading "Publishers card icon Publishers" [level=3] [ref=e219]:
+                            - img "Publishers card icon" [ref=e220]
+                            - generic [ref=e221]: Publishers
+                        - paragraph [ref=e222]: HilltopAds is the highest paying ad network for webmasters and bloggers
+                    - list [ref=e224]:
+                        - listitem [ref=e225]:
+                            - generic [ref=e226]: 100% safe ads
+                        - listitem [ref=e227]:
+                            - generic [ref=e228]: Advanced API tools
+                        - listitem [ref=e229]:
+                            - generic [ref=e230]: Weekly payouts with Net7
+                        - listitem [ref=e231]:
+                            - generic [ref=e232]: Only clean pre-approved ads
+                        - listitem [ref=e233]:
+                            - generic [ref=e234]: Direct/Smart link
+                        - listitem [ref=e235]:
+                            - generic [ref=e236]: Postback tracking of impressions
+                    - link "Benefits for publishers" [ref=e238] [cursor=pointer]:
+                        - /url: https://hilltopads.com/publishers
+                - generic [ref=e239]:
+                    - generic [ref=e240]:
+                        - heading "RTB card icon RTB" [level=3] [ref=e241]:
+                            - img "RTB card icon" [ref=e242]
+                            - generic [ref=e243]: RTB
+                        - paragraph [ref=e244]: HilltopAds is the best RTB platform with dynamical CPM in real time
+                    - list [ref=e246]:
+                        - listitem [ref=e247]:
+                            - generic [ref=e248]: DSP, SSP
+                        - listitem [ref=e249]:
+                            - generic [ref=e250]: oRTB, XML
+                        - listitem [ref=e251]:
+                            - generic [ref=e252]: Fast bidding speed
+                        - listitem [ref=e253]:
+                            - generic [ref=e254]: Built-in anti-fraud system
+                        - listitem [ref=e255]:
+                            - generic [ref=e256]: Ad Exchange
+                    - link "Benefits for RTB partners" [ref=e258] [cursor=pointer]:
+                        - /url: https://hilltopads.com/advertisers/rtb
+            - img "Advantages illustration" [ref=e260]
+        - img "Ellipse" [ref=e262]
+        - generic [ref=e264]:
+            - heading "TOP 6 converting ad formats TOP 6 converting ad formats" [level=2] [ref=e265]:
+                - img "TOP 6 converting ad formats" [ref=e266]
+                - generic [ref=e267]: TOP 6 converting ad formats
+            - generic [ref=e268]:
+                - generic [ref=e269]:
+                    - generic [ref=e270]:
+                        - button "Popunder" [ref=e271] [cursor=pointer]
+                        - button "In-Page" [ref=e272] [cursor=pointer]
+                        - button "Video VAST" [ref=e273] [cursor=pointer]
+                        - button "Video Slider" [ref=e274] [cursor=pointer]
+                        - button "Banners" [ref=e275] [cursor=pointer]
+                        - button "MultiTag" [ref=e276] [cursor=pointer]
+                    - generic [ref=e277]:
+                        - button "Previous" [ref=e278] [cursor=pointer]:
+                            - img [ref=e279]
+                        - button "Next" [ref=e281] [cursor=pointer]:
+                            - img [ref=e282]
+                - generic [ref=e284]:
+                    - generic [ref=e285]:
+                        - img "Popunder format rendering" [ref=e287]
+                        - generic [ref=e289]:
+                            - heading "Popunder" [level=3] [ref=e290]
+                            - generic [ref=e291]:
+                                - paragraph [ref=e292]: CPM-based, a popunder or popup ad is a type of advertisement that appears in a new window or tab behind the current one.
+                                - paragraph [ref=e293]: Popunder ad is one of the oldest and most popular forms of online advertising. Popunder ads are effective because they have a higher conversion rate than other types of ads.
+                                - link "More about Popunder ads" [ref=e294] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/popunder
+                            - generic [ref=e295]:
+                                - link "Create Popunder Ad Campaign" [ref=e296] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=advertiser
+                                    - img [ref=e297]
+                                    - paragraph [ref=e300]: Create Popunder Ad Campaign
+                                - link "Add Popunder Ads on Website" [ref=e301] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=publisher
+                                    - img [ref=e302]
+                                    - paragraph [ref=e305]: Add Popunder Ads on Website
+                    - generic [ref=e306]:
+                        - img "In-Page format rendering" [ref=e308]
+                        - generic [ref=e310]:
+                            - heading "In-Page" [level=3] [ref=e311]
+                            - generic [ref=e312]:
+                                - paragraph [ref=e313]: CPM- or CPC-based, In-Page is an advertising format that looks like a push notification on a website when a user visits it.
+                                - paragraph [ref=e314]: "In-Page ads resemble small messages with an image. In-Page desktop and mobile size of an image: 192x192."
+                                - link "More about In-Page ads" [ref=e315] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/inpage
+                            - generic [ref=e316]:
+                                - link "Create In-Page Ad Campaign" [ref=e317] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=advertiser
+                                    - img [ref=e318]
+                                    - paragraph [ref=e321]: Create In-Page Ad Campaign
+                                - link "Add In-Page Ads on Website" [ref=e322] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=publisher
+                                    - img [ref=e323]
+                                    - paragraph [ref=e326]: Add In-Page Ads on Website
+                    - generic [ref=e327]:
+                        - img "Video VAST format rendering" [ref=e329]
+                        - generic [ref=e331]:
+                            - heading "Video VAST" [level=3] [ref=e332]
+                            - generic [ref=e333]:
+                                - paragraph [ref=e334]: Video VAST is a link with an ad feed which is placed to a video player on a website. Ads will be shown before the main video (pre-roll ad).
+                                - paragraph [ref=e335]: Additionally you can run mid-roll and post-roll. VAST ads are perfect for increasing brand awareness as well as for promoting entertainment offers. Works on movie websites, streaming and other sites with video content.
+                                - link "More about Video ads" [ref=e336] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/video
+                            - generic [ref=e337]:
+                                - link "Create Video VAST Ad Campaign" [ref=e338] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=advertiser
+                                    - img [ref=e339]
+                                    - paragraph [ref=e342]: Create Video VAST Ad Campaign
+                                - link "Add Video VAST Ads on Website" [ref=e343] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=publisher
+                                    - img [ref=e344]
+                                    - paragraph [ref=e347]: Add Video VAST Ads on Website
+                    - generic [ref=e348]:
+                        - generic:
+                            - img "Video slider format rendering"
+                        - generic [ref=e350]:
+                            - heading "Video Slider" [level=3] [ref=e351]
+                            - paragraph [ref=e353]: When visitors visit a website, the video ad will appear at the bottom right corner. Video Slider format is not tied to a specific player and can be placed on any website.
+                            - generic [ref=e354]:
+                                - link "Create Video Ad Campaign" [ref=e355] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=advertiser
+                                    - img [ref=e356]
+                                    - paragraph [ref=e359]: Create Video Ad Campaign
+                                - link "Add Video Slider Ads on Website" [ref=e360] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=publisher
+                                    - img [ref=e361]
+                                    - paragraph [ref=e364]: Add Video Slider Ads on Website
+                    - generic [ref=e365]:
+                        - generic:
+                            - img "Banner format rendering"
+                        - generic [ref=e367]:
+                            - heading "Banner" [level=3] [ref=e368]
+                            - generic [ref=e369]:
+                                - paragraph [ref=e370]: "CPC-based, a banner ad format is placed on a website page. Banner is one of the most attractive ad formats. Banner desktop and mobile sizes: 300x250."
+                                - link "More about Banner ads" [ref=e371] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/banner
+                            - generic [ref=e372]:
+                                - link "Create Banner Ad Campaign" [ref=e373] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=advertiser
+                                    - img [ref=e374]
+                                    - paragraph [ref=e377]: Create Banner Ad Campaign
+                                - link "Add Banner Ads on Website" [ref=e378] [cursor=pointer]:
+                                    - /url: https://hilltopads.com/signup?who=publisher
+                                    - img [ref=e379]
+                                    - paragraph [ref=e382]: Add Banner Ads on Website
+                    - generic [ref=e383]:
+                        - generic:
+                            - img "MultiTag format rendering"
+                        - generic [ref=e385]:
+                            - heading "MultiTag" [level=3] [ref=e386]
+                            - generic [ref=e387]:
+                                - paragraph [ref=e388]: MultiTag is a powerful feature that allows webmasters to display multiple ad formats on your website simultaneously. You can monetize your website with multiple ad types, optimising your revenue potential.
+                                - paragraph [ref=e389]: MultiTag In-Page contains In-Page and Popup ad formats. MultiTag Banner contains Banner and Popup ad formats. MultiTag Video Slider contains Video Slider and Popup ad formats.
+                            - link "Add MultiTag on website" [ref=e391] [cursor=pointer]:
+                                - /url: https://hilltopads.com/signup?who=publisher
+                                - img [ref=e392]
+                                - paragraph [ref=e395]: Add MultiTag on website
+        - generic [ref=e397]:
+            - heading "HilltopAds performs all offers types HilltopAds performs all offers types" [level=2] [ref=e398]:
+                - img "HilltopAds performs all offers types" [ref=e399]
+                - generic [ref=e400]: HilltopAds performs all offers types
+            - generic [ref=e401]:
+                - link "Dating Dating" [ref=e402] [cursor=pointer]:
+                    - /url: https://hilltopads.com/niches/dating
+                    - img "Dating" [ref=e403]
+                    - heading "Dating" [level=3] [ref=e404]
+                    - img [ref=e405]
+                - link "Mobile apps & utilities Mobile apps & utilities" [ref=e407] [cursor=pointer]:
+                    - /url: https://hilltopads.com/niches/mobile-apps
+                    - img "Mobile apps & utilities" [ref=e408]
+                    - heading "Mobile apps & utilities" [level=3] [ref=e409]
+                    - img [ref=e410]
+                - link "Games Games" [ref=e412] [cursor=pointer]:
+                    - /url: https://hilltopads.com/niches/games
+                    - img "Games" [ref=e413]
+                    - heading "Games" [level=3] [ref=e414]
+                    - img [ref=e415]
+                - link "iGaming iGaming traffic" [ref=e417] [cursor=pointer]:
+                    - /url: https://hilltopads.com/igaming-traffic
+                    - img "iGaming" [ref=e418]
+                    - heading "iGaming traffic" [level=3] [ref=e419]
+                    - img [ref=e420]
+                - link "VPN, Pin-submit VPN, Pin-submit" [ref=e422] [cursor=pointer]:
+                    - /url: https://hilltopads.com/niches/vpn
+                    - img "VPN, Pin-submit" [ref=e423]
+                    - heading "VPN, Pin-submit" [level=3] [ref=e424]
+                    - img [ref=e425]
+                - link "eCommerce eCommerce" [ref=e427] [cursor=pointer]:
+                    - /url: https://hilltopads.com/ecommerce-ads
+                    - img "eCommerce" [ref=e428]
+                    - heading "eCommerce" [level=3] [ref=e429]
+                    - img [ref=e430]
+        - generic [ref=e434]:
+            - heading "Why do you need HilltopAds? Why do you need HilltopAds?" [level=2] [ref=e435]:
+                - img "Why do you need HilltopAds?" [ref=e436]
+                - generic [ref=e437]: Why do you need HilltopAds?
+            - generic [ref=e438]:
+                - generic [ref=e439]:
+                    - heading "Self-serve platform" [level=3] [ref=e441]
+                    - generic [ref=e442]:
+                        - paragraph [ref=e443]: You can run advertisements or monetize websites and traffic sources within 5 minutes using our online advertising platform for advertisers and publishers. Also HilltopAds provides s2s (postback) conversion tracking for both sides and API tools.
+                        - heading "Do you have no time?" [level=4] [ref=e444]
+                        - paragraph [ref=e445]: Use our Fully-managed ad network option!
+                    - link "Learn more" [ref=e447] [cursor=pointer]:
+                        - /url: https://hilltopads.com/blog/fully-managed/
+                - generic [ref=e448]:
+                    - heading "100% safe ads" [level=3] [ref=e450]
+                    - paragraph [ref=e452]: With our own Ad Safety solutions, publishers will never lose ad impressions due to hidden or blocked ad delivery. By preventing ad blockers from interfering with ads, publishers can increase their revenue potential from ad clicks and impressions. And advertisers will get all website traffic without exception.
+                    - link "More about Ad Safety solutions" [ref=e454] [cursor=pointer]:
+                        - /url: https://hilltopads.com/blog/why-you-need-a-modern-anti-adblock-killer-script-for-extra-earnings/
+                - img "AdBlock solution" [ref=e457]
+                - img "Payment methods" [ref=e460]
+                - generic [ref=e461]:
+                    - heading "10 payment methods" [level=3] [ref=e463]
+                    - generic [ref=e464]:
+                        - paragraph [ref=e465]: HilltopAds ad network provides both publishers and advertisers with the most well-known payment methods to make a deposit or get a payment. You can select USDT TRC20/ERC20, Bitcoin, PayPal, Wire Transfer, Paxum, WebMoney, Wise, Union Pay, Credit Card or Capitalist.
+                        - list [ref=e466]:
+                            - listitem [ref=e467]:
+                                - generic [ref=e468]: The minimum deposit for advertisers is $100.
+                            - listitem [ref=e469]:
+                                - generic [ref=e470]: The minimum payout for webmasters is $20.
+                - generic [ref=e471]:
+                    - heading "Direct traffic sources" [level=3] [ref=e473]
+                    - paragraph [ref=e475]: The HilltopAds system analizes and segments traffic by user activity. Thanks to it, advertisers can target ad campaigns to high activity users and get high ROI, and publishers can increase revenue from their websites
+                - img "Direct traffic sources" [ref=e478]
+                - img "Personal support" [ref=e481]
+                - generic [ref=e482]:
+                    - heading "Personal support" [level=3] [ref=e484]
+                    - paragraph [ref=e486]: All advertisers and publishers get qualified personal support from their managers via E-mail, Teams, Telegram, or online chat from Monday to Friday in business hours.
+                - generic [ref=e487]:
+                    - heading "Auto optimization of traffic sources" [level=3] [ref=e489]
+                    - paragraph [ref=e491]: Auto Optimization helps advertisers and agencies automatically add non-profitable traffic sources to a BlackList, optimizing traffic and maximizing results. It saves you time and effort while boosting your ROI.
+                    - link "More about AutoOptimization tool" [ref=e493] [cursor=pointer]:
+                        - /url: https://hilltopads.com/blog/automatic-optimization-of-blacklist-zones-in-hilltopads/
+        - generic [ref=e495]:
+            - generic [ref=e496]:
+                - heading "Join HilltopAds now!" [level=2] [ref=e497]:
+                    - generic [ref=e498]: Join HilltopAds now!
+                - paragraph [ref=e499]: The best ad network that will boost your results in online advertising!
+            - generic [ref=e500]:
+                - link "Run Ad Campaigns" [ref=e501] [cursor=pointer]:
+                    - /url: https://hilltopads.com/signup?who=advertiser
+                    - img [ref=e502]
+                    - text: Run Ad Campaigns
+                - link "Monetize Traffic" [ref=e505] [cursor=pointer]:
+                    - /url: https://hilltopads.com/signup?who=publisher
+                    - img [ref=e506]
+                    - text: Monetize Traffic
+                - generic [ref=e509] [cursor=pointer]:
+                    - img [ref=e510]
+                    - text: Connect RTB
+            - img "Lines" [ref=e514]
+        - generic [ref=e515]:
+            - generic [ref=e516]:
+                - heading "Our customers enjoyed HilltopAds Our customers enjoyed HilltopAds" [level=2] [ref=e517]:
+                    - img "Our customers enjoyed HilltopAds" [ref=e518]
+                    - generic [ref=e519]: Our customers enjoyed HilltopAds
+                - generic [ref=e521]:
+                    - button "Previous" [ref=e522] [cursor=pointer]:
+                        - img [ref=e523]
+                    - button "Next" [ref=e525] [cursor=pointer]:
+                        - img [ref=e526]
+            - generic [ref=e530]:
+                - generic [ref=e531]:
+                    - generic [ref=e532]:
+                        - img "Customer avatar" [ref=e534]
+                        - generic [ref=e535]:
+                            - paragraph [ref=e536]: Luke
+                            - paragraph [ref=e537]: Co-founder Afflift.com
+                    - paragraph [ref=e539]: HilltopAds is a fantastic platform for pop traffic with a nice user interface. They offer a wide range of targeting options to help you reach your desired audience effectively. Their real-time reporting and dedicated account managers make it easier to monitor and optimize your campaigns.
+                - generic [ref=e540]:
+                    - generic [ref=e541]:
+                        - img "Customer avatar" [ref=e543]
+                        - generic [ref=e544]:
+                            - paragraph [ref=e545]: Mobidea
+                            - paragraph [ref=e546]: Affiliate network
+                    - paragraph [ref=e548]: HilltopAds is a solid traffic source! It not only meets but exceeds our expectations. It offers competitive bid prices that make it accessible for various verticals. I highly recommend HilltopAds for anyone looking to elevate their advertising game.
+                - generic [ref=e549]:
+                    - generic [ref=e550]:
+                        - img "Customer avatar" [ref=e552]
+                        - generic [ref=e553]:
+                            - paragraph [ref=e554]: OfferGate
+                            - paragraph [ref=e555]: affiliate network, software
+                    - paragraph [ref=e557]: There have never been any questions about the manager's work, everything is always fast, efficient both in terms of answers and in terms of solving urgent issues. There have also never been any problems with the launch. Thank you!
+                - generic [ref=e558]:
+                    - generic [ref=e559]:
+                        - img "Customer avatar" [ref=e561]
+                        - generic [ref=e562]:
+                            - paragraph [ref=e563]: Leto
+                            - paragraph [ref=e564]: Media buyer, influencer
+                    - paragraph [ref=e566]: A good advertising network, a user-friendly and classic interface that even a beginner can understand. A large amount of traffic to different geo. Fast moderation and convenient ways of replenishment.
+                - generic [ref=e567]:
+                    - generic [ref=e568]:
+                        - img "Customer avatar" [ref=e570]
+                        - generic [ref=e571]:
+                            - paragraph [ref=e572]: Max
+                            - paragraph [ref=e573]: OF marketer, influencer
+                    - generic [ref=e574]:
+                        - paragraph [ref=e575]: One of the first started using popunder from HilltopAds for OF models. For a long time it was possible to spent less than $ 0.5 per fan.
+                        - paragraph [ref=e576]: I earned a total of $10,000 from this traffic. Adequate managers, very quickly resolve all issues that arise.
+                - generic [ref=e577]:
+                    - generic [ref=e578]:
+                        - img "Customer avatar" [ref=e580]
+                        - generic [ref=e581]:
+                            - paragraph [ref=e582]: Direct advertiser
+                            - paragraph [ref=e583]: dating offers
+                    - paragraph [ref=e585]: The quality of the pops is higher than that of most competitors, an excellent feature is auto optimization of sources, and there are also a lot of targeting
+        - generic [ref=e586]:
+            - heading "Productive Partnership Productive Partnership" [level=2] [ref=e588]:
+                - img "Productive Partnership" [ref=e589]
+                - generic [ref=e590]: Productive Partnership
+            - generic [ref=e591]:
+                - generic [ref=e593]:
+                    - img "adkernel" [ref=e595]
+                    - img "AdSpyglass" [ref=e597]
+                    - img "ZEN ADS" [ref=e599]
+                    - img "AliExpress" [ref=e601]
+                    - img "Lazada" [ref=e603]
+                    - img "Shopee" [ref=e605]
+                    - img "MOBIDEA" [ref=e607]
+                    - img "Hotspot Shield" [ref=e609]
+                    - img [ref=e611]
+                    - img [ref=e613]
+                    - img [ref=e615]
+                    - img [ref=e617]
+                    - img [ref=e619]
+                    - img [ref=e621]
+                    - img [ref=e623]
+                    - img [ref=e625]
+                - generic [ref=e627]:
+                    - img "REDTRACK" [ref=e629]
+                    - img "Binom" [ref=e631]
+                    - img "VOLUUM" [ref=e633]
+                    - img "PEERCLICK" [ref=e635]
+                    - img "Keitaro" [ref=e637]
+                    - img "BeMob" [ref=e639]
+                    - img "AdsBridge" [ref=e641]
+                    - img "AppsFlyer" [ref=e643]
+                    - img [ref=e645]
+                    - img [ref=e647]
+                    - img [ref=e649]
+                    - img [ref=e651]
+                    - img [ref=e653]
+                    - img [ref=e655]
+                    - img [ref=e657]
+                    - img [ref=e659]
+                - generic [ref=e661]:
+                    - img "OFFERVAULT" [ref=e663]
+                    - img "AW" [ref=e665]
+                    - img "stm." [ref=e667]
+                    - img "affLIFT" [ref=e669]
+                    - img "ADSwikia" [ref=e671]
+                    - img "SIGMA" [ref=e673]
+                    - img "CPA LIVE" [ref=e675]
+                    - img "TES" [ref=e677]
+                    - img [ref=e679]
+                    - img [ref=e681]
+                    - img [ref=e683]
+                    - img [ref=e685]
+                    - img [ref=e687]
+                    - img [ref=e689]
+                    - img [ref=e691]
+                    - img [ref=e693]
+        - generic [ref=e694]:
+            - generic [ref=e695]:
+                - heading "Articles Articles" [level=2] [ref=e696]:
+                    - img "Articles" [ref=e697]
+                    - generic [ref=e698]: Articles
+                - link "Blog" [ref=e699] [cursor=pointer]:
+                    - /url: https://hilltopads.com/blog
+            - generic [ref=e701]:
+                - 'link "From $1,400 to $4,198: The iGaming Campaign That Took Brazil by Storm Promotion tips How to Scale Ad Campaigns Without Killing Your ROI" [ref=e702] [cursor=pointer]':
+                    - /url: https://hilltopads.com/blog/how-to-scale-ad-campaigns-without-killing-your-roi/
+                    - generic [ref=e703]:
+                        - 'img "From $1,400 to $4,198: The iGaming Campaign That Took Brazil by Storm" [ref=e705]'
+                        - generic [ref=e707]: Promotion tips
+                        - heading "How to Scale Ad Campaigns Without Killing Your ROI" [level=3] [ref=e708]
+                - 'link "From $1,400 to $4,198: The iGaming Campaign That Took Brazil by Storm Tools for advertisers Contextual vs Behavioral Targeting: Key Differences, Pros, Cons & Best Use Cases" [ref=e709] [cursor=pointer]':
+                    - /url: https://hilltopads.com/blog/contextual-vs-behavioral-targeting-key-differences-pros-cons-best-use-cases/
+                    - generic [ref=e710]:
+                        - 'img "From $1,400 to $4,198: The iGaming Campaign That Took Brazil by Storm" [ref=e712]'
+                        - generic [ref=e714]: Tools for advertisers
+                        - 'heading "Contextual vs Behavioral Targeting: Key Differences, Pros, Cons & Best Use Cases" [level=3] [ref=e715]'
+                - 'link "From $1,400 to $4,198: The iGaming Campaign That Took Brazil by Storm Case studies Dating 7.5M Impressions and 300 Creatives: Inside a Tier 1 AI Dating Campaign" [ref=e716] [cursor=pointer]':
+                    - /url: https://hilltopads.com/blog/7-5m-impressions-and-300-creatives-inside-a-tier-1-ai-dating-campaign/
+                    - generic [ref=e717]:
+                        - 'img "From $1,400 to $4,198: The iGaming Campaign That Took Brazil by Storm" [ref=e719]'
+                        - generic [ref=e720]:
+                            - generic [ref=e721]: Case studies
+                            - generic [ref=e722]: Dating
+                        - 'heading "7.5M Impressions and 300 Creatives: Inside a Tier 1 AI Dating Campaign" [level=3] [ref=e723]'
+        - generic [ref=e725]:
+            - heading "Contact Us Contact Us" [level=2] [ref=e726]:
+                - img "Contact Us" [ref=e727]
+                - generic [ref=e728]: Contact Us
+            - generic [ref=e729]:
+                - generic [ref=e730]:
+                    - generic [ref=e731]:
+                        - heading "Call Us" [level=3] [ref=e732]:
+                            - img [ref=e733]
+                            - text: Call Us
+                        - list [ref=e736]:
+                            - listitem [ref=e737]:
+                                - link "+44 (20) 4577-0610" [ref=e738] [cursor=pointer]:
+                                    - /url: tel:+442045770610
+                            - listitem [ref=e739]:
+                                - link "+1 (213) 973-6752" [ref=e740] [cursor=pointer]:
+                                    - /url: tel:+12139736752
+                    - generic [ref=e741]:
+                        - heading "Email" [level=3] [ref=e742]:
+                            - img [ref=e743]
+                            - text: Email
+                        - list [ref=e746]:
+                            - listitem [ref=e747]:
+                                - link "support@hilltopads.com" [ref=e748] [cursor=pointer]:
+                                    - /url: mailto:support@hilltopads.com
+                - generic [ref=e749]:
+                    - heading "Address" [level=3] [ref=e750]:
+                        - img [ref=e751]
+                        - text: Address
+                    - generic [ref=e753]:
+                        - heading "Hilltop Ads Ltd." [level=4] [ref=e754]
+                        - paragraph [ref=e755]: 981 GREAT WEST ROAD, WESTLINK HOUSE, BRENTFORD, ENGLAND ,TW8 9DN
+                - generic [ref=e757]:
+                    - heading "Send Message" [level=3] [ref=e758]:
+                        - img [ref=e759]
+                        - text: Send Message
+                    - generic [ref=e761]:
+                        - generic [ref=e762]:
+                            - textbox "Your Name" [ref=e764]
+                            - textbox "Email" [ref=e766]
+                            - textbox "Your Message" [ref=e768]
+                        - button "Send message" [ref=e770] [cursor=pointer]:
+                            - generic [ref=e771]:
+                                - img [ref=e772]
+                                - text: Send message
+    - contentinfo [ref=e775]:
+        - generic [ref=e776]:
+            - generic [ref=e777]:
+                - list [ref=e778]:
+                    - listitem [ref=e779]:
+                        - link "Logo" [ref=e781] [cursor=pointer]:
+                            - /url: https://hilltopads.com/
+                            - img "Logo" [ref=e782]
+                - generic [ref=e783]:
+                    - link "facebook Hilltopads" [ref=e784] [cursor=pointer]:
+                        - /url: https://www.facebook.com/hilltopads/
+                        - img "facebook Hilltopads" [ref=e785]
+                    - link "linkedin Hilltopads" [ref=e786] [cursor=pointer]:
+                        - /url: https://www.linkedin.com/company/hilltopads/
+                        - img "linkedin Hilltopads" [ref=e787]
+                    - link "instagram Hilltopads" [ref=e788] [cursor=pointer]:
+                        - /url: https://www.instagram.com/hilltop.ads.network/
+                        - img "instagram Hilltopads" [ref=e789]
+                    - link "youtube Hilltopads" [ref=e790] [cursor=pointer]:
+                        - /url: https://www.youtube.com/@hilltop_ads_academy
+                        - img "youtube Hilltopads" [ref=e791]
+                    - link "twitter Hilltopads" [ref=e792] [cursor=pointer]:
+                        - /url: https://twitter.com/hilltopads
+                        - img "twitter Hilltopads" [ref=e793]
+                    - link "telegram Hilltopads" [ref=e794] [cursor=pointer]:
+                        - /url: https://t.me/hilltopads_com
+                        - img "telegram Hilltopads" [ref=e795]
+                    - link "itunes Hilltopads" [ref=e796] [cursor=pointer]:
+                        - /url: https://podcasts.apple.com/us/podcast/everything-about-affiliate-marketing-with-hilltopads/id1796147652
+                        - img "itunes Hilltopads" [ref=e797]
+                    - link "spotify Hilltopads" [ref=e798] [cursor=pointer]:
+                        - /url: https://open.spotify.com/show/51FJkuKJFcC5Oh6hSzGegQ
+                        - img "spotify Hilltopads" [ref=e799]
+                - navigation [ref=e800]:
+                    - heading "Get started" [level=4] [ref=e801]
+                    - generic [ref=e802]:
+                        - paragraph [ref=e803] [cursor=pointer]: Create an account
+                        - paragraph [ref=e804] [cursor=pointer]: Log in
+            - navigation [ref=e805]:
+                - generic [ref=e806]:
+                    - heading "Advertisers" [level=4] [ref=e807]
+                    - generic [ref=e808]:
+                        - link "Advantages" [ref=e809] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers
+                        - link "Ad network for advertisers" [ref=e810] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers/ad-network-for-advertisers
+                        - link "Self-serve platform" [ref=e811] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers/platform
+                        - link "Run Ads via RTB" [ref=e812] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers/rtb
+                        - link "API tools" [ref=e813] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers/api
+                - generic [ref=e814]:
+                    - heading "Advertising Formats" [level=4] [ref=e815]
+                    - generic [ref=e816]:
+                        - link "Popunder" [ref=e817] [cursor=pointer]:
+                            - /url: https://hilltopads.com/popunder
+                        - link "In-Page" [ref=e818] [cursor=pointer]:
+                            - /url: https://hilltopads.com/inpage
+                        - link "Banners" [ref=e819] [cursor=pointer]:
+                            - /url: https://hilltopads.com/banner
+                        - link "Video" [ref=e820] [cursor=pointer]:
+                            - /url: https://hilltopads.com/video
+                        - link "Ad Formats Live Demo" [ref=e821] [cursor=pointer]:
+                            - /url: https://hilltopads.com/ad-formats
+                - generic [ref=e822]:
+                    - heading "Free Resources" [level=4] [ref=e823]
+                    - generic [ref=e824]:
+                        - link "Blog" [ref=e825] [cursor=pointer]:
+                            - /url: https://hilltopads.com/blog
+                        - link "Cases" [ref=e826] [cursor=pointer]:
+                            - /url: https://hilltopads.com/blog/tag/case-studies/
+                        - link "FAQ for publishers" [ref=e827] [cursor=pointer]:
+                            - /url: https://hilltopads.com/publishers-help/en/collections/8985035-faq
+                        - link "FAQ for advertisers" [ref=e828] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers-help/en/collections/8984960-faq
+                        - link "Guides for publishers" [ref=e829] [cursor=pointer]:
+                            - /url: https://hilltopads.com/publishers-help/en
+                        - link "Guides for advertisers" [ref=e830] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers-help/en
+                        - link "Glossary" [ref=e831] [cursor=pointer]:
+                            - /url: https://hilltopads.com/glossary
+                - generic [ref=e832]:
+                    - heading "Publishers" [level=4] [ref=e833]
+                    - generic [ref=e834]:
+                        - link "Advantages" [ref=e835] [cursor=pointer]:
+                            - /url: https://hilltopads.com/publishers
+                        - link "Monetize Website" [ref=e836] [cursor=pointer]:
+                            - /url: https://hilltopads.com/publishers/monetize-website
+                        - link "Monetize Facebook" [ref=e837] [cursor=pointer]:
+                            - /url: https://hilltopads.com/publishers/monetize-facebook-page
+                        - link "Self-serve platform" [ref=e838] [cursor=pointer]:
+                            - /url: https://hilltopads.com/publishers/platform
+                        - link "Sell traffic via RTB" [ref=e839] [cursor=pointer]:
+                            - /url: https://hilltopads.com/publishers/rtb
+                        - link "API tools" [ref=e840] [cursor=pointer]:
+                            - /url: https://hilltopads.com/publishers/api
+                        - link "Referral program" [ref=e841] [cursor=pointer]:
+                            - /url: https://hilltopads.com/publishers/referral
+                - generic [ref=e842]:
+                    - heading "Solutions" [level=4] [ref=e843]
+                    - generic [ref=e844]:
+                        - link "AI products" [ref=e845] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers/promote-ai-tools
+                        - link "iGaming traffic" [ref=e846] [cursor=pointer]:
+                            - /url: https://hilltopads.com/igaming-traffic
+                        - link "YouTube promotion" [ref=e847] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers/youtube-promotion
+                        - link "Buy website traffic" [ref=e848] [cursor=pointer]:
+                            - /url: https://hilltopads.com/advertisers/buy-website-traffic
+                        - link "Dating" [ref=e849] [cursor=pointer]:
+                            - /url: https://hilltopads.com/niches/dating
+                        - link "Mobile apps & utilities" [ref=e850] [cursor=pointer]:
+                            - /url: https://hilltopads.com/niches/mobile-apps
+                        - link "Lead generation" [ref=e851] [cursor=pointer]:
+                            - /url: https://hilltopads.com/niches/lead-generation
+                        - link "VPN, Pin-submit" [ref=e852] [cursor=pointer]:
+                            - /url: https://hilltopads.com/niches/vpn
+                        - link "eCommerce" [ref=e853] [cursor=pointer]:
+                            - /url: https://hilltopads.com/ecommerce-ads
+                        - link "Games" [ref=e854] [cursor=pointer]:
+                            - /url: https://hilltopads.com/niches/games
+                - generic [ref=e855]:
+                    - heading "Company" [level=4] [ref=e856]
+                    - generic [ref=e857]:
+                        - paragraph [ref=e858] [cursor=pointer]: About us
+                        - paragraph [ref=e859] [cursor=pointer]: Careers
+                        - paragraph [ref=e860] [cursor=pointer]: Contact Us
+                        - link "Conferences" [ref=e861] [cursor=pointer]:
+                            - /url: https://hilltopads.com/blog/tag/affiliate-marketing-conferences/
+                        - paragraph [ref=e862] [cursor=pointer]: Media Kit
+        - generic [ref=e864]:
+            - paragraph [ref=e865]: © 2013-2026 HilltopAds. All rights reserved.
+            - navigation [ref=e866]:
+                - generic [ref=e867]:
+                    - paragraph [ref=e868] [cursor=pointer]: Privacy Policy
+                    - paragraph [ref=e869] [cursor=pointer]: Terms and Conditions
+                    - paragraph [ref=e870] [cursor=pointer]: Cookies Policy
+                    - button "Report Abuse" [ref=e871] [cursor=pointer]
+                    - paragraph [ref=e872] [cursor=pointer]: Site Map
+            - button "en EN" [ref=e875] [cursor=pointer]:
+                - img "en" [ref=e876]
+                - generic [ref=e877]: EN
+    - generic [ref=e878]:
+        - generic [ref=e879]:
+            - img [ref=e880]
+            - paragraph [ref=e882]:
+                - text: This website uses cookies to ensure you get the best experience on our website.
+                - link "Learn more" [ref=e883] [cursor=pointer]:
+                    - /url: https://hilltopads.com/cookies
+        - button "Got it" [ref=e884] [cursor=pointer]:
+            - img [ref=e885]
+            - text: Got it
+    - list
+```
