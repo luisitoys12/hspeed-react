@@ -18,9 +18,16 @@ import {
   Sparkles,
   Flame,
   Newspaper,
+  Users,
+  MessageCircle,
+  Star,
+  ChevronRight,
 } from "lucide-react";
 import type { News } from "@shared/schema";
 import { proxyImage } from "@/lib/habboProxy";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { useState } from "react";
 
 interface SpeedShort {
   id: string;
@@ -33,9 +40,10 @@ interface SpeedShort {
   likes: number;
   createdAt: string;
   category: "gameplay" | "tutorial" | "showcase" | "evento" | "diversion";
+  description?: string;
 }
 
-const mockSpeedShorts: SpeedShort[] = [
+const mockSpeedShorts = [
   {
     id: "1",
     title: "Nuevo rare Throne Room - Tour completo",
@@ -48,6 +56,8 @@ const mockSpeedShorts: SpeedShort[] = [
     likes: 892,
     createdAt: "2026-08-10",
     category: "showcase",
+    description:
+      "Tour completo por el nuevo rare Throne Room, descubre todos sus secretos y detalles ocultos.",
   },
   {
     id: "2",
@@ -61,6 +71,8 @@ const mockSpeedShorts: SpeedShort[] = [
     likes: 567,
     createdAt: "2026-08-08",
     category: "tutorial",
+    description:
+      "Guía completa para farmear SpeedPoints de forma eficiente en la nueva temporada.",
   },
   {
     id: "3",
@@ -74,6 +86,8 @@ const mockSpeedShorts: SpeedShort[] = [
     likes: 1234,
     createdAt: "2026-08-05",
     category: "showcase",
+    description:
+      "Tour por mi colección de más de 500 placas raras y exclusivas de Habbo.",
   },
   {
     id: "4",
@@ -87,6 +101,7 @@ const mockSpeedShorts: SpeedShort[] = [
     likes: 445,
     createdAt: "2026-08-03",
     category: "evento",
+    description: "Los mejores momentos del evento Feria HabboSpeed 2026.",
   },
   {
     id: "5",
@@ -100,6 +115,8 @@ const mockSpeedShorts: SpeedShort[] = [
     likes: 2100,
     createdAt: "2026-08-01",
     category: "diversion",
+    description:
+      "Los mejores fails y momentos graciosos de la comunidad HabboSpeed.",
   },
   {
     id: "6",
@@ -113,6 +130,8 @@ const mockSpeedShorts: SpeedShort[] = [
     likes: 389,
     createdAt: "2026-07-28",
     category: "tutorial",
+    description:
+      "Paso a paso para crear una sala estilo cyberpunk con neones y efectos.",
   },
 ];
 
@@ -161,7 +180,7 @@ function formatDate(dateStr: string): string {
   if (days === 0) return "Hoy";
   if (days === 1) return "Ayer";
   if (days < 7) return `Hace ${days} días`;
-  return date.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+  return format(date, "d MMM", { locale: es });
 }
 
 export default function TendenciasPage() {
@@ -180,22 +199,28 @@ export default function TendenciasPage() {
             0,
           ) > 10),
     )
-    .sort((a, b) => {
+    .sort((a: any, b: any) => {
       const aReactions = a.reactions
         ? Object.values(a.reactions as Record<string, number>).reduce(
-            (sum: number, v: number) => sum + v,
+            (a: number, b: number) => a + b,
             0,
           )
         : 0;
       const bReactions = b.reactions
         ? Object.values(b.reactions as Record<string, number>).reduce(
-            (sum: number, v: number) => sum + v,
+            (a: number, b: number) => a + b,
             0,
           )
         : 0;
       return bReactions - aReactions;
     })
     .slice(0, 5);
+
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
+  const filteredShorts = mockSpeedShorts.filter(
+    (s) => activeCategory === "all" || s.category === activeCategory,
+  );
 
   return (
     <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-8">
@@ -212,6 +237,25 @@ export default function TendenciasPage() {
         </div>
       </div>
 
+      {/* Category Filter */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {["all", "showcase", "tutorial", "gameplay", "evento", "diversion"].map(
+          (cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                activeCategory === cat
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+              }`}
+            >
+              {cat === "all" ? "Todos" : CATEGORY_LABELS[cat]?.label || cat}
+            </button>
+          ),
+        )}
+      </div>
+
       {/* SpeedShorts Section */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
@@ -225,18 +269,14 @@ export default function TendenciasPage() {
               {mockSpeedShorts.length} videos
             </Badge>
           </div>
-          <Button variant="ghost" size="sm" className="gap-1">
-            <ExternalLink className="w-3 h-3" />
-            Ver todo en YouTube
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockSpeedShorts.map((short) => {
+          {filteredShorts.map((short) => {
             const cat = CATEGORY_LABELS[short.category];
             const CatIcon = cat.icon;
             return (
-              <Link href={`/tendencias/short/${short.id}`} key={short.id}>
+              <Link href={`/tendencias/${short.id}`} key={short.id}>
                 <article className="group block bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all">
                   <div className="relative aspect-video overflow-hidden bg-secondary/30">
                     <img
@@ -249,7 +289,7 @@ export default function TendenciasPage() {
                       <span
                         className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium ${cat.color}`}
                       >
-                        <CatIcon className="w-2.5 h-2.5" /> {cat.label}
+                        <cat.icon className="w-2.5 h-2.5" /> {cat.label}
                       </span>
                     </div>
                     <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 text-white text-[10px] px-2 py-1 rounded">
