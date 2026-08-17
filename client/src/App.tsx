@@ -42,6 +42,7 @@ import RoomsPage from "@/pages/RoomsPage";
 import FeriaPage from "@/pages/FeriaPage";
 import SupportPage from "@/pages/SupportPage";
 import TendenciasPage from "@/pages/TendenciasPage";
+import SpeedShortDetailPage from "@/pages/SpeedShortDetailPage";
 import MemeCreatorPage from "@/pages/MemeCreatorPage";
 import NotFound from "@/pages/not-found";
 
@@ -106,6 +107,7 @@ function AppContent() {
             <Route path="/feria" component={FeriaPage} />
             <Route path="/soporte" component={SupportPage} />
             <Route path="/tendencias" component={TendenciasPage} />
+            <Route path="/tendencias/:id" component={SpeedShortDetailPage} />
             <Route path="/memes" component={MemeCreatorPage} />
             <Route component={NotFound} />
           </Switch>
