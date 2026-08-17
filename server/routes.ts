@@ -2105,11 +2105,14 @@ export async function registerRoutes(server: Server, app: Express) {
     connected: boolean;
     lastUpdate: number;
   } = {
-    title: null,
-    artist: null,
-    history: [],
+    title: "HabboSpeed Radio",
+    artist: "AutoDJ",
+    history: [
+      { title: "HabboSpeed Radio", artist: "AutoDJ" },
+      { title: "Bienvenidos a HabboSpeed", artist: "AutoDJ" },
+    ],
     connected: false,
-    lastUpdate: 0,
+    lastUpdate: Date.now(),
   };
   let zenoActiveUrl: string | null = null;
   let zenoConnecting = false;

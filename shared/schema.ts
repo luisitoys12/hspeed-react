@@ -143,7 +143,7 @@ export type Poll = typeof polls.$inferSelect;
 // ============ CONFIG ============
 export const config = pgTable("config", {
   id: serial("id").primaryKey(),
-  radioService: text("radio_service").notNull().default("azuracast"),
+  radioService: text("radio_service").notNull().default("zenofm"),
   apiUrl: text("api_url").notNull(),
   listenUrl: text("listen_url").notNull(),
   homePlayerBgUrl: text("home_player_bg_url"),
