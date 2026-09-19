@@ -1,7 +1,7 @@
 import { createRequire } from "module";
 import { rm, readFile } from "fs/promises";
 import { existsSync } from "fs";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, resolve } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,12 +27,14 @@ function findModule(name) {
 // Cargar esbuild
 const esbuildPath = findModule("esbuild");
 console.log("[build] using esbuild from:", esbuildPath);
-const { build: esbuild } = await import(resolve(esbuildPath, "lib", "main.js"));
+const esbuildEntry = pathToFileURL(resolve(esbuildPath, "lib", "main.js")).href;
+const { build: esbuild } = await import(esbuildEntry);
 
 // Cargar vite
 const vitePath = findModule("vite");
 console.log("[build] using vite from:", vitePath);
-const { build: viteBuild } = await import(resolve(vitePath, "dist", "node", "index.js"));
+const viteEntry = pathToFileURL(resolve(vitePath, "dist", "node", "index.js")).href;
+const { build: viteBuild } = await import(viteEntry);
 
 // server deps to bundle
 const allowlist = [
