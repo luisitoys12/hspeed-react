@@ -41,22 +41,40 @@ function getProgramProgress(startTime: string, endTime: string, now: Date) {
   return Math.max(0, Math.min(100, (elapsedMin / totalMin) * 100));
 }
 
-// Subcomponente de enlace de navegación simple
-function DirectNavLink({ href, label }: { href: string; label: string }) {
+// Subcomponente de enlace de navegación simple con solo icono y tooltip
+function DirectNavLink({
+  href,
+  label,
+  iconClass,
+  badge,
+}: {
+  href: string;
+  label: string;
+  iconClass: string;
+  badge?: string;
+}) {
   const [location] = useLocation();
   const isActive = href === "/" ? location === "/" : location.startsWith(href);
 
   return (
     <Link
       href={href}
+      title={label}
+      aria-label={label}
       className={cn(
-        "text-[11px] font-extrabold uppercase tracking-wider transition-colors py-1.5 border-b-2 border-transparent hover:text-slate-900 hover:border-slate-300 cursor-pointer",
+        "relative h-9 px-3 rounded-xl flex items-center gap-1.5 transition-all duration-200 group cursor-pointer text-xs font-bold",
         isActive
-          ? "text-primary border-primary hover:border-primary"
-          : "text-slate-500",
+          ? "bg-cyan-500/20 text-cyan-400 ring-1 ring-cyan-500/50 shadow-sm shadow-cyan-500/20"
+          : "text-slate-300 hover:text-white hover:bg-white/10",
       )}
     >
-      {label}
+      <i className={cn(iconClass, "text-xs group-hover:scale-110 transition-transform")}></i>
+      <span className="text-xs font-bold tracking-tight">{label}</span>
+      {badge && (
+        <span className="bg-cyan-400 text-[#090e1a] text-[9px] font-black px-1.5 py-0.2 rounded-full ml-1">
+          {badge}
+        </span>
+      )}
     </Link>
   );
 }
@@ -65,19 +83,25 @@ function DirectNavLink({ href, label }: { href: string; label: string }) {
 interface DropdownItem {
   href?: string;
   label: string;
+  desc?: string;
   iconClass: string;
+  badge?: string;
   onClick?: () => void;
 }
 
-// Subcomponente Dropdown para menú en Desktop
+// Subcomponente Dropdown para menú en Desktop con iconos, títulos y submenús ricos
 function NavDropdown({
   label,
+  iconClass,
   items,
   activePrefixes,
+  columns = 1,
 }: {
   label: string;
+  iconClass: string;
   items: DropdownItem[];
   activePrefixes: string[];
+  columns?: 1 | 2;
 }) {
   const [location] = useLocation();
   const isActive = activePrefixes.some((pref) =>
@@ -85,79 +109,131 @@ function NavDropdown({
   );
 
   return (
-    <div className="relative group py-4">
+    <div className="relative group py-1.5">
       <button
+        title={label}
+        aria-label={label}
         className={cn(
-          "text-[11px] font-extrabold uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer focus:outline-none",
+          "relative h-9 px-3 rounded-xl flex items-center gap-1.5 transition-all duration-200 cursor-pointer focus:outline-none text-xs font-bold",
           isActive
-            ? "text-primary border-b-2 border-primary"
-            : "text-slate-500 hover:text-slate-900",
+            ? "bg-cyan-500/20 text-cyan-400 ring-1 ring-cyan-500/50 shadow-sm shadow-cyan-500/20"
+            : "text-slate-300 hover:text-white hover:bg-white/10",
         )}
       >
-        <span>{label}</span>
-        <i className="fa-solid fa-chevron-down text-[8px] opacity-65 group-hover:rotate-180 transition-transform duration-200"></i>
+        <i className={cn(iconClass, "text-xs group-hover:scale-110 transition-transform")}></i>
+        <span className="text-xs font-bold tracking-tight">{label}</span>
+        <i className="fa-solid fa-chevron-down text-[8px] opacity-60 group-hover:rotate-180 transition-transform duration-200 ml-0.5"></i>
       </button>
 
-      {/* Menú desplegable */}
-      <div className="absolute left-0 top-full pt-1 hidden group-hover:block w-56 z-50 animate-fade-in">
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden">
-          {items.map((item, i) => {
-            const isItemActive = item.href
-              ? item.href === "/"
-                ? location === "/"
-                : location.startsWith(item.href)
-              : false;
+      {/* Menú desplegable amplio y detallado */}
+      <div
+        className={cn(
+          "absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 animate-fade-in",
+          columns === 2 ? "w-[500px]" : "w-[300px]",
+        )}
+      >
+        <div className="bg-[#0b1220]/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl p-3 overflow-hidden">
+          {/* Header de Categoría */}
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-md bg-cyan-500/20 flex items-center justify-center text-cyan-400 text-xs">
+                <i className={iconClass}></i>
+              </div>
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-200">
+                {label}
+              </span>
+            </div>
+            <span className="text-[10px] font-bold text-cyan-400/80 bg-cyan-500/10 px-2 py-0.5 rounded-full">
+              {items.length} accesos
+            </span>
+          </div>
 
-            if (item.onClick) {
+          {/* Grid de Items */}
+          <div
+            className={cn(
+              "gap-1.5",
+              columns === 2 ? "grid grid-cols-2" : "flex flex-col",
+            )}
+          >
+            {items.map((item, i) => {
+              const isItemActive = item.href
+                ? item.href === "/"
+                  ? location === "/"
+                  : location.startsWith(item.href)
+                : false;
+
+              const content = (
+                <>
+                  <div
+                    className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors",
+                      isItemActive
+                        ? "bg-cyan-500 text-black font-bold"
+                        : "bg-white/5 text-cyan-400 group-hover/item:bg-cyan-500/20 group-hover/item:text-cyan-300",
+                    )}
+                  >
+                    <i className={cn(item.iconClass, "text-xs")}></i>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <p
+                        className={cn(
+                          "text-xs font-bold truncate transition-colors",
+                          isItemActive
+                            ? "text-cyan-400"
+                            : "text-slate-200 group-hover/item:text-white",
+                        )}
+                      >
+                        {item.label}
+                      </p>
+                      {item.badge && (
+                        <span className="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.2 rounded font-black">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    {item.desc && (
+                      <p className="text-[10px] text-slate-400 truncate leading-tight mt-0.5 group-hover/item:text-slate-300">
+                        {item.desc}
+                      </p>
+                    )}
+                  </div>
+                </>
+              );
+
+              if (item.onClick) {
+                return (
+                  <button
+                    key={i}
+                    onClick={item.onClick}
+                    className={cn(
+                      "w-full text-left flex items-center gap-2.5 p-2 rounded-xl transition-all group/item cursor-pointer",
+                      isItemActive
+                        ? "bg-cyan-500/15 border border-cyan-500/30 shadow-sm"
+                        : "hover:bg-white/10 hover:border-white/10 border border-transparent",
+                    )}
+                  >
+                    {content}
+                  </button>
+                );
+              }
+
               return (
-                <button
+                <Link
                   key={i}
-                  onClick={item.onClick}
+                  href={item.href || "#"}
                   className={cn(
-                    "w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold transition-colors",
+                    "flex items-center gap-2.5 p-2 rounded-xl transition-all group/item cursor-pointer",
                     isItemActive
-                      ? "text-primary bg-primary/5"
-                      : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+                      ? "bg-cyan-500/15 border border-cyan-500/30 shadow-sm"
+                      : "hover:bg-white/10 hover:border-white/10 border border-transparent",
                   )}
                 >
-                  <i
-                    className={cn(
-                      item.iconClass,
-                      "w-4 text-center text-slate-400 group-hover:text-primary",
-                      isItemActive && "text-primary",
-                    )}
-                  ></i>
-                  <span className="uppercase tracking-wider text-[10px]">
-                    {item.label}
-                  </span>
-                </button>
+                  {content}
+                </Link>
               );
-            }
-
-            return (
-              <Link
-                key={i}
-                href={item.href || "#"}
-                className={cn(
-                  "flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold transition-colors",
-                  isItemActive
-                    ? "text-primary bg-primary/5"
-                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
-                )}
-              >
-                <i
-                  className={cn(
-                    item.iconClass,
-                    "w-4 text-center text-slate-400 group-hover:text-primary",
-                    isItemActive && "text-primary",
-                  )}
-                ></i>
-                <span className="uppercase tracking-wider text-[10px]">
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -417,145 +493,115 @@ export default function TopNavBar() {
     }
   };
 
-  // Dropdown Items Arrays
+  // 1. COMUNIDAD (Noticias, Eventos, Foro, Equipo, Salas, Mensajes, Perfil, Contacto)
   const comunidadItems: DropdownItem[] = [
-    { href: "/news", label: "Noticias", iconClass: "fa-solid fa-newspaper" },
-    {
-      href: "/events",
-      label: "Eventos",
-      iconClass: "fa-solid fa-calendar-days",
-    },
-    { href: "/forum", label: "Foro", iconClass: "fa-solid fa-comments" },
-    { href: "/team", label: "Nuestro Equipo", iconClass: "fa-solid fa-users" },
-    {
-      href: "/rooms",
-      label: "Salas Comunitarias",
-      iconClass: "fa-solid fa-hotel",
-    },
-    {
-      href: "/soporte",
-      label: "Soporte / Tickets",
-      iconClass: "fa-solid fa-ticket",
-    },
-    { href: "/contact", label: "Contacto", iconClass: "fa-solid fa-envelope" },
+    { href: "/news", label: "Noticias", desc: "Últimas novedades y artículos", iconClass: "fa-solid fa-newspaper" },
+    { href: "/events", label: "Eventos", desc: "Torneos, fiestas y concursos", iconClass: "fa-solid fa-calendar-days" },
+    { href: "/forum", label: "Foro de Discusión", desc: "Debates y guías de la comunidad", iconClass: "fa-solid fa-comments" },
+    { href: "/team", label: "Nuestro Equipo", desc: "Administradores, DJs y staff", iconClass: "fa-solid fa-users" },
+    { href: "/rooms", label: "Salas Habbo", desc: "Directorio de salas recomendadas", iconClass: "fa-solid fa-hotel" },
+    { href: "/messages", label: "Mensajes Privados", desc: "Bandeja de chats privados", iconClass: "fa-solid fa-envelope" },
+    { href: user ? `/profile/${user.habboUsername || user.displayName}` : "/login", label: "Mi Perfil", desc: "Avatar, poses y estadísticas", iconClass: "fa-solid fa-user" },
+    { href: "/contact", label: "Contacto", desc: "Dudas, sugerencias y soporte", iconClass: "fa-solid fa-paper-plane" },
   ];
 
+  // 2. RADIO (Sintonizar, Horarios, Historial, Horarios DJ, Peticiones, Saludos)
   const radioItems: DropdownItem[] = [
+    { href: "/radio", label: "Sintonizar Radio", desc: "Streaming en directo y locutores", iconClass: "fa-solid fa-radio" },
+    { href: "/schedule", label: "Horarios DJs", desc: "Programación semanal de la radio", iconClass: "fa-solid fa-calendar-week" },
+    { href: "/song-history", label: "Historial Musical", desc: "Últimos temas emitidos al aire", iconClass: "fa-solid fa-compact-disc" },
+    { href: "/dj-horarios", label: "Tablero DJ", desc: "Turnos y panel de locución", iconClass: "fa-solid fa-headphones" },
     {
-      href: "/radio",
-      label: "Sintonizar Radio",
-      iconClass: "fa-solid fa-radio",
-    },
-    {
-      href: "/schedule",
-      label: "Horarios",
-      iconClass: "fa-solid fa-calendar-week",
-    },
-    {
-      href: "/song-history",
-      label: "Historial de Temas",
-      iconClass: "fa-solid fa-compact-disc",
-    },
-    {
-      label: "Peticiones",
+      label: "Pedir Canción",
+      desc: "Solicita tu tema al DJ de turno",
       iconClass: "fa-solid fa-bullhorn",
       onClick: () => setShowPeticionesModal(true),
     },
     {
-      label: "Saludos",
+      label: "Enviar Saludo",
+      desc: "Dedica un mensaje en directo",
       iconClass: "fa-solid fa-gift",
       onClick: () => setShowSaludosModal(true),
     },
   ];
 
-  const habboItems: DropdownItem[] = [
-    { href: "/feria", label: "Feria", iconClass: "fa-solid fa-sparkles" },
-    {
-      href: "/tendencias",
-      label: "Tendencias & SpeedShorts",
-      iconClass: "fa-solid fa-fire-flame-curved",
-    },
-    {
-      href: "/memes",
-      label: "Creador de Memes",
-      iconClass: "fa-solid fa-image",
-    },
-    {
-      href: "/herramientas",
-      label: "Centro de Herramientas",
-      iconClass: "fa-solid fa-screwdriver-wrench",
-    },
-    { href: "/armario", label: "Armario", iconClass: "fa-solid fa-shirt" },
-    {
-      href: "/imager",
-      label: "Generador de Avatar (Imager)",
-      iconClass: "fa-solid fa-image",
-    },
-    {
-      href: "/catalog",
-      label: "Catálogo de Furnis",
-      iconClass: "fa-solid fa-cubes",
-    },
-    {
-      href: "/badges",
-      label: "Buscador de Placas",
-      iconClass: "fa-solid fa-award",
-    },
+  // 3. HERRAMIENTAS (Hub, Feria, Armario, Imager, Catálogo, Badges, Memes, Habbo 3D, Reacciones)
+  const herramientasItems: DropdownItem[] = [
+    { href: "/herramientas", label: "Centro Herramientas", desc: "Todas las utilidades en un clic", iconClass: "fa-solid fa-screwdriver-wrench" },
+    { href: "/feria", label: "Feria & Logros", desc: "Logros, niveles y mercadillo", iconClass: "fa-solid fa-store", badge: "Nuevo" },
+    { href: "/armario", label: "Armario de Outfits", desc: "Prueba ropa y crea estilos", iconClass: "fa-solid fa-shirt" },
+    { href: "/imager", label: "Generador de Avatar", desc: "Crea avatares HD con poses", iconClass: "fa-solid fa-image" },
+    { href: "/catalog", label: "Catálogo Furnis", desc: "Base de datos con fotos y costes", iconClass: "fa-solid fa-cubes" },
+    { href: "/badges", label: "Buscador de Placas", desc: "Explora insignias de todos los hoteles", iconClass: "fa-solid fa-award" },
+    { href: "/memes", label: "Creador de Memes", desc: "Genera memes Habbo divertidos", iconClass: "fa-solid fa-face-laugh-squint" },
+    { href: "/habbo3d", label: "Visor Habbo 3D", desc: "Salas tridimensionales interactivas", iconClass: "fa-solid fa-cube" },
+    { href: "/reacciones", label: "Tienda Reacciones", desc: "Gestos y animaciones para chat", iconClass: "fa-solid fa-icons" },
   ];
 
+  // 4. TIENDA (Tienda SP, VIP, Marketplace)
   const tiendaItems: DropdownItem[] = [
-    {
-      href: "/tienda",
-      label: "Tienda SP",
-      iconClass: "fa-solid fa-cart-shopping",
-    },
-    { href: "/vip", label: "Membresía VIP", iconClass: "fa-solid fa-crown" },
-    {
-      href: "/marketplace",
-      label: "Mercadillo (Marketplace)",
-      iconClass: "fa-solid fa-chart-line",
-    },
+    { href: "/tienda", label: "Tienda SpeedPoints", desc: "Canjea puntos por recompensas", iconClass: "fa-solid fa-cart-shopping" },
+    { href: "/vip", label: "Membresía VIP", desc: "Beneficios exclusivos y distinción", iconClass: "fa-solid fa-crown" },
+    { href: "/marketplace", label: "Mercadillo Furnis", desc: "Historial de precios de mercado", iconClass: "fa-solid fa-chart-line" },
+  ];
+
+  // 5. GAMING & ENTRETENIMIENTO (Juegos, Cartas, Cine, Misiones, Tendencias, Mis Shorts)
+  const entretenimientoItems: DropdownItem[] = [
+    { href: "/juegos", label: "Arcade Mini-Juegos", desc: "Juegos clásicos con puntuaciones", iconClass: "fa-solid fa-gamepad" },
+    { href: "/cartas", label: "Cartas Coleccionables", desc: "Álbum de cartas temáticas", iconClass: "fa-solid fa-layer-group" },
+    { href: "/cine", label: "Cine YouTube Grupal", desc: "Salas de video sincronizadas", iconClass: "fa-solid fa-film" },
+    { href: "/misiones", label: "Misiones & Premios", desc: "Retos diarios con SpeedPoints", iconClass: "fa-solid fa-bullseye" },
+    { href: "/tendencias", label: "SpeedShorts", desc: "Tendencias y videos cortos", iconClass: "fa-solid fa-fire-flame-curved" },
+    { href: "/mis-shorts", label: "Mis Videos Shorts", desc: "Sube y administra tus creaciones", iconClass: "fa-solid fa-video" },
   ];
 
   const mundialItems: DropdownItem[] = [
     {
       href: "/futbol-hub",
       label: "Fútbol Hub Home",
+      desc: "Centro principal de fútbol",
       iconClass: "fa-solid fa-trophy",
     },
     {
       href: "/futbol-hub/pronosticos",
       label: "Pronósticos",
+      desc: "Predice resultados y gana puntos",
       iconClass: "fa-solid fa-chart-bar",
     },
     {
       href: "/futbol-hub/ranking",
       label: "Ranking de Expertos",
+      desc: "Líderes de predicciones",
       iconClass: "fa-solid fa-ranking-star",
     },
     {
       href: "/futbol-hub/equipos",
-      label: "Equipos",
+      label: "Equipos y Clubes",
+      desc: "Plantillas y estadísticas",
       iconClass: "fa-solid fa-users-gear",
     },
     {
       href: "/futbol-hub/aventura",
       label: "Aventura Futbolística",
+      desc: "Rutas de desafíos futboleros",
       iconClass: "fa-solid fa-compass",
     },
     {
       href: "/futbol-hub/mini/rapido",
       label: "Juego de Penales",
+      desc: "Patea penales y anota goles",
       iconClass: "fa-solid fa-gamepad",
     },
     {
       href: "/futbol-hub/mini/sorteos",
       label: "Sorteos Especiales",
+      desc: "Participa por premios únicos",
       iconClass: "fa-solid fa-gift",
     },
     {
       href: "/futbol-hub/torneos",
       label: "HSpeed Torneos",
+      desc: "Copas y ligas comunitarias",
       iconClass: "fa-solid fa-medal",
     },
   ];
@@ -565,105 +611,205 @@ export default function TopNavBar() {
       className="w-full sticky top-0 z-50 shadow-md flex flex-col font-sans"
       data-testid="top-nav-bar"
     >
-      {/* 1. MENÚ BLANCO PREMIUM CON DROPDOWNS COMPLETOS */}
-      <div className="bg-white text-slate-800 border-b border-slate-200 h-14 flex items-center px-4 sm:px-6 relative z-50">
+      {/* 1. MENÚ SUPERIOR OSCURO HSPEED NUEVA GENERACIÓN CON SOLO ICONOS */}
+      <div className="bg-[#090e1a] text-white border-b border-white/10 h-13 flex items-center px-4 sm:px-6 relative z-50">
         <div className="mx-auto w-full max-w-[1600px] flex items-center justify-between">
-          {/* Logo y Dropdowns de Navegación */}
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center">
-              <img
-                src="/logo.png"
-                alt="hSpeed Logo"
-                className="h-9 w-auto object-contain"
-              />
+          {/* Logo y Links de Navegación con SOLO ICONOS */}
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2 group">
+              <span className="text-xl font-black tracking-tight text-white flex items-center">
+                h<span className="text-cyan-400 group-hover:text-cyan-300 transition-colors">Speed</span>
+              </span>
             </Link>
 
-            {/* Links Escritorio en Dropdowns */}
-            <div className="hidden md:flex items-center gap-6">
-              <DirectNavLink href="/" label="INICIO" />
+            {/* Links Escritorio: Iconos limpios con tooltips y megamenús ricos */}
+            <div className="hidden md:flex items-center gap-1.5 lg:gap-2">
+              <DirectNavLink href="/" label="Inicio" iconClass="fa-solid fa-house" />
               <NavDropdown
-                label="COMUNIDAD"
+                label="Comunidad"
+                iconClass="fa-solid fa-users"
                 items={comunidadItems}
-                activePrefixes={[
-                  "/news",
-                  "/events",
-                  "/forum",
-                  "/team",
-                  "/contact",
-                  "/rooms",
-                ]}
+                activePrefixes={["/news", "/events", "/forum", "/team", "/rooms", "/contact", "/messages", "/profile"]}
+                columns={2}
               />
               <NavDropdown
-                label="RADIO"
+                label="Radio"
+                iconClass="fa-solid fa-radio"
                 items={radioItems}
-                activePrefixes={["/radio", "/schedule", "/song-history"]}
+                activePrefixes={["/radio", "/schedule", "/song-history", "/dj-horarios"]}
               />
               <NavDropdown
-                label="HERRAMIENTAS"
-                items={habboItems}
-                activePrefixes={[
-                  "/herramientas",
-                  "/armario",
-                  "/imager",
-                  "/catalog",
-                  "/badges",
-                ]}
+                label="Herramientas"
+                iconClass="fa-solid fa-screwdriver-wrench"
+                items={herramientasItems}
+                activePrefixes={["/herramientas", "/armario", "/imager", "/catalog", "/badges", "/feria", "/memes", "/habbo3d", "/reacciones"]}
+                columns={2}
               />
               <NavDropdown
-                label="TIENDA"
+                label="Tienda"
+                iconClass="fa-solid fa-cart-shopping"
                 items={tiendaItems}
                 activePrefixes={["/tienda", "/shop", "/vip", "/marketplace"]}
               />
               <NavDropdown
-                label="FÚTBOL HUB"
+                label="Entretenimiento"
+                iconClass="fa-solid fa-gamepad"
+                items={entretenimientoItems}
+                activePrefixes={["/juegos", "/cartas", "/cine", "/misiones", "/tendencias", "/mis-shorts", "/youtube"]}
+                columns={2}
+              />
+              <NavDropdown
+                label="Fútbol Hub"
+                iconClass="fa-solid fa-futbol text-emerald-400"
                 items={mundialItems}
                 activePrefixes={["/futbol-hub"]}
+                columns={2}
               />
             </div>
           </div>
 
-          {/* Área de Autenticación / Registro */}
-          <div className="flex items-center gap-4">
+          {/* Área de Usuario / SpeedLogin del Mockup */}
+          <div className="flex items-center gap-3">
             {/* Toggle Modo Fútbol */}
             <button
               onClick={() => setFootballMode((p) => !p)}
-              className="text-slate-500 hover:text-slate-900 transition-colors text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+              className="text-slate-400 hover:text-white transition-colors text-[11px] font-bold flex items-center gap-1 cursor-pointer mr-1 hidden sm:flex"
             >
-              <i className="fa-solid fa-futbol text-emerald-500 mr-1"></i>
-              <span className="hidden sm:inline">
-                {footballMode ? "Fútbol On" : "Fútbol Off"}
-              </span>
+              <i className="fa-solid fa-futbol text-emerald-400"></i>
+              <span>{footballMode ? "Fútbol On" : "Fútbol Off"}</span>
             </button>
 
+            {/* Info de Usuario / SpeedPoints / SpeedLogin */}
             {user ? (
-              <div className="flex items-center gap-3 relative">
-                {/* Campana de Notificaciones */}
+              <div className="flex items-center gap-2.5">
+                <img
+                  src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(user.habboUsername || user.displayName)}&size=s&headonly=1`}
+                  alt={user.displayName}
+                  className="w-7 h-7 rounded-full bg-slate-800 border border-cyan-400/50 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif";
+                  }}
+                />
+                <div className="hidden lg:flex items-center gap-1.5 text-xs">
+                  <span className="text-slate-400 font-medium">hSpeed -</span>
+                  <span className="font-bold text-slate-200 truncate max-w-[120px]">
+                    {user.displayName}
+                  </span>
+                  <span className="bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 ml-1">
+                    <i className="fa-solid fa-bolt text-yellow-400 text-[9px]"></i>
+                    {user.speedPoints ?? 0} SP
+                  </span>
+                </div>
+
+                {/* Botón Mi Perfil Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(!userMenuOpen);
+                      setNotifMenuOpen(false);
+                    }}
+                    className="bg-cyan-400 hover:bg-cyan-300 text-[#090e1a] font-black text-xs px-3 py-1 rounded-full transition-all shadow flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Mi Perfil</span>
+                    <i className="fa-solid fa-chevron-down text-[9px]"></i>
+                  </button>
+
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0e1626] border border-white/10 rounded-xl shadow-2xl py-1 z-50 animate-fade-in text-slate-200">
+                      <Link
+                        href={`/profile/${user.habboUsername || user.displayName}`}
+                        className="flex items-center gap-2 px-4 py-2 text-xs font-bold hover:bg-white/10 hover:text-cyan-400 transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <i className="fa-solid fa-user text-slate-400 w-4 text-center"></i>
+                        MI PERFIL
+                      </Link>
+                      <Link
+                        href="/messages"
+                        className="flex items-center justify-between px-4 py-2 text-xs font-bold hover:bg-white/10 hover:text-cyan-400 transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <span className="flex items-center gap-2">
+                          <i className="fa-solid fa-envelope text-slate-400 w-4 text-center"></i>
+                          MENSAJES
+                        </span>
+                        {unreadCount > 0 && (
+                          <Badge className="bg-cyan-400 text-black text-[9px] px-1.5 py-0.5">
+                            {unreadCount}
+                          </Badge>
+                        )}
+                      </Link>
+                      {isAdmin && (
+                        <Link
+                          href="/panel"
+                          className="flex items-center gap-2 px-4 py-2 text-xs font-bold hover:bg-white/10 hover:text-cyan-400 transition-colors"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <i className="fa-solid fa-cog text-slate-400 w-4 text-center"></i>
+                          PANEL ADMIN
+                        </Link>
+                      )}
+                      {isDjOrAdmin && (
+                        <Link
+                          href="/djpanel"
+                          className="flex items-center gap-2 px-4 py-2 text-xs font-bold hover:bg-white/10 hover:text-cyan-400 transition-colors"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <i className="fa-solid fa-headphones text-slate-400 w-4 text-center"></i>
+                          PANEL DJ
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => {
+                          logout();
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/10 transition-colors border-t border-white/10 text-left"
+                      >
+                        <i className="fa-solid fa-sign-out-alt text-red-400 w-4 text-center"></i>
+                        CERRAR SESIÓN
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+                <Link
+                  href="/login"
+                  className="bg-cyan-400 hover:bg-cyan-300 text-[#090e1a] font-black text-xs px-4 py-1.5 rounded-full transition-all shadow flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+                >
+                  <i className="fa-solid fa-right-to-bracket text-xs"></i>
+                  <span>SpeedLogin</span>
+                </Link>
+              )}
+
+              {/* Campana de Notificaciones */}
+              {user && (
                 <div className="relative">
                   <button
                     onClick={() => {
                       setNotifMenuOpen(!notifMenuOpen);
                       setUserMenuOpen(false);
                     }}
-                    className="relative text-slate-500 hover:text-slate-800 transition-colors p-1.5 cursor-pointer flex items-center justify-center focus:outline-none"
+                    className="relative text-slate-300 hover:text-white transition-colors p-1.5 cursor-pointer flex items-center justify-center focus:outline-none"
                   >
-                    <i className="fa-solid fa-bell text-base"></i>
+                    <i className="fa-solid fa-bell text-sm"></i>
                     {unreadNotifsCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 bg-primary text-black text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-black animate-pulse">
+                      <span className="absolute -top-0.5 -right-0.5 bg-cyan-400 text-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-black">
                         {unreadNotifsCount}
                       </span>
                     )}
                   </button>
-
                   {notifMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-fade-in text-slate-700">
-                      <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
-                        <span className="font-extrabold text-[10px] uppercase tracking-wider text-slate-900">
+                    <div className="absolute right-0 top-full mt-2 w-72 bg-[#0e1626] border border-white/10 rounded-xl shadow-2xl py-1.5 z-50 animate-fade-in text-slate-200">
+                      <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">
+                        <span className="font-extrabold text-[10px] uppercase tracking-wider text-slate-300">
                           Notificaciones
                         </span>
                         {unreadNotifsCount > 0 && (
                           <button
                             onClick={() => markAllReadMutation.mutate()}
-                            className="text-[9px] text-primary hover:underline font-bold uppercase tracking-wider"
+                            className="text-[9px] text-cyan-400 hover:underline font-bold uppercase tracking-wider"
                           >
                             Marcar leídas
                           </button>
@@ -678,48 +824,20 @@ export default function TopNavBar() {
                           notifications.slice(0, 10).map((notif: any) => (
                             <div
                               key={notif.id}
-                              className={cn(
-                                "px-4 py-2.5 hover:bg-slate-50 transition-colors flex items-start gap-2.5 border-b border-slate-50 last:border-0 cursor-pointer",
-                                !notif.isRead && "bg-slate-50/50",
-                              )}
+                              className="px-4 py-2.5 hover:bg-white/5 transition-colors flex items-start gap-2.5 border-b border-white/5 last:border-0 cursor-pointer"
                               onClick={() => {
-                                if (!notif.isRead)
-                                  markReadMutation.mutate(notif.id);
-                                if (notif.link) {
-                                  // Navigate manually
-                                  window.location.hash = notif.link;
-                                }
+                                if (!notif.isRead) markReadMutation.mutate(notif.id);
+                                if (notif.link) window.location.hash = notif.link;
                                 setNotifMenuOpen(false);
                               }}
                             >
-                              <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 mt-0.5">
-                                <i
-                                  className={cn(
-                                    "fa-solid",
-                                    notif.icon === "crown"
-                                      ? "fa-crown text-amber-500"
-                                      : notif.icon === "trophy"
-                                        ? "fa-trophy text-yellow-500"
-                                        : "fa-info-circle",
-                                  )}
-                                ></i>
+                              <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-slate-300 mt-0.5">
+                                <i className="fa-solid fa-bell text-cyan-400"></i>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p
-                                  className={cn(
-                                    "text-xs font-bold text-slate-800 truncate",
-                                    !notif.isRead && "text-slate-900",
-                                  )}
-                                >
-                                  {notif.title}
-                                </p>
-                                <p className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-normal">
-                                  {notif.message}
-                                </p>
+                                <p className="text-xs font-bold text-white truncate">{notif.title}</p>
+                                <p className="text-[10px] text-slate-400 line-clamp-2 mt-0.5">{notif.message}</p>
                               </div>
-                              {!notif.isRead && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                              )}
                             </div>
                           ))
                         )}
@@ -727,119 +845,13 @@ export default function TopNavBar() {
                     </div>
                   )}
                 </div>
-
-                {/* Dropdown Botón */}
-                <button
-                  onClick={() => {
-                    setUserMenuOpen(!userMenuOpen);
-                    setNotifMenuOpen(false);
-                  }}
-                  className="flex items-center gap-2 hover:opacity-80 transition-opacity focus:outline-none"
-                >
-                  <img
-                    src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(user.habboUsername || user.displayName)}&size=s&headonly=1`}
-                    alt={user.displayName}
-                    className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "/habbo-radio/frank_small_03.gif";
-                    }}
-                  />
-                  <span className="hidden sm:inline-block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    {user.displayName}
-                  </span>
-                  <i className="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
-                </button>
-
-                {/* Dropdown Contenido */}
-                {userMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 animate-fade-in">
-                    <Link
-                      href={`/profile/${user.habboUsername || user.displayName}`}
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <i className="fa-solid fa-user text-slate-400 w-4 text-center"></i>
-                      MI PERFIL
-                    </Link>
-                    <Link
-                      href="/messages"
-                      className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <span className="flex items-center gap-2">
-                        <i className="fa-solid fa-envelope text-slate-400 w-4 text-center"></i>
-                        MENSAJES
-                      </span>
-                      {unreadCount > 0 && (
-                        <Badge className="bg-primary text-white text-[9px] px-1.5 py-0.5">
-                          {unreadCount}
-                        </Badge>
-                      )}
-                    </Link>
-                    <Link
-                      href="/soporte"
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <i className="fa-solid fa-ticket text-slate-400 w-4 text-center"></i>
-                      SOPORTE
-                    </Link>
-                    {isAdmin && (
-                      <Link
-                        href="/panel"
-                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <i className="fa-solid fa-cog text-slate-400 w-4 text-center"></i>
-                        PANEL ADMIN
-                      </Link>
-                    )}
-                    {isDjOrAdmin && (
-                      <Link
-                        href="/djpanel"
-                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <i className="fa-solid fa-headphones text-slate-400 w-4 text-center"></i>
-                        PANEL DJ
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => {
-                        logout();
-                        setUserMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 transition-colors border-t border-slate-100 text-left"
-                    >
-                      <i className="fa-solid fa-sign-out-alt text-red-400 w-4 text-center"></i>
-                      CERRAR SESIÓN
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/login"
-                  className="flex items-center gap-1 text-[11px] font-extrabold text-slate-600 hover:text-slate-900 transition-colors uppercase tracking-wider"
-                >
-                  Sign In
-                </Link>
-                <img
-                  src={proxyImage(
-                    "https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=s&headonly=1",
-                  )}
-                  alt="Sign in"
-                  className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 object-contain"
-                />
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Hamburguesa Móvil */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden text-slate-700 hover:bg-slate-100 p-2 rounded-lg transition-colors"
+              className="md:hidden text-slate-300 hover:bg-white/10 p-2 rounded-lg transition-colors"
             >
               {mobileMenuOpen ? (
                 <i className="fa-solid fa-xmark text-lg"></i>
@@ -849,156 +861,9 @@ export default function TopNavBar() {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* 2. REPRODUCTOR DE RADIO HORIZONTAL AZUL OSCURO */}
-      <div className="bg-[#0b0632] text-white border-b border-white/5 py-2 px-4 sm:px-6 relative z-40 select-none font-sans overflow-hidden">
-        <audio ref={audioRef} preload="none" />
-        <div className="mx-auto w-full max-w-[1600px] flex flex-wrap items-center justify-between gap-3">
-          {/* DJ de Turno */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-lg bg-[#140b49] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
-              <img
-                src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(currentDj)}&size=b`}
-                alt={currentDj}
-                className="absolute top-[-10px] w-12 h-16 object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    "/habbo-radio/frank_small_03.gif";
-                }}
-              />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[9px] font-bold text-white/50 uppercase tracking-wider leading-none">
-                CURRENT DJ
-              </p>
-              <p
-                className="text-xs font-black text-white truncate max-w-[90px] mt-0.5"
-                title={currentDj}
-              >
-                {currentDj}
-              </p>
-            </div>
-          </div>
-
-          {/* Canción en Reproducción */}
-          <div className="flex-1 min-w-[150px] max-w-md hidden sm:block border-l border-white/10 pl-3.5">
-            <p className="text-[9px] font-bold text-white/50 uppercase tracking-wider leading-none">
-              CURRENT SONG
-            </p>
-            <p
-              className="text-xs font-semibold text-white/90 truncate mt-0.5"
-              title={songTitle}
-            >
-              {songTitle}
-            </p>
-          </div>
-
-          {/* Oyentes */}
-          <div className="flex items-center gap-1.5 bg-[#140b49] px-2.5 py-1.5 rounded-full border border-white/5 text-[11px] font-bold text-[#26d7ff]">
-            <i className="fa-solid fa-headphones text-xs"></i>
-            <span>{listeners}</span>
-          </div>
-
-          {/* Botón Circular Play/Pause */}
-          <button
-            onClick={togglePlay}
-            className="w-8.5 h-8.5 rounded-full bg-[#f43f5e] hover:bg-[#e11d48] text-white flex items-center justify-center transition-all shadow-md shrink-0 hover:scale-105 active:scale-95"
-            aria-label={isPlaying ? "Pause" : "Play"}
-          >
-            {isPlaying ? (
-              <i className="fa-solid fa-stop text-[10px]"></i>
-            ) : (
-              <i className="fa-solid fa-play text-[10px] ml-0.5"></i>
-            )}
-          </button>
-
-          {/* Deslizador de Volumen */}
-          <div className="hidden md:flex items-center gap-2 border-l border-white/10 pl-3.5">
-            <button
-              onClick={() => setIsMuted(!isMuted)}
-              className="text-white/60 hover:text-white transition-colors"
-            >
-              {isMuted ? (
-                <i className="fa-solid fa-volume-xmark"></i>
-              ) : (
-                <i className="fa-solid fa-volume-high"></i>
-              )}
-            </button>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={isMuted ? 0 : volume}
-              onChange={(e) => {
-                setVolume(Number(e.target.value));
-                setIsMuted(false);
-              }}
-              className="w-16 h-1 rounded-full accent-cyan-400 bg-white/20 appearance-none cursor-pointer"
-            />
-          </div>
-
-          {/* Iconos de Acción Rápida */}
-          <div className="flex items-center gap-2 bg-[#140b49] px-2 py-1 rounded-lg border border-white/5">
-            <Link
-              href="/forum"
-              className="text-white/60 hover:text-[#26d7ff] p-1.5 transition-colors"
-              title="Chat/Foro"
-            >
-              <i className="fa-solid fa-comments text-xs"></i>
-            </Link>
-            <button
-              onClick={() => setShowPeticionesModal(true)}
-              className="text-white/60 hover:text-[#26d7ff] p-1.5 transition-colors"
-              title="Peticiones"
-            >
-              <i className="fa-solid fa-bullhorn text-xs"></i>
-            </button>
-            <button
-              onClick={() => setShowSaludosModal(true)}
-              className="text-white/60 hover:text-[#26d7ff] p-1.5 transition-colors"
-              title="Saludos / Mensaje"
-            >
-              <i className="fa-solid fa-gift text-xs"></i>
-            </button>
-          </div>
-
-          {/* Barra de Progreso del Programa */}
-          <div className="hidden lg:flex items-center gap-2.5 flex-1 max-w-[280px] border-l border-white/10 pl-3.5">
-            <div className="flex items-center gap-1 text-[9px] font-bold text-white/50 uppercase tracking-wider">
-              <i className="fa-solid fa-clock"></i>
-              <span>PROGRAM TIME</span>
-            </div>
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <span className="text-[10px] text-white/60 font-semibold">
-                {programStart}
-              </span>
-              <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#26d7ff] transition-all duration-1000"
-                  style={{ width: `${programProgress}%` }}
-                />
-              </div>
-              <span className="text-[10px] text-white/60 font-semibold">
-                {programEnd}
-              </span>
-            </div>
-          </div>
-
-          {/* Próximo DJ */}
-          <div className="hidden xl:block border-l border-white/10 pl-3.5 text-right min-w-[90px]">
-            <p className="text-[9px] font-bold text-white/50 uppercase tracking-wider leading-none">
-              NEXT DJ
-            </p>
-            <p
-              className="text-xs font-black text-white/90 truncate mt-0.5 max-w-[100px]"
-              title={nextDj}
-            >
-              {nextDj}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Audio Element (Invisible) */}
+      <audio ref={audioRef} preload="none" className="hidden" />
 
       {/* MENÚ MÓVIL TOTALMENTE COMPLETO */}
       {mobileMenuOpen && (
@@ -1090,19 +955,10 @@ export default function TopNavBar() {
             {/* Sección Herramientas */}
             <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
               <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" />{" "}
-                Herramientas HSpeed
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Herramientas
               </p>
               <div className="grid grid-cols-1 gap-1">
-                <Link
-                  href="/herramientas"
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-black text-primary bg-primary/5 border border-primary/10 rounded-lg transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <i className="fa-solid fa-screwdriver-wrench w-4 text-center text-primary"></i>{" "}
-                  Centro de Herramientas
-                </Link>
-                {habboItems.slice(1).map((item, idx) => (
+                {herramientasItems.map((item, idx) => (
                   <Link
                     key={idx}
                     href={item.href || "#"}
@@ -1121,68 +977,10 @@ export default function TopNavBar() {
               </div>
             </div>
 
-            {/* Sección Radio */}
-            <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
-              <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Radio
-                HSpeed
-              </p>
-              <div className="grid grid-cols-1 gap-1">
-                <Link
-                  href="/radio"
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-black text-primary bg-primary/5 border border-primary/10 rounded-lg transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <i className="fa-solid fa-radio w-4 text-center text-primary"></i>{" "}
-                  Sintonizar Radio
-                </Link>
-                {radioItems.slice(1).map((item, idx) => {
-                  if (item.href) {
-                    return (
-                      <Link
-                        key={idx}
-                        href={item.href}
-                        className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <i
-                          className={cn(
-                            item.iconClass,
-                            "w-4 text-center text-slate-400",
-                          )}
-                        ></i>{" "}
-                        {item.label}
-                      </Link>
-                    );
-                  } else {
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          if (item.onClick) item.onClick();
-                        }}
-                        className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all text-left w-full"
-                      >
-                        <i
-                          className={cn(
-                            item.iconClass,
-                            "w-4 text-center text-slate-400",
-                          )}
-                        ></i>{" "}
-                        {item.label}
-                      </button>
-                    );
-                  }
-                })}
-              </div>
-            </div>
-
             {/* Sección Tienda */}
             <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
               <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Tienda &
-                Economía
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Tienda & Economía
               </p>
               <div className="grid grid-cols-1 gap-1">
                 {tiendaItems.map((item, idx) => (
@@ -1204,11 +1002,35 @@ export default function TopNavBar() {
               </div>
             </div>
 
-            {/* Sección Mundial */}
+            {/* Sección Entretenimiento & Gaming */}
             <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
               <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Fútbol
-                Hub
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Entretenimiento & Gaming
+              </p>
+              <div className="grid grid-cols-1 gap-1">
+                {entretenimientoItems.map((item, idx) => (
+                  <Link
+                    key={idx}
+                    href={item.href || "#"}
+                    className="flex items-center gap-2.5 px-2 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i
+                      className={cn(
+                        item.iconClass,
+                        "w-4 text-center text-slate-400",
+                      )}
+                    ></i>{" "}
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Sección Fútbol Hub */}
+            <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm space-y-2">
+              <p className="px-1 text-[9px] font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-slate-300 rounded-full" /> Fútbol Hub
               </p>
               <div className="grid grid-cols-1 gap-1">
                 {mundialItems.map((item, idx) => (

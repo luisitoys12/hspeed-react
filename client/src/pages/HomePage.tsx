@@ -4,1525 +4,1037 @@ import { Link } from "wouter";
 import { proxyImage } from "@/lib/habboProxy";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import FutbolHubPanel from "@/components/FutbolHubPanel";
-import type { News, Event, Poll } from "@shared/schema";
+import HabboRadioWidget from "@/components/HabboRadioWidget";
+import type { News, Poll } from "@shared/schema";
 
 /* ============================================================
-   CHAT / MESSAGE BOARD — DYNAMIC WITH INLINE LOGIN & USER CARD
+   FALLBACK DATA: PLACAS & FURNIS REALES DE HABBO
    ============================================================ */
-function MessageBoard() {
-  const { user, login, token } = useAuth();
+const DEFAULT_BADGES = [
+  { code: "ADM", name: "Staff Oficial Habbo", desc: "Placa exclusiva del equipo administrativo", category: "special" },
+  { code: "ACH_Music10", name: "Estrella de la Radio", desc: "Nivel 10 de oyente fiel en Habbo", category: "radio" },
+  { code: "ACH_AllTimeHotelPresence10", name: "Veterano del Hotel", desc: "Más de 500 horas dentro de la comunidad", category: "achievements" },
+  { code: "ES99A", name: "HabboSpeed Aniversario", desc: "Placa conmemorativa de hSpeed", category: "special" },
+  { code: "ACH_FootballGoal10", name: "Goleador Estrella", desc: "Ganador de torneos en Fútbol Hub", category: "games" },
+  { code: "ACH_RoomRaid10", name: "Anfitrión Legendario", desc: "Salas populares y concurridas", category: "building" },
+  { code: "ACH_SafetyQuiz1", name: "Experto en Seguridad", desc: "Conocedor del código de Habbo", category: "special" },
+  { code: "ACH_BattleBallTiles10", name: "Campeón Battle Banzai", desc: "Dominio de baldosas y juego en equipo", category: "games" },
+  { code: "ACH_RespectEarned10", name: "Respetado por Todos", desc: "Más de 1000 respetos recibidos", category: "achievements" },
+  { code: "ACH_Tag10", name: "Etiqueta Popular", desc: "Intereses y tendencias compartidas", category: "special" },
+  { code: "ACH_VipClub10", name: "Socio Club HC", desc: "Miembro honorable del Club Habbo", category: "special" },
+  { code: "ACH_PetLover10", name: "Amante de Mascotas", desc: "Cuidado y cariño a tus mascotas", category: "achievements" },
+  { code: "ACH_TraderPass10", name: "Magnate del Mercadillo", desc: "Comerciante experto en rares y furnis", category: "special" },
+  { code: "ACH_SelfModChatMute1", name: "Guardián de Sala", desc: "Moderación y ambiente sano", category: "special" },
+  { code: "ACH_AvatarLooks1", name: "Icono de Moda", desc: "Estilo único en el Hotel", category: "special" },
+  { code: "ACH_FriendListSize10", name: "Conexión Total", desc: "Amigo de toda la comunidad", category: "achievements" },
+  { code: "ACH_Graduate1", name: "Graduado Habbo", desc: "Misiones completadas con éxito", category: "achievements" },
+  { code: "ACH_CameraPhotoTaken10", name: "Fotógrafo Oficial", desc: "Momentos inolvidables capturados", category: "special" },
+  { code: "ACH_Roller10", name: "Maestro de Rollers", desc: "Laberintos y habilidad esquivando", category: "games" },
+  { code: "ACH_HorseRider10", name: "Jinete de Élite", desc: "Carreras y saltos a caballo", category: "achievements" },
+  { code: "ACH_FreezeWinner10", name: "Rey de Freeze", desc: "Estrategia congelante en la arena", category: "games" },
+  { code: "ACH_GameArcade10", name: "Gamer Arcade", desc: "Récords en minijuegos comunitarios", category: "games" },
+  { code: "ACH_GiftGiver10", name: "Espíritu Generoso", desc: "Regalos entregados a amigos", category: "achievements" },
+  { code: "ACH_RoomDeco10", name: "Diseñador de Interiores", desc: "Salas majestuosas y acogedoras", category: "building" },
+];
+
+const DEFAULT_FURNIS = [
+  {
+    id: "furni-1",
+    name: "Raro Rococó",
+    category: "Raros Clásicos",
+    priceSP: 50,
+    priceCredits: 120,
+    imageUrl: "https://images.habbo.com/c_images/catalogue/icon_186.png",
+    trend: "+12%",
+    rarity: "Raro",
+  },
+  {
+    id: "furni-2",
+    name: "Raro Cocar",
+    category: "Colección Élite",
+    priceSP: 50,
+    priceCredits: 95,
+    imageUrl: "https://images.habbo.com/c_images/catalogue/icon_175.png",
+    trend: "Estable",
+    rarity: "Exclusivo",
+  },
+  {
+    id: "furni-3",
+    name: "Trono Clásico",
+    category: "Lujo & Prestigio",
+    priceSP: 150,
+    priceCredits: 500,
+    imageUrl: "https://images.habbo.com/c_images/catalogue/icon_154.png",
+    trend: "+25%",
+    rarity: "Mega Raro",
+  },
+  {
+    id: "furni-4",
+    name: "Dragón de Fuego",
+    category: "Lámparas Dragón",
+    priceSP: 80,
+    priceCredits: 220,
+    imageUrl: "https://images.habbo.com/c_images/catalogue/icon_180.png",
+    trend: "+8%",
+    rarity: "Raro",
+  },
+  {
+    id: "furni-5",
+    name: "HoloBoy Vintage",
+    category: "Tecnología Sci-Fi",
+    priceSP: 45,
+    priceCredits: 85,
+    imageUrl: "https://images.habbo.com/c_images/catalogue/icon_162.png",
+    trend: "Popular",
+    rarity: "Clásico",
+  },
+  {
+    id: "furni-6",
+    name: "Fuente de Jade",
+    category: "Jardín & Naturaleza",
+    priceSP: 60,
+    priceCredits: 140,
+    imageUrl: "https://images.habbo.com/c_images/catalogue/icon_168.png",
+    trend: "+5%",
+    rarity: "Limitado",
+  },
+];
+
+export default function HomePage() {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [message, setMessage] = useState("");
-  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const [mexicoTime, setMexicoTime] = useState("");
-  useEffect(() => {
-    const updateTime = () => {
-      const timeString = new Date().toLocaleTimeString("es-MX", {
-        timeZone: "America/Mexico_City",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      });
-      setMexicoTime(timeString);
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // States para login inline
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginPending, setLoginPending] = useState(false);
-
-  const {
-    data: chatMessages,
-    isError,
-    refetch,
-  } = useQuery<any[]>({
-    queryKey: ["/api/chat"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/chat?limit=30");
-      if (!res.ok) throw new Error("chat_error");
-      return res.json();
-    },
-    refetchInterval: 4000,
-    retry: 1,
+  // Queries
+  const { data: news = [] } = useQuery<News[]>({
+    queryKey: ["/api/news"],
   });
 
-  const sendMutation = useMutation({
-    mutationFn: async (content: string) => {
-      const authToken = token || localStorage.getItem("token");
-      if (!authToken) throw new Error("Debes iniciar sesión para chatear");
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ content }),
-      });
-      if (!res.ok) {
-        const err = await res
-          .json()
-          .catch(() => ({ message: "Error al enviar" }));
-        throw new Error(err.message || "Error al enviar mensaje");
-      }
-      return res.json();
-    },
-    onSuccess: () => {
-      setMessage("");
-      queryClient.invalidateQueries({ queryKey: ["/api/chat"] });
-    },
-    onError: (err: any) =>
-      toast({
-        title: "Error",
-        description: err.message,
-        variant: "destructive",
-      }),
-  });
-
-  const handleInlineLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) return;
-    setLoginPending(true);
-    try {
-      await login(email, password);
-      toast({
-        title: "¡Sesión iniciada!",
-        description: "Bienvenido de vuelta a HabboSpeed.",
-      });
-      // Reset form
-      setEmail("");
-      setPassword("");
-    } catch (err: any) {
-      toast({
-        title: "Error al iniciar sesión",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoginPending(false);
-    }
-  };
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
-
-  return (
-    <div
-      className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-full"
-      data-testid="message-board"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/30 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-wider">
-            Chat en Vivo
-          </span>
-          <span className="text-[10px] text-muted-foreground">
-            ({(chatMessages || []).length})
-          </span>
-        </div>
-        <div className="flex items-center gap-1 text-[10px] font-bold text-primary animate-pulse bg-black/30 px-2 py-0.5 rounded border border-primary/20">
-          <i className="fa-regular fa-clock text-[9.5px]"></i>
-          <span>CDMX: {mexicoTime}</span>
-        </div>
-      </div>
-
-      {/* Perfil del Usuario Conectado */}
-      {user && (
-        <div className="p-3 border-b border-border bg-secondary/10 flex items-center gap-3.5 flex-shrink-0">
-          <div className="w-12 h-16 relative overflow-hidden bg-primary/10 rounded-lg flex-shrink-0 flex items-center justify-center border border-border/55">
-            <img
-              src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(user.habboUsername || user.displayName)}&action=wav&direction=2&head_direction=2&img_format=png&gesture=sml&size=b`}
-              alt={user.displayName}
-              className="absolute top-[-10px] w-16 h-24 object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src =
-                  "/habbo-radio/frank_small_03.gif";
-              }}
-            />
-          </div>
-          <div className="flex-grow min-w-0">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">
-              Usuario Conectado
-            </p>
-            <h4 className="text-xs font-black text-foreground truncate">
-              {user.displayName}
-            </h4>
-            <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-bold text-yellow-500">
-              <i className="fa-solid fa-bolt"></i>
-              <span>{user.speedPoints ?? 0} SpeedPoints</span>
-            </div>
-            <Link
-              href={`/profile/${user.habboUsername || user.displayName}`}
-              className="text-[9px] text-primary hover:underline font-extrabold mt-1 block uppercase tracking-wider"
-            >
-              Ver mi perfil →
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Messages area */}
-      <div
-        className="flex-grow overflow-y-auto px-3 py-2 space-y-1.5 min-h-[200px]"
-        data-testid="chat-messages"
-      >
-        {isError ? (
-          <div className="flex flex-col items-center justify-center h-full py-8 gap-2 text-center">
-            <i className="fa-solid fa-comments text-muted-foreground/35 text-2xl"></i>
-            <p className="text-xs text-red-400">No se pudo cargar el chat</p>
-            <p className="text-[10px] text-muted-foreground">
-              Intenta recargar la página
-            </p>
-            <button
-              onClick={() => refetch()}
-              className="text-[10px] text-primary hover:underline mt-1"
-            >
-              Reintentar
-            </button>
-          </div>
-        ) : (chatMessages || []).length > 0 ? (
-          (chatMessages || []).map((msg: any, i: number) => {
-            const avatarName =
-              msg.habboUsername || msg.userName || "HabboSpeed";
-            return (
-              <div
-                key={msg.id || i}
-                className="flex items-start gap-2 py-0.5 hover:bg-secondary/20 rounded px-1 transition-colors"
-              >
-                <img
-                  src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(avatarName)}&size=s&headonly=1&head_direction=2&gesture=std`}
-                  alt={avatarName}
-                  className="w-6 h-6 rounded flex-shrink-0 bg-secondary/30 object-contain"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "/habbo-radio/frank_small_03.gif";
-                  }}
-                />
-                <div className="min-w-0 flex-grow">
-                  <span className="text-[11px] font-black text-primary mr-1">
-                    {msg.userName || "Anon"}:
-                  </span>
-                  <span className="text-[11px] text-foreground/85 break-words font-medium">
-                    {msg.message || msg.content}
-                  </span>
-                </div>
-                {msg.createdAt && (
-                  <span className="text-[8px] text-muted-foreground/50 ml-auto flex-shrink-0 mt-1">
-                    {new Date(msg.createdAt).toLocaleTimeString("es", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full py-8 gap-2">
-            <i className="fa-solid fa-comments text-muted-foreground/20 text-3xl"></i>
-            <p className="text-xs font-semibold text-muted-foreground">
-              ¡Sé el primero en escribir!
-            </p>
-          </div>
-        )}
-        <div ref={chatEndRef} />
-      </div>
-
-      {/* Input de Mensaje o Formulario de Login inline */}
-      <div className="border-t border-border px-3 py-2.5 bg-secondary/20 flex-shrink-0">
-        {user ? (
-          <div className="flex gap-2">
-            <Input
-              placeholder="Escribe un mensaje..."
-              className="text-xs h-8 bg-background/50 border-border/50 focus:border-primary/50"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  if (message.trim()) sendMutation.mutate(message.trim());
-                }
-              }}
-              maxLength={200}
-              data-testid="input-chat-message"
-            />
-            <Button
-              size="icon"
-              className="h-8 w-8 bg-primary hover:bg-primary/80 flex-shrink-0"
-              onClick={() =>
-                message.trim() && sendMutation.mutate(message.trim())
-              }
-              disabled={sendMutation.isPending || !message.trim()}
-              data-testid="button-chat-send"
-            >
-              <i className="fa-solid fa-paper-plane text-xs"></i>
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleInlineLogin} className="space-y-2 py-0.5">
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-              Identifícate para participar
-            </p>
-            <div className="grid grid-cols-1 gap-2">
-              <Input
-                type="email"
-                placeholder="Correo electrónico"
-                className="h-8 text-xs bg-background/50 border-border"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <Input
-                type="password"
-                placeholder="Contraseña"
-                className="h-8 text-xs bg-background/50 border-border"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex gap-2 pt-1">
-              <Button
-                type="submit"
-                size="sm"
-                className="flex-1 text-[10px] font-extrabold h-8"
-                disabled={loginPending}
-              >
-                {loginPending ? "Conectando..." : "Entrar"}
-              </Button>
-              <Link href="/register" className="flex-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-[10px] font-extrabold h-8"
-                >
-                  Registrarse
-                </Button>
-              </Link>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
-   NEWS GRID (RubyXD / HabNubis Style)
-   ============================================================ */
-function NewsGrid({ news, loading }: { news: News[]; loading: boolean }) {
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-md"
-          >
-            <Skeleton className="h-44" />
-            <div className="p-4 space-y-2.5">
-              <Skeleton className="h-3.5 w-1/4" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3.5 w-full" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  if (!news.length)
-    return (
-      <p className="text-sm text-muted-foreground text-center py-8 font-semibold">
-        No hay noticias aún
-      </p>
-    );
-  const featured = news[0];
-  const rest = news.slice(1, 5);
-
-  return (
-    <div className="space-y-4">
-      {/* Featured News - Hero Card */}
-      <Link
-        href={`/news/${featured.id}`}
-        className="block group"
-        data-testid={`card-news-featured-${featured.id}`}
-      >
-        <div className="relative bg-card border border-primary/20 glow-border-themed rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 hover:border-primary/40 group">
-          {featured.imageUrl && (
-            <div className="h-48 sm:h-64 overflow-hidden relative">
-              <img
-                src={featured.imageUrl}
-                alt={featured.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
-              <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent z-10" />
-            </div>
-          )}
-          <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-pixel bg-theme-gradient text-white border-0 mb-3 shadow-md">
-              {featured.category}
-            </span>
-            <h3 className="text-lg sm:text-xl font-extrabold text-white leading-tight group-hover:text-primary transition-colors duration-300 drop-shadow-md">
-              {featured.title}
-            </h3>
-            <p className="text-xs text-white/80 mt-1.5 line-clamp-2 max-w-xl font-medium leading-relaxed drop-shadow">
-              {featured.summary}
-            </p>
-            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/10">
-              <span className="text-[10px] text-white/50 font-semibold">
-                {featured.date}
-              </span>
-              <span className="text-[10px] text-primary font-bold group-hover:underline flex items-center gap-1 ml-auto">
-                Leer noticia completa{" "}
-                <i className="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform ml-1"></i>
-              </span>
-            </div>
-          </div>
-        </div>
-      </Link>
-
-      {/* Secondary News - RubyXD Rectangular Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {rest.map((article) => (
-          <Link
-            href={`/news/${article.id}`}
-            key={article.id}
-            className="block group"
-            data-testid={`card-news-${article.id}`}
-          >
-            <div className="bg-card border border-border/50 hover:border-primary/30 glow-border-themed rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl h-full flex flex-col">
-              {article.imageUrl && (
-                <div className="h-36 overflow-hidden relative">
-                  <img
-                    src={article.imageUrl}
-                    alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                    onError={(e) => {
-                      (
-                        e.target as HTMLImageElement
-                      ).parentElement!.style.display = "none";
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-transparent z-10" />
-                </div>
-              )}
-              <div className="p-4 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-0.5 rounded-full text-[8px] font-bold border border-primary/20 bg-primary/5 text-primary">
-                      {article.category}
-                    </span>
-                    <span className="text-[9px] text-muted-foreground font-semibold">
-                      {article.date}
-                    </span>
-                  </div>
-                  <h3 className="text-xs font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2 text-foreground/95">
-                    {article.title}
-                  </h3>
-                  <p className="text-[10px] text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
-                    {article.summary}
-                  </p>
-                </div>
-                <div className="text-[9px] text-primary font-bold group-hover:underline mt-3 pt-2.5 border-t border-border/30 flex items-center gap-1">
-                  Leer más{" "}
-                  <i className="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-0.5 transition-transform ml-1"></i>
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
-   FURNI STRIP
-   ============================================================ */
-function FurniStrip() {
-  const { data: furnis } = useQuery<any[]>({
-    queryKey: ["/api/habbo/furni"],
-    queryFn: async () => {
-      const r = await apiRequest("GET", "/api/habbo/furni?limit=24");
-      return r.json();
-    },
-    retry: false,
-    staleTime: 300000,
-  });
-  const items = furnis?.length ? furnis : [];
-  if (!items.length) return null;
-  return (
-    <div
-      className="bg-card border border-border rounded-xl overflow-hidden"
-      data-testid="furni-strip"
-    >
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
-        <i className="fa-solid fa-box text-orange-400 text-xs"></i>
-        <span className="text-xs font-bold uppercase tracking-wider">
-          Últimos Furnis Agregados
-        </span>
-        <Link
-          href="/marketplace"
-          className="text-[10px] text-primary ml-auto hover:underline font-extrabold"
-        >
-          Ver todos →
-        </Link>
-      </div>
-      <div className="px-3 py-3 overflow-hidden">
-        <div
-          className="flex gap-3 animate-marquee"
-          style={{ width: "max-content" }}
-        >
-          {[...items, ...items].map((item: any, i: number) => (
-            <div
-              key={i}
-              className="flex-shrink-0 w-12 h-12 rounded-lg bg-secondary/30 border border-border/30 flex items-center justify-center hover:scale-110 hover:border-primary/40 transition-all cursor-pointer group relative"
-            >
-              <img
-                src={proxyImage(item.iconUrl)}
-                alt={item.name}
-                className="w-10 h-10 object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-card border border-border text-[8px] text-muted-foreground px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none max-w-[100px] truncate">
-                {item.name}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
-   RECENT BADGES GRID (Nubis Style: 4x3 Static Grid)
-   ============================================================ */
-function RecentBadgesGrid() {
-  const { data: badges, isLoading } = useQuery<any[]>({
+  const { data: badgesFromApi = [] } = useQuery<any[]>({
     queryKey: ["/api/habbo/badges/es"],
     queryFn: async () => {
-      const r = await apiRequest("GET", "/api/habbo/badges/es?limit=12");
+      const r = await apiRequest("GET", "/api/habbo/badges/es?limit=24");
       const d = await r.json();
-      return Array.isArray(d)
-        ? d.slice(0, 12)
-        : (d.badges || d.data || []).slice(0, 12);
+      return Array.isArray(d) ? d.slice(0, 24) : (d.badges || d.data || []).slice(0, 24);
     },
     retry: false,
     staleTime: 120000,
   });
 
-  const displayBadges = badges?.length ? badges : [];
-
-  return (
-    <div
-      className="bg-card border border-primary/20 glow-border-themed rounded-2xl overflow-hidden shadow-2xl backdrop-blur-lg"
-      data-testid="badges-grid"
-    >
-      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border/50 bg-secondary/20 flex-shrink-0">
-        <i className="fa-solid fa-star text-yellow-400 text-xs"></i>
-        <span className="text-xs font-bold uppercase tracking-wider">
-          Nuevas Placas Descubiertas
-        </span>
-        <Link
-          href="/badges"
-          className="text-[10px] text-primary ml-auto hover:underline font-extrabold"
-        >
-          Ver todas →
-        </Link>
-      </div>
-      <div className="p-4 sm:p-5">
-        {isLoading ? (
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-3.5">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <Skeleton key={i} className="w-11 h-11 rounded-xl" />
-            ))}
-          </div>
-        ) : displayBadges.length > 0 ? (
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-3 justify-items-center">
-            {displayBadges.map((badge: any, i: number) => {
-              const code = badge.code || badge.badge_code || "PLA";
-              const title = badge.name || `Placa ${code}`;
-              const desc =
-                badge.description || "Nueva placa descubierta en el hotel";
-              const imgUrl =
-                badge.url_habbo ||
-                badge.url_habboassets ||
-                proxyImage(
-                  `https://images.habbo.com/c_images/album1584/${code}.gif`,
-                );
-
-              return (
-                <div
-                  key={badge.id || i}
-                  className="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-secondary/20 border border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 cursor-pointer shadow-md glow-border-themed hover:scale-110"
-                >
-                  <img
-                    src={imgUrl}
-                    alt={title}
-                    className="w-8 h-8 object-contain transition-all duration-300 group-hover:scale-120 filter drop-shadow-[0_2px_4px_rgba(var(--theme-glow),0.2)]"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.opacity = "0.2";
-                    }}
-                  />
-                  {/* Tooltip elegante */}
-                  <div className="absolute bottom-full mb-2.5 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center z-30 pointer-events-none w-36">
-                    <div className="bg-popover text-popover-foreground border border-primary/30 text-[9px] px-2.5 py-1.5 rounded-xl shadow-2xl text-center backdrop-blur-md">
-                      <p className="font-extrabold text-primary truncate">
-                        {title}
-                      </p>
-                      <p className="text-[8px] text-muted-foreground leading-tight line-clamp-2 mt-0.5">
-                        {desc}
-                      </p>
-                      <span className="text-[7px] text-yellow-400 font-mono block mt-0.5">
-                        {code}
-                      </span>
-                    </div>
-                    <div className="w-1.5 h-1.5 bg-popover border-r border-b border-primary/30 rotate-45 -mt-1" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-xs text-muted-foreground text-center py-4 font-semibold">
-            No hay placas recientes disponibles
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
-   EVENTS SIDEBAR
-   ============================================================ */
-function EventsSidebar({
-  events,
-  loading,
-}: {
-  events: Event[];
-  loading: boolean;
-}) {
-  return (
-    <div className="site-panel overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/70 bg-white/5">
-        <i className="fa-solid fa-calendar text-primary text-xs"></i>
-        <span className="text-xs font-bold uppercase tracking-wider">
-          Próximos Eventos
-        </span>
-        <Link
-          href="/events"
-          className="text-[10px] text-primary ml-auto hover:underline font-extrabold"
-        >
-          Ver más →
-        </Link>
-      </div>
-      <div className="p-3 space-y-2">
-        {loading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 rounded-lg" />
-          ))
-        ) : events.length > 0 ? (
-          events.slice(0, 3).map((event) => (
-            <div
-              key={event.id}
-              className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/20 border border-border/40 hover:border-primary/20 transition-colors"
-              data-testid={`card-event-${event.id}`}
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
-                <i className="fa-solid fa-calendar text-primary text-xs"></i>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold truncate">{event.title}</p>
-                <p className="text-[10px] text-primary">
-                  {event.date} · {event.time}
-                </p>
-                <p className="text-[9px] text-muted-foreground truncate">
-                  {event.roomName}
-                </p>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-xs text-muted-foreground text-center py-4 font-semibold">
-            No hay eventos próximos
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
-   POLL WIDGET
-   ============================================================ */
-function PollWidget({ poll }: { poll: Poll }) {
-  const [voted, setVoted] = useState<number | null>(null);
-  const options = (poll.options as any[]) || [];
-  const totalVotes = options.reduce(
-    (s: number, o: any) => s + (o.votes || 0),
-    0,
-  );
-  const voteMutation = useMutation({
-    mutationFn: async (idx: number) => {
-      const r = await apiRequest("PUT", `/api/polls/${poll.id}`, {
-        options: options.map((o: any, i: number) =>
-          i === idx ? { ...o, votes: (o.votes || 0) + 1 } : o,
-        ),
-      });
+  const { data: forumThreads = [] } = useQuery<any[]>({
+    queryKey: ["/api/forum/threads"],
+    queryFn: async () => {
+      const r = await apiRequest("GET", "/api/forum/threads?limit=4");
+      if (!r.ok) return [];
       return r.json();
     },
-    onSuccess: (_, idx) => {
-      setVoted(idx);
-      queryClient.invalidateQueries({ queryKey: ["/api/polls"] });
-    },
+    retry: false,
   });
-  return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
-        <i className="fa-solid fa-bolt text-yellow-400 text-xs"></i>
-        <span className="text-xs font-bold uppercase tracking-wider">
-          Encuesta
-        </span>
-      </div>
-      <div className="p-3 space-y-2">
-        <p className="text-xs font-semibold mb-2">{poll.title}</p>
-        {options.map((opt: any, i: number) => {
-          const pct =
-            totalVotes > 0
-              ? Math.round(((opt.votes || 0) / totalVotes) * 100)
-              : 0;
-          return (
-            <button
-              key={i}
-              className={`w-full text-left px-3 py-2 rounded-lg text-xs border transition-all ${
-                voted !== null
-                  ? "cursor-default"
-                  : "hover:border-primary/40 hover:bg-primary/5 cursor-pointer"
-              } ${voted === i ? "border-primary bg-primary/10" : "border-border/50 bg-secondary/10"}`}
-              onClick={() => voted === null && voteMutation.mutate(i)}
-              disabled={voted !== null}
-            >
-              <div className="flex justify-between mb-0.5 font-semibold">
-                <span>{opt.name || opt.text || opt.label}</span>
-                {voted !== null && (
-                  <span className="text-muted-foreground text-[10px] font-mono">
-                    {pct}%
-                  </span>
-                )}
-              </div>
-              {voted !== null && (
-                <div className="h-1 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              )}
-            </button>
-          );
-        })}
-        <p className="text-[10px] text-muted-foreground text-center font-bold">
-          {totalVotes} votos
-        </p>
-      </div>
-    </div>
-  );
-}
 
-/* ============================================================
-   QUICK TOOLS
-   ============================================================ */
-function QuickTools() {
-  const tools = [
+  const { data: furnisFromApi = [] } = useQuery<any[]>({
+    queryKey: ["/api/habbo/furni"],
+    queryFn: async () => {
+      const r = await apiRequest("GET", "/api/habbo/furni?limit=6");
+      if (!r.ok) return [];
+      return r.json();
+    },
+    retry: false,
+  });
+
+  // State
+  const [badgeCategory, setBadgeCategory] = useState<string>("all");
+  const [hoveredBadge, setHoveredBadge] = useState<any>(null);
+  const [furniPage, setFurniPage] = useState(0);
+  const [selectedPollOption, setSelectedPollOption] = useState<number | null>(null);
+  const [pollVoted, setPollVoted] = useState(false);
+
+  // Placas activas
+  const activeBadges = badgesFromApi.length > 0 ? badgesFromApi : DEFAULT_BADGES;
+  const filteredBadges = activeBadges.filter((b: any) => {
+    if (badgeCategory === "all") return true;
+    return b.category === badgeCategory;
+  });
+
+  // Furnis activos
+  const activeFurnis = furnisFromApi.length > 0 ? furnisFromApi : DEFAULT_FURNIS;
+  const visibleFurnis = activeFurnis.slice(furniPage * 3, (furniPage + 1) * 3);
+  const maxFurniPages = Math.ceil(activeFurnis.length / 3);
+
+  const handleVotePoll = () => {
+    if (selectedPollOption === null) {
+      toast({
+        title: "Selecciona una opción",
+        description: "Por favor elige una alternativa para votar.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setPollVoted(true);
+    toast({
+      title: "¡Voto registrado!",
+      description: "Gracias por participar en la encuesta del mes.",
+    });
+  };
+
+  // Quick News fallback
+  const mockQuickNews = [
     {
-      href: "/imager",
-      label: "Habbo Imager",
-      iconClass: "fa-solid fa-image",
-      color: "text-cyan-400",
+      id: 1,
+      title: "Lanzamiento del hSpeed Shop!",
+      summary: "Adquiere furnis raros exclusivos por SpeedPoints.",
+      icon: "https://images.habbo.com/c_images/catalogue/icon_186.png",
+      comments: 6,
     },
     {
-      href: "/badges",
-      label: "Buscador Placas",
-      iconClass: "fa-solid fa-award",
-      color: "text-yellow-400",
+      id: 2,
+      title: "Previa del Torneo de Fútbol",
+      summary: "Grandes premios en créditos y placas exclusivas.",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_FootballGoal1.gif",
+      comments: 6,
     },
     {
-      href: "/marketplace",
-      label: "Marketplace",
-      iconClass: "fa-solid fa-chart-line",
-      color: "text-green-400",
+      id: 3,
+      title: "Doce Cosntts Matela de Malos",
+      summary: "Conoce a los mejores DJs de la semana en hSpeed.",
+      icon: "https://images.habbo.com/c_images/catalogue/icon_175.png",
+      comments: 130,
     },
     {
-      href: "/schedule",
-      label: "Programación",
-      iconClass: "fa-solid fa-radio",
-      color: "text-red-400",
-    },
-    {
-      href: "/forum",
-      label: "Foro",
-      iconClass: "fa-solid fa-comments",
-      color: "text-violet-400",
-    },
-    {
-      href: "/djpanel",
-      label: "Panel DJ",
-      iconClass: "fa-solid fa-headphones",
-      color: "text-primary",
+      id: 4,
+      title: "Acga de Cesis Conciscis",
+      summary: "Nuevas actividades en el hotel para toda la comunidad.",
+      icon: "https://images.habbo.com/c_images/catalogue/icon_154.png",
+      comments: 8,
     },
   ];
-  return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/20">
-        <i className="fa-solid fa-bolt text-primary text-xs"></i>
-        <span className="text-xs font-bold uppercase tracking-wider">
-          Herramientas
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-1.5 p-3">
-        {tools.map((t) => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-all border border-transparent hover:border-border/50"
-          >
-            <span className={t.color}>
-              <i className={`${t.iconClass} text-xs w-4 text-center`}></i>
-            </span>
-            <span className="truncate font-semibold">{t.label}</span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-/* ============================================================
-   STATS BAR
-   ============================================================ */
-function StatsBar() {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {[
-        {
-          iconClass: "fa-solid fa-radio",
-          label: "Radio",
-          value: "24/7",
-          color: "text-red-400",
-          bg: "bg-red-500/10 border-red-500/20",
-        },
-        {
-          iconClass: "fa-solid fa-users",
-          label: "Comunidad",
-          value: "Activa",
-          color: "text-green-400",
-          bg: "bg-green-500/10 border-green-500/20",
-        },
-        {
-          iconClass: "fa-solid fa-newspaper",
-          label: "Noticias",
-          value: "Diarias",
-          color: "text-blue-400",
-          bg: "bg-blue-500/10 border-blue-500/20",
-        },
-        {
-          iconClass: "fa-solid fa-music",
-          label: "Peticiones",
-          value: "Abiertas",
-          color: "text-purple-400",
-          bg: "bg-purple-500/10 border-purple-500/20",
-        },
-      ].map((s, i) => (
-        <div
-          key={i}
-          className={`site-panel p-3.5 flex items-center gap-3 border ${s.bg}`}
-        >
-          <span className={s.color}>
-            <i className={`${s.iconClass} text-sm`}></i>
-          </span>
-          <div>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
-              {s.label}
-            </p>
-            <p className={`text-xs font-bold ${s.color}`}>{s.value}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ============================================================
-   DISCORD WIDGET
-   ============================================================ */
-function DiscordWidget() {
-  const [widgetData, setWidgetData] = useState<{
-    online: number;
-    members: number;
-    invite: string;
-    loading: boolean;
-  }>({
-    online: 0,
-    members: 0,
-    invite: "https://discord.gg/habbospeed",
-    loading: true,
-  });
-
-  useEffect(() => {
-    const fetchWidget = async () => {
-      try {
-        const res = await fetch(
-          "https://discord.com/api/guilds/123456789012345678/widget.json",
-          {
-            headers: { Accept: "application/json" },
-          },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setWidgetData({
-            online: data.presence_count || 0,
-            members: data.members?.length || 0,
-            invite: data.instant_invite || "https://discord.gg/habbospeed",
-            loading: false,
-          });
-        } else {
-          setWidgetData((prev) => ({ ...prev, loading: false }));
-        }
-      } catch (e) {
-        setWidgetData((prev) => ({ ...prev, loading: false }));
-      }
-    };
-
-    fetchWidget();
-    const interval = setInterval(fetchWidget, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <Card className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/20">
-      <CardHeader className="flex items-center justify-between pb-3">
-        <div className="flex items-center gap-2">
-          <i className="fa-brands fa-discord text-purple-500 text-xl"></i>
-          <span className="text-xs font-bold uppercase tracking-wider text-purple-400">
-            Discord
-          </span>
-        </div>
-        <Badge variant="secondary" className="text-[9px]">
-          {widgetData.loading ? (
-            <span className="animate-pulse">Cargando...</span>
-          ) : (
-            <>
-              <i className="fa-solid fa-circle text-green-400 mr-1" />
-              {widgetData.online} en línea
-            </>
-          )}
-        </Badge>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-black/20 rounded-xl p-3 text-center">
-            <p className="text-2xl font-bold text-white">
-              {widgetData.loading ? "—" : widgetData.online}
-            </p>
-            <p className="text-[10px] text-muted-foreground">En línea ahora</p>
-          </div>
-          <div className="bg-black/20 rounded-xl p-3 text-center">
-            <p className="text-2xl font-bold text-white">
-              {widgetData.loading ? "—" : widgetData.members}
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              Miembros totales
-            </p>
-          </div>
-        </div>
-        <a
-          href="https://discord.gg/habbospeed"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
-        >
-          <i className="fa-brands fa-discord text-lg"></i>
-          Únete a nuestro Discord
-        </a>
-        <p className="text-[10px] text-muted-foreground text-center">
-          Soporte · Anuncios · Comunidad · Eventos en vivo
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-/* ============================================================
-   VACANTES STAFF - RECLUTAMIENTO
-   ============================================================ */
-function VacantesStaff() {
-  const vacantes = [
+  // Forum Threads fallback
+  const mockForumThreads = [
     {
-      departamento: "Moderación",
-      icon: "fa-solid fa-shield",
-      color: "text-blue-400",
-      bg: "bg-blue-500/10 border-blue-500/20",
-      vacantes: [
-        {
-          rol: "Moderador Principal",
-          descripcion: "Gestión de reportes, bans, appeals",
-        },
-        {
-          rol: "Moderador de Chat",
-          descripcion: "Supervisión de chat público y privado",
-        },
-        {
-          rol: "Moderador de Eventos",
-          descripcion: "Control de eventos y torneos",
-        },
-      ],
+      id: 1,
+      title: "NICORAMSXSTS DE CARASHOO",
+      author: "Baikiiga",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_RoomRaid1.gif",
+      badge: "GENERAL",
+      replies: 18,
     },
     {
-      departamento: "Contenido",
-      icon: "fa-solid fa-newspaper",
-      color: "text-green-400",
-      bg: "bg-green-500/10 border-green-500/20",
-      vacantes: [
-        {
-          rol: "Redactor de Noticias",
-          descripcion: "Redacción de noticias, guías, eventos",
-        },
-        {
-          rol: "Creador de Guías",
-          descripcion: "Tutoriales, tips, secretos de Habbo",
-        },
-        {
-          rol: "Community Manager",
-          descripcion: "Redes sociales, Discord, engagement",
-        },
-      ],
+      id: 2,
+      title: "MAUSO MAUUSO DELESPMINNS",
+      author: "Garage",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_SafetyQuiz1.gif",
+      badge: "DISCUSIÓN",
+      replies: 12,
     },
     {
-      departamento: "Eventos",
-      icon: "fa-solid fa-calendar-star",
-      color: "text-purple-400",
-      bg: "bg-purple-500/10 border-purple-500/20",
-      vacantes: [
-        {
-          rol: "Organizador de Eventos",
-          descripcion: "Planificación y ejecución de eventos",
-        },
-        { rol: "Host de Eventos", descripcion: "Animación y hosting en vivo" },
-        {
-          rol: "DJ Residente",
-          descripcion: "Sesiones de radio y eventos musicales",
-        },
-      ],
+      id: 3,
+      title: "SALA CANDOR PIRO DE EL ARMSNO",
+      author: "Bolegra",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_BattleBallTiles1.gif",
+      badge: "SALAS",
+      replies: 24,
     },
     {
-      departamento: "Técnico",
-      icon: "fa-solid fa-code",
-      color: "text-orange-400",
-      bg: "bg-orange-500/10 border-orange-500/20",
-      vacantes: [
-        {
-          rol: "Desarrollador Frontend",
-          descripcion: "React, TypeScript, Tailwind",
-        },
-        {
-          rol: "Desarrollador Backend",
-          descripcion: "Node.js, PostgreSQL, APIs",
-        },
-        {
-          rol: "Diseñador UI/UX",
-          descripcion: "Interfaces, prototipos, design system",
-        },
-      ],
+      id: 4,
+      title: "SEREE DE 59 HRR MI NSOWO",
+      author: "Boigo",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_RespectEarned1.gif",
+      badge: "HABBO",
+      replies: 9,
+    },
+  ];
+
+  const mockNovedades = [
+    {
+      title: "JALES DE LA WOODGAN DE EINASAGGALL",
+      desc: "Nuevas placas de colección añadidas al catálogo.",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_Tag1.gif",
+    },
+    {
+      title: "CESPESSA DE STATTEE SL KONN, NOLL",
+      desc: "Torneo de penales en el Fútbol Hub este viernes.",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_BattleBallTiles1.gif",
+    },
+    {
+      title: "OVENTOS DES COWBAA",
+      desc: "Sintoniza a nuestro DJ invitado en la sesión nocturna.",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif",
     },
   ];
 
   return (
-    <Card className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
-      <CardHeader className="flex items-center justify-between pb-3">
-        <div className="flex items-center gap-2">
-          <i className="fa-solid fa-briefcase text-yellow-500 text-xl"></i>
-          <span className="text-xs font-bold uppercase tracking-wider text-yellow-400">
-            Vacantes Staff - ¡Únete al equipo!
-          </span>
-        </div>
-        <Badge variant="secondary" className="text-[9px]">
-          <i className="fa-solid fa-bolt mr-1" /> Reclutamiento Activo
-        </Badge>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-[10px] text-muted-foreground text-center">
-          Buscamos personas apasionadas por Habbo para crecer la comunidad. No
-          se requiere experiencia previa, solo ganas de aprender y compromiso.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {vacantes.map((dept) => (
-            <Card
-              key={dept.departamento}
-              className={`overflow-hidden ${dept.bg}`}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <i className={`${dept.icon} ${dept.color} text-lg`}></i>
-                  <h4 className="font-bold text-sm text-white">
-                    {dept.departamento}
-                  </h4>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2 pb-3">
-                {dept.vacantes.map((vacante, i) => (
-                  <div
-                    key={i}
-                    className="bg-black/20 rounded-lg p-2 hover:bg-black/30 transition-colors"
-                  >
-                    <p className="font-semibold text-[10px] text-white">
-                      {vacante.rol}
-                    </p>
-                    <p className="text-[9px] text-muted-foreground">
-                      {vacante.descripcion}
-                    </p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <div className="text-center pt-2">
-          <a
-            href="https://discord.gg/habbospeed"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-2.5 rounded-xl font-bold text-sm transition-colors"
-          >
-            <i className="fa-brands fa-discord"></i>
-            Postula en Discord
-          </a>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-/* ============================================================
-   HOME HERO BANNER (Slideshow)
-   ============================================================ */
-function HomeHeroBanner({ slideshow }: { slideshow: any[] }) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
-
-  useEffect(() => {
-    if (!slideshow || slideshow.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slideshow.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [slideshow]);
-
-  if (!slideshow || slideshow.length === 0) return null;
-
-  const logoFallback = "/logo.png";
-
-  return (
-    <div className="relative rounded-2xl overflow-hidden h-[300px] border border-border shadow-lg bg-[#0c0634] group w-full font-sans">
-      {slideshow.map((slide, i) => (
-        <div
-          key={i}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            i === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-          }`}
-        >
-          {slide.image && (
-            <>
-              <img
-                src={logoFallback}
-                alt={slide.title || "Slideshow"}
-                className={`w-full h-full object-contain p-4 bg-gradient-to-br from-primary/10 to-card transition-opacity duration-500 ${
-                  loadedImages.has(i)
-                    ? "opacity-0 pointer-events-none"
-                    : "opacity-100"
-                }`}
-              />
-              <img
-                src={slide.image}
-                alt={slide.title || "Slideshow"}
-                className={`w-full h-full object-cover opacity-75 group-hover:scale-105 transition-transform duration-[8000ms] ease-out absolute inset-0 ${
-                  loadedImages.has(i) ? "opacity-100" : "opacity-0"
-                }`}
-                onLoad={() => setLoadedImages((prev) => new Set(prev).add(i))}
-              />
-            </>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-          <div className="absolute bottom-6 left-6 right-6 text-white space-y-2 z-20">
-            <Badge className="bg-primary hover:bg-primary/80 border-none font-bold text-[10px] uppercase tracking-wider px-2.5 py-0.5">
-              HabboSpeed Fansite
-            </Badge>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-tight drop-shadow-md">
-              {slide.title || "¡Bienvenidos a HabboSpeed!"}
-            </h2>
-            <p className="text-xs text-white/80 max-w-md drop-shadow">
-              Sintoniza nuestra radio 24/7, mantente al día con las últimas
-              noticias de Habbo y explora nuestro catálogo de furnis y placas.
-            </p>
-          </div>
-        </div>
-      ))}
-
-      {/* Slide Indicators */}
-      {slideshow.length > 1 && (
-        <div className="absolute bottom-6 right-6 z-20 flex gap-1.5">
-          {slideshow.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentSlide(i)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === currentSlide ? "bg-white w-4" : "bg-white/40"
-              }`}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ============================================================
-   MAIN HOMEPAGE
-   ============================================================ */
-export default function HomePage() {
-  const { data: config } = useQuery<any>({
-    queryKey: ["/api/config"],
-    retry: false,
-  });
-  const { data: news, isLoading: newsLoading } = useQuery<News[]>({
-    queryKey: ["/api/news"],
-  });
-  const { data: events, isLoading: eventsLoading } = useQuery<Event[]>({
-    queryKey: ["/api/events"],
-  });
-  const { data: polls } = useQuery<Poll[]>({ queryKey: ["/api/polls"] });
-  const { data: alliances = [] } = useQuery<any[]>({
-    queryKey: ["/api/alliances"],
-    retry: false,
-  });
-  const { data: rankings } = useQuery<any>({
-    queryKey: ["/api/rankings"],
-    retry: false,
-  });
-
-  const latestNews = (news || []).slice(0, 5);
-  const activePolls = (polls || []).filter((p) => p.isActive).slice(0, 1);
-
-  const slideshow = config?.slideshow || [
-    {
-      image:
-        "https://images.habbo.com/c_images/reception/rec_background_beach.png",
-      title: "¡Bienvenidos a HabboSpeed!",
-      link: "#",
-    },
-    {
-      image:
-        "https://images.habbo.com/c_images/reception/rec_background_habboween.png",
-      title: "¡Sintoniza nuestra Radio 24/7!",
-      link: "#",
-    },
-  ];
-
-  return (
-    <div className="min-h-screen">
-      <div className="p-4 lg:p-6 space-y-5 max-w-7xl mx-auto">
-        {/* Top Grid: Welcome Banner Slideshow & Live Chat */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
-          <div className="lg:col-span-2">
-            <HomeHeroBanner slideshow={slideshow} />
-          </div>
-          <div className="h-full min-h-[300px]">
-            <MessageBoard />
-          </div>
-        </div>
-
-        <StatsBar />
-        <FurniStrip />
-        <RecentBadgesGrid />
-
-        {/* Rankings Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Top Oyente */}
-          <Card className="border border-border bg-card/60 backdrop-blur-md shadow-lg flex flex-col justify-between">
-            <CardContent className="p-4 space-y-3">
-              <h3 className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5 border-b border-border pb-2">
-                <i className="fa-solid fa-microphone text-orange-400 text-sm"></i>
-                Mejor Oyente
-              </h3>
-              <div className="space-y-2">
-                {!rankings?.topListeners?.length ? (
-                  <p className="text-[11px] text-muted-foreground text-center py-4">
-                    Sin datos
-                  </p>
-                ) : (
-                  rankings.topListeners.map((u: any, idx: number) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center gap-2 bg-black/10 rounded-lg p-1.5 border border-border/40"
-                    >
-                      <span
-                        className={`text-[10px] font-black w-4 text-center ${idx === 0 ? "text-yellow-500" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-slate-500"}`}
-                      >
-                        #{idx + 1}
-                      </span>
-                      <div className="w-8 h-8 rounded bg-primary/10 overflow-hidden flex items-center justify-center relative flex-shrink-0">
-                        <img
-                          src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(u.habboUsername || u.displayName)}&headonly=1&size=s`}
-                          alt={u.displayName}
-                          className="absolute top-0 w-8 h-10 object-contain"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-bold text-white truncate leading-tight">
-                          {u.displayName}
-                        </p>
-                        <p className="text-[9px] text-muted-foreground leading-none">
-                          {u.value} pedidos
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Mejor DJ */}
-          <Card className="border border-border bg-card/60 backdrop-blur-md shadow-lg flex flex-col justify-between">
-            <CardContent className="p-4 space-y-3">
-              <h3 className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5 border-b border-border pb-2">
-                <i className="fa-solid fa-radio text-purple-400 text-sm"></i>
-                Mejor DJ
-              </h3>
-              <div className="space-y-2">
-                {!rankings?.topDJs?.length ? (
-                  <p className="text-[11px] text-muted-foreground text-center py-4">
-                    Sin datos
-                  </p>
-                ) : (
-                  rankings.topDJs.map((u: any, idx: number) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center gap-2 bg-black/10 rounded-lg p-1.5 border border-border/40"
-                    >
-                      <span
-                        className={`text-[10px] font-black w-4 text-center ${idx === 0 ? "text-yellow-500" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-slate-500"}`}
-                      >
-                        #{idx + 1}
-                      </span>
-                      <div className="w-8 h-8 rounded bg-primary/10 overflow-hidden flex items-center justify-center relative flex-shrink-0">
-                        <img
-                          src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(u.habboUsername || u.displayName)}&headonly=1&size=s`}
-                          alt={u.displayName}
-                          className="absolute top-0 w-8 h-10 object-contain"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-bold text-white truncate leading-tight">
-                          {u.displayName}
-                        </p>
-                        <p className="text-[9px] text-muted-foreground leading-none">
-                          {u.value} SP
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Top HSpeed Points */}
-          <Card className="border border-border bg-card/60 backdrop-blur-md shadow-lg flex flex-col justify-between">
-            <CardContent className="p-4 space-y-3">
-              <h3 className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5 border-b border-border pb-2">
-                <i className="fa-solid fa-trophy text-yellow-500 text-sm"></i>
-                Top SpeedPoints
-              </h3>
-              <div className="space-y-2">
-                {!rankings?.topPoints?.length ? (
-                  <p className="text-[11px] text-muted-foreground text-center py-4">
-                    Sin datos
-                  </p>
-                ) : (
-                  rankings.topPoints.map((u: any, idx: number) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center gap-2 bg-black/10 rounded-lg p-1.5 border border-border/40"
-                    >
-                      <span
-                        className={`text-[10px] font-black w-4 text-center ${idx === 0 ? "text-yellow-500" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-slate-500"}`}
-                      >
-                        #{idx + 1}
-                      </span>
-                      <div className="w-8 h-8 rounded bg-primary/10 overflow-hidden flex items-center justify-center relative flex-shrink-0">
-                        <img
-                          src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(u.habboUsername || u.displayName)}&headonly=1&size=s`}
-                          alt={u.displayName}
-                          className="absolute top-0 w-8 h-10 object-contain"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-bold text-white truncate leading-tight">
-                          {u.displayName}
-                        </p>
-                        <p className="text-[9px] text-muted-foreground leading-none">
-                          {u.value} SP
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Equipo Admin */}
-          <Card className="border border-border bg-card/60 backdrop-blur-md shadow-lg flex flex-col justify-between">
-            <CardContent className="p-4 space-y-3">
-              <h3 className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5 border-b border-border pb-2">
-                <i className="fa-solid fa-user-shield text-red-400 text-sm"></i>
-                Equipo Staff
-              </h3>
-              <div className="space-y-2">
-                {!rankings?.staff?.length ? (
-                  <p className="text-[11px] text-muted-foreground text-center py-4">
-                    Sin datos
-                  </p>
-                ) : (
-                  rankings.staff.map((u: any) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center gap-2 bg-black/10 rounded-lg p-1.5 border border-border/40"
-                    >
-                      <div className="w-8 h-8 rounded bg-primary/10 overflow-hidden flex items-center justify-center relative flex-shrink-0">
-                        <img
-                          src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(u.habboUsername || u.displayName)}&headonly=1&size=s`}
-                          alt={u.displayName}
-                          className="absolute top-0 w-8 h-10 object-contain"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-bold text-white truncate leading-tight">
-                          {u.displayName}
-                        </p>
-                        <p className="text-[9px] text-primary/80 capitalize font-bold leading-none">
-                          {u.role}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 font-sans">
-          <div className="lg:col-span-2 space-y-3">
-            <div className="site-panel px-4 py-3 flex items-center justify-between">
-              <div>
-                <p className="site-kicker font-black">Portal de Noticias</p>
-                <h2 className="site-title flex items-center gap-2 mt-1">
-                  <i className="fa-solid fa-chart-line text-primary text-sm mr-1"></i>{" "}
-                  Últimas Noticias
-                </h2>
-              </div>
+    <div className="min-h-screen bg-[#edf2f7] dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 pb-16 transition-colors">
+      <div className="max-w-[1600px] mx-auto px-2 sm:px-4 py-3 sm:py-4">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* ============================================================
+              BARRA LATERAL IZQUIERDA (Pills de Navegación del Mockup)
+              ============================================================ */}
+          <aside className="w-full lg:w-48 flex-shrink-0">
+            <div className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
               <Link
-                href="/news"
-                className="text-xs text-primary hover:underline font-extrabold"
+                href="/"
+                className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-black rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
               >
-                Ver todas →
+                <i className="fa-solid fa-house text-cyan-500 w-4 text-center"></i>
+                <span>Página inicial</span>
+              </Link>
+              <Link
+                href={user ? `/profile/${user.habboUsername || user.displayName}` : "/login"}
+                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
+              >
+                <i className="fa-solid fa-user text-slate-400 w-4 text-center"></i>
+                <span>Perfil Speed</span>
+              </Link>
+              <Link
+                href="/forum"
+                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
+              >
+                <i className="fa-solid fa-comments text-slate-400 w-4 text-center"></i>
+                <span>Cihabbo Foro</span>
+              </Link>
+              <Link
+                href="/herramientas"
+                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
+              >
+                <i className="fa-solid fa-screwdriver-wrench text-slate-400 w-4 text-center"></i>
+                <span>Herramientas</span>
+              </Link>
+              <Link
+                href="/rooms"
+                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
+              >
+                <i className="fa-solid fa-hotel text-slate-400 w-4 text-center"></i>
+                <span>Habbo Hotel</span>
+              </Link>
+              <Link
+                href="/futbol-hub"
+                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
+              >
+                <i className="fa-solid fa-futbol text-emerald-500 w-4 text-center"></i>
+                <span>Fútbol Hub</span>
+              </Link>
+              <Link
+                href="/badges"
+                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
+              >
+                <i className="fa-solid fa-award text-amber-500 w-4 text-center"></i>
+                <span>Mis Badges</span>
               </Link>
             </div>
-            <NewsGrid news={latestNews} loading={newsLoading} />
-          </div>
-          <div className="space-y-4">
-            <EventsSidebar
-              events={(events || []).slice(0, 3)}
-              loading={eventsLoading}
-            />
-            {activePolls.length > 0 && <PollWidget poll={activePolls[0]} />}
-            <QuickTools />
-          </div>
-        </div>
+          </aside>
 
-        {/* Alliances Section */}
-        {alliances.length > 0 && (
-          <div className="space-y-3 font-sans">
-            <div className="site-panel px-4 py-3">
-              <p className="site-kicker font-black">Comunidad</p>
-              <h2 className="site-title flex items-center gap-2 mt-1">
-                <i className="fa-solid fa-handshake text-primary text-sm mr-1"></i>{" "}
-                Nuestras Alianzas
-              </h2>
+          {/* ============================================================
+              CONTENEDOR PRINCIPAL: HERO BANNER + 4 COLUMNAS
+              ============================================================ */}
+          <main className="flex-1 min-w-0 space-y-4">
+            {/* 1. HERO BANNER ISOMÉTRICO (Hip Hop Radio & Speed) */}
+            <div className="w-full bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative h-36 sm:h-44 md:h-48 group">
+              <img
+                src="/hspeed-hero-banner.png"
+                alt="hSpeed - Somos tu radio Hip Hop"
+                className="w-full h-full object-cover object-left sm:object-center"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/slides/slide-welcome.png";
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-3 left-4 text-white drop-shadow hidden sm:block">
+                <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400 bg-black/60 px-2 py-0.5 rounded-md border border-cyan-400/40">
+                  HABBO SPEED V1
+                </span>
+                <p className="text-xs font-bold text-slate-200 mt-1">
+                  Somos tu radio Hip Hop 24/7 · ¡Sintoniza y participa!
+                </p>
+              </div>
             </div>
-            <div className="flex gap-4 overflow-x-auto py-3 px-1 scrollbar-thin">
-              {alliances.map((alliance: any) => (
-                <a
-                  key={alliance.id}
-                  href={alliance.websiteUrl || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0 bg-card/60 border border-border hover:border-primary/80 hover:bg-card rounded-xl p-4 flex items-center gap-3 transition-all duration-300 w-60 shadow hover:shadow-primary/10 hover:scale-[1.02] group"
-                >
-                  <img
-                    src={alliance.logoUrl}
-                    alt={alliance.name}
-                    className="w-12 h-12 object-contain bg-black/20 rounded-lg border border-border/30 p-1 group-hover:scale-105 transition-all"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "/habbo-radio/frank_small_03.gif";
-                    }}
-                  />
-                  <div className="min-w-0">
-                    <h4 className="text-xs font-black text-white truncate group-hover:text-primary transition-colors">
-                      {alliance.name}
-                    </h4>
-                    <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight mt-0.5">
-                      {alliance.description || "Web amiga de la comunidad."}
-                    </p>
+
+            {/* 2. DASHBOARD DE 4 COLUMNAS MODULARES (Fiel a media_1789788256156.png) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3.5 items-start">
+              {/* ==========================================
+                  COLUMNA 1 (Izquierda: Radio + Noticias + Foro)
+                  ========================================== */}
+              <div className="space-y-3.5">
+                {/* Card 1: hSpeed Radio Widget con Panel DJ (Fiel al Mockup media_1789790438699.png) */}
+                <HabboRadioWidget />
+
+                {/* Card 2: Últimas Noticias (NewsPage) */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-newspaper"></i>
+                      </span>
+                      <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                        Últimas Noticias (NewsPage)
+                      </h3>
+                    </div>
+                    <Link href="/news" className="text-slate-400 hover:text-cyan-600 text-xs">
+                      <i className="fa-solid fa-ellipsis"></i>
+                    </Link>
                   </div>
-                </a>
-              ))}
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {(news.length ? news.slice(0, 4) : mockQuickNews).map((item: any, i) => (
+                      <Link
+                        key={item.id || i}
+                        href={`/news/${item.id}`}
+                        className="group bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50 transition-all flex flex-col justify-between"
+                      >
+                        <div className="h-14 w-full rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden relative mb-1.5">
+                          <img
+                            src={item.imageUrl || item.icon || "/fallback-news.png"}
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/fallback-news.png";
+                            }}
+                          />
+                        </div>
+                        <h4 className="text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight group-hover:text-cyan-500 line-clamp-2">
+                          {item.title}
+                        </h4>
+                        <div className="flex items-center justify-between text-[9px] text-slate-400 mt-1">
+                          <span className="bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 px-1 rounded font-semibold text-[8px]">
+                            {item.category || "Habbo"}
+                          </span>
+                          <span>💬 06</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card 3: Temas del Fórum (ForumPage) */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-comments"></i>
+                      </span>
+                      <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                        Temas del Fórum
+                      </h3>
+                    </div>
+                    <Link href="/forum" className="text-slate-400 hover:text-cyan-600 text-xs">
+                      <i className="fa-solid fa-ellipsis"></i>
+                    </Link>
+                  </div>
+
+                  <div className="space-y-2">
+                    {(forumThreads.length ? forumThreads.slice(0, 4) : mockForumThreads).map((thread: any, i) => (
+                      <Link
+                        key={thread.id || i}
+                        href={`/forum/${thread.id}`}
+                        className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-transparent hover:border-slate-100 dark:hover:border-slate-700/50 transition-colors group"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40 flex items-center justify-center flex-shrink-0">
+                          <img
+                            src={thread.icon || "https://images.habbo.com/c_images/album1584/ACH_RoomRaid1.gif"}
+                            alt=""
+                            className="w-5 h-5 object-contain"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-cyan-500">
+                            {thread.title}
+                          </p>
+                          <p className="text-[8px] text-slate-400 truncate">
+                            Por {thread.author || "HabboUser"} · {thread.badge || "Habbo"}
+                          </p>
+                        </div>
+                        <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded-full border border-amber-200/60 dark:border-amber-800/40">
+                          💬 {thread.replies || 12}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* ==========================================
+                  COLUMNA 2 (Centro: Bienvenida + Rápidas + Novedades + Encuesta)
+                  ========================================== */}
+              <div className="space-y-3.5">
+                {/* Card 1: Bienvenidos a HabboSpeed v1 */}
+                <div className="bg-[#0f172a] text-white rounded-2xl p-3.5 border border-white/10 shadow-xs flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-full bg-slate-800 border border-cyan-400/40 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+                      <img
+                        src="https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=s&headonly=1"
+                        alt="DJ"
+                        className="w-7 h-7 object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif";
+                        }}
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="text-xs font-black truncate text-white">
+                        Bienvenidos a HabboSpeed v1
+                      </h4>
+                      <p className="text-[10px] text-emerald-400 flex items-center gap-1 truncate font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Comunidad oficial & Radio Hip Hop
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/radio"
+                    className="px-2.5 py-1 bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-black text-[10px] rounded-lg transition-colors flex-shrink-0"
+                  >
+                    Sintonizar
+                  </Link>
+                </div>
+
+                {/* Card 2: Noticias Rápidas (2x2 Grid) */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-bolt"></i>
+                      </span>
+                      <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                        Noticias Rápidas
+                      </h3>
+                    </div>
+                    <Link href="/news" className="text-slate-400 hover:text-cyan-600 text-xs">
+                      <i className="fa-solid fa-ellipsis"></i>
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {mockQuickNews.map((item) => (
+                      <Link
+                        key={item.id}
+                        href="/news"
+                        className="bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50 flex flex-col justify-between transition-all group"
+                      >
+                        <div className="flex items-start gap-1.5">
+                          <img
+                            src={item.icon}
+                            alt=""
+                            className="w-6 h-6 object-contain bg-white dark:bg-slate-800 rounded-md p-0.5 border border-slate-200 dark:border-slate-700 flex-shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <h5 className="text-[10px] font-black text-slate-800 dark:text-slate-200 leading-tight group-hover:text-cyan-500 line-clamp-2">
+                              {item.title}
+                            </h5>
+                            <p className="text-[8px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                              {item.summary}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-[8px] text-slate-400 text-right mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-1">
+                          <i className="fa-regular fa-comment"></i>
+                          <span>{item.comments}</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card 3: Novedades hSpeed */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-purple-500 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-sparkles"></i>
+                      </span>
+                      <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                        Novedades hSpeed
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {mockNovedades.map((nov, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2.5 p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-100 dark:border-slate-700/50"
+                      >
+                        <img
+                          src={nov.icon}
+                          alt=""
+                          className="w-6 h-6 object-contain bg-white dark:bg-slate-800 rounded-md p-0.5 border border-slate-200 dark:border-slate-700 flex-shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <h5 className="text-[10px] font-bold text-slate-800 dark:text-slate-200 truncate">
+                            {nov.title}
+                          </h5>
+                          <p className="text-[8px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                            {nov.desc}
+                          </p>
+                        </div>
+                        <span className="text-[8px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.5 rounded-full">
+                          NEW
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card 4: Enquetes (Encuestas) */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-cyan-500 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-chart-pie"></i>
+                      </span>
+                      <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                        Enquetes
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-black text-slate-800 dark:text-slate-200">
+                      Melhor Evento de Mês
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        { id: 0, text: "Motiv to Brasil" },
+                        { id: 1, text: "Battle Banzai" },
+                        { id: 2, text: "Rolls Rygge" },
+                        { id: 3, text: "Caça de Tesouro" },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => setSelectedPollOption(opt.id)}
+                          className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl text-[10px] font-bold border transition-all text-left ${
+                            selectedPollOption === opt.id
+                              ? "bg-amber-50 dark:bg-amber-950/50 border-amber-400 text-amber-900 dark:text-amber-300"
+                              : "bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                          }`}
+                        >
+                          <div
+                            className={`w-3 h-3 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                              selectedPollOption === opt.id
+                                ? "border-amber-500 bg-amber-500"
+                                : "border-slate-300 dark:border-slate-600"
+                            }`}
+                          >
+                            {selectedPollOption === opt.id && (
+                              <div className="w-1 h-1 rounded-full bg-white" />
+                            )}
+                          </div>
+                          <span className="truncate">{opt.text}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <Button
+                      onClick={handleVotePoll}
+                      disabled={pollVoted}
+                      className="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-xs py-1.5 rounded-xl shadow-xs mt-1"
+                    >
+                      {pollVoted ? "¡Voto Confirmado!" : "Confirmar voto"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* ==========================================
+                  COLUMNA 3 (Derecha Centro: Staff + PLACAS + Ranking)
+                  ========================================== */}
+              <div className="space-y-3.5">
+                {/* Card 1: Destacados del Mes */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-star"></i>
+                      </span>
+                      <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                        Destacados del Mes
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                    <div className="w-12 h-14 bg-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden flex items-center justify-center border border-slate-300 dark:border-slate-700 flex-shrink-0 relative">
+                      <img
+                        src="https://www.habbo.es/habbo-imaging/avatarimage?user=Frank&size=b&direction=2&head_direction=2&gesture=sml"
+                        alt="Staff"
+                        className="absolute top-[-8px] w-14 h-20 object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif";
+                        }}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[8px] font-black uppercase tracking-wider text-slate-400">
+                        Staff de hSpeed
+                      </span>
+                      <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 truncate">
+                        Administrador Oficial
+                      </h4>
+                      <p className="text-[9px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                        Coordinación y gestión de la radio comunitaria.
+                      </p>
+                      <Link
+                        href="/team"
+                        className="inline-block mt-1 px-2.5 py-0.5 bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-[9px] rounded-lg transition-colors"
+                      >
+                        Conocer
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 2: ÚLTIMAS PLACAS (SECCIÓN COMPLETA DE PLACAS PEDIDA POR EL USUARIO) */}
+                <div
+                  className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3"
+                  data-testid="seccion-placas-home"
+                >
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-purple-500 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-award"></i>
+                      </span>
+                      <div>
+                        <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                          Últimas placas (hSpeed)
+                        </h3>
+                      </div>
+                    </div>
+                    <Link
+                      href="/badges"
+                      className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>Ver todas</span>
+                      <i className="fa-solid fa-arrow-right text-[8px]"></i>
+                    </Link>
+                  </div>
+
+                  {/* Filtro de Categorías de Placas */}
+                  <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[9px]">
+                    {[
+                      { id: "all", label: "Todas" },
+                      { id: "special", label: "Especiales" },
+                      { id: "radio", label: "Radio" },
+                      { id: "achievements", label: "Logros" },
+                      { id: "games", label: "Juegos" },
+                    ].map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setBadgeCategory(cat.id)}
+                        className={`px-2 py-0.5 rounded-md font-bold transition-all flex-shrink-0 ${
+                          badgeCategory === cat.id
+                            ? "bg-purple-500 text-white shadow-xs"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Matriz 4x6 de Placas Oficiales de Habbo */}
+                  <div className="grid grid-cols-6 gap-1.5 bg-slate-50/70 dark:bg-slate-800/30 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+                    {filteredBadges.slice(0, 24).map((badge: any, i: number) => {
+                      const code = badge.code || badge.badge_code || `ACH_${i}`;
+                      const name = badge.name || badge.badge_name || code;
+                      const img =
+                        badge.url_habbo ||
+                        `https://images.habbo.com/c_images/album1584/${code}.gif`;
+                      return (
+                        <div
+                          key={badge.id || i}
+                          onMouseEnter={() => setHoveredBadge({ code, name, desc: badge.desc || "Insignia oficial de Habbo" })}
+                          onMouseLeave={() => setHoveredBadge(null)}
+                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-purple-400 hover:scale-110 transition-all flex items-center justify-center cursor-pointer relative shadow-2xs group"
+                          title={`${name} (${code})`}
+                        >
+                          <img
+                            src={proxyImage(img)}
+                            alt={code}
+                            className="w-6 h-6 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src =
+                                "https://images.habbo.com/c_images/album1584/ADM.gif";
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Detalle al pasar el cursor sobre una placa */}
+                  {hoveredBadge ? (
+                    <div className="bg-purple-50/80 dark:bg-purple-950/40 p-2 rounded-xl border border-purple-200/60 dark:border-purple-800/50 text-[10px] flex items-center gap-2">
+                      <img
+                        src={`https://images.habbo.com/c_images/album1584/${hoveredBadge.code}.gif`}
+                        alt=""
+                        className="w-6 h-6 object-contain flex-shrink-0"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/habbo-radio/estampa_staff.png";
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-purple-900 dark:text-purple-300 truncate">
+                          {hoveredBadge.name}
+                        </p>
+                        <p className="text-[8px] text-purple-700/80 dark:text-purple-400 truncate">
+                          Código: {hoveredBadge.code} · {hoveredBadge.desc}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-[9px] text-slate-400 dark:text-slate-500 text-center italic py-0.5">
+                      Pasa el cursor sobre cualquier placa para ver su información
+                    </div>
+                  )}
+                </div>
+
+                {/* Card 3: Ranking (hSpeed...) */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-trophy"></i>
+                      </span>
+                      <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                        Ranking (hSpeed...)
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {[
+                      { rank: 1, name: "CinhuLOL", points: "362 responses", color: "bg-amber-400 text-slate-900" },
+                      { rank: 2, name: "DinhuLOL", points: "300 responses", color: "bg-slate-300 text-slate-800" },
+                      { rank: 3, name: "KinhuLOL", points: "133 responses", color: "bg-amber-600 text-white" },
+                    ].map((userRank) => (
+                      <div
+                        key={userRank.rank}
+                        className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50"
+                      >
+                        <span
+                          className={`w-4 h-4 rounded-full ${userRank.color} font-black text-[9px] flex items-center justify-center flex-shrink-0`}
+                        >
+                          {userRank.rank}
+                        </span>
+                        <img
+                          src={`https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(userRank.name)}&size=s&headonly=1`}
+                          alt=""
+                          className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif";
+                          }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-bold text-slate-800 dark:text-slate-200 truncate">
+                            {userRank.name}
+                          </p>
+                          <p className="text-[8px] text-slate-400 truncate">
+                            {userRank.points}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* ==========================================
+                  COLUMNA 4 (Extrema Derecha: FURNIS & SHOP + Encuestas Visuales + Tendencias)
+                  ========================================== */}
+              <div className="space-y-3.5">
+                {/* Card 1: HABBOSPEED SHOP & FURNIS (SECCIÓN COMPLETA DE FURNIS PEDIDA POR EL USUARIO) */}
+                <div
+                  className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3"
+                  data-testid="seccion-furnis-home"
+                >
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-store"></i>
+                      </span>
+                      <div>
+                        <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                          Habbospeed Shop & Furnis
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-slate-400">
+                      <button
+                        onClick={() => setFurniPage((p) => Math.max(0, p - 1))}
+                        disabled={furniPage === 0}
+                        className="hover:text-slate-800 dark:hover:text-white disabled:opacity-30 p-1"
+                        title="Anterior"
+                      >
+                        <i className="fa-solid fa-chevron-left text-[10px]"></i>
+                      </button>
+                      <button
+                        onClick={() => setFurniPage((p) => Math.min(maxFurniPages - 1, p + 1))}
+                        disabled={furniPage >= maxFurniPages - 1}
+                        className="hover:text-slate-800 dark:hover:text-white disabled:opacity-30 p-1"
+                        title="Siguiente"
+                      >
+                        <i className="fa-solid fa-chevron-right text-[10px]"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Grid de 3 Furnis Destacados con Precios e Imágenes Reales */}
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {visibleFurnis.map((item: any, i: number) => (
+                      <div
+                        key={item.id || i}
+                        className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-200/80 dark:border-slate-700/60 flex flex-col items-center text-center space-y-1 group hover:border-amber-400/60 transition-all shadow-2xs"
+                      >
+                        <div className="flex items-center gap-1">
+                          <span className="text-[8px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 py-0.5 rounded">
+                            {item.priceSP || 50} SP
+                          </span>
+                        </div>
+
+                        <div className="w-10 h-10 flex items-center justify-center p-1 group-hover:scale-110 transition-transform">
+                          <img
+                            src={proxyImage(item.imageUrl || item.iconUrl || "https://images.habbo.com/c_images/catalogue/icon_186.png")}
+                            alt={item.name}
+                            className="max-w-full max-h-full object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src =
+                                "https://images.habbo.com/c_images/catalogue/icon_186.png";
+                            }}
+                          />
+                        </div>
+
+                        <span className="text-[9px] font-bold text-slate-800 dark:text-slate-200 truncate w-full">
+                          {item.name}
+                        </span>
+
+                        <span className="text-[7px] text-slate-400 truncate">
+                          {item.category || "Raro"}
+                        </span>
+
+                        <Link
+                          href="/tienda"
+                          className="w-full py-0.5 bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-[9px] rounded transition-colors text-center block"
+                        >
+                          Comprar
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Accesos directos a Catálogo y Mercadillo */}
+                  <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <Link
+                      href="/catalog"
+                      className="flex-1 py-1 text-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[9px] font-black rounded-lg transition-colors"
+                    >
+                      Ver Catálogo
+                    </Link>
+                    <Link
+                      href="/marketplace"
+                      className="flex-1 py-1 text-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[9px] font-black rounded-lg transition-colors"
+                    >
+                      Mercadillo
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Card 2: Enquetes (hSpeed Polls Visuales con Banner) */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-cyan-600 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-images"></i>
+                      </span>
+                      <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                        Eventos Destacados
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 dark:from-cyan-950/40 dark:to-blue-950/40 p-2 rounded-xl border border-cyan-200/60 dark:border-cyan-800/50 flex flex-col items-center text-center">
+                      <img
+                        src="https://images.habbo.com/c_images/album1584/ACH_BattleBallTiles10.gif"
+                        alt="Banzai"
+                        className="w-8 h-8 object-contain mb-1"
+                      />
+                      <span className="text-[9px] font-bold text-cyan-900 dark:text-cyan-200">
+                        Super Banzai
+                      </span>
+                      <span className="text-[8px] text-slate-400">Torneo Viernes</span>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-950/40 dark:to-orange-950/40 p-2 rounded-xl border border-amber-200/60 dark:border-amber-800/50 flex flex-col items-center text-center">
+                      <img
+                        src="https://images.habbo.com/c_images/album1584/ACH_FootballGoal10.gif"
+                        alt="Fútbol"
+                        className="w-8 h-8 object-contain mb-1"
+                      />
+                      <span className="text-[9px] font-bold text-amber-900 dark:text-amber-200">
+                        Fútbol Clásico
+                      </span>
+                      <span className="text-[8px] text-slate-400">Liga hSpeed</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 3: Tendencias y SpeedShorts */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-amber-700 text-white flex items-center justify-center text-[10px] font-black">
+                        <i className="fa-solid fa-fire"></i>
+                      </span>
+                      <h3 className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-100">
+                        Tendencias & SpeedShorts
+                      </h3>
+                    </div>
+                    <Link href="/tendencias" className="text-slate-400 hover:text-cyan-600 text-xs">
+                      <i className="fa-solid fa-ellipsis"></i>
+                    </Link>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {[
+                      { tag: "Festa no Brasil", icon: "fa-cake-candles" },
+                      { tag: "Battle Banzai", icon: "fa-gamepad" },
+                      { tag: "Verse Hyrge", icon: "fa-music" },
+                      { tag: "Caça de Tesouro", icon: "fa-gem" },
+                    ].map((item, idx) => (
+                      <Link
+                        key={idx}
+                        href="/tendencias"
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-pink-50/80 dark:bg-pink-950/30 hover:bg-pink-100 dark:hover:bg-pink-950/60 border border-pink-200/70 dark:border-pink-800/40 text-pink-900 dark:text-pink-200 text-[10px] font-bold transition-all"
+                      >
+                        <span className="flex items-center gap-2">
+                          <i className={`fa-solid ${item.icon} text-pink-500 text-[10px]`}></i>
+                          {item.tag}
+                        </span>
+                        <i className="fa-solid fa-arrow-right text-[8px] text-pink-400"></i>
+                      </Link>
+                    ))}
+                  </div>
+
+                  <Link href="/tendencias" className="block pt-1">
+                    <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-1.5 rounded-xl shadow-xs">
+                      Ver SpeedShorts
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Discord Widget */}
-        <DiscordWidget />
-
-        {/* Vacantes - Reclutamiento Staff */}
-        <VacantesStaff />
-
-        <div className="mt-4 space-y-4">
-          <FutbolHubPanel />
+            {/* ============================================================
+                3. SECCIÓN FÚTBOL HUB INTERACTIVA
+                ============================================================ */}
+            <div className="pt-2">
+              <FutbolHubPanel />
+            </div>
+          </main>
         </div>
       </div>
     </div>
