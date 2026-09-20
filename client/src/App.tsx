@@ -122,11 +122,16 @@ function AppContent() {
     retry: false,
   });
 
-  const maintenanceEnabled = config?.maintenanceMode !== false;
+  // Modo de mantenimiento activo sin menús
+  const maintenanceEnabled = true;
   const canBypassMaintenance = user?.role === "admin";
 
-  if (maintenanceEnabled && !loading && !canBypassMaintenance) {
-    return <MaintenancePage />;
+  if (maintenanceEnabled && !canBypassMaintenance) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <MaintenancePage />
+      </Suspense>
+    );
   }
 
   return (
