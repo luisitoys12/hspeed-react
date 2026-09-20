@@ -160,7 +160,7 @@ export class MemStorage implements IStorage {
       ],
       discordWebhooks: {},
       activeTheme: "nubis",
-      maintenanceMode: false,
+      maintenanceMode: true,
     };
 
     // DJ Panel por defecto

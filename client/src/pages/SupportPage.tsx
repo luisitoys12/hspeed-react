@@ -3,6 +3,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -124,31 +126,31 @@ export default function SupportPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center space-y-4 max-w-sm">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto">
-            <LifeBuoy className="w-8 h-8 text-primary" />
+      <PageContainer>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-12 text-center space-y-4 max-w-sm mx-auto shadow-xs">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto">
+            <LifeBuoy className="w-8 h-8 text-amber-500" />
           </div>
-          <h2 className="text-xl font-black uppercase text-white">
+          <h2 className="text-xl font-black uppercase text-slate-900 dark:text-slate-100">
             Soporte HabboSpeed
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Necesitas iniciar sesión para acceder al sistema de soporte.
           </p>
           <div className="flex gap-2 justify-center">
             <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/80 text-white text-xs">
+              <Button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl">
                 Iniciar Sesión
               </Button>
             </Link>
             <Link href="/register">
-              <Button variant="outline" className="text-xs">
+              <Button variant="outline" className="text-xs rounded-xl border-slate-200 dark:border-slate-800">
                 Registrarse
               </Button>
             </Link>
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -160,15 +162,15 @@ export default function SupportPage() {
       CATEGORIES.find((c) => c.value === selectedTicket.category) ||
       CATEGORIES[0];
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+      <PageContainer>
         <button
           onClick={() => setSelectedTicket(null)}
-          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-white transition-colors"
+          className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors mb-2"
         >
           <ChevronLeft className="w-4 h-4" /> Volver a mis tickets
         </button>
 
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
           {/* Header */}
           <div className="p-6 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
             <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -249,22 +251,22 @@ export default function SupportPage() {
             )}
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   // Create form view
   if (creating) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <PageContainer>
         <button
           onClick={() => setCreating(false)}
-          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-white transition-colors"
+          className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors mb-2"
         >
           <ChevronLeft className="w-4 h-4" /> Cancelar
         </button>
 
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
           <div className="p-6 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -392,7 +394,7 @@ export default function SupportPage() {
             </li>
           </ul>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -405,36 +407,20 @@ export default function SupportPage() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-      {/* Hero header */}
-      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#0b0632] via-[#140b49] to-[#0b0632] border border-white/5 p-8">
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                <LifeBuoy className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black text-white uppercase tracking-tight">
-                  Centro de Soporte
-                </h1>
-                <p className="text-[11px] text-white/50 uppercase tracking-wider">
-                  HabboSpeed Support
-                </p>
-              </div>
-            </div>
-            <p className="text-sm text-white/60 max-w-md">
-              ¿Tienes un problema? Crea un ticket y nuestro equipo te ayudará en
-              las próximas 24–48 horas.
-            </p>
-          </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Centro de Soporte"
+        description="¿Tienes un problema? Crea un ticket y nuestro equipo te responderá en las próximas 24–48 horas."
+        icon={<LifeBuoy className="w-5 h-5 text-amber-500" />}
+        action={
           <Button
             onClick={() => setCreating(true)}
-            className="bg-primary hover:bg-primary/80 text-white font-bold shrink-0"
+            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shrink-0 rounded-xl shadow-xs"
           >
             <Plus className="w-4 h-4 mr-2" /> Nuevo Ticket
           </Button>
-        </div>
+        }
+      />
 
         {/* Stats bar */}
         <div className="relative z-10 mt-6 grid grid-cols-3 gap-3">
@@ -466,7 +452,6 @@ export default function SupportPage() {
             </div>
           ))}
         </div>
-      </div>
 
       {/* Active tickets */}
       {isLoading ? (
@@ -569,7 +554,7 @@ export default function SupportPage() {
           ))}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

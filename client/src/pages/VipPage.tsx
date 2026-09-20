@@ -9,6 +9,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { Crown, Coins } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface VipMembership {
@@ -98,43 +101,40 @@ export default function VipPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-extrabold uppercase tracking-tight text-white mb-2 font-cabinet">
-          Membresías <span className="text-primary">VIP</span>
-        </h1>
-        <p className="text-muted-foreground text-sm max-w-md mx-auto">
-          Apoya a la comunidad de HabboSpeed y obtén beneficios, multiplicadores
-          de puntos e insignias exclusivas.
-        </p>
-
-        {user && (
-          <div className="mt-6 inline-flex items-center gap-2 bg-card border border-border px-4 py-1.5 rounded-full text-xs">
-            <span className="text-muted-foreground">Tus SpeedPoints:</span>
-            <strong className="text-primary flex items-center gap-1">
-              <i className="fa-solid fa-coins"></i> {user.speedPoints} SP
-            </strong>
-          </div>
-        )}
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Membresías VIP"
+        description="Apoya a la comunidad de HabboSpeed y obtén beneficios, multiplicadores de puntos e insignias exclusivas."
+        icon={<Crown className="w-5 h-5 text-amber-500" />}
+        action={
+          user ? (
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3.5 py-1.5 rounded-xl text-xs">
+              <span className="text-slate-500 dark:text-slate-400">Tus SpeedPoints:</span>
+              <strong className="text-amber-600 dark:text-amber-400 flex items-center gap-1 font-bold">
+                <Coins className="w-3.5 h-3.5" /> {user.speedPoints} SP
+              </strong>
+            </div>
+          ) : undefined
+        }
+      />
 
       {/* Current VIP Status Card */}
       {user && vipStatus?.isActive && (
-        <Card className="mb-12 border-primary/40 bg-gradient-to-r from-primary/5 via-card to-card overflow-hidden">
-          <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <Card className="border border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/20 rounded-2xl overflow-hidden shadow-xs">
+          <CardContent className="p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl shadow-[0_0_10px_rgba(245,166,35,0.2)]">
-                <i className="fa-solid fa-crown"></i>
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 flex items-center justify-center text-amber-500 text-2xl">
+                <Crown className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-white text-lg">
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                   Tu Rango VIP{" "}
-                  <span className="text-primary uppercase">
+                  <span className="text-amber-600 dark:text-amber-400 uppercase">
                     {vipStatus.tier}
                   </span>{" "}
                   está Activo
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Vence el{" "}
                   {new Date(vipStatus.expiresAt!).toLocaleDateString("es-ES", {
                     dateStyle: "long",
@@ -142,7 +142,7 @@ export default function VipPage() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-3.5 py-1 rounded-full text-xs font-bold text-primary">
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-xl text-xs font-bold text-amber-600 dark:text-amber-400">
               <i className="fa-solid fa-circle-check"></i> Beneficios Activos
             </div>
           </CardContent>
@@ -150,43 +150,43 @@ export default function VipPage() {
       )}
 
       {/* Grid Tiers */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {tiers.map((tier) => (
           <Card
             key={tier.name}
-            className={`relative flex flex-col border transition-all duration-300 hover:scale-[1.02] ${
+            className={`relative flex flex-col rounded-2xl shadow-xs transition-all duration-300 hover:shadow-md ${
               tier.featured
-                ? "border-primary/80 bg-zinc-950"
-                : "border-border bg-card/60"
-            } ${tier.glowColor}`}
+                ? "bg-white dark:bg-slate-900 border-2 border-amber-500/60 ring-2 ring-amber-500/20"
+                : "bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800"
+            }`}
           >
             {tier.featured && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-black font-extrabold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full shadow-[0_4px_10px_rgba(245,166,35,0.4)]">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-950 font-extrabold text-[10px] uppercase tracking-wider px-3 py-0.5 rounded-full shadow-xs">
                 ★ RECOMENDADO ★
               </span>
             )}
 
             <CardHeader className="text-center pt-8">
               <CardTitle
-                className={`text-2xl font-black uppercase font-cabinet ${tier.textColor}`}
+                className={`text-2xl font-black uppercase ${tier.textColor}`}
               >
                 VIP {tier.name}
               </CardTitle>
               <div className="flex items-baseline justify-center gap-1 mt-4">
-                <span className="text-4xl font-extrabold text-white">
+                <span className="text-4xl font-extrabold text-slate-900 dark:text-slate-100">
                   {tier.cost}
                 </span>
-                <span className="text-xs text-muted-foreground">SP / mes</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">SP / mes</span>
               </div>
             </CardHeader>
 
             <CardContent className="flex-1 flex flex-col p-6 pt-0">
-              <hr className="border-border/60 mb-6" />
+              <hr className="border-slate-100 dark:border-slate-800 mb-6" />
 
-              <ul className="space-y-3 mb-8 flex-1 text-xs text-muted-foreground text-left">
+              <ul className="space-y-3 mb-8 flex-1 text-xs text-slate-600 dark:text-slate-400 text-left">
                 {tier.perks.map((perk, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5">
+                    <span className="text-amber-500 mt-0.5">
                       <i className="fa-solid fa-check"></i>
                     </span>
                     <span>{perk}</span>
@@ -195,10 +195,10 @@ export default function VipPage() {
               </ul>
 
               <Button
-                className={`w-full font-bold uppercase py-5 rounded-lg text-xs tracking-wider transition-all duration-300 ${
+                className={`w-full font-bold uppercase py-2.5 rounded-xl text-xs tracking-wider transition-all duration-300 ${
                   tier.featured
-                    ? "bg-primary text-black hover:bg-primary/90 shadow-[0_4px_12px_rgba(245,166,35,0.25)]"
-                    : "bg-secondary text-white hover:bg-zinc-800"
+                    ? "bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-xs"
+                    : "bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700"
                 }`}
                 disabled={
                   !user ||
@@ -228,14 +228,14 @@ export default function VipPage() {
       </div>
 
       {/* Info FAQ */}
-      <Card className="border border-border bg-card/40 backdrop-blur">
-        <CardContent className="p-8">
-          <h3 className="text-lg font-bold uppercase tracking-wider text-white font-cabinet mb-4">
+      <Card className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-xs">
+        <CardContent className="p-6">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-4">
             Preguntas Frecuentes
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-muted-foreground">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-600 dark:text-slate-400">
             <div>
-              <h4 className="font-bold text-white mb-1">
+              <h4 className="font-bold text-slate-900 dark:text-slate-200 mb-1">
                 ¿Cómo consigo SpeedPoints (SP)?
               </h4>
               <p>
@@ -246,7 +246,7 @@ export default function VipPage() {
               </p>
             </div>
             <div>
-              <h4 className="font-bold text-white mb-1">
+              <h4 className="font-bold text-slate-900 dark:text-slate-200 mb-1">
                 ¿Puedo acumular meses de VIP?
               </h4>
               <p>
@@ -258,6 +258,6 @@ export default function VipPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

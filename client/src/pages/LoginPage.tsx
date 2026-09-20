@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LogIn, Eye, EyeOff } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -31,31 +32,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="p-4 lg:p-6 flex items-center justify-center min-h-[calc(100vh-52px)]">
-      <div className="w-full max-w-sm space-y-4">
-        {/* Logo */}
-        <div className="text-center space-y-2">
-          <div className="flex justify-center mb-2">
-            <img
-              src="/logo.png"
-              alt="hSpeed Logo"
-              className="h-12 w-auto object-contain"
-            />
+    <PageContainer>
+      <div className="flex items-center justify-center py-8">
+        <div className="w-full max-w-sm space-y-4">
+          {/* Logo */}
+          <div className="text-center space-y-2">
+            <div className="flex justify-center mb-2">
+              <img
+                src="/logo.png"
+                alt="hSpeed Logo"
+                className="h-12 w-auto object-contain"
+              />
+            </div>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">Iniciar Sesión</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Bienvenido de vuelta a la comunidad
+            </p>
           </div>
-          <h1 className="text-lg font-bold">Iniciar Sesión</h1>
-          <p className="text-xs text-muted-foreground">
-            Bienvenido de vuelta a la comunidad
-          </p>
-        </div>
 
-        <Card className="bg-card border-border glow-purple">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <LogIn className="w-4 h-4 text-primary" />
-              Accede a tu cuenta
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          <Card className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                <LogIn className="w-4 h-4 text-amber-500" />
+                Accede a tu cuenta
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive" className="py-2">
@@ -147,5 +149,6 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+    </PageContainer>
   );
 }

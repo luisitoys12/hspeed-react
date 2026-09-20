@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -245,28 +247,42 @@ export default function MessagesPage() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center px-6">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-          <Mail className="w-8 h-8 text-primary" />
+      <PageContainer>
+        <PageHeaderCard
+          title="Buzón de Mensajes"
+          description="Comunícate de forma privada con otros usuarios y miembros de la comunidad."
+          icon={<Mail className="w-5 h-5 text-amber-500" />}
+        />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-8 flex flex-col items-center justify-center text-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mb-2">
+            <Mail className="w-8 h-8 text-amber-500" />
+          </div>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Buzón de Mensajes Privados</h2>
+          <p className="text-sm text-slate-500 max-w-xs">
+            <Link
+              href="/login"
+              className="text-amber-500 hover:underline font-semibold"
+            >
+              Inicia sesión
+            </Link>{" "}
+            para ver y enviar mensajes privados en HabboSpeed.
+          </p>
         </div>
-        <h2 className="text-lg font-bold">Buzón de mensajes</h2>
-        <p className="text-sm text-muted-foreground max-w-xs">
-          <Link
-            href="/login"
-            className="text-primary hover:underline font-semibold"
-          >
-            Inicia sesión
-          </Link>{" "}
-          para ver y enviar mensajes privados.
-        </p>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-3 py-5 space-y-4">
-      {/* Navigation Tabs */}
-      <div className="flex bg-muted/65 p-1 rounded-xl border border-border/70 max-w-xs">
+    <PageContainer>
+      <PageHeaderCard
+        title="Buzón de Mensajes"
+        description="Bandeja de entrada, respuestas directas y tickets de soporte."
+        icon={<Mail className="w-5 h-5 text-amber-500" />}
+      />
+
+      <div className="max-w-4xl space-y-4">
+        {/* Navigation Tabs */}
+        <div className="flex bg-muted/65 p-1 rounded-xl border border-border/70 max-w-xs">
         <button
           className={cn(
             "flex-1 text-center py-1.5 text-xs font-bold rounded-lg transition-all",
@@ -936,6 +952,7 @@ export default function MessagesPage() {
           )}
         </>
       )}
-    </div>
+      </div>
+    </PageContainer>
   );
 }

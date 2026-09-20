@@ -24,6 +24,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { proxyImage } from "@/lib/habboProxy";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 interface CardWithEarnCondition extends CardType {
   earnCondition: { type: string; [key: string]: unknown } | null;
@@ -141,24 +143,19 @@ export default function CartasPage() {
   const getUserCard = (cardId: number) => userCardMap.get(cardId);
 
   return (
-    <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-xl">
-          <Sparkles className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">Colección de Cartas</h1>
-          <p className="text-xs text-muted-foreground">
-            Consíguelas jugando, completando misiones y participando en eventos
-            (sin azar)
-          </p>
-        </div>
-        {user && (
-          <Badge variant="secondary" className="text-[10px] ml-auto">
-            {userCardMap.size} / {cards.length} cartas
-          </Badge>
-        )}
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Colección de Cartas"
+        description="Consíguelas jugando, completando misiones y participando en eventos de la comunidad."
+        icon={<Sparkles className="w-5 h-5 text-amber-500" />}
+        action={
+          user ? (
+            <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10 px-3 py-1">
+              {userCardMap.size} / {cards.length} cartas
+            </Badge>
+          ) : undefined
+        }
+      />
 
       {/* Mazo equipado */}
       {user && (
@@ -490,6 +487,6 @@ export default function CartasPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

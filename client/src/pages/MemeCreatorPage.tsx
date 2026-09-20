@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import {
   Download,
   Copy,
@@ -440,16 +442,19 @@ export default function MemeCreatorPage() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <Image className="w-5 h-5 text-primary" />
-        <h1 className="text-xl font-bold">Creador de Memes Habbo</h1>
-        <Badge variant="secondary" className="text-[10px]">
-          Beta
-        </Badge>
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Creador de Memes Habbo"
+        description="Crea, personaliza y comparte tus memes más divertidos de Habbo con tus furnis y textos."
+        icon={<Image className="w-5 h-5 text-amber-500" />}
+        action={
+          <Badge className="bg-amber-400/20 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/30 text-[10px]">
+            Beta
+          </Badge>
+        }
+      />
 
-      <div className="grid lg:grid-cols-[320px_1fr] gap-6">
+      <div className="grid lg:grid-cols-[320px_1fr] gap-4">
         {/* Panel de controles */}
         <div className="space-y-4">
           <Card>
@@ -774,6 +779,6 @@ export default function MemeCreatorPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

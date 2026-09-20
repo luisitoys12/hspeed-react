@@ -30,6 +30,7 @@ import {
   CalendarDays,
   RefreshCw,
 } from "lucide-react";
+import PageContainer from "@/components/PageContainer";
 
 const HOTELS = [
   { value: "all", label: "Todos los Hoteles" },
@@ -238,7 +239,8 @@ export default function BadgesPage() {
         );
 
         const d = await res.json();
-        const rawList = Array.isArray(d)
+        // Handle { badges: [...] } structure from HabboAssets API
+        const rawList: any[] = Array.isArray(d)
           ? d
           : d.badges || d.data || d.items || [];
         const mappedList = rawList.map((b: any) => ({
@@ -331,7 +333,8 @@ export default function BadgesPage() {
   });
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
+    <PageContainer>
+      <div className="space-y-6">
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -596,6 +599,7 @@ export default function BadgesPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </PageContainer>
   );
 }

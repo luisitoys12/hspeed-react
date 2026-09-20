@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import {
   Dialog,
   DialogContent,
@@ -346,18 +348,12 @@ export default function DjHorariosPage() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-xl">
-          <Music className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">Horarios DJ & Cabina</h1>
-          <p className="text-xs text-muted-foreground">
-            Reserva tu slot, gestiona tu show y conecta con la audiencia
-          </p>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Horarios DJ & Cabina"
+        description="Reserva tu slot, gestiona tu show en vivo y conecta con la audiencia de HabboSpeed."
+        icon={<Music className="w-5 h-5 text-amber-500" />}
+      />
 
       {/* Resumen rápido */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -886,6 +882,6 @@ export default function DjHorariosPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

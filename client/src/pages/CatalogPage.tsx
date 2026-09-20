@@ -11,6 +11,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useLocation } from "wouter";
+import { ShoppingBag } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 type CatalogEntry = {
   id: string;
@@ -83,36 +86,44 @@ export default function CatalogPage() {
 
   return (
     <TooltipProvider>
-      <div className="p-4 lg:p-6 max-w-7xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>Catálogo de Ropa</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <PageContainer>
+        <PageHeaderCard
+          title="Catálogo de Ropa"
+          description="Explora y aplica prendas oficiales de Habbo para tu avatar."
+          icon={<ShoppingBag className="w-5 h-5 text-amber-500" />}
+        />
+
+        <Card className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs">
+          <CardContent className="p-5">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {clothingEntries.map((c) => (
                 <div
                   key={c.id}
-                  className="bg-secondary/40 rounded p-2 flex flex-col items-center"
+                  className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3 flex flex-col items-center hover:border-amber-500/40 transition-all"
                 >
                   <img
                     src={c.iconUrl || "/public/fallback.png"}
                     alt={c.name}
-                    className="w-20 h-20 object-contain mb-2"
+                    className="w-16 h-16 object-contain mb-2"
                   />
-                  <div className="text-xs truncate text-center w-full">
+                  <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate text-center w-full">
                     {c.name}
                   </div>
-                  <div className="mt-2 flex gap-1">
-                    <Button size="sm" onClick={() => handleApply(c, "ch")}>
+                  <div className="mt-2.5 flex gap-1 w-full">
+                    <Button
+                      size="sm"
+                      onClick={() => handleApply(c, "ch")}
+                      className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-[10px] h-7 rounded-lg"
+                    >
                       Aplicar
                     </Button>
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="outline"
                       onClick={() => {
                         navigator.clipboard?.writeText(c.name);
                       }}
+                      className="border-slate-200 dark:border-slate-700 text-[10px] h-7 px-2 rounded-lg"
                     >
                       Copiar
                     </Button>
@@ -122,7 +133,7 @@ export default function CatalogPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     </TooltipProvider>
   );
 }

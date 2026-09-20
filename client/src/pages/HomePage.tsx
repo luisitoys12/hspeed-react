@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import FutbolHubPanel from "@/components/FutbolHubPanel";
 import HabboRadioWidget from "@/components/HabboRadioWidget";
+import LeftSidebar from "@/components/LeftSidebar";
 import type { News, Poll } from "@shared/schema";
 
 /* ============================================================
@@ -273,59 +274,7 @@ export default function HomePage() {
           {/* ============================================================
               BARRA LATERAL IZQUIERDA (Pills de Navegación del Mockup)
               ============================================================ */}
-          <aside className="w-full lg:w-48 flex-shrink-0">
-            <div className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-              <Link
-                href="/"
-                className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-black rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
-              >
-                <i className="fa-solid fa-house text-cyan-500 w-4 text-center"></i>
-                <span>Página inicial</span>
-              </Link>
-              <Link
-                href={user ? `/profile/${user.habboUsername || user.displayName}` : "/login"}
-                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
-              >
-                <i className="fa-solid fa-user text-slate-400 w-4 text-center"></i>
-                <span>Perfil Speed</span>
-              </Link>
-              <Link
-                href="/forum"
-                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
-              >
-                <i className="fa-solid fa-comments text-slate-400 w-4 text-center"></i>
-                <span>Cihabbo Foro</span>
-              </Link>
-              <Link
-                href="/herramientas"
-                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
-              >
-                <i className="fa-solid fa-screwdriver-wrench text-slate-400 w-4 text-center"></i>
-                <span>Herramientas</span>
-              </Link>
-              <Link
-                href="/rooms"
-                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
-              >
-                <i className="fa-solid fa-hotel text-slate-400 w-4 text-center"></i>
-                <span>Habbo Hotel</span>
-              </Link>
-              <Link
-                href="/futbol-hub"
-                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
-              >
-                <i className="fa-solid fa-futbol text-emerald-500 w-4 text-center"></i>
-                <span>Fútbol Hub</span>
-              </Link>
-              <Link
-                href="/badges"
-                className="flex items-center gap-2.5 px-3 py-2 bg-white/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold rounded-xl shadow-xs border border-slate-200/80 dark:border-slate-800/80 text-xs flex-shrink-0 transition-all hover:border-cyan-400"
-              >
-                <i className="fa-solid fa-award text-amber-500 w-4 text-center"></i>
-                <span>Mis Badges</span>
-              </Link>
-            </div>
-          </aside>
+          <LeftSidebar />
 
           {/* ============================================================
               CONTENEDOR PRINCIPAL: HERO BANNER + 4 COLUMNAS

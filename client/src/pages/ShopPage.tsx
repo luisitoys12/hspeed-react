@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +17,8 @@ import {
   Check,
   Eye,
 } from "lucide-react";
+import PageContainer from "@/components/PageContainer";
+import PageHeaderCard from "@/components/PageHeaderCard";
 
 const CATEGORIES = [
   { id: "decoracion", label: "Decoración", icon: Sparkles },
@@ -58,22 +59,22 @@ export default function ShopPage() {
         { productId },
         token ? `Bearer ${token}` : undefined,
       );
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Error al comprar");
-      }
-      return res.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Error al comprar");
+      return data;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["/api/inventory"] });
       qc.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      toast({ title: "¡Comprado con éxito!" });
+    },
+    onError: (err: any) => {
       toast({
-        title: "¡Compra exitosa!",
-        description: "Producto agregado a tu inventario.",
+        title: "Error al comprar",
+        description: err.message,
+        variant: "destructive",
       });
     },
-    onError: (e: any) =>
-      toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const ownedProductIds = new Set(
@@ -84,119 +85,118 @@ export default function ShopPage() {
   );
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <ShoppingCart className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold">Tienda SpeedPoints</h1>
-        </div>
-        {user && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
-            <Coins className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-bold text-yellow-400">
-              {(user as any).speedPoints ?? 0} SP
-            </span>
-          </div>
-        )}
-      </div>
+    <PageContainer>
+      {/* Header Card */}
+      <PageHeaderCard
+        title="Tienda SpeedPoints"
+        kicker="Catálogo Exclusivo"
+        subtitle="Canjea tus SpeedPoints por furnis raros, coleccionables, fondos de perfil y personalizaciones."
+        icon={<ShoppingCart className="w-5 h-5 text-amber-500" />}
+        rightElement={
+          user && (
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs shadow-xs">
+              <Coins className="w-4 h-4 text-amber-400" />
+              <span>{(user as any).speedPoints ?? 0} SP Disponibles</span>
+            </div>
+          )
+        }
+      />
 
-      <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-        <TabsList className="bg-secondary/50 border border-border h-auto flex-wrap gap-0.5">
-          {CATEGORIES.map(({ id, label, icon: Icon }) => (
-            <TabsTrigger
-              key={id}
-              value={id}
-              className="text-xs gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-white"
-            >
-              <Icon className="w-3 h-3" /> {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+        <Tabs value={activeCategory} onValueChange={setActiveCategory}>
+          <TabsList className="bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 h-auto flex-wrap gap-1 p-1 rounded-xl">
+            {CATEGORIES.map(({ id, label, icon: Icon }) => (
+              <TabsTrigger
+                key={id}
+                value={id}
+                className="text-xs font-bold gap-1.5 rounded-lg data-[state=active]:bg-cyan-500 data-[state=active]:text-black data-[state=active]:font-black"
+              >
+                <Icon className="w-3.5 h-3.5" /> {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {CATEGORIES.map(({ id }) => (
-          <TabsContent key={id} value={id}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-48 rounded-xl" />
-                ))
-              ) : filteredProducts.length === 0 ? (
-                <div className="col-span-full text-center py-12">
-                  <Package className="w-12 h-12 mx-auto text-muted-foreground/20 mb-3" />
-                  <p className="text-sm text-muted-foreground">
-                    No hay productos en esta categoría
-                  </p>
-                </div>
-              ) : (
-                filteredProducts.map((product: any) => {
-                  const owned = ownedProductIds.has(product.id);
-                  return (
-                    <Card
-                      key={product.id}
-                      className={`bg-card border-border overflow-hidden transition-all hover:border-primary/30 ${owned ? "opacity-80" : ""}`}
-                    >
-                      <CardContent className="p-0">
-                        <div className="h-32 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center relative">
+          {CATEGORIES.map(({ id }) => (
+            <TabsContent key={id} value={id} className="mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {isLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="h-56 rounded-2xl" />
+                  ))
+                ) : filteredProducts.length === 0 ? (
+                  <div className="col-span-full text-center py-12 text-slate-400">
+                    <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm font-bold">
+                      No hay productos en esta categoría
+                    </p>
+                  </div>
+                ) : (
+                  filteredProducts.map((product: any) => {
+                    const owned = ownedProductIds.has(product.id);
+                    return (
+                      <div
+                        key={product.id}
+                        className={`bg-slate-50 dark:bg-slate-800/50 border border-slate-200/90 dark:border-slate-700/60 rounded-2xl overflow-hidden transition-all hover:border-cyan-400 shadow-xs flex flex-col justify-between ${
+                          owned ? "opacity-75" : ""
+                        }`}
+                      >
+                        <div className="h-32 bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center relative p-3">
                           {product.imageUrl ? (
                             <img
                               src={product.imageUrl}
                               alt={product.name}
-                              className="w-20 h-20 object-contain"
+                              className="w-20 h-20 object-contain drop-shadow"
                             />
                           ) : (
-                            <Sparkles className="w-12 h-12 text-primary/30" />
+                            <Sparkles className="w-12 h-12 text-cyan-400/40" />
                           )}
                           {owned && (
-                            <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
+                            <div className="absolute top-2 right-2 bg-emerald-500 rounded-full p-1 shadow">
                               <Check className="w-3 h-3 text-white" />
                             </div>
                           )}
                         </div>
-                        <div className="p-4 space-y-2">
-                          <h3 className="text-sm font-bold truncate">
-                            {product.name}
-                          </h3>
-                          <p className="text-[10px] text-muted-foreground line-clamp-2">
-                            {product.description}
-                          </p>
-                          <div className="flex items-center justify-between pt-1">
-                            <div className="flex items-center gap-1 text-yellow-400">
+                        <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                          <div>
+                            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">
+                              {product.name}
+                            </h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                              {product.description}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-700/40 mt-2">
+                            <div className="flex items-center gap-1 text-amber-500 font-black text-xs">
                               <Coins className="w-3.5 h-3.5" />
-                              <span className="text-xs font-bold">
-                                {product.price} SP
-                              </span>
+                              <span>{product.price} SP</span>
                             </div>
                             {owned ? (
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] text-green-400 border-green-400/30"
-                              >
+                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500/30 px-2 py-0.5 rounded-md">
                                 Adquirido
-                              </Badge>
+                              </span>
                             ) : (
                               <Button
                                 size="sm"
-                                className="text-[10px] h-7 bg-primary hover:bg-primary/80"
+                                className="text-xs font-black h-7 bg-cyan-500 hover:bg-cyan-400 text-black px-3 rounded-lg"
                                 disabled={purchaseMutation.isPending}
                                 onClick={() =>
                                   purchaseMutation.mutate(product.id)
                                 }
                               >
-                                <ShoppingCart className="w-3 h-3 mr-1" />{" "}
-                                Comprar
+                                <ShoppingCart className="w-3 h-3 mr-1" /> Comprar
                               </Button>
                             )}
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
-              )}
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
-    </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+    </PageContainer>
   );
 }

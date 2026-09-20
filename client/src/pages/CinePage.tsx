@@ -30,6 +30,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 interface CineSession {
   id: number;
@@ -228,18 +230,12 @@ export default function CinePage() {
     `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-xl">
-          <Play className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">Modo Cine</h1>
-          <p className="text-xs text-muted-foreground">
-            Ve videos de YouTube sincronizado con amigos
-          </p>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Modo Cine"
+        description="Ve videos de YouTube sincronizados en tiempo real con amigos y la comunidad."
+        icon={<Play className="w-5 h-5 text-amber-500" />}
+      />
 
       {/* Sala activa */}
       {activeSession && (
@@ -515,6 +511,6 @@ export default function CinePage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

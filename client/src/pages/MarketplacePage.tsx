@@ -32,6 +32,8 @@ import {
   Star,
   X,
 } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 const HOTELS = ["es", "com", "com.br", "de", "fi", "fr", "it", "nl"];
 
@@ -379,16 +381,43 @@ export default function MarketplacePage() {
 
   const catalog: FurniItem[] = Array.isArray(catalogRaw) ? catalogRaw : [];
 
-  const sorted = [...catalog].sort((a, b) =>
+  // Handle nested API response: data[0].marketData.history = [price, amount, total, offers, timestamp]
+  const normalizeFurni = (item: any): FurniItem => {
+    if (!item) return item as FurniItem;
+    const marketData = item.marketData || item[0]?.marketData || {};
+    const history = marketData.history || [];
+    const normalizedHistory = history.map((h: any) => {
+      if (Array.isArray(h)) {
+        return { price: h[0], amount: h[1], date: h[4] ? new Date(h[4] * 1000).toISOString().split('T')[0] : '' };
+      }
+      return h;
+    });
+    return {
+      ...item,
+      FurniName: item.FurniName || item[0]?.FurniName || item.name || item.itemName || "—",
+      ClassName: item.ClassName || item[0]?.ClassName || item.classname || "—",
+      className: item.className || item[0]?.className || item.classname || "—",
+      Revision: item.Revision || item[0]?.Revision || item.revision || 0,
+      marketData: {
+        averagePrice: marketData.averagePrice || marketData.avgPrice || item.avgPrice || item.avg_price || 0,
+        history: normalizedHistory,
+      },
+    };
+  };
+
+  const normalizedCatalog = Array.isArray(catalogRaw) ? catalogRaw.map(normalizeFurni) : [];
+  const normalizedSearchData = searchData ? (Array.isArray(searchData) ? searchData.map(normalizeFurni) : [normalizeFurni(searchData)]) : [];
+
+  const sorted = [...normalizedCatalog].sort((a, b) =>
     sortOrder === "desc"
       ? getPrice(b) - getPrice(a)
       : getPrice(a) - getPrice(b),
   );
 
-  const topExpensive = [...catalog]
+  const topExpensive = [...normalizedCatalog]
     .sort((a, b) => getPrice(b) - getPrice(a))
     .slice(0, 50);
-  const topCheap = [...catalog]
+  const topCheap = [...normalizedCatalog]
     .filter((i) => getPrice(i) > 0)
     .sort((a, b) => getPrice(a) - getPrice(b))
     .slice(0, 50);
@@ -396,11 +425,7 @@ export default function MarketplacePage() {
   const totalPages = Math.ceil(sorted.length / PER_PAGE);
   const paginated = sorted.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  const searchResults: FurniItem[] = searchData
-    ? Array.isArray(searchData)
-      ? searchData
-      : [searchData]
-    : [];
+  const searchResults: FurniItem[] = normalizedSearchData;
 
   const handleSearch = () => {
     if (search.trim()) {
@@ -450,59 +475,52 @@ export default function MarketplacePage() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-5">
-      {/* Header */}
-      <div className="site-panel-strong p-5 sm:p-6 flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <p className="site-kicker">Mercado</p>
-          <h1 className="site-title mt-2 flex items-center gap-3">
-            <ShoppingBag className="w-5 h-5 text-primary" />
-            Marketplace
-          </h1>
-          <p className="text-xs text-muted-foreground mt-2 max-w-2xl">
-            Explora furnis, compara precios y sigue el pulso del mercado con una
-            interfaz más clara.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge
-            variant="outline"
-            className="border-primary/30 bg-primary/5 text-primary/80 text-[10px]"
-          >
-            Habbo.{hotel}
-          </Badge>
-          <Select
-            value={hotel}
-            onValueChange={(v) => {
-              setHotel(v);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger
-              className="w-28 h-8 text-xs"
-              data-testid="select-marketplace-hotel"
+    <PageContainer>
+      <PageHeaderCard
+        title="Marketplace Habbo"
+        description="Explora furnis, compara precios y sigue el pulso del mercado con la API de Habbo."
+        icon={<ShoppingBag className="w-5 h-5 text-amber-500" />}
+        action={
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge
+              variant="outline"
+              className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px]"
             >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {HOTELS.map((h) => (
-                <SelectItem key={h} value={h}>
-                  .{h}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="h-8 text-xs px-3"
-            data-testid="button-marketplace-refresh"
-          >
-            Actualizar
-          </Button>
-        </div>
-      </div>
+              Habbo.{hotel}
+            </Badge>
+            <Select
+              value={hotel}
+              onValueChange={(v) => {
+                setHotel(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger
+                className="w-24 h-8 text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl"
+                data-testid="select-marketplace-hotel"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {HOTELS.map((h) => (
+                  <SelectItem key={h} value={h}>
+                    .{h}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              className="h-8 text-xs px-3 rounded-xl border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+              data-testid="button-marketplace-refresh"
+            >
+              Actualizar
+            </Button>
+          </div>
+        }
+      />
 
       {/* Search bar always visible */}
       <div className="site-panel p-3 flex gap-2">
@@ -565,9 +583,9 @@ export default function MarketplacePage() {
               <SelectItem value="asc">Más baratos primero</SelectItem>
             </SelectContent>
           </Select>
-          {catalog.length > 0 && (
+          {normalizedCatalog.length > 0 && (
             <span className="text-xs text-muted-foreground ml-auto">
-              {catalog.length} furnis
+              {normalizedCatalog.length} furnis
             </span>
           )}
         </div>
@@ -700,6 +718,6 @@ export default function MarketplacePage() {
           onClose={() => setSelectedItem(null)}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -12,6 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Mail, Send, CheckCircle } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 const SUBJECTS = [
   "Consulta general",
@@ -53,40 +55,39 @@ export default function ContactPage() {
 
   if (sent) {
     return (
-      <div className="p-4 lg:p-6 max-w-xl mx-auto flex flex-col items-center justify-center min-h-64 text-center space-y-4">
-        <CheckCircle className="w-14 h-14 text-green-400" />
-        <h2 className="text-lg font-bold">¡Mensaje enviado!</h2>
-        <p className="text-sm text-muted-foreground">
-          Gracias por contactarnos. Te responderemos lo antes posible.
-        </p>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setSent(false);
-            setForm({ name: "", email: "", subject: "", message: "" });
-          }}
-          className="border-primary/30 text-primary hover:bg-primary/10"
-        >
-          Enviar otro mensaje
-        </Button>
-      </div>
+      <PageContainer>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-10 max-w-xl mx-auto flex flex-col items-center justify-center text-center space-y-4 shadow-xs">
+          <CheckCircle className="w-14 h-14 text-emerald-500" />
+          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">¡Mensaje enviado!</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Gracias por contactarnos. Te responderemos lo antes posible.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSent(false);
+              setForm({ name: "", email: "", subject: "", message: "" });
+            }}
+            className="border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 rounded-xl"
+          >
+            Enviar otro mensaje
+          </Button>
+        </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="p-4 lg:p-6 max-w-2xl mx-auto space-y-5">
-      <div className="flex items-center gap-3">
-        <Mail className="w-5 h-5 text-primary" />
-        <h1 className="text-xl font-bold">Contacto</h1>
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Contacto HabboSpeed"
+        description="¿Tienes alguna pregunta, sugerencia o propuesta? ¡Escríbenos directamente!"
+        icon={<Mail className="w-5 h-5 text-amber-500" />}
+      />
 
-      <p className="text-sm text-muted-foreground">
-        ¿Tienes alguna pregunta, sugerencia o propuesta? ¡Escríbenos!
-      </p>
-
-      <Card className="bg-card border-border">
+      <Card className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs">
         <CardHeader>
-          <CardTitle className="text-sm">Envíanos un mensaje</CardTitle>
+          <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">Envíanos un mensaje</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -196,14 +197,14 @@ export default function ContactPage() {
         ].map((item) => (
           <div
             key={item.title}
-            className="bg-card/50 border border-border rounded-lg p-3 text-center"
+            className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 text-center shadow-xs"
           >
             <div className="text-2xl mb-1">{item.icon}</div>
-            <p className="text-xs font-semibold">{item.title}</p>
-            <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+            <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">{item.title}</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">{item.desc}</p>
           </div>
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }

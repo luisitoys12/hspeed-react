@@ -122,7 +122,7 @@ function AppContent() {
     retry: false,
   });
 
-  const maintenanceEnabled = config?.maintenanceMode === true;
+  const maintenanceEnabled = config?.maintenanceMode !== false;
   const canBypassMaintenance = user?.role === "admin";
 
   if (maintenanceEnabled && !loading && !canBypassMaintenance) {

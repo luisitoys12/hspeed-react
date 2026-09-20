@@ -4,6 +4,8 @@ import { useParams, Link } from "wouter";
 import { proxyImage } from "@/lib/habboProxy";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -122,12 +124,76 @@ export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
   const { user: currentUser } = useAuth();
   const [editing, setEditing] = useState(false);
+
+  // Estados de postura y figura de avatar en perfil público
+  const [avatarAction, setAvatarAction] = useState<string>(() => {
+    try {
+      return localStorage.getItem(`avatar_action_${username}`) || "std";
+    } catch {
+      return "std";
+    }
+  });
+
+  const [avatarDirection, setAvatarDirection] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(`avatar_dir_${username}`);
+      return saved ? parseInt(saved, 10) : 2;
+    } catch {
+      return 2;
+    }
+  });
+
+  const [avatarGesture, setAvatarGesture] = useState<string>(() => {
+    try {
+      return localStorage.getItem(`avatar_gesture_${username}`) || "sml";
+    } catch {
+      return "sml";
+    }
+  });
+
+  const [customFigure, setCustomFigure] = useState<string>(() => {
+    try {
+      return localStorage.getItem(`avatar_figure_${username}`) || "";
+    } catch {
+      return "";
+    }
+  });
+
   const [editForm, setEditForm] = useState({
     displayName: "",
     habboUsername: "",
+    customFigure: "",
+    avatarAction: "std",
   });
+
   const qc = useQueryClient();
   const { toast } = useToast();
+
+  const handleSavePosture = (act: string, dir = avatarDirection, fig = customFigure) => {
+    setAvatarAction(act);
+    setAvatarDirection(dir);
+    setCustomFigure(fig);
+    try {
+      localStorage.setItem(`avatar_action_${username}`, act);
+      localStorage.setItem(`avatar_dir_${username}`, dir.toString());
+      if (fig) localStorage.setItem(`avatar_figure_${username}`, fig);
+      else localStorage.removeItem(`avatar_figure_${username}`);
+    } catch {}
+    toast({
+      title: "¡Postura actualizada!",
+      description: `Avatar en modo: ${
+        act === "sit"
+          ? "Sentado"
+          : act === "wlk"
+          ? "Caminando"
+          : act === "wav"
+          ? "Saludando"
+          : act === "drk=1"
+          ? "Bebiendo"
+          : "De pie"
+      }`,
+    });
+  };
 
   // Habbo API: perfil público
   const { data: habboUser, isLoading: loadingHabbo } = useQuery<any>({
@@ -184,16 +250,35 @@ export default function ProfilePage() {
     mutationFn: async (data: {
       displayName?: string;
       habboUsername?: string;
+      customFigure?: string;
+      avatarAction?: string;
     }) => {
-      const res = await apiRequest(
-        "PATCH",
-        `/api/users/${currentUser?.id}`,
-        data,
-      );
+      // Guardar configuraciones locales de figura y postura
+      if (data.customFigure !== undefined) {
+        setCustomFigure(data.customFigure);
+        try {
+          if (data.customFigure) {
+            localStorage.setItem(`avatar_figure_${username}`, data.customFigure);
+          } else {
+            localStorage.removeItem(`avatar_figure_${username}`);
+          }
+        } catch {}
+      }
+      if (data.avatarAction) {
+        setAvatarAction(data.avatarAction);
+        try {
+          localStorage.setItem(`avatar_action_${username}`, data.avatarAction);
+        } catch {}
+      }
+
+      const res = await apiRequest("PATCH", `/api/users/${currentUser?.id}`, {
+        displayName: data.displayName,
+        habboUsername: data.habboUsername,
+      });
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "✅ Perfil actualizado" });
+      toast({ title: "✅ Perfil y avatar actualizados" });
       qc.invalidateQueries({ queryKey: ["/api/auth/me"] });
       setEditing(false);
     },
@@ -204,80 +289,160 @@ export default function ProfilePage() {
   const isOnline = onlineStatus === true;
   const hasHabboData = !!habboUser && !loadingHabbo;
 
+  const currentAvatarUrl = customFigure
+    ? `https://www.habbo.es/habbo-imaging/avatarimage?figure=${encodeURIComponent(
+        customFigure,
+      )}&action=${avatarAction}&direction=${avatarDirection}&head_direction=${avatarDirection}&gesture=${avatarGesture}&size=b`
+    : `https://www.habbo.es/habbo-imaging/avatarimage?user=${encodeURIComponent(
+        username || "",
+      )}&action=${avatarAction}&direction=${avatarDirection}&head_direction=${avatarDirection}&gesture=${avatarGesture}&size=b`;
+
   return (
-    <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <User className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold">Perfil</h1>
-        </div>
-        {isOwnProfile && !editing && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5 text-xs"
-            onClick={() => {
-              setEditForm({
-                displayName: currentUser?.displayName || "",
-                habboUsername: currentUser?.habboUsername || username || "",
-              });
-              setEditing(true);
-            }}
-          >
-            <Edit3 className="w-3.5 h-3.5" /> Editar perfil
-          </Button>
-        )}
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title={`Perfil de ${localUser?.displayName || username || "Usuario"}`}
+        description="Información de usuario de HabboSpeed y Habbo Hotel, placas, amigos, muro y configuración"
+        icon={<User className="w-5 h-5 text-amber-500" />}
+        action={
+          isOwnProfile && !editing ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+              onClick={() => {
+                setEditForm({
+                  displayName: currentUser?.displayName || "",
+                  habboUsername: currentUser?.habboUsername || username || "",
+                  customFigure: customFigure || "",
+                  avatarAction: avatarAction || "std",
+                });
+                setEditing(true);
+              }}
+            >
+              <Edit3 className="w-3.5 h-3.5" /> Editar perfil & avatar
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Edit form */}
       {editing && (
         <Card className="bg-card border-primary/30">
           <CardHeader className="pb-3">
-            <p className="text-sm font-semibold">Editar perfil</p>
+            <p className="text-sm font-semibold">Editar perfil y postura</p>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <Label className="text-xs text-muted-foreground">
-                Nombre a mostrar
-              </Label>
-              <Input
-                className="mt-1"
-                value={editForm.displayName}
-                onChange={(e) =>
-                  setEditForm((p) => ({ ...p, displayName: e.target.value }))
-                }
-                placeholder="Tu nombre..."
-              />
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">
+                  Nombre a mostrar
+                </Label>
+                <Input
+                  className="mt-1"
+                  value={editForm.displayName}
+                  onChange={(e) =>
+                    setEditForm((p) => ({ ...p, displayName: e.target.value }))
+                  }
+                  placeholder="Tu nombre..."
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">
+                  Usuario Habbo
+                </Label>
+                <Input
+                  className="mt-1"
+                  value={editForm.habboUsername}
+                  onChange={(e) =>
+                    setEditForm((p) => ({ ...p, habboUsername: e.target.value }))
+                  }
+                  placeholder="Tu username en Habbo..."
+                />
+              </div>
             </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">
-                Usuario Habbo
-              </Label>
-              <Input
-                className="mt-1"
-                value={editForm.habboUsername}
-                onChange={(e) =>
-                  setEditForm((p) => ({ ...p, habboUsername: e.target.value }))
-                }
-                placeholder="Tu username en Habbo..."
-              />
+
+            {/* Configuración de Look Habbo Personalizado */}
+            <div className="pt-2 border-t border-border/40 space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                    Look Habbo Personalizado (Figure String)
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditForm((p) => ({
+                        ...p,
+                        customFigure:
+                          "hr-5756-48.hd-3093-1.ch-5206-73-82.lg-3057-82.sh-3115-82.ha-5727-82-82.he-5647-1408.ea-1404-110",
+                      }));
+                    }}
+                    className="text-[10px] text-cyan-400 hover:underline cursor-pointer font-bold"
+                  >
+                    Pegar look de prueba
+                  </button>
+                </div>
+                <Input
+                  className="font-mono text-xs"
+                  value={editForm.customFigure}
+                  onChange={(e) =>
+                    setEditForm((p) => ({ ...p, customFigure: e.target.value }))
+                  }
+                  placeholder="hr-5756-48.hd-3093-1.ch-5206-73-82.lg-3057-82..."
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Deja vacío para usar tu avatar oficial de Habbo o introduce una figura personalizada.
+                </p>
+              </div>
+
+              {/* Selector de postura inicial */}
+              <div>
+                <Label className="text-xs font-bold block mb-1.5">
+                  Postura Predeterminada en tu Perfil:
+                </Label>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                  {[
+                    { id: "std", label: "🕺 Parado" },
+                    { id: "sit", label: "🪑 Sentado" },
+                    { id: "wlk", label: "🚶 Caminando" },
+                    { id: "wav", label: "👋 Saludando" },
+                    { id: "drk=1", label: "☕ Bebiendo" },
+                    { id: "lay", label: "🛌 Acostado" },
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() =>
+                        setEditForm((prev) => ({ ...prev, avatarAction: p.id }))
+                      }
+                      className={`px-2 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        editForm.avatarAction === p.id
+                          ? "bg-cyan-500 text-black font-black shadow-sm"
+                          : "bg-secondary text-slate-300 hover:bg-secondary/80"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2 pt-1">
+
+            <div className="flex gap-2 pt-2 border-t border-border/40">
               <Button
                 size="sm"
-                className="gap-1.5"
+                className="gap-1.5 bg-cyan-500 hover:bg-cyan-400 text-black font-black"
                 onClick={() => updateMutation.mutate(editForm)}
                 disabled={updateMutation.isPending}
               >
-                <Save className="w-3.5 h-3.5" /> Guardar
+                <Save className="w-3.5 h-3.5" /> Guardar Cambios
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setEditing(false)}
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3.5 h-3.5" /> Cancelar
               </Button>
             </div>
           </CardContent>
@@ -287,7 +452,7 @@ export default function ProfilePage() {
       {/* Main profile card */}
       {loadingHabbo ? (
         <div className="flex gap-6">
-          <Skeleton className="w-36 h-56 rounded-xl" />
+          <Skeleton className="w-40 h-60 rounded-2xl" />
           <div className="flex-1 space-y-3">
             <Skeleton className="h-6 w-44" />
             <Skeleton className="h-4 w-32" />
@@ -297,26 +462,103 @@ export default function ProfilePage() {
         </div>
       ) : (
         <div className="flex flex-col sm:flex-row gap-6">
-          {/* Avatar column */}
+          {/* Avatar column con acciones interactivas */}
           <div className="flex flex-col items-center gap-3 flex-shrink-0">
             <div className="relative">
-              <div className="bg-secondary/50 rounded-2xl border border-border overflow-hidden w-36 h-52 flex items-end justify-center">
+              <div className="bg-secondary/50 rounded-2xl border border-border overflow-hidden w-40 h-56 flex items-end justify-center relative p-2 group shadow-inner">
+                {/* Sombra isométrica en el suelo */}
+                <div className="absolute bottom-2 w-20 h-5 bg-black/15 dark:bg-black/40 rounded-full blur-[2px] transform scale-y-50" />
+
                 <img
-                  src={proxyImage(
-                    `https://www.habbo.es/habbo-imaging/avatarimage?user=${username}&size=b`,
-                  )}
+                  src={proxyImage(currentAvatarUrl)}
                   alt={username}
-                  className="h-full w-auto object-contain"
+                  className="h-full w-auto object-contain transition-transform duration-200 group-hover:scale-105 relative z-10 drop-shadow"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.opacity = "0.2";
                   }}
                   data-testid="img-profile-avatar"
                 />
               </div>
+
+              {/* Barra interactiva de posturas en la página pública */}
+              <div className="flex items-center justify-center gap-1 mt-2 bg-secondary/40 p-1.5 rounded-xl border border-border/50">
+                <button
+                  type="button"
+                  title="Parado / De pie"
+                  onClick={() => handleSavePosture("std")}
+                  className={`w-7 h-7 rounded-lg text-xs flex items-center justify-center transition-all cursor-pointer ${
+                    avatarAction === "std"
+                      ? "bg-cyan-500 text-black font-black scale-110 shadow-sm"
+                      : "bg-background/80 text-muted-foreground hover:text-cyan-400"
+                  }`}
+                >
+                  🕺
+                </button>
+                <button
+                  type="button"
+                  title="Sentado"
+                  onClick={() => handleSavePosture("sit")}
+                  className={`w-7 h-7 rounded-lg text-xs flex items-center justify-center transition-all cursor-pointer ${
+                    avatarAction === "sit"
+                      ? "bg-cyan-500 text-black font-black scale-110 shadow-sm"
+                      : "bg-background/80 text-muted-foreground hover:text-cyan-400"
+                  }`}
+                >
+                  🪑
+                </button>
+                <button
+                  type="button"
+                  title="Caminando"
+                  onClick={() => handleSavePosture("wlk")}
+                  className={`w-7 h-7 rounded-lg text-xs flex items-center justify-center transition-all cursor-pointer ${
+                    avatarAction === "wlk"
+                      ? "bg-cyan-500 text-black font-black scale-110 shadow-sm"
+                      : "bg-background/80 text-muted-foreground hover:text-cyan-400"
+                  }`}
+                >
+                  🚶
+                </button>
+                <button
+                  type="button"
+                  title="Saludando"
+                  onClick={() => handleSavePosture("wav")}
+                  className={`w-7 h-7 rounded-lg text-xs flex items-center justify-center transition-all cursor-pointer ${
+                    avatarAction === "wav"
+                      ? "bg-cyan-500 text-black font-black scale-110 shadow-sm"
+                      : "bg-background/80 text-muted-foreground hover:text-cyan-400"
+                  }`}
+                >
+                  👋
+                </button>
+                <button
+                  type="button"
+                  title="Bebiendo"
+                  onClick={() => handleSavePosture("drk=1")}
+                  className={`w-7 h-7 rounded-lg text-xs flex items-center justify-center transition-all cursor-pointer ${
+                    avatarAction === "drk=1"
+                      ? "bg-cyan-500 text-black font-black scale-110 shadow-sm"
+                      : "bg-background/80 text-muted-foreground hover:text-cyan-400"
+                  }`}
+                >
+                  ☕
+                </button>
+                <button
+                  type="button"
+                  title="Girar dirección"
+                  onClick={() => {
+                    const nextDir = avatarDirection === 7 ? 1 : avatarDirection + 1;
+                    handleSavePosture(avatarAction, nextDir);
+                  }}
+                  className="w-7 h-7 rounded-lg text-[11px] font-black bg-background/80 text-cyan-400 hover:bg-cyan-500 hover:text-black flex items-center justify-center transition-all cursor-pointer"
+                >
+                  ↺
+                </button>
+              </div>
+
               {/* Online/Offline badge */}
               {hasHabboData && (
                 <div
-                  className={`absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold shadow ${
+                  className={`absolute -bottom-7 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold shadow ${
                     isOnline
                       ? "bg-green-500/20 text-green-400 border-green-500/40"
                       : "bg-muted text-muted-foreground border-border"
@@ -339,7 +581,7 @@ export default function ProfilePage() {
             {localUser?.role && ROLE_LABELS[localUser.role] && (
               <Badge
                 variant="outline"
-                className={`text-[10px] ${ROLE_LABELS[localUser.role].color}`}
+                className={`text-[10px] mt-4 ${ROLE_LABELS[localUser.role].color}`}
               >
                 {ROLE_LABELS[localUser.role].label}
               </Badge>
@@ -627,7 +869,7 @@ export default function ProfilePage() {
       {localUser && (
         <AboutSection userId={localUser.id} isOwnProfile={isOwnProfile} />
       )}
-    </div>
+    </PageContainer>
   );
 }
 

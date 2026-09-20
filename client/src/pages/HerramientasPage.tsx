@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import {
   Wrench,
   Search,
@@ -1864,7 +1866,12 @@ export default function HerramientasPage() {
   const [toolsExpanded, setToolsExpanded] = useState(true);
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-5 font-sans">
+    <PageContainer>
+      <PageHeaderCard
+        title="Herramientas Habbo"
+        description="Consulta información pública de la API oficial de Habbo: usuarios, salas, grupos, Hot Looks y placas."
+        icon={<Wrench className="w-5 h-5 text-amber-500" />}
+      />
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left column: Content Area (flex-1) */}
         <div className="w-full lg:flex-1 min-w-0 bg-[#1e293b]/20 border border-zinc-800 rounded-2xl p-6 shadow-xl relative min-h-[450px]">
@@ -1976,6 +1983,6 @@ export default function HerramientasPage() {
           </div>
         </aside>
       </div>
-    </div>
+    </PageContainer>
   );
 }

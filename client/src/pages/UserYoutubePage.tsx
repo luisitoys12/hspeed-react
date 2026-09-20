@@ -33,6 +33,8 @@ import {
   Star,
 } from "lucide-react";
 import { proxyImage } from "@/lib/habboProxy";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 interface YoutubeEmbed {
   id: number;
@@ -224,9 +226,9 @@ export default function UserYoutubePage() {
   const pendingEmbeds = userEmbeds.filter((e: any) => !e.isApproved);
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
+    <PageContainer>
       {/* Header del perfil */}
-      <Card className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
+      <Card className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs">
         <CardContent className="p-6">
           <div className="flex items-start gap-6">
             <img
@@ -518,6 +520,6 @@ export default function UserYoutubePage() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </PageContainer>
   );
 }

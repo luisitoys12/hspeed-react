@@ -24,6 +24,8 @@ import {
   Stamp,
 } from "lucide-react";
 import { proxyImage } from "@/lib/habboProxy";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import type {
   SpeedMission,
   UserMission,
@@ -160,21 +162,12 @@ export default function MisionesPage() {
   const categories = ["daily", "weekly", "seasonal", "special", "achievement"];
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded-xl">
-          <Target className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">
-            Speed Missions & Álbum de Estampas
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Completa misiones diarias, semanales y de temporada para ganar
-            estampas y recompensas
-          </p>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Speed Missions & Álbum de Estampas"
+        description="Completa misiones diarias, semanales y de temporada para ganar estampas y recompensas exclusivas."
+        icon={<Target className="w-5 h-5 text-amber-500" />}
+      />
 
       <Tabs defaultValue="misiones" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
@@ -476,7 +469,7 @@ export default function MisionesPage() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   );
 }
 

@@ -24,6 +24,7 @@ import {
   MessageSquare,
   Gift,
 } from "lucide-react";
+import PageContainer from "@/components/PageContainer";
 
 interface NowPlayingData {
   now_playing?: {
@@ -239,8 +240,9 @@ export default function RadioPage() {
   const streamerName = nowPlaying?.live?.streamer_name || "AutoDJ";
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6 font-sans">
-      <audio ref={audioRef} crossOrigin="anonymous" />
+    <PageContainer>
+      <div className="space-y-6 font-sans">
+        <audio ref={audioRef} crossOrigin="anonymous" />
 
       {/* Page Header banner */}
       <div className="site-panel-strong p-5 flex items-center justify-between flex-wrap gap-4">
@@ -691,6 +693,7 @@ export default function RadioPage() {
           100% { height: 100%; }
         }
       `}</style>
-    </div>
+      </div>
+    </PageContainer>
   );
 }

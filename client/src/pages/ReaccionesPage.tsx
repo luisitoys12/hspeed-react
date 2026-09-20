@@ -3,6 +3,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -85,25 +87,19 @@ export default function ReaccionesPage() {
   );
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 p-2 rounded-xl">
-          <Zap className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">
-            Speed Icons - Reacciones Coleccionables
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Desbloquea iconos únicos participando en la comunidad
-          </p>
-        </div>
-        {user && (
-          <Badge variant="secondary" className="text-[10px] ml-auto">
-            {unlockedIds.size} / {icons.length} desbloqueados
-          </Badge>
-        )}
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Speed Icons - Reacciones Coleccionables"
+        description="Desbloquea iconos únicos participando en la comunidad de HabboSpeed y muestra tus emociones."
+        icon={<Zap className="w-5 h-5 text-amber-500" />}
+        action={
+          user ? (
+            <Badge className="bg-amber-400/20 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/30 text-[10px]">
+              {unlockedIds.size} / {icons.length} desbloqueados
+            </Badge>
+          ) : undefined
+        }
+      />
 
       {!user || loadingUserIcons ? (
         <div className="text-center py-8 text-muted-foreground">
@@ -263,6 +259,6 @@ export default function ReaccionesPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

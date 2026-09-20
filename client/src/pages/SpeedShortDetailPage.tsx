@@ -11,6 +11,7 @@ import {
 import { SEOMeta } from "@/components/SEOMeta";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { PageContainer } from "@/components/PageContainer";
 
 interface SpeedShort {
   id: string;
@@ -144,20 +145,20 @@ export default function SpeedShortDetailPage() {
 
   if (!short) {
     return (
-      <div className="p-4 lg:p-6 max-w-5xl mx-auto text-center py-12">
+      <PageContainer>
         <SEOMeta
           title="SpeedShort no encontrado"
           description="El video que buscas no existe."
         />
-        <div className="bg-card border border-border rounded-2xl p-8">
-          <p className="text-muted-foreground mb-4">SpeedShort no encontrado</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-8 text-center">
+          <p className="text-slate-500 mb-4">SpeedShort no encontrado</p>
           <Link href="/tendencias">
-            <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/80 transition-colors">
+            <button className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition-colors">
               Volver a Tendencias
             </button>
           </Link>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -165,7 +166,7 @@ export default function SpeedShortDetailPage() {
   const youtubeEmbedUrl = `https://www.youtube.com/embed/${short.videoId}`;
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
+    <PageContainer>
       <SEOMeta
         title={`${short.title} | HabboSpeed`}
         description={short.description || short.title}
@@ -318,6 +319,6 @@ export default function SpeedShortDetailPage() {
             })}
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }

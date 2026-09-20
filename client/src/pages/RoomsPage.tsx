@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { Home } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 interface HSpeedRoom {
   id: number;
@@ -86,7 +89,7 @@ export default function RoomsPage() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl relative">
+    <PageContainer>
       {/* Floating particles for confetti effect */}
       {particles.map((p) => (
         <span
@@ -101,44 +104,38 @@ export default function RoomsPage() {
         />
       ))}
 
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-extrabold uppercase tracking-tight text-white mb-2 font-cabinet">
-          Salas de la <span className="text-primary">Comunidad</span>
-        </h1>
-        <p className="text-muted-foreground text-sm max-w-md mx-auto">
-          Visita las salas recomendadas y oficiales de la radio para compartir y
-          bailar con otros Habbos.
-        </p>
-      </div>
-
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-8 bg-card/40 backdrop-blur p-4 rounded-xl border border-border/60">
-        <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          {categories.map((cat) => (
-            <Button
-              key={cat.value}
-              variant={selectedCategory === cat.value ? "default" : "outline"}
-              size="sm"
-              className={`text-xs font-bold ${
-                selectedCategory === cat.value
-                  ? "bg-primary text-black"
-                  : "text-muted-foreground border-border hover:bg-zinc-800"
-              }`}
-              onClick={() => setSelectedCategory(cat.value)}
-            >
-              {cat.label}
-            </Button>
-          ))}
-        </div>
-        <div className="w-full md:w-72">
-          <Input
-            placeholder="Buscar por nombre o dueño..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="text-xs bg-zinc-950 border-border"
-          />
-        </div>
-      </div>
+      <PageHeaderCard
+        title="Salas de la Comunidad"
+        description="Visita las salas recomendadas y oficiales de la radio para compartir y bailar con otros Habbos."
+        icon={<Home className="w-5 h-5 text-amber-500" />}
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+              {categories.map((cat) => (
+                <button
+                  key={cat.value}
+                  onClick={() => setSelectedCategory(cat.value)}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                    selectedCategory === cat.value
+                      ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                      : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+            <div className="w-44 sm:w-56">
+              <Input
+                placeholder="Buscar por sala o dueño..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-8 text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl"
+              />
+            </div>
+          </div>
+        }
+      />
 
       {/* Rooms Grid */}
       {isLoading ? (
@@ -151,26 +148,26 @@ export default function RoomsPage() {
           ))}
         </div>
       ) : filteredRooms.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-border rounded-xl bg-card/20">
-          <i className="fa-solid fa-hotel text-3xl text-muted-foreground mb-3 block"></i>
-          <p className="text-muted-foreground text-sm">
+        <div className="text-center py-16 border border-slate-200/90 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 text-slate-400">
+          <i className="fa-solid fa-hotel text-3xl mb-3 block opacity-40"></i>
+          <p className="text-sm font-bold">
             No se encontraron salas registradas.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filteredRooms.map((room) => (
             <Card
               key={room.id}
-              className={`border transition-all duration-300 bg-card/50 overflow-hidden ${
+              className={`bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden transition-all duration-300 ${
                 room.featured
-                  ? "border-primary/50 shadow-[0_0_15px_rgba(245,166,35,0.08)]"
-                  : "border-border"
+                  ? "ring-2 ring-amber-500/40"
+                  : ""
               }`}
             >
               <div className="flex flex-col sm:flex-row h-full">
                 {/* Image / Thumbnail */}
-                <div className="w-full sm:w-1/3 relative bg-zinc-900 border-b sm:border-b-0 sm:border-r border-border min-h-[120px] flex items-center justify-center overflow-hidden">
+                <div className="w-full sm:w-1/3 relative bg-slate-100 dark:bg-slate-800 border-b sm:border-b-0 sm:border-r border-slate-200/80 dark:border-slate-800 min-h-[120px] flex items-center justify-center overflow-hidden">
                   <img
                     src={
                       room.thumbnailUrl ||
@@ -184,43 +181,43 @@ export default function RoomsPage() {
                     }}
                   />
                   {room.featured && (
-                    <span className="absolute top-2 left-2 bg-primary text-black font-extrabold text-[8px] uppercase tracking-wider px-2 py-0.5 rounded shadow">
+                    <span className="absolute top-2 left-2 bg-amber-500 text-slate-950 font-extrabold text-[8px] uppercase tracking-wider px-2 py-0.5 rounded shadow-xs">
                       Destacada
                     </span>
                   )}
                   {room.category && (
-                    <span className="absolute bottom-2 left-2 bg-black/80 text-muted-foreground border border-zinc-800 text-[8px] uppercase tracking-wider px-2 py-0.5 rounded">
+                    <span className="absolute bottom-2 left-2 bg-black/80 text-white/80 border border-white/10 text-[8px] uppercase tracking-wider px-2 py-0.5 rounded">
                       {room.category}
                     </span>
                   )}
                 </div>
 
                 {/* Content */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
+                <div className="p-4 flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start gap-2 mb-1">
-                      <h3 className="font-bold text-white text-sm leading-tight truncate">
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm leading-tight truncate">
                         {room.name}
                       </h3>
-                      <div className="flex items-center gap-1 text-[10px] text-green-400 font-bold bg-green-500/10 px-2 py-0.5 rounded-full flex-shrink-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                      <div className="flex items-center gap-1 text-[10px] text-green-500 font-bold bg-green-500/10 px-2 py-0.5 rounded-full flex-shrink-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                         {room.currentVisitors}
                       </div>
                     </div>
 
                     {room.ownerHabbo && (
-                      <p className="text-[10px] text-primary font-semibold mb-2">
+                      <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mb-2">
                         Dueño: {room.ownerHabbo}
                       </p>
                     )}
 
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                       {room.description || "Sin descripción disponible."}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-border/40">
-                    <span className="text-[9px] text-muted-foreground flex items-center gap-1">
+                  <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <span className="text-[9px] text-slate-400 flex items-center gap-1">
                       <i className="fa-solid fa-server"></i> Hotel .
                       {room.hotel.toUpperCase()}
                     </span>
@@ -228,7 +225,7 @@ export default function RoomsPage() {
                     {room.roomCode && (
                       <Button
                         size="sm"
-                        className="text-xs font-bold bg-primary text-black hover:bg-primary/95 flex items-center gap-1.5 py-1 px-3"
+                        className="text-xs font-bold bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-600 text-white dark:text-slate-950 flex items-center gap-1.5 py-1 px-3 rounded-xl shadow-xs"
                         onClick={(e) => handleCopy(room.roomCode!, e)}
                       >
                         <i className="fa-solid fa-copy"></i>
@@ -242,6 +239,6 @@ export default function RoomsPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

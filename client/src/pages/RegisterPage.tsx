@@ -20,6 +20,7 @@ import {
   Check,
   ArrowLeft,
 } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -156,41 +157,37 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="p-4 lg:p-6 flex items-center justify-center min-h-[calc(100vh-52px)] relative overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="w-full max-w-lg space-y-4 relative z-10">
-        {/* Logo */}
-        <div className="text-center space-y-2">
-          <div className="flex justify-center mb-2">
-            <img
-              src="/logo.png"
-              alt="hSpeed Logo"
-              className="h-12 w-auto object-contain"
-            />
+    <PageContainer>
+      <div className="flex items-center justify-center py-6">
+        <div className="w-full max-w-lg space-y-4 relative z-10">
+          {/* Logo */}
+          <div className="text-center space-y-2">
+            <div className="flex justify-center mb-2">
+              <img
+                src="/logo.png"
+                alt="hSpeed Logo"
+                className="h-12 w-auto object-contain"
+              />
+            </div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+              Crear Cuenta
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Únete a la comunidad de forma segura mediante verificación de personaje
+            </p>
           </div>
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-            Crear Cuenta
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Únete a la comunidad de forma segura mediante verificación de
-            personaje
-          </p>
-        </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-stretch">
-          <Card className="bg-card border-border glow-purple flex-1 overflow-hidden relative glass">
-            <CardHeader className="pb-3 border-b border-border/40">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-primary" />
-                {verified
-                  ? "Paso 2: Datos de la Cuenta"
-                  : "Paso 1: Verificación de Personaje"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch">
+            <Card className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs flex-1 overflow-hidden relative">
+              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                  <UserPlus className="w-4 h-4 text-amber-500" />
+                  {verified
+                    ? "Paso 2: Datos de la Cuenta"
+                    : "Paso 1: Verificación de Personaje"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
               {/* ERRORS */}
               {error && (
                 <Alert
@@ -523,5 +520,6 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+    </PageContainer>
   );
 }

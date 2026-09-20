@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import PageContainer from "@/components/PageContainer";
 import {
   Trophy,
   Calendar,
@@ -115,14 +116,14 @@ export default function FutbolHubPage() {
   const [penaltyGoals, setPenaltyGoals] = useState(0);
   const [penaltySaves, setPenaltySaves] = useState(0);
   const [penaltyStreak, setPenaltyStreak] = useState(0);
-  const [penaltyFeedback, setPenaltyFeedback] = useState(null);
-  const [keeperDive, setKeeperDive] = useState(null);
+  const [penaltyFeedback, setPenaltyFeedback] = useState<string | null>(null);
+  const [keeperDive, setKeeperDive] = useState<number | null>(null);
   const [isShooting, setIsShooting] = useState(false);
   const [earnedSp, setEarnedSp] = useState(0);
 
   // Wheel state
   const [wheelSpinning, setWheelSpinning] = useState(false);
-  const [wheelResult, setWheelResult] = useState(null);
+  const [wheelResult, setWheelResult] = useState<string | null>(null);
 
   // Determine current active subview
   const isPenales = location.includes("/mini/rapido");
@@ -216,7 +217,7 @@ export default function FutbolHubPage() {
   });
 
   // Shoot penalty logic
-  const handleShoot = (zoneIndex) => {
+  const handleShoot = (zoneIndex: number) => {
     if (penaltyShotsLeft <= 0 || isShooting) return;
     setIsShooting(true);
 
@@ -286,7 +287,8 @@ export default function FutbolHubPage() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-6" data-testid="futbol-hub-root">
+    <PageContainer>
+      <div className="space-y-6" data-testid="futbol-hub-root">
       {/* Top Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-950 border border-emerald-500/20 p-5 rounded-2xl shadow-xl">
         <div className="flex items-center gap-3.5">
@@ -939,7 +941,7 @@ export default function FutbolHubPage() {
                   ))}
                 </div>
               ) : (
-                matches.map((match) => {
+                matches.map((match: any) => {
                   const status = getMatchStatus(match.status);
                   return (
                     <Card
@@ -990,7 +992,7 @@ export default function FutbolHubPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {standings.map((s) => (
+                    {standings.map((s: any) => (
                       <tr key={s.position} className="hover:bg-white/5 transition-colors">
                         <td className="p-2 font-black text-slate-400">{s.position}</td>
                         <td className="p-2 font-bold text-white flex items-center gap-2">
@@ -1013,7 +1015,7 @@ export default function FutbolHubPage() {
             {/* Teams */}
             <TabsContent value="equipos" className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                {teams.map((t) => (
+                {teams.map((t: any) => (
                   <Card key={t.id} className="bg-[#0c1424] border-white/10 p-4 text-center hover:border-emerald-500/30 transition-all">
                     <img src={t.crest} alt={t.name} className="w-12 h-12 mx-auto object-contain mb-2" />
                     <p className="font-bold text-xs text-white truncate">{t.name}</p>
@@ -1066,5 +1068,6 @@ export default function FutbolHubPage() {
         </div>
       )}
     </div>
-  );
+  </PageContainer>
+);
 }

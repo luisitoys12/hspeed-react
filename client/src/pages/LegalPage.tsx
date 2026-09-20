@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Lock, FileText } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 const TABS = [
   { id: "aviso", label: "Aviso Legal", icon: Shield },
@@ -12,11 +14,12 @@ export default function LegalPage() {
   const [active, setActive] = useState("aviso");
 
   return (
-    <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-5">
-      <div className="flex items-center gap-3">
-        <Shield className="w-5 h-5 text-primary" />
-        <h1 className="text-xl font-bold">Información Legal</h1>
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Información Legal"
+        description="Aviso legal, política de privacidad y términos de uso de HabboSpeed."
+        icon={<Shield className="w-5 h-5 text-amber-500" />}
+      />
 
       {/* Tab Nav */}
       <div className="flex gap-1 bg-secondary/50 border border-border rounded-lg p-1 flex-wrap">
@@ -214,6 +217,6 @@ export default function LegalPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </PageContainer>
   );
 }

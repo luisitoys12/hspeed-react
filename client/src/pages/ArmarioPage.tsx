@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 import {
   Scissors,
   User,
@@ -368,43 +370,44 @@ export default function ArmarioPage() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-5 font-sans">
-      {/* Title Header */}
-      <div className="site-panel-strong p-5 flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <p className="site-kicker">Herramientas</p>
-          <h1 className="site-title mt-2 flex items-center gap-3">
-            <User className="w-5 h-5 text-primary animate-pulse" />
-            Armario HabboSpeed
-          </h1>
-          <p className="text-xs text-muted-foreground mt-2 max-w-2xl">
-            Personaliza tu avatar con todas las prendas y paletas oficiales de
-            Habbo. Rota tu personaje, añade gestos, señales u objetos en mano.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant={gender === "M" ? "default" : "outline"}
-            onClick={() => {
-              setGender("M");
-              setCurrentPage(1);
-            }}
-            className={`text-xs px-4 h-8 font-bold ${gender === "M" ? "bg-primary text-black" : "border-border text-white"}`}
-          >
-            Masculino
-          </Button>
-          <Button
-            variant={gender === "F" ? "default" : "outline"}
-            onClick={() => {
-              setGender("F");
-              setCurrentPage(1);
-            }}
-            className={`text-xs px-4 h-8 font-bold ${gender === "F" ? "bg-primary text-black" : "border-border text-white"}`}
-          >
-            Femenino
-          </Button>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Armario HabboSpeed"
+        description="Personaliza tu avatar con todas las prendas y paletas oficiales de Habbo. Rota tu personaje, añade gestos, señales u objetos en mano."
+        icon={<User className="w-5 h-5 text-amber-500" />}
+        action={
+          <div className="flex gap-2">
+            <Button
+              variant={gender === "M" ? "default" : "outline"}
+              onClick={() => {
+                setGender("M");
+                setCurrentPage(1);
+              }}
+              className={`text-xs px-4 h-8 font-bold rounded-xl ${
+                gender === "M"
+                  ? "bg-amber-500 text-slate-950 hover:bg-amber-600"
+                  : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200"
+              }`}
+            >
+              Masculino
+            </Button>
+            <Button
+              variant={gender === "F" ? "default" : "outline"}
+              onClick={() => {
+                setGender("F");
+                setCurrentPage(1);
+              }}
+              className={`text-xs px-4 h-8 font-bold rounded-xl ${
+                gender === "F"
+                  ? "bg-amber-500 text-slate-950 hover:bg-amber-600"
+                  : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200"
+              }`}
+            >
+              Femenino
+            </Button>
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Side: Live Preview & Action panel (Col-span 4) */}
@@ -866,6 +869,6 @@ export default function ArmarioPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

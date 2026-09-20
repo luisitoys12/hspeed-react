@@ -28,6 +28,8 @@ import { proxyImage } from "@/lib/habboProxy";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useState } from "react";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 interface SpeedShort {
   id: string;
@@ -223,19 +225,12 @@ export default function TendenciasPage() {
   );
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 p-2 rounded-xl">
-          <TrendingUp className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">Tendencias & SpeedShorts</h1>
-          <p className="text-xs text-muted-foreground">
-            Lo más visto, compartido y comentado en HabboSpeed
-          </p>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Tendencias & SpeedShorts"
+        description="Lo más visto, compartido y comentado en HabboSpeed: videos, shorts y noticias populares."
+        icon={<TrendingUp className="w-5 h-5 text-amber-500" />}
+      />
 
       {/* Category Filter */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -519,6 +514,6 @@ export default function TendenciasPage() {
           Subir mi SpeedShort
         </Button>
       </section>
-    </div>
+    </PageContainer>
   );
 }

@@ -6,6 +6,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { Radio } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
+import { PageHeaderCard } from "@/components/PageHeaderCard";
 
 interface SongHistoryItem {
   id: number;
@@ -66,16 +69,12 @@ export default function SongHistoryPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-extrabold uppercase tracking-tight text-white mb-2 font-cabinet">
-          Historial de <span className="text-primary">Canciones</span>
-        </h1>
-        <p className="text-muted-foreground text-sm max-w-md mx-auto">
-          Descubre las últimas canciones que sonaron en la radio de HabboSpeed y
-          solicita que vuelvan a sonar en vivo.
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeaderCard
+        title="Historial de Canciones"
+        description="Descubre las últimas canciones que sonaron en la radio de HabboSpeed y solicita que vuelvan a sonar en vivo."
+        icon={<Radio className="w-5 h-5 text-amber-500" />}
+      />
 
       {/* Top 3 Songs of the Week */}
       <div className="mb-12">
@@ -317,6 +316,6 @@ export default function SongHistoryPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
