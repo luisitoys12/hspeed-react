@@ -139,9 +139,9 @@ export class MemStorage implements IStorage {
     // Configuración por defecto
     this.configItem = {
       id: 1,
-      radioService: "zenofm",
-      apiUrl: "https://api.zeno.fm/mounts/metadata/subscribe/tu_mount_id",
-      listenUrl: "https://stream.zeno.fm/tu_mount_id",
+      radioService: "azuracast",
+      apiUrl: "http://127.0.0.1:8005/api/nowplaying/1",
+      listenUrl: "http://127.0.0.1:8005/listen/habboradio/radio.mp3",
       homePlayerBgUrl:
         "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       slideshow: [

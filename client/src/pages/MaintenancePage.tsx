@@ -47,13 +47,17 @@ export default function MaintenancePage() {
   });
 
   const songTitle =
-    typeof nowPlaying?.song === "string"
+    nowPlaying?.now_playing?.song?.title
+      ? `${nowPlaying.now_playing.song.artist ? nowPlaying.now_playing.song.artist + " - " : ""}${nowPlaying.now_playing.song.title}`
+      : typeof nowPlaying?.song === "string"
       ? nowPlaying.song
       : typeof nowPlaying?.title === "string"
       ? nowPlaying.title
       : "Dua Lipa - Houdini";
   const djName =
-    typeof nowPlaying?.dj === "string"
+    nowPlaying?.live?.is_live && nowPlaying?.live?.streamer_name
+      ? `DJ ${nowPlaying.live.streamer_name}`
+      : typeof nowPlaying?.dj === "string"
       ? nowPlaying.dj
       : typeof nowPlaying?.djName === "string"
       ? nowPlaying.djName
@@ -65,9 +69,9 @@ export default function MaintenancePage() {
       ? nowPlaying.listeners
       : 102;
   const streamUrl =
-    typeof nowPlaying?.listenUrl === "string" && nowPlaying.listenUrl
-      ? nowPlaying.listenUrl
-      : "https://streaming.habbospeed.com/radio.mp3";
+    nowPlaying?.station?.listen_url ||
+    (typeof nowPlaying?.listenUrl === "string" && nowPlaying.listenUrl) ||
+    "http://127.0.0.1:8005/listen/habboradio/radio.mp3";
 
   // Staff Login Modal State
   const [showStaffModal, setShowStaffModal] = useState(false);

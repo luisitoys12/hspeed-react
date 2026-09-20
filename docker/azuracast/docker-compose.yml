@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  web:
+    image: ghcr.io/azuracast/azuracast_radio:latest
+    container_name: azuracast_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "8443:443"
+      - "8000-8020:8000-8020"
+    volumes:
+      - stations_data:/var/azuracast/stations
+      - db_data:/var/lib/mysql
+      - backups_data:/var/azuracast/backups
+      - storage_data:/var/azuracast/storage
+      - C:\Users\LuisSandoval\Music\Qobuz:/var/azuracast/stations/habbospeed/media:ro
+    environment:
+      - AZURACAST_VERSION=latest
+      - APPLICATION_ENV=production
+      - LANG=es_ES.UTF-8
+
+volumes:
+  stations_data:
+  db_data:
+  backups_data:
+  storage_data:
