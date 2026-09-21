@@ -163,43 +163,125 @@ export class MemStorage implements IStorage {
       maintenanceMode: false,
     };
 
-    // DJ Panel por defecto
+    // DJ Panel por defecto (habbospeed como DJ al aire, ser03z-51 siguiente)
     this.djPanelState = {
       id: 1,
-      currentDj: "AutoDJ",
-      nextDj: "Dj_Invitado",
-      djMessage: "Sintoniza la mejor música en HabboSpeed!",
+      currentDj: "habbospeed",
+      nextDj: "ser03z-51",
+      currentShow: "HabboSpeed Hits 2026",
+      djMessage: "¡Sintoniza los mejores éxitos en vivo por HabboSpeed!",
+      streamStatus: "online",
+      isLive: true,
       updatedAt: new Date(),
     };
 
-    // Crear usuario admin de prueba (password: admin123)
+    // Crear usuarios reales de Habbo.es (password: admin123)
     const adminPassHash = await bcrypt.hash("admin123", 10);
     this.users.set(1, {
       id: 1,
       email: "admin@habbospeed.com",
       passwordHash: adminPassHash,
-      displayName: "Administrador",
-      habboUsername: "HabboSpeed",
+      displayName: "habbospeed",
+      habboUsername: "habbospeed",
       avatarUrl:
-        "https://www.habbo.es/habbo-imaging/avatarimage?user=HabboSpeed&size=b",
+        "https://www.habbo.es/habbo-imaging/avatarimage?user=habbospeed&size=b&direction=2&head_direction=2&gesture=sml",
       role: "admin",
       approved: true,
-      speedPoints: 500,
+      speedPoints: 1250,
+      mundialStamps: [],
+      mundialLogros: [],
+      mundialClan: "SpeedElite",
+      mundialPredictions: {},
+      mundialTickets: 10,
+      mundialPenalties: { maxScore: 5, totalGames: 12 },
+      vipTier: "diamond",
+      totalRequests: 25,
+      favoriteGenre: "Hip Hop / Pop",
+      bio: "Fundador oficial de HabboSpeed. ¡Disfruta de la mejor radio 24/7!",
+      socialLinks: {},
+      badgesEarned: ["ADM", "HS1", "ACH_Music10"],
+      createdAt: new Date(),
+    });
+
+    const serPassHash = await bcrypt.hash("dj123", 10);
+    this.users.set(2, {
+      id: 2,
+      email: "ser03z@habbospeed.com",
+      passwordHash: serPassHash,
+      displayName: "ser03z-51",
+      habboUsername: "ser03z-51",
+      avatarUrl:
+        "https://www.habbo.es/habbo-imaging/avatarimage?user=ser03z-51&size=b&direction=4&head_direction=4&gesture=sml",
+      role: "dj",
+      approved: true,
+      speedPoints: 850,
+      mundialStamps: [],
+      mundialLogros: [],
+      mundialClan: "SpeedElite",
+      mundialPredictions: {},
+      mundialTickets: 5,
+      mundialPenalties: { maxScore: 4, totalGames: 8 },
+      vipTier: "gold",
+      totalRequests: 40,
+      favoriteGenre: "Latino / Reggaeton",
+      bio: "DJ Oficial de HabboSpeed en vivo. Pide tus temas en la web.",
+      socialLinks: {},
+      badgesEarned: ["ACH_Music10", "ACH_VipClub10"],
+      createdAt: new Date(),
+    });
+
+    this.users.set(3, {
+      id: 3,
+      email: "mod@habbospeed.com",
+      passwordHash: adminPassHash,
+      displayName: "MOD-sweet",
+      habboUsername: "MOD-sweet",
+      avatarUrl:
+        "https://www.habbo.es/habbo-imaging/avatarimage?user=MOD-sweet&size=b&direction=2&head_direction=2&gesture=sml",
+      role: "admin",
+      approved: true,
+      speedPoints: 620,
       mundialStamps: [],
       mundialLogros: [],
       mundialClan: null,
       mundialPredictions: {},
-      mundialTickets: 0,
-      mundialPenalties: { maxScore: 0, totalGames: 0 },
-      vipTier: null,
-      totalRequests: 0,
-      favoriteGenre: null,
-      bio: null,
+      mundialTickets: 2,
+      mundialPenalties: { maxScore: 2, totalGames: 4 },
+      vipTier: "silver",
+      totalRequests: 12,
+      favoriteGenre: "Pop / Hits",
+      bio: "Moderación y seguridad de la comunidad HabboSpeed.",
       socialLinks: {},
-      badgesEarned: [],
+      badgesEarned: ["ACH_SafetyQuiz1"],
       createdAt: new Date(),
     });
-    this.currentId = 2;
+
+    this.users.set(4, {
+      id: 4,
+      email: "albert@habbospeed.com",
+      passwordHash: adminPassHash,
+      displayName: "albertsolano",
+      habboUsername: "albertsolano",
+      avatarUrl:
+        "https://www.habbo.es/habbo-imaging/avatarimage?user=albertsolano&size=b&direction=2&head_direction=2&gesture=sml",
+      role: "dj",
+      approved: true,
+      speedPoints: 940,
+      mundialStamps: [],
+      mundialLogros: [],
+      mundialClan: null,
+      mundialPredictions: {},
+      mundialTickets: 8,
+      mundialPenalties: { maxScore: 3, totalGames: 6 },
+      vipTier: "gold",
+      totalRequests: 19,
+      favoriteGenre: "Electrónica / Dance",
+      bio: "Diseñador de salas y animador de eventos de HabboSpeed.",
+      socialLinks: {},
+      badgesEarned: ["ACH_RoomRaid10"],
+      createdAt: new Date(),
+    });
+    this.currentId = 5;
 
     // Crear categorías del foro por defecto
     const catNames = ["General", "Soporte", "Radio", "Juegos & Concursos"];

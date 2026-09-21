@@ -213,37 +213,37 @@ export default function HomePage() {
     },
   ];
 
-  // Forum Threads fallback
+  // Forum Threads fallback con usuarios reales de Habbo.es
   const mockForumThreads = [
     {
       id: 1,
-      title: "NICORAMSXSTS DE CARASHOO",
-      author: "Baikiiga",
+      title: "Debate Semanal: ¿Cuál es tu furni clásico favorito?",
+      author: "habbospeed",
       icon: "https://images.habbo.com/c_images/album1584/ACH_RoomRaid1.gif",
       badge: "GENERAL",
       replies: 18,
     },
     {
       id: 2,
-      title: "MAUSO MAUUSO DELESPMINNS",
-      author: "Garage",
-      icon: "https://images.habbo.com/c_images/album1584/ACH_SafetyQuiz1.gif",
-      badge: "DISCUSIÓN",
-      replies: 12,
+      title: "Horarios de cabina y cómo pedir temas en vivo",
+      author: "ser03z-51",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_Music1.gif",
+      badge: "RADIO",
+      replies: 14,
     },
     {
       id: 3,
-      title: "SALA CANDOR PIRO DE EL ARMSNO",
-      author: "Bolegra",
+      title: "Guía de construcción de salas para torneos de wired",
+      author: "albertsolano",
       icon: "https://images.habbo.com/c_images/album1584/ACH_BattleBallTiles1.gif",
       badge: "SALAS",
       replies: 24,
     },
     {
       id: 4,
-      title: "SEREE DE 59 HRR MI NSOWO",
-      author: "Boigo",
-      icon: "https://images.habbo.com/c_images/album1584/ACH_RespectEarned1.gif",
+      title: "Normas de seguridad y prevención de timos en el Hotel",
+      author: "MOD-sweet",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_SafetyQuiz1.gif",
       badge: "HABBO",
       replies: 9,
     },
@@ -251,18 +251,18 @@ export default function HomePage() {
 
   const mockNovedades = [
     {
-      title: "JALES DE LA WOODGAN DE EINASAGGALL",
+      title: "Nueva Colección de Raros Clásicos en Tienda SP",
       desc: "Nuevas placas de colección añadidas al catálogo.",
       icon: "https://images.habbo.com/c_images/album1584/ACH_Tag1.gif",
     },
     {
-      title: "CESPESSA DE STATTEE SL KONN, NOLL",
-      desc: "Torneo de penales en el Fútbol Hub este viernes.",
-      icon: "https://images.habbo.com/c_images/album1584/ACH_BattleBallTiles1.gif",
+      title: "Gran Torneo de Penales en el Fútbol Hub",
+      desc: "Compite con tu equipo y gana SpeedPoints exclusivos este fin de semana.",
+      icon: "https://images.habbo.com/c_images/album1584/ACH_FootballGoal1.gif",
     },
     {
-      title: "OVENTOS DES COWBAA",
-      desc: "Sintoniza a nuestro DJ invitado en la sesión nocturna.",
+      title: "Sesión Nocturna en Vivo con DJ ser03z-51",
+      desc: "Sintoniza los mejores éxitos urbanos y pide tus temas favoritos.",
       icon: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif",
     },
   ];
@@ -608,11 +608,11 @@ export default function HomePage() {
                   <div className="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/50">
                     <div className="w-12 h-14 bg-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden flex items-center justify-center border border-slate-300 dark:border-slate-700 flex-shrink-0 relative">
                       <img
-                        src="https://www.habbo.es/habbo-imaging/avatarimage?user=Frank&size=b&direction=2&head_direction=2&gesture=sml"
+                        src="https://www.habbo.es/habbo-imaging/avatarimage?user=habbospeed&size=b&direction=2&head_direction=2&gesture=sml"
                         alt="Staff"
                         className="absolute top-[-8px] w-14 h-20 object-contain"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/habbo-radio/frank_small_03.gif";
+                          (e.target as HTMLImageElement).src = "https://www.habbo.es/habbo-imaging/avatarimage?user=habbospeed&size=m";
                         }}
                       />
                     </div>
@@ -621,7 +621,7 @@ export default function HomePage() {
                         Staff de hSpeed
                       </span>
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 truncate">
-                        Administrador Oficial
+                        habbospeed (Fundador)
                       </h4>
                       <p className="text-[9px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
                         Coordinación y gestión de la radio comunitaria.
@@ -756,9 +756,10 @@ export default function HomePage() {
 
                   <div className="space-y-2">
                     {[
-                      { rank: 1, name: "CinhuLOL", points: "362 responses", color: "bg-amber-400 text-slate-900" },
-                      { rank: 2, name: "DinhuLOL", points: "300 responses", color: "bg-slate-300 text-slate-800" },
-                      { rank: 3, name: "KinhuLOL", points: "133 responses", color: "bg-amber-600 text-white" },
+                      { rank: 1, name: "habbospeed", points: "362 pts", color: "bg-amber-400 text-slate-900" },
+                      { rank: 2, name: "ser03z-51", points: "300 pts", color: "bg-slate-300 text-slate-800" },
+                      { rank: 3, name: "albertsolano", points: "185 pts", color: "bg-amber-600 text-white" },
+                      { rank: 4, name: "MOD-sweet", points: "133 pts", color: "bg-cyan-600 text-white" },
                     ].map((userRank) => (
                       <div
                         key={userRank.rank}

@@ -374,11 +374,11 @@ function RankingDerbyTab() {
   });
 
   const entries: any[] = leaderboard?.entries || [
-    { name: "DinhuLOL", score: 102 },
-    { name: "Frank", score: 98 },
-    { name: "SpeedMaster", score: 85 },
-    { name: "HabboKing", score: 72 },
-    { name: "PixelGirl", score: 64 },
+    { name: "habbospeed", score: 102 },
+    { name: "ser03z-51", score: 98 },
+    { name: "albertsolano", score: 85 },
+    { name: "MOD-sweet", score: 72 },
+    { name: "Estarqui", score: 64 },
   ];
 
   return (

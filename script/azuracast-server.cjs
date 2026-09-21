@@ -178,7 +178,7 @@ function getNowPlayingData() {
     },
     live: {
       is_live: true,
-      streamer_name: "ser03z-51",
+      streamer_name: "habbospeed",
       broadcast_start: Math.floor(Date.now() / 1000) - 3600
     },
     now_playing: {
