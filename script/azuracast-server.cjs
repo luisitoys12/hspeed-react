@@ -6,7 +6,22 @@ const PORT = 8005;
 const USER_MUSIC_DIR = 'C:\\Users\\LuisSandoval\\Music\\Qobuz';
 const FALLBACK_MP3 = path.resolve(__dirname, 'sample-radio-track.mp3');
 
-// 1. Indexar biblioteca de música
+// Helper para encontrar el primer frame MPEG (salta encabezados ID3v2 y carátulas pesadas)
+function findMpegFrameOffset(buf) {
+  let start = 0;
+  if (buf.length > 10 && buf.subarray(0, 3).toString() === 'ID3') {
+    const id3Size = (buf[6] << 21) | (buf[7] << 14) | (buf[8] << 7) | buf[9];
+    start = id3Size + 10;
+  }
+  for (let i = start; i < buf.length - 1; i++) {
+    if (buf[i] === 0xff && (buf[i + 1] & 0xe0) === 0xe0) {
+      return i;
+    }
+  }
+  return 0; // Fallback al inicio si no se detecta
+}
+
+// 1. Indexar biblioteca de música real de Qobuz
 function scanMusicLibrary(dir) {
   const list = [];
   if (!fs.existsSync(dir)) return list;
@@ -25,7 +40,8 @@ function scanMusicLibrary(dir) {
           const title = parts.length > 1 ? parts.slice(1).join(' - ').trim() : rawName;
           const album = path.basename(path.dirname(fullPath));
           const size = fs.statSync(fullPath).size;
-          const estimatedDuration = Math.max(60, Math.min(600, Math.floor(size / (320 * 1024 / 8))));
+          // Estimar duración basada en bitrate 320 kbps (40 KB/s)
+          const estimatedDuration = Math.max(90, Math.min(480, Math.floor(size / 40000)));
 
           list.push({
             id: 'song_' + (list.length + 1),
@@ -63,40 +79,51 @@ if (playlist.length === 0 && fs.existsSync(FALLBACK_MP3)) {
   });
 }
 
-// Mezclar canciones
+// Mezclar canciones aleatoriamente al inicio
 for (let i = playlist.length - 1; i > 0; i--) {
   const j = Math.floor(Math.random() * (i + 1));
   [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
 }
 
-console.log(`[AzuraCast] Total de canciones cargadas desde tu PC: ${playlist.length}`);
+console.log(`[AzuraCast] Biblioteca cargada: ${playlist.length} canciones reales desde ${USER_MUSIC_DIR}`);
 
-// 2. Estado Global de Emisión
-let globalSongIndex = 0;
-let songStartedAt = Math.floor(Date.now() / 1000);
-let currentListeners = 145;
-const songHistory = [];
+// 2. Cache en memoria de canciones con audio MPEG limpio
+const songCache = new Map();
 
-// Cache de buffers de audio en memoria (cargar bajo demanda)
-const bufferCache = new Map();
-function getSongBuffer(song) {
-  if (bufferCache.has(song.fullPath)) {
-    return bufferCache.get(song.fullPath);
+function getPreparedSong(song) {
+  if (songCache.has(song.fullPath)) {
+    return songCache.get(song.fullPath);
   }
   try {
-    const buf = fs.readFileSync(song.fullPath);
-    // Limitar cache a 10 archivos para no saturar memoria
-    if (bufferCache.size > 10) {
-      const firstKey = bufferCache.keys().next().value;
-      bufferCache.delete(firstKey);
+    const rawBuf = fs.readFileSync(song.fullPath);
+    const mpegOffset = findMpegFrameOffset(rawBuf);
+    const audioBuf = rawBuf.subarray(mpegOffset);
+
+    // Evitar que el cache supere 8 canciones en RAM (~60MB)
+    if (songCache.size > 8) {
+      const firstKey = songCache.keys().next().value;
+      songCache.delete(firstKey);
     }
-    bufferCache.set(song.fullPath, buf);
-    return buf;
+
+    const prepared = {
+      rawBuf,
+      mpegOffset,
+      audioBuf,
+      length: audioBuf.length
+    };
+    songCache.set(song.fullPath, prepared);
+    return prepared;
   } catch (err) {
-    console.error(`[AzuraCast] Error leyendo canción ${song.fullPath}:`, err.message);
+    console.error(`[AzuraCast] Error cargando ${song.fullPath}:`, err.message);
     return null;
   }
 }
+
+// 3. Emisión Global Sincronizada
+let globalSongIndex = 0;
+let songStartedAt = Math.floor(Date.now() / 1000);
+let currentGlobalOffset = 0;
+const songHistory = [];
 
 function getCurrentSong() {
   return playlist[globalSongIndex] || playlist[0];
@@ -119,27 +146,22 @@ function advanceGlobalSong() {
 
   globalSongIndex = (globalSongIndex + 1) % playlist.length;
   songStartedAt = Math.floor(Date.now() / 1000);
-  currentListeners = 140 + Math.floor(Math.random() * 20);
+  currentGlobalOffset = 0;
 
   const next = getCurrentSong();
-  console.log(`[AzuraCast] 🎵 Emisión en curso: "${next.artist} - ${next.title}" (${currentListeners} oyentes)`);
+  console.log(`[AzuraCast] 🎵 Emisión en curso: "${next.artist} - ${next.title}" | Oyentes conectados: ${activeClients.size}`);
 }
 
-// Rotación global según duración
-setInterval(() => {
-  const cur = getCurrentSong();
-  const elapsed = Math.floor(Date.now() / 1000) - songStartedAt;
-  if (elapsed >= cur.duration) {
-    advanceGlobalSong();
-  }
-}, 5000);
+// 4. Clientes de Streaming Conectados (Oyentes reales)
+const activeClients = new Map(); // res -> { offset }
 
-// 3. API NowPlaying estándar AzuraCast
+// API NowPlaying estándar AzuraCast (Contador REAL de oyentes y tema REAL)
 function getNowPlayingData() {
   const current = getCurrentSong();
   const nowSec = Math.floor(Date.now() / 1000);
   const elapsed = Math.max(0, nowSec - songStartedAt);
   const remaining = Math.max(0, current.duration - elapsed);
+  const realListeners = activeClients.size;
 
   return {
     station: {
@@ -147,12 +169,12 @@ function getNowPlayingData() {
       name: "HabboSpeed Radio AzuraCast",
       shortcode: "habbospeed",
       description: "Transmitiendo tu colección local de Qobuz",
-      listen_url: "https://relation-roots-jim-empirical.trycloudflare.com/listen/habboradio/radio.mp3"
+      listen_url: "https://springer-shoulder-paintings-town.trycloudflare.com/listen/habboradio/radio.mp3"
     },
     listeners: {
-      current: currentListeners,
-      unique: currentListeners - 6,
-      total: currentListeners
+      current: realListeners,
+      unique: realListeners,
+      total: realListeners
     },
     live: {
       is_live: true,
@@ -177,48 +199,60 @@ function getNowPlayingData() {
   };
 }
 
-// 4. Clientes de Streaming de Audio Conectados (Flujo Contiguo Garantizado)
-const activeClients = new Map(); // res -> { songIndex, offset }
-
-// Pump: cada 250ms enviamos 10 KB por cliente (40 KB/s = 320 kbps reales sin cortes)
+// 5. Ciclo de bombeo de audio (40 KB/s continuo a 320 kbps)
+// 10240 bytes cada 250ms = 40.960 bytes/s
 const CHUNK_SIZE = 10240;
 
 setInterval(() => {
+  const song = getCurrentSong();
+  const prep = getPreparedSong(song);
+
+  if (!prep || prep.length === 0) {
+    advanceGlobalSong();
+    return;
+  }
+
+  // Avanzar offset global
+  currentGlobalOffset += CHUNK_SIZE;
+  if (currentGlobalOffset >= prep.length) {
+    advanceGlobalSong();
+    return;
+  }
+
+  // Si no hay oyentes conectados, solo avanzamos el reloj global
   if (activeClients.size === 0) return;
 
   for (const [res, state] of activeClients.entries()) {
     try {
-      const song = playlist[state.songIndex] || getCurrentSong();
-      const buf = getSongBuffer(song);
-
-      if (!buf) {
-        state.songIndex = (state.songIndex + 1) % playlist.length;
-        state.offset = 0;
-        continue;
-      }
-
       const nextOffset = state.offset + CHUNK_SIZE;
-
-      if (nextOffset >= buf.length) {
-        // Enviar resto de la canción
-        if (state.offset < buf.length) {
-          res.write(buf.subarray(state.offset));
+      if (nextOffset >= prep.length) {
+        if (state.offset < prep.length) {
+          res.write(prep.audioBuf.subarray(state.offset));
         }
-        // Pasar inmediatamente al inicio de la siguiente canción
-        state.songIndex = (state.songIndex + 1) % playlist.length;
         state.offset = 0;
       } else {
-        res.write(buf.subarray(state.offset, nextOffset));
+        res.write(prep.audioBuf.subarray(state.offset, nextOffset));
         state.offset = nextOffset;
       }
     } catch {
       activeClients.delete(res);
+      console.log(`[AzuraCast] Oyente desconectado por error de socket. Total oyentes reales: ${activeClients.size}`);
     }
   }
 }, 250);
 
+// Rotación por tiempo si el archivo terminó
+setInterval(() => {
+  const cur = getCurrentSong();
+  const elapsed = Math.floor(Date.now() / 1000) - songStartedAt;
+  if (elapsed >= cur.duration) {
+    advanceGlobalSong();
+  }
+}, 5000);
+
+// 6. Servidor HTTP
 const server = http.createServer((req, res) => {
-  // CORS
+  // CORS universal
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', '*');
@@ -231,7 +265,7 @@ const server = http.createServer((req, res) => {
 
   const url = req.url.split('?')[0];
 
-  // 1. AzuraCast NowPlaying Endpoints
+  // Endpoints NowPlaying AzuraCast
   if (url === '/api/nowplaying' || url.startsWith('/api/nowplaying/') || url.includes('/nowplaying')) {
     const data = getNowPlayingData();
     const responsePayload = url === '/api/nowplaying' ? [data] : data;
@@ -245,9 +279,10 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 2. Audio Streaming Endpoint
+  // Endpoint de Streaming de Audio MP3
   if (url.startsWith('/listen/') || url.endsWith('.mp3')) {
-    console.log(`[AzuraCast] Nuevo oyente conectado desde ${req.socket.remoteAddress}`);
+    console.log(`[AzuraCast] 🎧 Nuevo oyente conectado desde ${req.socket.remoteAddress}. Oyentes ahora: ${activeClients.size + 1}`);
+
     res.writeHead(200, {
       'Content-Type': 'audio/mpeg',
       'Transfer-Encoding': 'chunked',
@@ -255,39 +290,47 @@ const server = http.createServer((req, res) => {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0',
-      'icy-name': 'HabboSpeed Radio Live (Tu Música)',
+      'X-Accel-Buffering': 'no',
+      'icy-name': 'HabboSpeed Radio Live',
       'icy-genre': 'Pop / Hits / Latino',
       'icy-br': '320'
     });
 
-    const currentSong = getCurrentSong();
-    const buf = getSongBuffer(currentSong);
+    const song = getCurrentSong();
+    const prep = getPreparedSong(song);
 
-    // Enviar ráfaga inicial de 64 KB desde el byte 0 (incluye ID3 y encabezado MPEG limpio)
+    // Ráfaga inicial inmediata de 256 KB de frames MPEG puros (permite que Chromium/Safari/móvil inicien readyState=4 al instante)
     let initialOffset = 0;
-    if (buf) {
-      const burstSize = Math.min(65536, buf.length);
-      res.write(buf.subarray(0, burstSize));
+    if (prep) {
+      const burstSize = Math.min(262144, prep.length);
+      res.write(prep.audioBuf.subarray(0, burstSize));
       initialOffset = burstSize;
     }
 
-    activeClients.set(res, { songIndex: globalSongIndex, offset: initialOffset });
+    activeClients.set(res, { offset: initialOffset });
 
     req.on('close', () => {
       activeClients.delete(res);
-      console.log(`[AzuraCast] Oyente desconectado. Conectados activos: ${activeClients.size}`);
+      console.log(`[AzuraCast] 🎧 Oyente desconectado. Oyentes ahora: ${activeClients.size}`);
     });
     return;
   }
 
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ status: 'AzuraCast Online', port: PORT }));
+  res.end(JSON.stringify({
+    status: 'AzuraCast Online',
+    listeners: activeClients.size,
+    current_song: getCurrentSong().artist + ' - ' + getCurrentSong().title
+  }));
 });
 
 server.listen(PORT, '0.0.0.0', () => {
+  const cur = getCurrentSong();
   console.log(`====================================================`);
   console.log(`📡 Servidor AzuraCast Conectado a tu Música Local`);
   console.log(`   - Canciones indexadas: ${playlist.length}`);
+  console.log(`   - Tema en emisión: ${cur.artist} - ${cur.title}`);
+  console.log(`   - Oyentes reales: ${activeClients.size}`);
   console.log(`   - API NowPlaying: http://127.0.0.1:${PORT}/api/nowplaying/1`);
   console.log(`   - Audio Streaming: http://127.0.0.1:${PORT}/listen/habboradio/radio.mp3`);
   console.log(`====================================================`);

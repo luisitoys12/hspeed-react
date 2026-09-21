@@ -141,7 +141,7 @@ export class MemStorage implements IStorage {
       id: 1,
       radioService: "azuracast",
       apiUrl: "http://127.0.0.1:8005/api/nowplaying/1",
-      listenUrl: "https://relation-roots-jim-empirical.trycloudflare.com/listen/habboradio/radio.mp3",
+      listenUrl: "https://springer-shoulder-paintings-town.trycloudflare.com/listen/habboradio/radio.mp3",
       homePlayerBgUrl:
         "https://images.habbo.com/c_images/Official_Rooms/official_room_wide.png",
       slideshow: [
@@ -160,7 +160,7 @@ export class MemStorage implements IStorage {
       ],
       discordWebhooks: {},
       activeTheme: "nubis",
-      maintenanceMode: true,
+      maintenanceMode: false,
     };
 
     // DJ Panel por defecto

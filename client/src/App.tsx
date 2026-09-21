@@ -122,11 +122,18 @@ function AppContent() {
     retry: false,
   });
 
-  // Modo de mantenimiento activo sin menús
-  const maintenanceEnabled = true;
-  const canBypassMaintenance = user?.role === "admin";
+  // Modo de mantenimiento: respeta la configuración y siempre permite acceso a Inicio si está desactivado,
+  // así como acceso a paneles y login para que el staff pueda operar.
+  const isMaintenanceConfig = Boolean(config?.maintenanceMode);
+  const isAuthOrPanelRoute =
+    location === "/login" ||
+    location === "/panel" ||
+    location === "/djpanel" ||
+    location.startsWith("/panel") ||
+    location.startsWith("/djpanel");
+  const canBypassMaintenance = user?.role === "admin" || user?.role === "dj" || isAuthOrPanelRoute;
 
-  if (maintenanceEnabled && !canBypassMaintenance) {
+  if (location === "/maintenance" || (isMaintenanceConfig && !canBypassMaintenance)) {
     return (
       <Suspense fallback={<PageLoader />}>
         <MaintenancePage />

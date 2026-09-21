@@ -27,6 +27,7 @@ import {
   Settings,
   Play,
   Pause,
+  Loader2,
 } from "lucide-react";
 
 export default function MaintenancePage() {
@@ -83,10 +84,10 @@ export default function MaintenancePage() {
 
   const listenersCount =
     typeof radioData?.listeners === "object" && radioData?.listeners !== null
-      ? (radioData.listeners.current ?? 145)
+      ? (radioData.listeners.current ?? 0)
       : typeof radioData?.listeners === "number"
       ? radioData.listeners
-      : 145;
+      : 0;
 
   // Staff Login Modal State
   const [showStaffModal, setShowStaffModal] = useState(false);
@@ -94,6 +95,7 @@ export default function MaintenancePage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
 
   // Progress Bar simulation
   const [progress, setProgress] = useState(82);
@@ -104,12 +106,9 @@ export default function MaintenancePage() {
     }
   }, [volume, isMuted]);
 
-  const rawStream =
-    radioData?.station?.listen_url ||
-    "https://relation-roots-jim-empirical.trycloudflare.com/listen/habboradio/radio.mp3";
-  const streamUrl = rawStream.includes("127.0.0.1")
-    ? "https://relation-roots-jim-empirical.trycloudflare.com/listen/habboradio/radio.mp3"
-    : rawStream;
+  const getStreamUrl = () => {
+    return "/api/radio-stream";
+  };
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -118,14 +117,42 @@ export default function MaintenancePage() {
     if (isPlaying) {
       audio.pause();
       audio.removeAttribute("src");
+      audio.load();
       setIsPlaying(false);
+      setIsLoadingAudio(false);
     } else {
-      audio.src = streamUrl;
+      setIsLoadingAudio(true);
+      const url = getStreamUrl();
+      const finalUrl = url + (url.includes("?") ? "&" : "?") + "_t=" + Date.now();
+      audio.src = finalUrl;
       audio.volume = isMuted ? 0 : volume / 100;
-      audio.play().catch((err) => {
-        console.error("Audio playback error:", err);
-      });
-      setIsPlaying(true);
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setIsLoadingAudio(false);
+          })
+          .catch((err) => {
+            console.warn("Retrying playback via local audio proxy:", err.message);
+            if (!url.startsWith("/api/")) {
+              audio.src = `/api/radio-stream?_t=${Date.now()}`;
+              audio
+                .play()
+                .then(() => {
+                  setIsPlaying(true);
+                  setIsLoadingAudio(false);
+                })
+                .catch(() => {
+                  setIsPlaying(false);
+                  setIsLoadingAudio(false);
+                });
+            } else {
+              setIsPlaying(false);
+              setIsLoadingAudio(false);
+            }
+          });
+      }
     }
   };
 
@@ -154,7 +181,20 @@ export default function MaintenancePage() {
 
   return (
     <div className="min-h-screen text-slate-800 dark:text-slate-100 flex flex-col font-sans select-none relative overflow-x-hidden">
-      <audio ref={audioRef} preload="none" />
+      <audio
+        ref={audioRef}
+        preload="none"
+        crossOrigin="anonymous"
+        onPlaying={() => {
+          setIsPlaying(true);
+          setIsLoadingAudio(false);
+        }}
+        onWaiting={() => setIsLoadingAudio(true)}
+        onError={() => {
+          setIsPlaying(false);
+          setIsLoadingAudio(false);
+        }}
+      />
 
       {/* Isometric Habbo City Background Wallpaper */}
       <div
@@ -344,17 +384,19 @@ export default function MaintenancePage() {
                 <span className={`w-1 bg-cyan-400 rounded-full transition-all ${isPlaying ? "h-4 animate-pulse" : "h-2.5"}`} />
               </div>
 
-              {/* Big Green Play / Pause Button */}
               <button
                 onClick={togglePlay}
+                disabled={isLoadingAudio}
                 className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer ${
                   isPlaying
                     ? "bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/30 ring-4 ring-rose-500/20"
                     : "bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/40 ring-4 ring-emerald-500/20"
-                }`}
-                title={isPlaying ? "Pausar Radio" : "Escuchar Radio en Vivo"}
+                } ${isLoadingAudio ? "opacity-80 cursor-wait" : ""}`}
+                title={isLoadingAudio ? "Sintonizando señal..." : isPlaying ? "Pausar Radio" : "Escuchar Radio en Vivo"}
               >
-                {isPlaying ? (
+                {isLoadingAudio ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-white" />
+                ) : isPlaying ? (
                   <Pause className="w-5 h-5 fill-white" />
                 ) : (
                   <Play className="w-5 h-5 fill-white ml-0.5" />

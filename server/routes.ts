@@ -2419,8 +2419,8 @@ export async function registerRoutes(server: Server, app: Express) {
         return res.json(normalizedData);
       }
 
-      // 1. Check cache first (15-second cache TTL)
-      if (nowPlayingCache && now - nowPlayingCache.timestamp < 15000) {
+      // 1. Check cache first (2-second cache TTL for real-time sync)
+      if (nowPlayingCache && now - nowPlayingCache.timestamp < 2000) {
         normalizedData = nowPlayingCache.data;
       } else {
         let data: any = null;
@@ -2585,6 +2585,9 @@ export async function registerRoutes(server: Server, app: Express) {
         }
       }
 
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
       res.json(normalizedData);
     } catch (err: any) {
       console.error("Error fetching nowplaying:", err);
@@ -2593,20 +2596,28 @@ export async function registerRoutes(server: Server, app: Express) {
   });
 
   // Proxy de streaming de audio para acceso público (túneles Cloudflare, producción o local)
-  app.get("/api/radio-stream", async (req, res) => {
+  app.get(["/api/radio-stream", "/api/radio/stream", "/listen/habboradio/radio.mp3"], async (req, res) => {
     try {
-      const cfg = await storage.getConfig();
-      const targetUrl = cfg?.listenUrl || "http://127.0.0.1:8005/listen/habboradio/radio.mp3";
+      // Conexión directa loopback al servidor local de audio AzuraCast
+      const targetUrl = "http://127.0.0.1:8005/listen/habboradio/radio.mp3";
 
       const audioReq = http.get(targetUrl, (streamRes) => {
         res.writeHead(streamRes.statusCode || 200, {
-          "Content-Type": streamRes.headers["content-type"] || "audio/mpeg",
+          "Content-Type": "audio/mpeg",
           "Transfer-Encoding": "chunked",
           "Connection": "keep-alive",
-          "Cache-Control": "no-cache, no-store",
-          "Access-Control-Allow-Origin": "*"
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0",
+          "Access-Control-Allow-Origin": "*",
+          "X-Accel-Buffering": "no",
         });
         streamRes.pipe(res);
+      });
+
+      audioReq.on("error", (e) => {
+        console.warn("Audio proxy upstream error:", e.message);
+        if (!res.headersSent) res.status(502).end("Radio no disponible");
       });
 
       req.on("close", () => {

@@ -1966,8 +1966,8 @@ export default function DJPanelPage() {
         <p className="text-sm text-muted-foreground">
           Debes iniciar sesión para acceder al Panel DJ.
         </p>
-        <Link href="/login">
-          <a className="text-primary text-sm hover:underline">Iniciar sesión</a>
+        <Link href="/login" className="text-primary text-sm hover:underline">
+          Iniciar sesión
         </Link>
       </div>
     );
@@ -1981,10 +1981,8 @@ export default function DJPanelPage() {
         <p className="text-sm text-muted-foreground">
           Solo DJs y administradores pueden acceder a este panel.
         </p>
-        <Link href="/">
-          <a className="text-primary text-sm hover:underline">
-            Volver al Inicio
-          </a>
+        <Link href="/" className="text-primary text-sm hover:underline">
+          Volver al Inicio
         </Link>
       </div>
     );
