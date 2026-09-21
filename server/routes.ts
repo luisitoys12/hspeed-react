@@ -1,5 +1,5 @@
 import type { Express, Request, Response, NextFunction } from "express";
-import type { Server } from "http";
+import http, { type Server } from "http";
 import { storage } from "./storage-instance";
 import fs from "fs";
 import fsp from "fs/promises";
@@ -2589,6 +2589,31 @@ export async function registerRoutes(server: Server, app: Express) {
     } catch (err: any) {
       console.error("Error fetching nowplaying:", err);
       res.status(500).json({ message: "Error al consultar radio" });
+    }
+  });
+
+  // Proxy de streaming de audio para acceso público (túneles Cloudflare, producción o local)
+  app.get("/api/radio-stream", async (req, res) => {
+    try {
+      const cfg = await storage.getConfig();
+      const targetUrl = cfg?.listenUrl || "http://127.0.0.1:8005/listen/habboradio/radio.mp3";
+
+      const audioReq = http.get(targetUrl, (streamRes) => {
+        res.writeHead(streamRes.statusCode || 200, {
+          "Content-Type": streamRes.headers["content-type"] || "audio/mpeg",
+          "Transfer-Encoding": "chunked",
+          "Connection": "keep-alive",
+          "Cache-Control": "no-cache, no-store",
+          "Access-Control-Allow-Origin": "*"
+        });
+        streamRes.pipe(res);
+      });
+
+      req.on("close", () => {
+        audioReq.destroy();
+      });
+    } catch {
+      res.status(500).end();
     }
   });
 

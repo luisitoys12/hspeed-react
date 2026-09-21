@@ -69,9 +69,9 @@ export default function MaintenancePage() {
       ? nowPlaying.listeners
       : 102;
   const streamUrl =
-    nowPlaying?.station?.listen_url ||
-    (typeof nowPlaying?.listenUrl === "string" && nowPlaying.listenUrl) ||
-    "http://127.0.0.1:8005/listen/habboradio/radio.mp3";
+    nowPlaying?.station?.listen_url && !nowPlaying.station.listen_url.includes("127.0.0.1")
+      ? nowPlaying.station.listen_url
+      : "/api/radio-stream";
 
   // Staff Login Modal State
   const [showStaffModal, setShowStaffModal] = useState(false);
