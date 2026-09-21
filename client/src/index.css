@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Cabinet+Grotesk:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;700;800&family=Satoshi:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,24 +6,24 @@
 
 @layer base {
   :root {
-    --background: 0 0% 4%; /* #0a0a0a */
-    --foreground: 0 0% 98%; /* #fafafa */
-    --card: 0 0% 8%; /* #141414 */
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 6%; /* #0f0f0f */
-    --popover-foreground: 0 0% 95%;
+    --background: 222 47% 11%; /* #0f172a HabboSpeed Slate */
+    --foreground: 210 40% 98%;
+    --card: 222 47% 14%; /* #141f36 */
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 12%;
+    --popover-foreground: 210 40% 98%;
     --primary: 38 95% 55%; /* Gold #f5a623 */
     --primary-foreground: 0 0% 0%; /* Black text on gold */
-    --secondary: 0 0% 12%; /* #1e1e1e */
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 38 95% 55%;
+    --secondary: 222 40% 18%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222 35% 18%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 197 85% 62%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 12%; /* #1f1f1f */
-    --input: 0 0% 12%;
+    --border: 222 25% 22%;
+    --input: 222 25% 22%;
     --ring: 38 95% 55%;
     --chart-1: 38 95% 55%;
     --chart-2: 0 0% 30%;
@@ -467,4 +467,557 @@
   padding: 6px 10px;
   border-radius: 9999px;
   font-weight: 700;
+}
+
+/* ===== KIHABBO-STYLE: Neon Gradient Borders ===== */
+.neon-border {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.neon-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255, 0, 128, 0.5), rgba(255, 165, 0, 0.3), rgba(128, 0, 255, 0.5));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ===== KIHABBO-STYLE: Soft Box Shadows ===== */
+.soft-shadow {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.soft-shadow-lg {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== KIHABBO-STYLE: Neon Glow Text ===== */
+.neon-glow-pink {
+  text-shadow: 0 0 10px rgba(255, 0, 128, 0.5), 0 0 20px rgba(255, 0, 128, 0.3);
+}
+.neon-glow-orange {
+  text-shadow: 0 0 10px rgba(255, 165, 0, 0.5), 0 0 20px rgba(255, 165, 0, 0.3);
+}
+.neon-glow-violet {
+  text-shadow: 0 0 10px rgba(128, 0, 255, 0.5), 0 0 20px rgba(128, 0, 255, 0.3);
+}
+
+/* ===== BEHANCE-STYLE: Bold Hero Section ===== */
+.behance-hero {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 0, 128, 0.08), transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(128, 0, 255, 0.06), transparent 50%),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 165, 0, 0.05), transparent 50%),
+    #0a0a0a;
+}
+.behance-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 0, transparent 72%, rgba(15,23,42,0.015) 72%, rgba(15,23,42,0.015) 100%);
+  pointer-events: none;
+}
+
+/* ===== BEHANCE-STYLE: Generous Whitespace Cards ===== */
+.behance-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.6);
+  border-radius: 20px;
+  padding: 2rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.behance-card:hover {
+  border-color: rgba(var(--theme-glow), 0.3);
+  box-shadow: 0 0 30px rgba(var(--theme-glow), 0.15), 0 20px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(-4px);
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Pixel Art Accents ===== */
+.pixel-border {
+  border: 3px solid;
+  border-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.5), hsl(var(--primary))) 1;
+  image-rendering: pixelated;
+}
+.pixel-accent {
+  position: relative;
+}
+.pixel-accent::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    hsl(var(--primary)) 0px,
+    hsl(var(--primary)) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Sky Background ===== */
+.sky-bg {
+  background:
+    linear-gradient(180deg, rgba(100, 200, 255, 0.05), rgba(200, 100, 255, 0.03)),
+    radial-gradient(ellipse at 50% 0%, rgba(100, 200, 255, 0.1), transparent 60%),
+    hsl(var(--background));
+}
+
+/* ===== KIHABBO-STYLE: Geometric Grid Background ===== */
+.geo-grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 0, 128, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(128, 0, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
+}
+
+/* ===== KIHABBO-STYLE: Gradient Accent Bar ===== */
+.gradient-accent-bar {
+  height: 3px;
+  background: linear-gradient(90deg, #ff0080, #ff8c00, #8000ff);
+  border-radius: 2px;
+}
+
+/* ===== BEHANCE-STYLE: Section Spacing ===== */
+.section-spacing {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+.section-spacing-sm {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Round Pixel Elements ===== */
+.round-pixel {
+  border-radius: 8px;
+  image-rendering: pixelated;
+}
+
+/* ===== KIHABBO-STYLE: Floating Cards ===== */
+.floating-card {
+  background: hsl(var(--card) / 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--border) / 0.4);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floating-card:hover {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2), 0 0 20px rgba(var(--theme-glow), 0.1);
+}
+
+/* ===== BEHANCE-STYLE: Featured Badge ===== */
+.featured-badge {
+  position: relative;
+  overflow: hidden;
+}
+.featured-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  animation: shimmer-rtl 3s ease-in-out infinite;
+}
+
+@keyframes shimmer-rtl {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ===== KIHABBO-STYLE: Pill Navigation ===== */
+.pill-nav {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: hsl(var(--card) / 0.8);
+  border-radius: 14px;
+  border: 1px solid hsl(var(--border) / 0.4);
+  backdrop-filter: blur(12px);
+}
+.pill-nav-item {
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.pill-nav-item:hover {
+  color: hsl(var(--foreground));
+  background: hsl(var(--background) / 0.5);
+}
+.pill-nav-item.active {
+  color: hsl(var(--primary-foreground));
+  background: linear-gradient(135deg, var(--theme-gradient-from), var(--theme-gradient-to));
+  box-shadow: 0 2px 8px rgba(var(--theme-glow), 0.3);
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Classic Radio Station Banner ===== */
+.radio-station-banner {
+  background:
+    linear-gradient(180deg, rgba(0, 100, 200, 0.15), rgba(100, 50, 150, 0.1)),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 8px,
+      rgba(255, 255, 255, 0.02) 8px, rgba(255, 255, 255, 0.02) 12px
+    );
+  border-bottom: 2px solid hsl(var(--primary) / 0.2);
+}
+
+/* ===== BEHANCE-STYLE: Strong Typography Hierarchy ===== */
+.behance-display {
+  font-family: 'Cabinet Grotesk', 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.behance-heading {
+  font-family: 'Cabinet Grotesk', 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.behance-subheading {
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 500;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ===== KIHABBO-STYLE: Neon Gradient Border Card ===== */
+.neon-gradient-card {
+  position: relative;
+  background: hsl(var(--card));
+  border-radius: 20px;
+  overflow: hidden;
+}
+.neon-gradient-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255, 0, 128, 0.4), rgba(255, 140, 0, 0.2), rgba(0, 255, 128, 0.2), rgba(0, 128, 255, 0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ===== KIHABBO-STYLE: Iridescent Cube Effect ===== */
+.iridescent-cube {
+  background: linear-gradient(135deg, #ff0080, #ff8c00, #8000ff, #00ff80);
+  background-size: 300% 300%;
+  animation: gradient-shift 4s ease infinite;
+  border-radius: 12px;
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ===== BEHANCE-STYLE: Clean List Items ===== */
+.behance-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.3);
+  transition: all 0.2s ease;
+}
+.behance-list-item:hover {
+  background: hsl(var(--background) / 0.3);
+}
+.behance-list-item:last-child {
+  border-bottom: none;
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Emblem Grid ===== */
+.emblem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 0.75rem;
+}
+.emblem-card {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.emblem-card:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 0 15px rgba(var(--theme-glow), 0.2);
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Ranking Podium ===== */
+.podium-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.3);
+  transition: all 0.2s ease;
+}
+.podium-item:hover {
+  border-color: hsl(var(--primary) / 0.4);
+}
+.podium-item.rank-1 {
+  border-color: rgba(255, 215, 0, 0.4);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), hsl(var(--card)));
+}
+.podium-item.rank-2 {
+  border-color: rgba(192, 192, 192, 0.4);
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), hsl(var(--card)));
+}
+.podium-item.rank-3 {
+  border-color: rgba(205, 127, 50, 0.4);
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), hsl(var(--card)));
+}
+
+/* ===== KIHABBO-STYLE: Poll/Vote Button ===== */
+.poll-option {
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid hsl(var(--border) / 0.5);
+  background: hsl(var(--card) / 0.8);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.poll-option:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  background: hsl(var(--primary) / 0.1);
+}
+.poll-option.selected {
+  border-color: hsl(var(--primary));
+  background: linear-gradient(135deg, rgba(var(--theme-glow), 0.15), rgba(var(--theme-glow), 0.05));
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Pixel Heart/Like ===== */
+.pixel-heart {
+  display: inline-block;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+  color: hsl(var(--primary));
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* ===== KIHABBO-STYLE: Live Indicator ===== */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff0080;
+  animation: live-pulse 2s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 128, 0.7); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 0, 128, 0); }
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Blue Sky Background for Headers ===== */
+.sky-gradient-header {
+  background:
+    linear-gradient(180deg, rgba(100, 200, 255, 0.08), rgba(50, 100, 200, 0.04)),
+    linear-gradient(135deg, hsl(var(--card)), hsl(var(--popover)));
+}
+
+/* ===== BEHANCE-STYLE: Responsive Container ===== */
+.max-w-7xl {
+  max-width: 80rem;
+}
+.max-w-6xl {
+  max-width: 72rem;
+}
+
+/* ===== KIHABBO-STYLE: Gradient Text for Headlines ===== */
+.gradient-headline {
+  background: linear-gradient(135deg, #ff0080, #ff8c00, #8000ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== BEHANCE-STYLE: Hover Lift Effect ===== */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 0 20px rgba(var(--theme-glow), 0.1);
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Pixel Star Rating ===== */
+.pixel-star {
+  display: inline-flex;
+  gap: 2px;
+}
+.pixel-star svg {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+}
+
+/* ===== KIHABBO-STYLE: Sidebar Navigation ===== */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  color: hsl(var(--sidebar-foreground));
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-weight: 500;
+}
+.sidebar-link:hover {
+  background: hsl(var(--sidebar-accent));
+  color: hsl(var(--primary));
+}
+.sidebar-link.active {
+  background: linear-gradient(135deg, rgba(var(--theme-glow), 0.15), rgba(var(--theme-glow), 0.05));
+  color: hsl(var(--primary));
+  font-weight: 700;
+}
+.sidebar-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: linear-gradient(180deg, var(--theme-gradient-from), var(--theme-gradient-to));
+  border-radius: 0 3px 3px 0;
+}
+.sidebar-link {
+  position: relative;
+}
+
+/* ===== BEHANCE-STYLE: Clean Divider ===== */
+.clean-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--border) / 0.5), transparent);
+  margin: 1.5rem 0;
+}
+
+/* ===== KIHABBO-STYLE: Colorful Avatar Border ===== */
+.avatar-neon {
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, #ff0080, #ff8c00, #8000ff);
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+.avatar-neon img {
+  border-radius: 50%;
+  border: 2px solid hsl(var(--card));
+}
+
+/* ===== RÁDIO HABBLET-STYLE: Event Card ===== */
+.event-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.4);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.event-card:hover {
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 20px rgba(var(--theme-glow), 0.15);
+}
+
+/* ===== BEHANCE-STYLE: Project Card ===== */
+.project-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.project-card:hover {
+  border-color: rgba(var(--theme-glow), 0.3);
+  box-shadow: 0 0 30px rgba(var(--theme-glow), 0.12), 0 16px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== Print styles ===== */
+@media print {
+  .site-panel, .site-panel-strong, .floating-card, .neon-gradient-card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== High Contrast Mode ===== */
+@media (forced-colors: active) {
+  .neon-border::before,
+  .gradient-accent-bar,
+  .iridescent-cube {
+    display: none;
+  }
+}
+
+/* ===== Focus Visible ===== */
+*:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ===== Loading Skeleton ===== */
+.skeleton {
+  background: linear-gradient(90deg, hsl(var(--card)), hsl(var(--secondary)), hsl(var(--card)));
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+@keyframes skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

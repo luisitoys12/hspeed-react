@@ -51,8 +51,9 @@ class ErrorBoundary extends Component<{ children: any; fallback?: React.ReactNod
   }
 }
 
+import HomePage from "@/pages/HomePage";
+
 // Lazy-loaded pages with preload support
-const HomePage = lazyWithPreload(() => import("@/pages/HomePage"));
 const NewsPage = lazyWithPreload(() => import("@/pages/NewsPage"));
 const NewsDetailPage = lazyWithPreload(() => import("@/pages/NewsDetailPage"));
 const EventsPage = lazyWithPreload(() => import("@/pages/EventsPage"));
@@ -96,16 +97,30 @@ const MisionesPage = lazyWithPreload(() => import("@/pages/MisionesPage"));
 const UserYoutubePage = lazyWithPreload(() => import("@/pages/UserYoutubePage"));
 const NotFound = lazyWithPreload(() => import("@/pages/not-found"));
 
-// Loading fallback
+// Loading fallback elegante de HabboSpeed (nunca pantalla negra)
 function PageLoader() {
   return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <div className="animate-pulse space-y-4 w-full max-w-2xl mx-auto">
-        <div className="h-8 bg-card rounded-lg w-3/4 mx-auto" />
-        <div className="h-4 bg-card rounded-lg w-1/2 mx-auto" />
-        <div className="grid grid-cols-2 gap-4">
-          <div className="h-64 bg-card rounded-xl" />
-          <div className="h-64 bg-card rounded-xl" />
+    <div className="flex flex-col items-center justify-center min-h-[450px] py-16 px-4">
+      <div className="bg-[#0e1626]/90 border border-white/10 rounded-2xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl backdrop-blur-sm space-y-4">
+        <div className="relative mx-auto w-16 h-16 flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20 border-t-cyan-400 animate-spin" />
+          <img
+            src="https://www.habbo.es/habbo-imaging/avatarimage?user=habbospeed&headonly=1&size=m&direction=2&head_direction=2"
+            alt="HabboSpeed"
+            className="w-10 h-10 object-contain relative z-10"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        </div>
+        <div>
+          <h3 className="text-white font-black text-lg tracking-tight">
+            h<span className="text-cyan-400">Speed</span>
+          </h3>
+          <p className="text-xs text-slate-400 font-medium mt-1">Cargando comunidad...</p>
+        </div>
+        <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+          <div className="bg-gradient-to-r from-cyan-400 to-blue-500 h-full rounded-full animate-pulse w-3/4 mx-auto" />
         </div>
       </div>
     </div>
@@ -142,7 +157,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#0b1120] text-slate-100">
       <ThemeParticles />
       <TopNavBar />
       <ThemeDecoBar />
