@@ -261,6 +261,79 @@ function DjStatusSection() {
           {updatePanelMutation.isPending ? "Guardando..." : "Guardar Panel DJ"}
         </Button>
       </div>
+
+      {/* Datos Confidenciales de Conexión Live para DJs Autorizados */}
+      <div className="p-4 rounded-2xl bg-[#0e1726] border border-cyan-500/30 max-w-lg space-y-3 shadow-xl">
+        <div className="flex items-center justify-between border-b border-white/10 pb-2">
+          <div className="flex items-center gap-2 text-cyan-400 font-black text-xs">
+            <Radio className="w-4 h-4 text-rose-500 animate-pulse" />
+            <span>Datos de Transmisión en Vivo (Icecast / AzuraCast)</span>
+          </div>
+          <span className="text-[10px] bg-rose-500/20 text-rose-300 font-bold px-2 py-0.5 rounded-full border border-rose-500/30">
+            Confidencial DJ
+          </span>
+        </div>
+        <p className="text-[11px] text-slate-300">
+          Usa estos datos en tu software de transmisión (BUTT, Mixxx, SAM Broadcaster o VirtualDJ) para salir al aire:
+        </p>
+        <div className="space-y-1.5 text-xs font-mono">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-white/5">
+            <span className="text-slate-400 font-sans font-medium">Servidor / Host:</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-bold">127.0.0.1</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300 hover:bg-white/10"
+                onClick={() => {
+                  navigator.clipboard.writeText("127.0.0.1");
+                  toast({ title: "Copiado", description: "Host copiado al portapapeles" });
+                }}
+              >
+                Copiar
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-white/5">
+            <span className="text-slate-400 font-sans font-medium">Puerto:</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-bold">8005</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300 hover:bg-white/10"
+                onClick={() => {
+                  navigator.clipboard.writeText("8005");
+                  toast({ title: "Copiado", description: "Puerto copiado al portapapeles" });
+                }}
+              >
+                Copiar
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-white/5">
+            <span className="text-slate-400 font-sans font-medium">Mount Point:</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-bold">/listen/habboradio/radio.mp3</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300 hover:bg-white/10"
+                onClick={() => {
+                  navigator.clipboard.writeText("/listen/habboradio/radio.mp3");
+                  toast({ title: "Copiado", description: "Mount copiado al portapapeles" });
+                }}
+              >
+                Copiar
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-white/5">
+            <span className="text-slate-400 font-sans font-medium">Bitrate & Códec:</span>
+            <span className="text-emerald-400 font-bold">320 kbps MP3</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

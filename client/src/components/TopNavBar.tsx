@@ -862,8 +862,6 @@ export default function TopNavBar() {
           </div>
         </div>
 
-      {/* Audio Element (Invisible) */}
-      <audio ref={audioRef} preload="none" className="hidden" />
 
       {/* MENÚ MÓVIL TOTALMENTE COMPLETO */}
       {mobileMenuOpen && (

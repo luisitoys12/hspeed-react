@@ -90,19 +90,53 @@ export default function HabboRadioWidget() {
     }
   }, [volume, isMuted]);
 
+  const getStreamUrl = () => {
+    const publicUrl =
+      nowPlaying?.station?.listen_url ||
+      siteConfig?.listenUrl;
+    if (publicUrl && (publicUrl.startsWith("http://") || publicUrl.startsWith("https://"))) {
+      return publicUrl;
+    }
+    return "/api/radio-stream";
+  };
+
   const togglePlay = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
     if (isPlaying) {
       audio.pause();
-      audio.removeAttribute("src");
-      audio.load();
+      audio.src = "";
       setIsPlaying(false);
     } else {
-      audio.src = `/api/radio-stream?_t=${Date.now()}`;
+      const streamUrl = getStreamUrl();
+      const finalUrl = streamUrl.includes("?")
+        ? `${streamUrl}&_t=${Date.now()}`
+        : `${streamUrl}?_t=${Date.now()}`;
+
+      audio.src = finalUrl;
       audio.volume = isMuted ? 0 : volume / 100;
-      audio.play().catch((err) => console.warn("Audio play notice:", err.message));
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((err) => {
+            console.warn("Primary stream playback notice:", err.message);
+            // Fallback a proxy same-origin si la URL pública falla
+            if (!finalUrl.includes("/api/radio-stream")) {
+              audio.src = `/api/radio-stream?_t=${Date.now()}`;
+              audio.play().then(() => setIsPlaying(true)).catch((e) => {
+                console.error("Audio playback error:", e.message);
+                setIsPlaying(false);
+              });
+            } else {
+              setIsPlaying(false);
+            }
+          });
+      }
       setIsPlaying(true);
     }
   };
@@ -179,9 +213,15 @@ export default function HabboRadioWidget() {
       <audio
         ref={audioRef}
         preload="none"
-        crossOrigin="anonymous"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
+        onError={() => {
+          console.warn("Audio element error on primary stream, switching to fallback proxy");
+          if (audioRef.current && !audioRef.current.src.includes("/api/radio-stream")) {
+            audioRef.current.src = `/api/radio-stream?_t=${Date.now()}`;
+            audioRef.current.play().catch(() => {});
+          }
+        }}
       />
 
       {/* 1. Header de Ventana con título y botón minimizar */}
@@ -379,19 +419,21 @@ export default function HabboRadioWidget() {
                 <span>Escuchar en App Externa</span>
               </button>
 
-              {/* Separador y Opción para Prender Live / Datos DJ */}
-              <div className="border-t border-white/10 my-1 pt-1">
-                <button
-                  onClick={() => {
-                    setShowDjMenu(false);
-                    setShowLiveConnectModal(true);
-                  }}
-                  className="w-full text-left flex items-center gap-2 px-2.5 py-1.5 text-xs font-extrabold rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 transition-colors cursor-pointer"
-                >
-                  <i className="fa-solid fa-tower-broadcast text-rose-400 w-4 text-center animate-pulse"></i>
-                  <span>Emitir en Vivo (Datos DJ)</span>
-                </button>
-              </div>
+              {/* Separador y Opción para Prender Live / Datos DJ (CONFIDENCIAL: SOLO DJS Y ADMINS) */}
+              {isDjOrAdmin && (
+                <div className="border-t border-white/10 my-1 pt-1">
+                  <button
+                    onClick={() => {
+                      setShowDjMenu(false);
+                      setShowLiveConnectModal(true);
+                    }}
+                    className="w-full text-left flex items-center gap-2 px-2.5 py-1.5 text-xs font-extrabold rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 transition-colors cursor-pointer"
+                  >
+                    <i className="fa-solid fa-tower-broadcast text-rose-400 w-4 text-center animate-pulse"></i>
+                    <span>Emitir en Vivo (Datos DJ)</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -515,100 +557,102 @@ export default function HabboRadioWidget() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal 4: Datos para Prender Live Rápido y Fácil (DJ) */}
-      <Dialog open={showLiveConnectModal} onOpenChange={setShowLiveConnectModal}>
-        <DialogContent className="bg-[#0b1424] text-white border border-white/15 rounded-3xl max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-base font-black flex items-center gap-2 text-cyan-400">
-              <i className="fa-solid fa-tower-broadcast text-rose-500 animate-pulse"></i>
-              Emitir en Vivo · Datos para Salir al Aire
-            </DialogTitle>
-          </DialogHeader>
+      {/* Modal 4: Datos para Prender Live Rápido y Fácil (CONFIDENCIAL: SOLO DJS Y ADMINS) */}
+      {isDjOrAdmin && (
+        <Dialog open={showLiveConnectModal} onOpenChange={setShowLiveConnectModal}>
+          <DialogContent className="bg-[#0b1424] text-white border border-white/15 rounded-3xl max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-base font-black flex items-center gap-2 text-cyan-400">
+                <i className="fa-solid fa-tower-broadcast text-rose-500 animate-pulse"></i>
+                Emitir en Vivo · Datos para Salir al Aire
+              </DialogTitle>
+            </DialogHeader>
 
-          <div className="space-y-3 pt-2 text-xs">
-            <p className="text-slate-300 text-[11px] leading-relaxed">
-              Configura tu software de transmisión (BUTT, SAM Broadcaster, Mixxx o VirtualDJ) con estos parámetros para prender live de inmediato:
-            </p>
+            <div className="space-y-3 pt-2 text-xs">
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                Configura tu software de transmisión (BUTT, SAM Broadcaster, Mixxx o VirtualDJ) con estos parámetros para prender live de inmediato:
+              </p>
 
-            <div className="space-y-2 bg-white/5 border border-white/10 p-3 rounded-2xl">
-              <div className="flex items-center justify-between py-1 border-b border-white/5">
-                <span className="text-slate-400 font-bold">Tipo de Servidor:</span>
-                <span className="font-mono font-black text-cyan-300">Icecast v2 / AzuraCast</span>
-              </div>
-              <div className="flex items-center justify-between py-1 border-b border-white/5">
-                <span className="text-slate-400 font-bold">Servidor / Host:</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-black text-white">127.0.0.1</span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText("127.0.0.1");
-                      toast({ title: "¡Copiado!", description: "Host copiado al portapapeles" });
-                    }}
-                    className="text-[10px] text-cyan-400 hover:text-cyan-300 bg-white/10 px-1.5 py-0.5 rounded cursor-pointer"
-                  >
-                    Copiar
-                  </button>
+              <div className="space-y-2 bg-white/5 border border-white/10 p-3 rounded-2xl">
+                <div className="flex items-center justify-between py-1 border-b border-white/5">
+                  <span className="text-slate-400 font-bold">Tipo de Servidor:</span>
+                  <span className="font-mono font-black text-cyan-300">Icecast v2 / AzuraCast</span>
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-white/5">
+                  <span className="text-slate-400 font-bold">Servidor / Host:</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono font-black text-white">127.0.0.1</span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText("127.0.0.1");
+                        toast({ title: "¡Copiado!", description: "Host copiado al portapapeles" });
+                      }}
+                      className="text-[10px] text-cyan-400 hover:text-cyan-300 bg-white/10 px-1.5 py-0.5 rounded cursor-pointer"
+                    >
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-white/5">
+                  <span className="text-slate-400 font-bold">Puerto:</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono font-black text-white">8005</span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText("8005");
+                        toast({ title: "¡Copiado!", description: "Puerto copiado al portapapeles" });
+                      }}
+                      className="text-[10px] text-cyan-400 hover:text-cyan-300 bg-white/10 px-1.5 py-0.5 rounded cursor-pointer"
+                    >
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-white/5">
+                  <span className="text-slate-400 font-bold">Punto de Montaje (Mount):</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono font-black text-white">/listen/habboradio/radio.mp3</span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText("/listen/habboradio/radio.mp3");
+                        toast({ title: "¡Copiado!", description: "Mount copiado al portapapeles" });
+                      }}
+                      className="text-[10px] text-cyan-400 hover:text-cyan-300 bg-white/10 px-1.5 py-0.5 rounded cursor-pointer"
+                    >
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-slate-400 font-bold">Bitrate / Códec:</span>
+                  <span className="font-mono font-black text-emerald-400">320 kbps MP3 (Stereo)</span>
                 </div>
               </div>
-              <div className="flex items-center justify-between py-1 border-b border-white/5">
-                <span className="text-slate-400 font-bold">Puerto:</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-black text-white">8005</span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText("8005");
-                      toast({ title: "¡Copiado!", description: "Puerto copiado al portapapeles" });
-                    }}
-                    className="text-[10px] text-cyan-400 hover:text-cyan-300 bg-white/10 px-1.5 py-0.5 rounded cursor-pointer"
-                  >
-                    Copiar
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center justify-between py-1 border-b border-white/5">
-                <span className="text-slate-400 font-bold">Punto de Montaje (Mount):</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-black text-white">/listen/habboradio/radio.mp3</span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText("/listen/habboradio/radio.mp3");
-                      toast({ title: "¡Copiado!", description: "Mount copiado al portapapeles" });
-                    }}
-                    className="text-[10px] text-cyan-400 hover:text-cyan-300 bg-white/10 px-1.5 py-0.5 rounded cursor-pointer"
-                  >
-                    Copiar
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center justify-between py-1">
-                <span className="text-slate-400 font-bold">Bitrate / Códec:</span>
-                <span className="font-mono font-black text-emerald-400">320 kbps MP3 (Stereo)</span>
+
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <Button
+                  onClick={() => {
+                    takeTurnMutation.mutate();
+                    setShowLiveConnectModal(false);
+                  }}
+                  className="bg-rose-500 hover:bg-rose-400 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5"
+                >
+                  <i className="fa-solid fa-microphone"></i>
+                  <span>Tomar Turno al Aire</span>
+                </Button>
+                <Link
+                  href="/djpanel"
+                  onClick={() => setShowLiveConnectModal(false)}
+                  className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs rounded-xl flex items-center justify-center gap-1.5 py-2 px-3 text-center transition-colors"
+                >
+                  <i className="fa-solid fa-headphones"></i>
+                  <span>Panel DJ Completo</span>
+                </Link>
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-2 pt-2">
-              <Button
-                onClick={() => {
-                  takeTurnMutation.mutate();
-                  setShowLiveConnectModal(false);
-                }}
-                className="bg-rose-500 hover:bg-rose-400 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5"
-              >
-                <i className="fa-solid fa-microphone"></i>
-                <span>Tomar Turno al Aire</span>
-              </Button>
-              <Link
-                href="/djpanel"
-                onClick={() => setShowLiveConnectModal(false)}
-                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs rounded-xl flex items-center justify-center gap-1.5 py-2 px-3 text-center transition-colors"
-              >
-                <i className="fa-solid fa-headphones"></i>
-                <span>Panel DJ Completo</span>
-              </Link>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-const API_BASE = "__PORT_5000__".startsWith("__") ? "" : "__PORT_5000__";
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -17,7 +17,12 @@ export async function apiRequest(
 ): Promise<Response> {
   const headers: Record<string, string> = {};
   if (data) headers["Content-Type"] = "application/json";
-  if (authHeader) headers["Authorization"] = authHeader;
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  } else if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
 
   const res = await fetch(`${API_BASE}${url}`, {
     method,
@@ -25,10 +30,19 @@ export async function apiRequest(
     body: data ? JSON.stringify(data) : undefined,
   });
 
-  // Don't throw for auth errors — let callers handle them
-  if (!res.ok && res.status !== 401 && res.status !== 403 && res.status !== 404) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+  if (!res.ok) {
+    let errMsg = res.statusText;
+    try {
+      const clone = res.clone();
+      const errJson = await clone.json();
+      errMsg = errJson.message || errMsg;
+    } catch {
+      try {
+        const text = await res.clone().text();
+        if (text) errMsg = text;
+      } catch {}
+    }
+    throw new Error(errMsg || `Error HTTP ${res.status}`);
   }
   return res;
 }
@@ -55,11 +69,28 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      retry: 1,
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      placeholderData: (previousData: any) => previousData,
     },
     mutations: {
-      retry: false,
+      retry: 1,
+      retryDelay: 1000,
     },
   },
 });
+
+// Performance: Prefetch common pages
+export function prefetchQuery<T>(queryKey: string[], queryFn: () => Promise<T>) {
+  return queryClient.prefetchQuery({
+    queryKey,
+    queryFn,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function invalidateQueries(keys: string[]) {
+  return queryClient.invalidateQueries({ queryKey: keys });
+}

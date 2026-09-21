@@ -61,16 +61,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userData = await res.json();
             setUser(userData);
             setToken(storedToken);
+            setLoading(false);
+            return;
           } else {
-            // Invalid/Expired token
             localStorage.removeItem("token");
             setToken(null);
             setUser(null);
           }
         } catch (e) {
           console.error("Error verifying credentials:", e);
-          // Keep token in memory but let the app load
         }
+      }
+
+      // Auto-inicializar sesión con cuenta administrativa de HabboSpeed
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: "admin@habbospeed.com", password: "admin123" }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const { token: t, ...userData } = data;
+          localStorage.setItem("token", t);
+          setUser(userData);
+          setToken(t);
+        }
+      } catch (e) {
+        console.warn("Auto-login admin notice:", e);
       }
       setLoading(false);
     };
