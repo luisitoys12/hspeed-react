@@ -8,7 +8,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v3-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![AzuraCast](https://img.shields.io/badge/Radio-AzuraCast%20%2F%20Icecast-blueviolet?logo=soundcharts&logoColor=white)](https://azuracast.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/release-v3.2%20(Turnkey)-emerald.svg)](#-changelog)
+[![Version](https://img.shields.io/badge/release-v3.5.0%20(Turnkey)-emerald.svg)](#-changelog)
 
 ---
 
@@ -26,7 +26,7 @@ Para ejecutar todo el stack (Servidor de Radio en puerto 8005 + Web en puerto 50
 
 ## 📌 Changelog
 
-### v3.2 (Turnkey Edition & Radio Fixes)
+### v3.5.0 (Turnkey Edition, Auto-DJ & Zero-Delay Home)
 
 - ⚡ **Eliminación de pantalla negra en inicio**: Carga directa e instantánea de `HomePage`, evitando esperas de Suspense o skeletons oscuros.
 - 🎨 **Nuevo PageLoader temático HabboSpeed**: Loader elegante con avatar HabboSpeed, halo giratorio y progreso estilizado para subpáginas.
