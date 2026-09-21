@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Radio & Streaming · HabboSpeed Docs</title>
+  <link rel="icon" type="image/png" href="../client/public/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-dark: #070c18;
+      --bg-card: #0d1629;
+      --bg-card-hover: #13203c;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(34, 211, 238, 0.3);
+      --primary: #22d3ee;
+      --primary-glow: rgba(34, 211, 238, 0.25);
+      --secondary: #a855f7;
+      --accent-green: #10b981;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font-sans: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: var(--font-sans); line-height: 1.6; }
+    .app-container { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { width: 280px; background: #090f1f; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; overflow-y: auto; }
+    .brand { padding: 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); }
+    .brand-logo { font-size: 24px; font-weight: 900; color: #fff; }
+    .brand-logo span { color: var(--primary); }
+    .nav-sections { padding: 20px 16px; display: flex; flex-direction: column; gap: 20px; }
+    .nav-group-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #64748b; font-weight: 800; padding-left: 12px; margin-bottom: 8px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 14px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 10px; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: var(--bg-card); border-left: 3px solid var(--primary); }
+    .nav-link i { font-size: 16px; width: 20px; text-align: center; color: var(--primary); }
+
+    /* Content */
+    .content { margin-left: 280px; flex: 1; max-width: 1200px; padding: 40px 48px 80px 48px; }
+    .hero { background: linear-gradient(135deg, #101e3b 0%, #0d1629 100%); border: 1px solid var(--border-accent); border-radius: 20px; padding: 36px; margin-bottom: 36px; }
+    .hero h1 { font-size: 32px; font-weight: 900; margin-bottom: 10px; color: #fff; }
+    .hero p { color: var(--text-muted); font-size: 16px; }
+
+    .section-title { font-size: 22px; font-weight: 800; margin: 36px 0 18px 0; display: flex; align-items: center; gap: 12px; color: #fff; }
+    .section-title i { color: var(--primary); }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin-bottom: 24px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; }
+
+    .code-block { background: #050913; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 10px; padding: 14px 18px; font-family: var(--font-mono); font-size: 13px; color: #38bdf8; display: flex; align-items: center; justify-content: space-between; overflow-x: auto; margin: 8px 0; }
+    .code-copy-btn { background: rgba(255, 255, 255, 0.1); border: none; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .code-copy-btn:hover { background: var(--primary); color: #000; }
+
+    .table-container { overflow-x: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { background: #090f1f; color: #e2e8f0; font-weight: 800; padding: 14px 18px; border-bottom: 1px solid var(--border-color); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; }
+    td { padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); color: var(--text-muted); }
+    .badge-status { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .status-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .dj-card {
+      background: linear-gradient(135deg, #131c31 0%, #0d1629 100%);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .dj-badge { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; display: inline-block; margin-bottom: 12px; }
+
+    @media (max-width: 900px) { .sidebar { display: none; } .content { margin-left: 0; padding: 24px; } }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">h<span>Speed</span></div>
+    </div>
+    <div class="nav-sections">
+      <div>
+        <div class="nav-group-title">Navegación</div>
+        <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Volver a Portada</a>
+        <a href="radio-streaming.html" class="nav-link active"><i class="fa-solid fa-radio"></i> Radio & Streaming</a>
+        <a href="migracion-vps.html" class="nav-link"><i class="fa-solid fa-server"></i> Despliegue VPS</a>
+        <a href="docker.html" class="nav-link"><i class="fa-brands fa-docker"></i> Guía Docker</a>
+        <a href="paneles-dj-admin.html" class="nav-link"><i class="fa-solid fa-headphones"></i> Paneles DJ & Admin</a>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="hero">
+      <h1>📻 Manual Técnico: Radio & Streaming</h1>
+      <p>Configuración del servidor AzuraCast / Icecast integrado en puerto 8005, conexión de software DJ y streaming continuo sin bloqueos de CORS.</p>
+    </div>
+
+    <!-- Live Parameters Card -->
+    <div class="dj-card">
+      <span class="dj-badge"><i class="fa-solid fa-lock"></i> Parámetros de Emisión para DJs en Vivo</span>
+      <h3 style="color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 8px;">Datos de Conexión Icecast v2 (Local & Remoto)</h3>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 18px;">
+        Configura estos datos en tu software de locución (BUTT, Mixxx, SAM Broadcaster o VirtualDJ):
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>Valor Local (Pruebas)</th>
+              <th>Valor Servidor Producción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tipo de Servidor</strong></td>
+              <td><code>Icecast v2</code></td>
+              <td><code>Icecast v2</code></td>
+            </tr>
+            <tr>
+              <td><strong>Dirección / Host</strong></td>
+              <td><code>127.0.0.1</code></td>
+              <td><code>radio.tudominio.com</code></td>
+            </tr>
+            <tr>
+              <td><strong>Puerto</strong></td>
+              <td><code>8005</code></td>
+              <td><code>8000</code> / <code>8005</code></td>
+            </tr>
+            <tr>
+              <td><strong>Punto de Montaje (Mount)</strong></td>
+              <td><code>/live</code></td>
+              <td><code>/live</code></td>
+            </tr>
+            <tr>
+              <td><strong>Usuario</strong></td>
+              <td><code>source</code></td>
+              <td><code>source</code> (o tu usuario DJ)</td>
+            </tr>
+            <tr>
+              <td><strong>Contraseña</strong></td>
+              <td><code>hackme</code></td>
+              <td>Clave asignada en panel AzuraCast</td>
+            </tr>
+            <tr>
+              <td><strong>Codec & Bitrate</strong></td>
+              <td><code>MP3 / 128 kbps / 44.1 kHz</code></td>
+              <td><code>MP3 / 128 o 192 kbps</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Endpoints -->
+    <h2 class="section-title"><i class="fa-solid fa-network-wired"></i> Endpoints del Servidor AzuraCast</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="color: #fff; font-size: 17px; font-weight: 800; margin-bottom: 8px;"><i class="fa-solid fa-play" style="color: var(--primary);"></i> Stream de Audio Continuo</h3>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Transmisión MP3 de alta fidelidad para el reproductor:</p>
+        <div class="code-block">
+          <code>http://localhost:8005/listen/habboradio/radio.mp3</code>
+          <button class="code-copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="color: #fff; font-size: 17px; font-weight: 800; margin-bottom: 8px;"><i class="fa-solid fa-chart-line" style="color: var(--secondary);"></i> API NowPlaying</h3>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">JSON en tiempo real con canción, artista y oyentes:</p>
+        <div class="code-block">
+          <code>http://localhost:8005/api/nowplaying/1</code>
+          <button class="code-copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Software Setup -->
+    <h2 class="section-title"><i class="fa-solid fa-sliders"></i> Paso a Paso: Configuración en BUTT (Broadcast Using This Tool)</h2>
+    <div class="card">
+      <ol style="margin-left: 20px; color: var(--text-muted); font-size: 15px; display: flex; flex-direction: column; gap: 12px;">
+        <li>Descarga e instala <strong>BUTT</strong> (gratuito y ligero para Windows, Mac y Linux).</li>
+        <li>Abre la ventana <strong>Settings</strong> y en la pestaña <strong>Main</strong> haz clic en <strong>ADD</strong> debajo de <em>Server</em>.</li>
+        <li>Selecciona <strong>Type: Icecast</strong>.</li>
+        <li>En <strong>Address</strong> escribe <code>127.0.0.1</code> y en <strong>Port</strong> coloca <code>8005</code>.</li>
+        <li>En <strong>Mount</strong> escribe <code>/live</code> y en <strong>Password</strong> escribe <code>hackme</code>.</li>
+        <li>Haz clic en <strong>Save</strong> y presiona el botón ▶ <strong>Play</strong> en la ventana principal de BUTT.</li>
+        <li>¡Listo! Tu audio estará saliendo al aire en la web de HabboSpeed en tiempo real.</li>
+      </ol>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function copyCode(button) {
+    const codeEl = button.previousElementSibling;
+    const text = codeEl.innerText.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      const originalText = button.innerText;
+      button.innerText = "¡Copiado!";
+      button.style.background = "#10b981";
+      button.style.color = "#fff";
+      setTimeout(() => {
+        button.innerText = originalText;
+        button.style.background = "";
+        button.style.color = "";
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>

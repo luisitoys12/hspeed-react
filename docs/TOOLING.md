@@ -1,73 +1,71 @@
-# HabboSpeed — Tooling Guide
+# 🧪 Guía de Herramientas de Desarrollo, Testing y CI/CD
 
-Documentación del stack de herramientas de desarrollo del proyecto.
-
----
-
-## CI/CD — GitHub Actions
-
-Archivo: `.github/workflows/ci.yml`
-
-Se ejecuta automáticamente en cada `push` y `pull_request` a `main`.
-
-**Pasos:**
-1. `npm ci` — instala dependencias limpias
-2. `npm run check` — verificación de tipos TypeScript (`tsc`)
-3. `npm run build` — build completo de producción
-
-> ⚠️ El workflow no necesita DATABASE_URL real. Se pasa un placeholder para que el build no crashee por variables de entorno faltantes.
+> Documentación de las herramientas de compilación, verificación automatizada, pruebas E2E y flujos de integración continua en **HabboSpeed 2026**.
 
 ---
 
-## Pre-commit Hooks — Husky + lint-staged
+## 🔍 1. Suite de Verificación Automatizada (Playwright E2E)
 
-Archivos: `.husky/pre-commit`, `package.json` → `lint-staged`
+HabboSpeed incluye una suite de pruebas End-to-End basada en **Playwright** que verifica en segundos que la aplicación está lista para producción:
 
-**Instalación inicial (solo una vez por desarrollador):**
 ```bash
-npm install
-# Husky se instala automáticamente vía el script "prepare"
+npm run verify:ui
 ```
 
-**Qué hace antes de cada commit:**
-- Archivos `*.ts` y `*.tsx`: formatea con Prettier
-- Archivos `*.json`, `*.css`, `*.md`: formatea con Prettier
-
-> 📌 ESLint no está incluido todavía porque el proyecto no tiene configuración de ESLint. Para agregarlo:
-> ```bash
-> npm install -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react-hooks
-> npx eslint --init
-> ```
-> Luego agrega `"eslint --fix"` al array de `*.{ts,tsx}` en la sección `lint-staged` del `package.json`.
+### ¿Qué comprueba esta suite?
+1. **Carga Inmediata de Portada (`/`):** Garantiza que no existan parpadeos en negro, bloqueos por skeletons ni errores de hidratación de React.
+2. **Reproducción del Stream de Audio:** Activa el botón verde de Play en portada y valida que el estado del elemento `<audio>` sea `readyState: 4` y `paused: false`.
+3. **Comprobación de Rutas Principales:** Navega automáticamente por `/radio`, `/djpanel`, `/admin`, `/news`, `/team` y `/feria`, validando que no existan excepciones (`TypeError` o pantallas de error).
+4. **Capturas Visuales Automáticas:** Genera screenshots de control en la carpeta `screenshots/` para auditoría visual.
 
 ---
 
-## Herramientas pendientes (requieren registro)
+## 🚀 2. Scripts de Desarrollo y Ejecución
 
-| Herramienta | Propósito | Registro en |
-|---|---|---|
-| **Sentry** | Error tracking en React y Express | sentry.io |
-| **PostHog** | Analytics y feature flags | posthog.com |
-| **OpenReplay** | Session replay (alternativa open source a LogRocket) | openreplay.com o self-hosted |
+En `package.json` dispones de comandos estandarizados:
+
+| Comando | Descripción |
+| :--- | :--- |
+| `npm run start:all` | **Lanzador Todo en Uno:** Inicia AzuraCast (8005) + Servidor Web (5000) en paralelo. |
+| `npm run dev` | Inicia el servidor Express en desarrollo con TypeScript (`tsx`) y Vite HMR. |
+| `npm run radio` | Inicia el servidor de radio local AzuraCast / Icecast en el puerto 8005. |
+| `npm run build` | Compila frontend (Vite) y servidor (esbuild a `dist/index.cjs`). |
+| `npm run check` | Ejecuta el compilador de TypeScript (`tsc`) sin emitir archivos para detectar errores de tipos. |
+| `npm run analyze` | Abre el visualizador interactivo de tamaño y dependencias de bundle de Vite. |
 
 ---
 
-## Prettier — Configuración recomendada
+## 🤖 3. CI/CD — Integración Continua (GitHub Actions)
 
-Crea un archivo `.prettierrc` en la raíz:
+Ubicación del flujo: `.github/workflows/ci.yml`
 
-```json
-{
-  "semi": true,
-  "singleQuote": false,
-  "tabWidth": 2,
-  "trailingComma": "es5",
-  "printWidth": 100,
-  "plugins": ["prettier-plugin-tailwindcss"]
-}
+Se ejecuta de forma automática ante cada `push` o `pull_request` a la rama `main`:
+
+```mermaid
+flowchart LR
+    Push["📥 Push a main"] --> Install["1. npm ci"]
+    Install --> Check["2. npm run check (TypeScript)"]
+    Check --> Build["3. npm run build"]
+    Build --> Success["✅ Build Aprobado"]
 ```
 
-Y agrega `prettier-plugin-tailwindcss` para ordenar automáticamente las clases de Tailwind:
+---
+
+## 🪝 4. Formateo y Git Hooks (Prettier & Husky)
+
+* **Prettier:** Mantiene un estilo de código consistente en TypeScript, CSS y JSON.
+* **Husky + lint-staged:** Formatea automáticamente los archivos modificados antes de cada commit.
+
 ```bash
-npm install -D prettier-plugin-tailwindcss
+# Formatear manualmente todo el proyecto
+npx prettier --write "client/src/**/*.{ts,tsx}" "server/**/*.{ts,js}"
 ```
+
+---
+
+## 📊 5. Observabilidad & Diagnóstico en Producción
+
+Para monitoreo en entornos de alta concurrencia, la arquitectura está preparada para conectarse con:
+
+* **Sentry:** Registro y alertas de errores en tiempo real en frontend y backend.
+* **Health Check Endpoint:** `GET /api/health` para balanceadores de carga, Kubernetes y Docker Healthchecks (`{ status: "ok", uptime: 12345 }`).

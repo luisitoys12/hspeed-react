@@ -20,7 +20,13 @@ Para ejecutar todo el stack (Servidor de Radio en puerto 8005 + Web en puerto 50
 * **En Linux / Mac**: `./start-all.sh` (o ejecuta `npm run start:all`).
 * **Verificar UI y Radio con tests**: `npm run verify:ui`
 
-> 📘 Consulta la **[Guía Completa de Instalación y Migración (GUIA_INSTALACION_Y_MIGRACION.md)](GUIA_INSTALACION_Y_MIGRACION.md)** para credenciales de admin/DJ, configuración de túneles y despliegue en VPS.
+> 🌐 **Portal de Documentación Visual HTML:**  
+> Puedes abrir directamente en tu navegador **[`docs/index.html`](docs/index.html)** para consultar todas las guías en un formato interactivo con diseño profesional, paso a paso visual y botones para copiar comandos:
+> * 📻 **[Manual de Radio & Streaming (`docs/radio-streaming.html`)](docs/radio-streaming.html)**
+> * 🚀 **[Guía de Migración VPS (`docs/migracion-vps.html`)](docs/migracion-vps.html)**
+> * 🐳 **[Despliegue Docker (`docs/docker.html`)](docs/docker.html)**
+> * 🎛️ **[Paneles DJ & Admin (`docs/paneles-dj-admin.html`)](docs/paneles-dj-admin.html)**
+> * 📘 O consulta la **[Guía Completa en Markdown (GUIA_INSTALACION_Y_MIGRACION.md)](GUIA_INSTALACION_Y_MIGRACION.md)**.
 
 ---
 

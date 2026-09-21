@@ -1,114 +1,128 @@
-# Docker Setup
+# 🐳 Despliegue con Docker & Docker Compose
 
-Guía para levantar HabboSpeed con Docker: la app (Node/Express + build de Vite) y, opcionalmente, un Postgres local.
+> Guía completa para compilar y ejecutar **HabboSpeed** en contenedores Docker de producción con PostgreSQL y migraciones automáticas.
 
-## Prerrequisitos
+---
 
-- Docker Engine
-- Docker Compose (v2, el que trae `docker compose`)
+## 🌟 1. Características del Despliegue Docker
 
-## Quick Start
+* **Build Multi-Stage Optimizado:** El `Dockerfile` genera un artefacto ligero separando la fase de compilación (Vite + esbuild) del runtime de producción.
+* **Auto-Migraciones y Seed:** Al iniciar, se ejecutan las migraciones SQL pendientes y se siembra la cuenta de administrador oficial automáticamente.
+* **PostgreSQL 16 Integrado:** Base de datos con comprobación de salud (`healthcheck`) y volúmenes persistentes.
+* **Compatibilidad con Bases Externas:** Compatible con PostgreSQL local o servicios gestionados en la nube (Supabase, Neon, AWS RDS).
 
-Desde la carpeta `docker/`:
+```mermaid
+flowchart TD
+    subgraph Host ["Máquina Anfitriona"]
+        User["🌐 Navegador Web (Puerto 5000)"]
+    end
 
-```bash
-cd docker
-docker compose up --build
+    subgraph DockerCompose ["Docker Compose Stack"]
+        subgraph AppContainer ["Contenedor: app (Node.js 20)"]
+            Migration["1. docker/migrate-and-seed.cjs"]
+            Server["2. Servidor Web (dist/index.cjs)"]
+            Migration --> Server
+        end
+
+        subgraph DBContainer ["Contenedor: db (Postgres 16)"]
+            Volume[("Volumen Persistente\nhspeed_db_data")]
+        end
+    end
+
+    User --> Server
+    Server -->|Puerto 5432| DBContainer
 ```
 
-Esto levanta:
+---
 
-- **`db`**: Postgres 16 local (puerto `5432`), con healthcheck.
-- **`app`**: build de producción (multi-stage) de la app, en el puerto `5000`. Al arrancar corre `docker/migrate-and-seed.cjs` (aplica migraciones pendientes en `server/migrations/` y crea el usuario admin) y luego inicia el servidor.
+## ⚡ 2. Inicio Rápido con Docker Compose
 
-La app queda disponible en <http://localhost:5000>.
+### Prerrequisitos
+* **Docker Engine** (24.x o superior)
+* **Docker Compose v2** (`docker compose`)
 
-> No hay perfiles `dev`/`prod` ni `Dockerfile.dev`/`Dockerfile.prod`: hay un único `Dockerfile` (multi-stage) en la raíz del repo y un único `docker-compose.yml` en `docker/`.
-
-## Variables de entorno
-
-El servicio `app` en `docker-compose.yml` ya trae valores por defecto para desarrollo local. Para sobreescribirlos, crea un archivo `docker/.env` (no versionado) o exporta las variables antes de levantar el compose:
-
-| Variable | Descripción | Default en compose |
-|----------|-------------|---------------------|
-| `NODE_ENV` | Entorno | `production` |
-| `PORT` | Puerto interno del contenedor | `5000` |
-| `HOST` | Interfaz a la que hace bind el server | `0.0.0.0` |
-| `DATABASE_URL` | Cadena de conexión Postgres | `postgres://hspeed:hspeed@db:5432/hspeed` (el `db` local) |
-| `PGSSL` | `false` desactiva SSL en la conexión a Postgres | `false` |
-| `JWT_SECRET` | Secreto para firmar JWT | `habbospeed_secret_key_2026` (⚠️ cámbialo en producción) |
-
-**Importante sobre `PGSSL`:** el Postgres local del contenedor `db` no tiene SSL habilitado, así que el compose fuerza `PGSSL=false`. Si en cambio apuntas `DATABASE_URL` a un proveedor gestionado (Supabase, Neon), **quita `PGSSL` o ponlo en `true`**, porque esos proveedores exigen SSL — con `PGSSL=false` el intento de conexión será rechazado.
-
-## Usar una base de datos externa (Supabase/Neon) en vez de la local
+### Ejecución
+Desde la raíz del proyecto o desde la carpeta `docker/`:
 
 ```bash
 cd docker
-DATABASE_URL="postgresql://usuario:password@tu-host-supabase:5432/postgres" \
+docker compose up --build -d
+```
+
+### Servicios iniciados:
+1. **`db`**: Servidor PostgreSQL 16 escuchando internamente en el puerto `5432`.
+2. **`app`**: Aplicación compilada de HabboSpeed en el puerto `5000`.
+
+Abre tu navegador en:  
+👉 **[http://localhost:5000](http://localhost:5000)**
+
+---
+
+## 📋 3. Variables de Entorno
+
+Puedes personalizar la configuración creando un archivo `docker/.env` (no versionado) o exportando las variables en tu terminal:
+
+| Variable | Descripción | Valor por Defecto |
+| :--- | :--- | :--- |
+| `NODE_ENV` | Entorno de ejecución | `production` |
+| `PORT` | Puerto interno del contenedor | `5000` |
+| `HOST` | Dirección de enlace de red | `0.0.0.0` |
+| `DATABASE_URL` | Cadena de conexión a PostgreSQL | `postgres://hspeed:hspeed@db:5432/hspeed` |
+| `PGSSL` | Forzar o desactivar SSL en la base de datos | `false` (local) / `true` (nube) |
+| `JWT_SECRET` | Clave secreta para firmar tokens de sesión | `habbospeed_secret_key_2026` |
+
+> ⚠️ **Advertencia Importante sobre `PGSSL`:**  
+> Si apuntas `DATABASE_URL` a un proveedor externo como **Supabase** o **Neon**, debes configurar `PGSSL=true`, ya que estos servicios requieren cifrado TLS obligatorio.
+
+---
+
+## 🌐 4. Usar Base de Datos Externa (Supabase / Neon)
+
+Si prefieres usar una base de datos remota sin levantar el contenedor `db` local:
+
+```bash
+cd docker
+DATABASE_URL="postgresql://postgres:tu_password@tu-host.supabase.co:5432/postgres" \
 PGSSL=true \
 docker compose up --build app
 ```
 
-(Solo el servicio `app`; puedes omitir el `db` local con `docker compose up --build app` sin `depends_on` bloqueante, o simplemente ignorar el contenedor `db` que igual queda arriba sin usarse.)
+---
 
-## Inicialización de la base de datos
+## 🔐 5. Usuario Administrador Inicial
 
-En cada arranque del contenedor `app`, `docker/migrate-and-seed.cjs`:
+Durante el primer arranque del contenedor `app`, el script `docker/migrate-and-seed.cjs` genera las credenciales de acceso:
 
-1. Crea la tabla `schema_migrations` si no existe.
-2. Aplica cualquier migración pendiente de `server/migrations/*.sql` (en orden, y solo las que no se hayan aplicado antes).
-3. Crea el usuario admin si todavía no existe:
-   - Email: `admin@habbospeed.com`
-   - Password: `admin123`
+* **Email:** `admin@habbospeed.com`
+* **Contraseña:** `admin123`
+* **Rango:** `admin` (acceso completo a `/panel` y `/djpanel`)
 
-   ⚠️ Cambia esta contraseña inmediatamente después del primer login en un entorno real.
+*(Recuerda cambiar la contraseña desde el panel de perfil una vez desplegado en producción).*
 
-## Health check
+---
 
-`GET /api/health` responde `200 OK` con `{ status: "ok", db: "up" | "down" | "disabled", uptime }`. Es lo que usan el `HEALTHCHECK` del `Dockerfile` y el `healthcheck` del servicio `app` en `docker-compose.yml` para saber si el contenedor está listo.
+## 🛠️ 6. Comandos de Gestión y Diagnóstico
 
-## Notas
-
-- El `Dockerfile` usa un build multi-stage: la etapa `builder` compila cliente (Vite) y servidor (esbuild, bundle a `dist/index.cjs`); la imagen final solo copia `dist/`, `docker/migrate-and-seed.cjs` y `server/migrations/`, e instala solo dependencias de producción.
-- `docker-compose.yml` sobreescribe el `CMD` del Dockerfile con `node docker/migrate-and-seed.cjs && node dist/index.cjs` para correr migraciones antes de arrancar. Si corres la imagen suelta con `docker run` (sin compose), **no se ejecutan migraciones automáticamente** — tendrías que correrlas a mano o replicar ese comando.
-- Para reconstruir tras cambios de código: `docker compose up --build`.
-- Para ver logs: `docker compose logs -f app` (o `db`).
-
-## Archivos relevantes
-
-- `Dockerfile` (raíz del repo) — build multi-stage de la app.
-- `docker/docker-compose.yml` — servicios `db` + `app`.
-- `docker/migrate-and-seed.cjs` — lógica de migraciones y seed del admin.
-- `.dockerignore` — excluye `node_modules`, `.git`, `.env*`, etc. del contexto de build.
-
-## Troubleshooting
-
-### El contenedor `app` no arranca / se reinicia en bucle
-
+### Ver logs en tiempo real:
 ```bash
-docker compose logs app
+# Logs de la aplicación web
+docker compose logs -f app
+
+# Logs de la base de datos
+docker compose logs -f db
 ```
 
-Casos típicos:
-
-- **`no encryption/SSL/pgsql: SSL/TLS required` o similar**: estás apuntando a Supabase/Neon con `PGSSL=false` (o sin setearlo estando en `false` por default). Pon `PGSSL=true`.
-- **`ECONNREFUSED` a `db:5432`**: el contenedor `db` todavía no está healthy; `app` tiene `depends_on: db: condition: service_healthy`, así que normalmente espera solo, pero si `db` nunca queda healthy revisa sus logs (`docker compose logs db`).
-
-### Migraciones fallan
-
-Revisa que el SQL en `server/migrations/*.sql` sea válido y que el usuario de la base de datos tenga permisos para crear tablas. El script aplica los archivos en orden alfabético y registra cada uno en `schema_migrations`, así que una migración fallida se puede corregir y se reintentará en el siguiente arranque (no quedó marcada como aplicada).
-
-### El health check nunca pasa a "healthy"
-
-Prueba manualmente desde otro contenedor o desde el host (si publicaste el puerto):
-
+### Comprobar estado y healthcheck:
 ```bash
-curl -i http://localhost:5000/api/health
+docker compose ps
 ```
 
-Si responde `db: "down"` pero `status: "ok"`, la app está arriba pero no logra hablarle a Postgres — revisa `DATABASE_URL` y `PGSSL`.
+### Detener los servicios:
+```bash
+docker compose down
+```
 
-## Más información
-
-- [Documentación de Docker](https://docs.docker.com/)
-- [Imagen de PostgreSQL en Docker Hub](https://hub.docker.com/_/postgres)
+### Reiniciar y reconstruir imágenes tras cambios:
+```bash
+docker compose up --build -d
+```

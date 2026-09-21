@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Migración y Despliegue en VPS · HabboSpeed Docs</title>
+  <link rel="icon" type="image/png" href="../client/public/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-dark: #070c18;
+      --bg-card: #0d1629;
+      --bg-card-hover: #13203c;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(34, 211, 238, 0.3);
+      --primary: #22d3ee;
+      --primary-glow: rgba(34, 211, 238, 0.25);
+      --secondary: #a855f7;
+      --accent-green: #10b981;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font-sans: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: var(--font-sans); line-height: 1.6; }
+    .app-container { display: flex; min-height: 100vh; }
+    .sidebar { width: 280px; background: #090f1f; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; overflow-y: auto; }
+    .brand { padding: 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); }
+    .brand-logo { font-size: 24px; font-weight: 900; color: #fff; }
+    .brand-logo span { color: var(--primary); }
+    .nav-sections { padding: 20px 16px; display: flex; flex-direction: column; gap: 20px; }
+    .nav-group-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #64748b; font-weight: 800; padding-left: 12px; margin-bottom: 8px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 14px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 10px; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: var(--bg-card); border-left: 3px solid var(--primary); }
+    .nav-link i { font-size: 16px; width: 20px; text-align: center; color: var(--primary); }
+
+    .content { margin-left: 280px; flex: 1; max-width: 1200px; padding: 40px 48px 80px 48px; }
+    .hero { background: linear-gradient(135deg, #132244 0%, #0d1629 100%); border: 1px solid var(--border-accent); border-radius: 20px; padding: 36px; margin-bottom: 36px; }
+    .hero h1 { font-size: 32px; font-weight: 900; margin-bottom: 10px; color: #fff; }
+    .hero p { color: var(--text-muted); font-size: 16px; }
+
+    .step-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .step-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .step-badge { width: 36px; height: 36px; border-radius: 10px; background: rgba(34, 211, 238, 0.15); color: var(--primary); font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .step-title { font-size: 18px; font-weight: 800; color: #fff; }
+
+    .code-block { background: #050913; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 10px; padding: 14px 18px; font-family: var(--font-mono); font-size: 13px; color: #38bdf8; display: flex; align-items: center; justify-content: space-between; overflow-x: auto; margin: 10px 0; }
+    .code-copy-btn { background: rgba(255, 255, 255, 0.1); border: none; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .code-copy-btn:hover { background: var(--primary); color: #000; }
+
+    pre.config-box { background: #050913; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 10px; padding: 16px; font-family: var(--font-mono); font-size: 13px; color: #e2e8f0; line-height: 1.5; overflow-x: auto; margin: 12px 0; }
+
+    @media (max-width: 900px) { .sidebar { display: none; } .content { margin-left: 0; padding: 24px; } }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-logo">h<span>Speed</span></div></div>
+    <div class="nav-sections">
+      <div>
+        <div class="nav-group-title">Navegación</div>
+        <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Volver a Portada</a>
+        <a href="radio-streaming.html" class="nav-link"><i class="fa-solid fa-radio"></i> Radio & Streaming</a>
+        <a href="migracion-vps.html" class="nav-link active"><i class="fa-solid fa-server"></i> Despliegue VPS</a>
+        <a href="docker.html" class="nav-link"><i class="fa-brands fa-docker"></i> Guía Docker</a>
+        <a href="paneles-dj-admin.html" class="nav-link"><i class="fa-solid fa-headphones"></i> Paneles DJ & Admin</a>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="hero">
+      <h1>🚀 Guía de Migración y Despliegue en Servidor VPS</h1>
+      <p>Manual paso a paso para migrar HabboSpeed a cualquier servidor VPS en la nube (Ubuntu 22.04/24.04 o Debian 12) con Nginx, PM2 y SSL.</p>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge">1</div>
+        <h3 class="step-title">Instalar Node.js 20 LTS, Nginx y PM2</h3>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px;">Ejecuta estos comandos en la terminal SSH de tu VPS:</p>
+      <div class="code-block">
+        <code>curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt install -y nodejs nginx git && sudo npm install -g pm2</code>
+        <button class="code-copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge">2</div>
+        <h3 class="step-title">Clonar el Repositorio y Compilar el Proyecto</h3>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px;">Descarga la aplicación en <code>/var/www/</code> e instala dependencias:</p>
+      <div class="code-block">
+        <code>cd /var/www && git clone https://github.com/luisitoys12/hspeed-react.git && cd hspeed-react && npm install && npm run build</code>
+        <button class="code-copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge">3</div>
+        <h3 class="step-title">Iniciar Procesos Persistentes con PM2</h3>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px;">Inicia la web en puerto 5000 y la radio en puerto 8005 con auto-arranque en reinicios:</p>
+      <div class="code-block">
+        <code>pm2 start "node dist/index.cjs" --name "hspeed-web" && pm2 start "node script/azuracast-server.cjs" --name "hspeed-radio" && pm2 save && pm2 startup</code>
+        <button class="code-copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge">4</div>
+        <h3 class="step-title">Configuración de Nginx Reverse Proxy</h3>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px;">Guarda esta configuración en <code>/etc/nginx/sites-available/habbospeed.conf</code>:</p>
+      <pre class="config-box">server {
+    listen 80;
+    server_name tudominio.com www.tudominio.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location /listen/ {
+        proxy_pass http://127.0.0.1:8005;
+        proxy_set_header Host $host;
+    }
+}</pre>
+      <div class="code-block">
+        <code>sudo ln -s /etc/nginx/sites-available/habbospeed.conf /etc/nginx/sites-enabled/ && sudo nginx -t && sudo systemctl reload nginx</code>
+        <button class="code-copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge">5</div>
+        <h3 class="step-title">Generar Certificado SSL Gratuito (HTTPS)</h3>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px;">Protege tu dominio con cifrado seguro Let's Encrypt:</p>
+      <div class="code-block">
+        <code>sudo apt install -y certbot python3-certbot-nginx && sudo certbot --nginx -d tudominio.com -d www.tudominio.com</code>
+        <button class="code-copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function copyCode(button) {
+    const codeEl = button.previousElementSibling;
+    const text = codeEl.innerText.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      const originalText = button.innerText;
+      button.innerText = "¡Copiado!";
+      button.style.background = "#10b981";
+      button.style.color = "#fff";
+      setTimeout(() => {
+        button.innerText = originalText;
+        button.style.background = "";
+        button.style.color = "";
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paneles DJ y Administración · HabboSpeed Docs</title>
+  <link rel="icon" type="image/png" href="../client/public/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-dark: #070c18;
+      --bg-card: #0d1629;
+      --bg-card-hover: #13203c;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(34, 211, 238, 0.3);
+      --primary: #22d3ee;
+      --primary-glow: rgba(34, 211, 238, 0.25);
+      --secondary: #a855f7;
+      --accent-green: #10b981;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font-sans: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: var(--font-sans); line-height: 1.6; }
+    .app-container { display: flex; min-height: 100vh; }
+    .sidebar { width: 280px; background: #090f1f; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; overflow-y: auto; }
+    .brand { padding: 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); }
+    .brand-logo { font-size: 24px; font-weight: 900; color: #fff; }
+    .brand-logo span { color: var(--primary); }
+    .nav-sections { padding: 20px 16px; display: flex; flex-direction: column; gap: 20px; }
+    .nav-group-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #64748b; font-weight: 800; padding-left: 12px; margin-bottom: 8px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 14px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 10px; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: var(--bg-card); border-left: 3px solid var(--primary); }
+    .nav-link i { font-size: 16px; width: 20px; text-align: center; color: var(--primary); }
+
+    .content { margin-left: 280px; flex: 1; max-width: 1200px; padding: 40px 48px 80px 48px; }
+    .hero { background: linear-gradient(135deg, #1f1435 0%, #0d1629 100%); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 20px; padding: 36px; margin-bottom: 36px; }
+    .hero h1 { font-size: 32px; font-weight: 900; margin-bottom: 10px; color: #fff; }
+    .hero p { color: var(--text-muted); font-size: 16px; }
+
+    .section-title { font-size: 22px; font-weight: 800; margin: 36px 0 18px 0; display: flex; align-items: center; gap: 12px; color: #fff; }
+    .section-title i { color: var(--primary); }
+
+    .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .card-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .card-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 14px; }
+
+    .table-container { overflow-x: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { background: #090f1f; color: #e2e8f0; font-weight: 800; padding: 14px 18px; border-bottom: 1px solid var(--border-color); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; }
+    td { padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); color: var(--text-muted); }
+
+    .callout-purple {
+      background: rgba(168, 85, 247, 0.08);
+      border-left: 4px solid var(--secondary);
+      border-radius: 12px;
+      padding: 18px;
+      margin: 18px 0;
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) { .sidebar { display: none; } .content { margin-left: 0; padding: 24px; } }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-logo">h<span>Speed</span></div></div>
+    <div class="nav-sections">
+      <div>
+        <div class="nav-group-title">Navegación</div>
+        <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Volver a Portada</a>
+        <a href="radio-streaming.html" class="nav-link"><i class="fa-solid fa-radio"></i> Radio & Streaming</a>
+        <a href="migracion-vps.html" class="nav-link"><i class="fa-solid fa-server"></i> Despliegue VPS</a>
+        <a href="docker.html" class="nav-link"><i class="fa-brands fa-docker"></i> Guía Docker</a>
+        <a href="paneles-dj-admin.html" class="nav-link active"><i class="fa-solid fa-headphones"></i> Paneles DJ & Admin</a>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="hero">
+      <h1>🎛️ Paneles Staff: DJ Panel y Panel de Administración</h1>
+      <p>Gestión de locutores en tiempo real, programación de cabina, permisos de usuario y emisión de radio.</p>
+    </div>
+
+    <!-- DJ Panel -->
+    <div class="card">
+      <h3 class="card-title"><i class="fa-solid fa-headphones" style="color: var(--secondary);"></i> Panel de DJ (/djpanel)</h3>
+      <p class="card-desc">
+        El panel de locución permite al DJ al aire o al equipo de locutores controlar lo que ve la audiencia en la portada en tiempo real:
+      </p>
+      <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <li><strong>DJ al Aire:</strong> Nombre del locutor transmitiendo en vivo (actualiza el avatar y nick en portada).</li>
+        <li><strong>Próximo DJ:</strong> Indica a los oyentes quién tomará el turno a continuación.</li>
+        <li><strong>Programa Actual:</strong> Título del show o temática musical en emisión.</li>
+        <li><strong>Mensaje del DJ:</strong> Anuncio o saludo visible directamente en el reproductor.</li>
+        <li><strong>Estado de Transmisión:</strong> Interruptor para indicar si la radio está en vivo o en modo AutoDJ.</li>
+      </ul>
+
+      <div class="callout-purple">
+        <i class="fa-solid fa-shield-halved"></i> <strong>Datos de Conexión Confidenciales:</strong>  
+        Dentro del panel de DJ se encuentra la tarjeta con los datos de emisión Icecast v2 (Host, Puerto, Mount <code>/live</code>, Contraseña). Esta información es estrictamente privada y el sistema únicamente la renderiza cuando el usuario ha iniciado sesión con rango <code>dj</code> o <code>admin</code>.
+      </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="card">
+      <h3 class="card-title"><i class="fa-solid fa-gear" style="color: var(--primary);"></i> Panel de Administración (/panel)</h3>
+      <p class="card-desc">
+        Centro de control integral reservado para los fundadores y administradores del fansite:
+      </p>
+      <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <li><strong>Modo Mantenimiento:</strong> Permite cerrar la web para visitantes normales mientras el staff sigue operando.</li>
+        <li><strong>Configuración de Radio:</strong> Modificación de URLs de API y stream de AzuraCast/Icecast.</li>
+        <li><strong>Gestión de Usuarios y Rangos:</strong> Aprobación de miembros, asignación de roles (DJ, Mod, Admin) y SpeedPoints.</li>
+        <li><strong>Gestión de Contenidos:</strong> Creación y edición de Noticias, Eventos, Horarios de cabina y Categorías del Foro.</li>
+      </ul>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>
