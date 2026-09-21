@@ -9,6 +9,14 @@ node_modules/
 _build_specs.md
 .env
 .env.local
+.env.example
 server/.cache/
 test-output/
 server/*.txt
+*.log
+coverage/
+.nyc_output
+.eslintcache
+*.pem
+.parcel-cache
+.vite/

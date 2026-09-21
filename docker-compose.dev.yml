@@ -1,0 +1,72 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+      - "5000:5000"
+      - "8000:8000"
+    environment:
+      - NODE_ENV=development
+      - USE_LARAVEL=true
+      - LARAVEL_URL=http://laravel:8000
+      - VITE_API_URL=http://localhost:8000/api
+    depends_on:
+      db:
+        condition: service_healthy
+      laravel:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/dist
+      - ./shared:/app/shared
+      - ./server:/app/server
+    restart: unless-stopped
+
+  laravel:
+    image: php:8.2-apache
+    ports:
+      - "8000:80"
+    environment:
+      - APACHE_PORT=80
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+    volumes:
+      - ./server/laravel:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"echo 'healthy';\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

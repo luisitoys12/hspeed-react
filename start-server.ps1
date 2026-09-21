@@ -1,0 +1,1 @@
+Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "cd /d C:\Users\LuisSandoval\Documents\trabajo\hspeed-react && set NODE_ENV=development && node node_modules\tsx\dist\cli.mjs server\index.ts" -WindowStyle Hidden -PassThru | Select-Object Id

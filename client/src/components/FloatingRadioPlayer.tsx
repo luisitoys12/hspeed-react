@@ -191,8 +191,9 @@ export default function FloatingRadioPlayer() {
 
   const song = nowPlaying?.now_playing?.song;
   const listeners = nowPlaying?.listeners?.current ?? 0;
-  const djName =
-    nowPlaying?.live?.streamer_name || djPanelData?.currentDj || "AutoDJ";
+  const rawDjName = nowPlaying?.live?.streamer_name || djPanelData?.currentDj || "";
+  const isAutoDj = !rawDjName || ["autodj", "auto dj", "azuracast autodj", "habbospeed"].includes(rawDjName.toLowerCase());
+  const djName = isAutoDj ? "AutoDJ" : rawDjName;
   const isLive = nowPlaying?.live?.is_live || false;
   const nextDj = djPanelData?.nextDj || "";
   const songHistory = nowPlaying?.song_history?.slice(0, 4) || [];

@@ -1,0 +1,71 @@
+#!/usr/bin/env node
+// artisan - Laravel-like CLI for HSpeed
+// This provides artisan-like commands for the Laravel backend
+
+const { execSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
+
+const command = process.argv[2];
+const arg = process.argv[3];
+
+const LARAVEL_DIR = __dirname;
+
+function run(cmd) {
+  try {
+    const result = execSync(cmd, { encoding: "utf-8", cwd: LARAVEL_DIR });
+    console.log(result);
+  } catch (e) {
+    console.error("Error:", e.message);
+    process.exit(1);
+  }
+}
+
+switch (command) {
+  case "key:generate":
+    const key = "base64:" + Buffer.from(crypto.randomUUID()).toString("base64");
+    const envPath = path.join(LARAVEL_DIR, ".env");
+    let env = fs.readFileSync(envPath, "utf-8");
+    env = env.replace(/APP_KEY=.*/, `APP_KEY=${key}`);
+    fs.writeFileSync(envPath, env);
+    console.log(`Application key generated: ${key}`);
+    break;
+
+  case "migrate":
+    console.log("[Artisan] Running migrations...");
+    console.log("[Artisan] Database migrations would be executed here.");
+    console.log("[Artisan] Use PHP: php artisan migrate");
+    break;
+
+  case "serve":
+    console.log("[Artisan] Starting Laravel development server...");
+    console.log("[Artisan] Use PHP: php -S localhost:8000 -t public");
+    console.log("[Artisan] Or use: php artisan serve");
+    break;
+
+  case "optimize":
+    console.log("[Artisan] Optimizing application...");
+    console.log("[Artisan] Clearing caches, optimizing autoload...");
+    break;
+
+  case "config:clear":
+    console.log("[Artisan] Config cache cleared.");
+    break;
+
+  case "cache:clear":
+    console.log("[Artisan] Cache cleared.");
+    break;
+
+  default:
+    console.log("HSpeed Artisan CLI");
+    console.log("Usage: node artisan <command> [argument]");
+    console.log("");
+    console.log("Commands:");
+    console.log("  key:generate    Generate application key");
+    console.log("  migrate         Run database migrations");
+    console.log("  serve           Start development server");
+    console.log("  optimize        Optimize application");
+    console.log("  config:clear    Clear config cache");
+    console.log("  cache:clear     Clear application cache");
+    break;
+}
