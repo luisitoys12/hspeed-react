@@ -6,7 +6,7 @@ const PORT = 8005;
 const USER_MUSIC_DIR = 'C:\\Users\\LuisSandoval\\Music\\Qobuz';
 const FALLBACK_MP3 = path.resolve(__dirname, 'sample-radio-track.mp3');
 
-// 1. Escanear e indexar música real del usuario
+// 1. Indexar biblioteca de música
 function scanMusicLibrary(dir) {
   const list = [];
   if (!fs.existsSync(dir)) return list;
@@ -25,9 +25,7 @@ function scanMusicLibrary(dir) {
           const title = parts.length > 1 ? parts.slice(1).join(' - ').trim() : rawName;
           const album = path.basename(path.dirname(fullPath));
           const size = fs.statSync(fullPath).size;
-
-          // Duración estimada para MP3 ~ 128-320kbps
-          const estimatedDuration = Math.max(60, Math.min(600, Math.floor(size / (192 * 1024 / 8))));
+          const estimatedDuration = Math.max(60, Math.min(600, Math.floor(size / (320 * 1024 / 8))));
 
           list.push({
             id: 'song_' + (list.length + 1),
@@ -53,7 +51,6 @@ function scanMusicLibrary(dir) {
 let playlist = scanMusicLibrary(USER_MUSIC_DIR);
 
 if (playlist.length === 0 && fs.existsSync(FALLBACK_MP3)) {
-  console.log('[AzuraCast] No se encontró la carpeta Qobuz, usando track de muestra...');
   playlist.push({
     id: 'sample_1',
     artist: 'HabboSpeed Star',
@@ -66,31 +63,49 @@ if (playlist.length === 0 && fs.existsSync(FALLBACK_MP3)) {
   });
 }
 
-// Mezclar aleatoriamente la lista de reproducción
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
+// Mezclar canciones
+for (let i = playlist.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
 }
-shuffle(playlist);
 
 console.log(`[AzuraCast] Total de canciones cargadas desde tu PC: ${playlist.length}`);
 
-// 2. Estado en Vivo del Emisor
-let currentIndex = 0;
-let currentListeners = 145;
+// 2. Estado Global de Emisión
+let globalSongIndex = 0;
 let songStartedAt = Math.floor(Date.now() / 1000);
+let currentListeners = 145;
 const songHistory = [];
 
-function getCurrentSong() {
-  return playlist[currentIndex] || playlist[0];
+// Cache de buffers de audio en memoria (cargar bajo demanda)
+const bufferCache = new Map();
+function getSongBuffer(song) {
+  if (bufferCache.has(song.fullPath)) {
+    return bufferCache.get(song.fullPath);
+  }
+  try {
+    const buf = fs.readFileSync(song.fullPath);
+    // Limitar cache a 10 archivos para no saturar memoria
+    if (bufferCache.size > 10) {
+      const firstKey = bufferCache.keys().next().value;
+      bufferCache.delete(firstKey);
+    }
+    bufferCache.set(song.fullPath, buf);
+    return buf;
+  } catch (err) {
+    console.error(`[AzuraCast] Error leyendo canción ${song.fullPath}:`, err.message);
+    return null;
+  }
 }
 
-function nextSong() {
+function getCurrentSong() {
+  return playlist[globalSongIndex] || playlist[0];
+}
+
+function advanceGlobalSong() {
   const prev = getCurrentSong();
   songHistory.unshift({
-    sh_id: 2000 + songHistory.length,
+    sh_id: 3000 + songHistory.length,
     played_at: songStartedAt,
     duration: prev.duration,
     song: {
@@ -100,40 +115,26 @@ function nextSong() {
       art: prev.art
     }
   });
-
   if (songHistory.length > 10) songHistory.pop();
 
-  currentIndex = (currentIndex + 1) % playlist.length;
+  globalSongIndex = (globalSongIndex + 1) % playlist.length;
   songStartedAt = Math.floor(Date.now() / 1000);
-  currentListeners = 135 + Math.floor(Math.random() * 25);
+  currentListeners = 140 + Math.floor(Math.random() * 20);
 
   const next = getCurrentSong();
-  console.log(`[AzuraCast] 🎵 Sonando ahora: "${next.artist} - ${next.title}" (${currentListeners} oyentes en vivo)`);
-  loadCurrentTrackBuffer();
+  console.log(`[AzuraCast] 🎵 Emisión en curso: "${next.artist} - ${next.title}" (${currentListeners} oyentes)`);
 }
 
-// Cargar archivo actual en memoria para streaming fluido
-let currentTrackBuffer = null;
-let currentFileOffset = 0;
-
-function loadCurrentTrackBuffer() {
-  const song = getCurrentSong();
-  try {
-    currentTrackBuffer = fs.readFileSync(song.fullPath);
-    currentFileOffset = 0;
-    console.log(`[AzuraCast] Pista cargada: ${song.title} (${(currentTrackBuffer.length / 1024 / 1024).toFixed(2)} MB)`);
-  } catch (err) {
-    console.error(`[AzuraCast] Error leyendo archivo de música ${song.fullPath}:`, err.message);
-    if (fs.existsSync(FALLBACK_MP3)) {
-      currentTrackBuffer = fs.readFileSync(FALLBACK_MP3);
-      currentFileOffset = 0;
-    }
+// Rotación global según duración
+setInterval(() => {
+  const cur = getCurrentSong();
+  const elapsed = Math.floor(Date.now() / 1000) - songStartedAt;
+  if (elapsed >= cur.duration) {
+    advanceGlobalSong();
   }
-}
+}, 5000);
 
-loadCurrentTrackBuffer();
-
-// 3. API NowPlaying en formato idéntico a AzuraCast
+// 3. API NowPlaying estándar AzuraCast
 function getNowPlayingData() {
   const current = getCurrentSong();
   const nowSec = Math.floor(Date.now() / 1000);
@@ -146,11 +147,11 @@ function getNowPlayingData() {
       name: "HabboSpeed Radio AzuraCast",
       shortcode: "habbospeed",
       description: "Transmitiendo tu colección local de Qobuz",
-      listen_url: `http://127.0.0.1:${PORT}/listen/habboradio/radio.mp3`
+      listen_url: "https://relation-roots-jim-empirical.trycloudflare.com/listen/habboradio/radio.mp3"
     },
     listeners: {
       current: currentListeners,
-      unique: currentListeners - 7,
+      unique: currentListeners - 6,
       total: currentListeners
     },
     live: {
@@ -171,73 +172,50 @@ function getNowPlayingData() {
         genre: "Pop / Hits / Latino"
       }
     },
-    song_history: songHistory.length > 0 ? songHistory : [
-      {
-        sh_id: 1001,
-        played_at: Math.floor(Date.now() / 1000) - 200,
-        duration: 195,
-        song: {
-          title: "BOCA A BOCA",
-          artist: "3am",
-          album: "BOCA A BOCA (2026)",
-          art: "https://images.habbo.com/c_images/album1584/ACH_VipClub1.gif"
-        }
-      },
-      {
-        sh_id: 1002,
-        played_at: Math.floor(Date.now() / 1000) - 400,
-        duration: 185,
-        song: {
-          title: "Así",
-          artist: "Abraham Mateo",
-          album: "Así (2026)",
-          art: "https://images.habbo.com/c_images/album1584/ADM.gif"
-        }
-      }
-    ],
+    song_history: songHistory,
     is_online: true
   };
 }
 
-// 4. Clientes de Streaming de Audio Conectados
-const streamClients = new Set();
-const CHUNK_SIZE = 16384; // 16 KB por segundo (~128 kbps)
+// 4. Clientes de Streaming de Audio Conectados (Flujo Contiguo Garantizado)
+const activeClients = new Map(); // res -> { songIndex, offset }
+
+// Pump: cada 250ms enviamos 10 KB por cliente (40 KB/s = 320 kbps reales sin cortes)
+const CHUNK_SIZE = 10240;
 
 setInterval(() => {
-  if (!currentTrackBuffer || streamClients.size === 0) return;
+  if (activeClients.size === 0) return;
 
-  const nextOffset = currentFileOffset + CHUNK_SIZE;
-
-  // Si la pista actual terminó, pasar a la siguiente
-  if (nextOffset >= currentTrackBuffer.length) {
-    const remainingPart = currentTrackBuffer.subarray(currentFileOffset);
-    for (const client of streamClients) {
-      try { client.write(remainingPart); } catch { streamClients.delete(client); }
-    }
-    nextSong();
-    return;
-  }
-
-  const chunk = currentTrackBuffer.subarray(currentFileOffset, nextOffset);
-  currentFileOffset = nextOffset;
-
-  for (const client of streamClients) {
+  for (const [res, state] of activeClients.entries()) {
     try {
-      client.write(chunk);
+      const song = playlist[state.songIndex] || getCurrentSong();
+      const buf = getSongBuffer(song);
+
+      if (!buf) {
+        state.songIndex = (state.songIndex + 1) % playlist.length;
+        state.offset = 0;
+        continue;
+      }
+
+      const nextOffset = state.offset + CHUNK_SIZE;
+
+      if (nextOffset >= buf.length) {
+        // Enviar resto de la canción
+        if (state.offset < buf.length) {
+          res.write(buf.subarray(state.offset));
+        }
+        // Pasar inmediatamente al inicio de la siguiente canción
+        state.songIndex = (state.songIndex + 1) % playlist.length;
+        state.offset = 0;
+      } else {
+        res.write(buf.subarray(state.offset, nextOffset));
+        state.offset = nextOffset;
+      }
     } catch {
-      streamClients.delete(client);
+      activeClients.delete(res);
     }
   }
-}, 1000);
-
-// Rotar automáticamente si transcurre la duración de la canción
-setInterval(() => {
-  const current = getCurrentSong();
-  const elapsed = Math.floor(Date.now() / 1000) - songStartedAt;
-  if (elapsed >= current.duration) {
-    nextSong();
-  }
-}, 5000);
+}, 250);
 
 const server = http.createServer((req, res) => {
   // CORS
@@ -251,59 +229,64 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  const url = req.url;
+  const url = req.url.split('?')[0];
 
   // 1. AzuraCast NowPlaying Endpoints
   if (url === '/api/nowplaying' || url.startsWith('/api/nowplaying/') || url.includes('/nowplaying')) {
     const data = getNowPlayingData();
     const responsePayload = url === '/api/nowplaying' ? [data] : data;
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
     res.end(JSON.stringify(responsePayload));
     return;
   }
 
-  // 2. Audio Streaming Endpoints (/listen/habboradio/radio.mp3, /radio.mp3, etc.)
+  // 2. Audio Streaming Endpoint
   if (url.startsWith('/listen/') || url.endsWith('.mp3')) {
-    console.log(`[AzuraCast] Sintonizador conectado desde: ${req.socket.remoteAddress}`);
+    console.log(`[AzuraCast] Nuevo oyente conectado desde ${req.socket.remoteAddress}`);
     res.writeHead(200, {
       'Content-Type': 'audio/mpeg',
       'Transfer-Encoding': 'chunked',
       'Connection': 'keep-alive',
-      'Cache-Control': 'no-cache, no-store',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
       'icy-name': 'HabboSpeed Radio Live (Tu Música)',
-      'icy-genre': 'Pop / Hits / Qobuz Collection',
-      'icy-br': '128'
+      'icy-genre': 'Pop / Hits / Latino',
+      'icy-br': '320'
     });
 
-    // Enviar ráfaga inicial para inicio instantáneo
-    if (currentTrackBuffer) {
-      const burstSize = Math.min(65536, currentTrackBuffer.length);
-      const start = Math.max(0, currentFileOffset - burstSize);
-      res.write(currentTrackBuffer.subarray(start, currentFileOffset));
+    const currentSong = getCurrentSong();
+    const buf = getSongBuffer(currentSong);
+
+    // Enviar ráfaga inicial de 64 KB desde el byte 0 (incluye ID3 y encabezado MPEG limpio)
+    let initialOffset = 0;
+    if (buf) {
+      const burstSize = Math.min(65536, buf.length);
+      res.write(buf.subarray(0, burstSize));
+      initialOffset = burstSize;
     }
 
-    streamClients.add(res);
+    activeClients.set(res, { songIndex: globalSongIndex, offset: initialOffset });
 
     req.on('close', () => {
-      streamClients.delete(res);
-      console.log(`[AzuraCast] Sintonizador desconectado. Oyentes conectados: ${streamClients.size}`);
+      activeClients.delete(res);
+      console.log(`[AzuraCast] Oyente desconectado. Conectados activos: ${activeClients.size}`);
     });
     return;
   }
 
-  // Info general
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({
-    status: 'AzuraCast Local Music Station Online',
-    port: PORT,
-    total_songs_indexed: playlist.length,
-    current_song: getCurrentSong().title
-  }));
+  res.end(JSON.stringify({ status: 'AzuraCast Online', port: PORT }));
 });
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`====================================================`);
-  console.log(`📡 Servidor AzuraCast Conectado a tu Música de Qobuz`);
+  console.log(`📡 Servidor AzuraCast Conectado a tu Música Local`);
   console.log(`   - Canciones indexadas: ${playlist.length}`);
   console.log(`   - API NowPlaying: http://127.0.0.1:${PORT}/api/nowplaying/1`);
   console.log(`   - Audio Streaming: http://127.0.0.1:${PORT}/listen/habboradio/radio.mp3`);

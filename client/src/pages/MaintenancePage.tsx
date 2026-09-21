@@ -39,39 +39,54 @@ export default function MaintenancePage() {
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
 
-  // Live Radio Now Playing data
-  const { data: nowPlaying } = useQuery<any>({
-    queryKey: ["/api/nowplaying"],
-    refetchInterval: 10000,
-    retry: false,
-  });
+  // Live Radio Now Playing State (polling directo sin caché estancada)
+  const [radioData, setRadioData] = useState<any>(null);
 
-  const songTitle =
-    nowPlaying?.now_playing?.song?.title
-      ? `${nowPlaying.now_playing.song.artist ? nowPlaying.now_playing.song.artist + " - " : ""}${nowPlaying.now_playing.song.title}`
-      : typeof nowPlaying?.song === "string"
-      ? nowPlaying.song
-      : typeof nowPlaying?.title === "string"
-      ? nowPlaying.title
-      : "Dua Lipa - Houdini";
+  useEffect(() => {
+    let isMounted = true;
+    const pollRadio = async () => {
+      try {
+        const res = await fetch("/api/nowplaying?t=" + Date.now(), {
+          cache: "no-store",
+          headers: { "Pragma": "no-cache" }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (isMounted) {
+            setRadioData(Array.isArray(json) ? json[0] : json);
+          }
+        }
+      } catch (err) {
+        console.warn("Aviso consultando radio:", err);
+      }
+    };
+
+    pollRadio();
+    const timer = setInterval(pollRadio, 3000);
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
+  }, []);
+
+  // Extraer metadatos de la canción en reproducción
+  const songArtist = radioData?.now_playing?.song?.artist || "HabboSpeed";
+  const rawSongTitle = radioData?.now_playing?.song?.title || radioData?.song || "Conectando señal de radio...";
+  const songTitle = radioData?.now_playing?.song?.artist
+    ? `${radioData.now_playing.song.artist} - ${radioData.now_playing.song.title}`
+    : rawSongTitle;
+
   const djName =
-    nowPlaying?.live?.is_live && nowPlaying?.live?.streamer_name
-      ? `DJ ${nowPlaying.live.streamer_name}`
-      : typeof nowPlaying?.dj === "string"
-      ? nowPlaying.dj
-      : typeof nowPlaying?.djName === "string"
-      ? nowPlaying.djName
-      : "DJ DinhuLOL";
+    radioData?.live?.is_live && radioData?.live?.streamer_name
+      ? `DJ ${radioData.live.streamer_name}`
+      : radioData?.dj || "DJ ser03z-51";
+
   const listenersCount =
-    typeof nowPlaying?.listeners === "object" && nowPlaying?.listeners !== null
-      ? (nowPlaying.listeners.current ?? 102)
-      : typeof nowPlaying?.listeners === "number"
-      ? nowPlaying.listeners
-      : 102;
-  const streamUrl =
-    nowPlaying?.station?.listen_url && !nowPlaying.station.listen_url.includes("127.0.0.1")
-      ? nowPlaying.station.listen_url
-      : "/api/radio-stream";
+    typeof radioData?.listeners === "object" && radioData?.listeners !== null
+      ? (radioData.listeners.current ?? 145)
+      : typeof radioData?.listeners === "number"
+      ? radioData.listeners
+      : 145;
 
   // Staff Login Modal State
   const [showStaffModal, setShowStaffModal] = useState(false);
@@ -89,16 +104,27 @@ export default function MaintenancePage() {
     }
   }, [volume, isMuted]);
 
+  const rawStream =
+    radioData?.station?.listen_url ||
+    "https://relation-roots-jim-empirical.trycloudflare.com/listen/habboradio/radio.mp3";
+  const streamUrl = rawStream.includes("127.0.0.1")
+    ? "https://relation-roots-jim-empirical.trycloudflare.com/listen/habboradio/radio.mp3"
+    : rawStream;
+
   const togglePlay = () => {
     const audio = audioRef.current;
     if (!audio) return;
+
     if (isPlaying) {
       audio.pause();
-      audio.src = "";
+      audio.removeAttribute("src");
       setIsPlaying(false);
     } else {
       audio.src = streamUrl;
-      audio.play().catch(() => {});
+      audio.volume = isMuted ? 0 : volume / 100;
+      audio.play().catch((err) => {
+        console.error("Audio playback error:", err);
+      });
       setIsPlaying(true);
     }
   };
