@@ -1,26 +1,39 @@
-# 🏨 HabboSpeed — Fansite Habbo
+# 🏨 HabboSpeed — Fansite Habbo 2026
 
-> Fansite completa para la comunidad Habbo hispanohablante. Radio en vivo, noticias, eventos, foro, marketplace de furnis y más — todo en un solo lugar.
+> Fansite completa para la comunidad Habbo hispanohablante. Radio en vivo 24/7, paneles DJ y Staff, noticias, eventos, foro, marketplace de furnis, Fútbol Hub y más — todo listo para usar con 1 clic.
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-latest-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v3-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-336791?logo=postgresql&logoColor=white)](https://supabase.com)
+[![AzuraCast](https://img.shields.io/badge/Radio-AzuraCast%20%2F%20Icecast-blueviolet?logo=soundcharts&logoColor=white)](https://azuracast.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.1-orange.svg)](#-changelog)
+[![Version](https://img.shields.io/badge/release-v3.2%20(Turnkey)-emerald.svg)](#-changelog)
 
 ---
 
-## 📋 Descripción
+## ⚡ Inicio Rápido (1 Clic en PC)
 
-**HabboSpeed** es una plataforma web full-stack orientada a la comunidad de jugadores de Habbo Hotel. Incluye reproductor de radio integrado (Azuracast/ZenoFM), sistema de noticias con reacciones, calendario de eventos, foro comunitario, explorador de badges, marketplace de furnis y un panel de administración completo.
+Para ejecutar todo el stack (Servidor de Radio en puerto 8005 + Web en puerto 5000):
+
+* **En Windows**: Doble clic en `start-all.bat` (o ejecuta `npm run start:all`).
+* **En Linux / Mac**: `./start-all.sh` (o ejecuta `npm run start:all`).
+* **Verificar UI y Radio con tests**: `npm run verify:ui`
+
+> 📘 Consulta la **[Guía Completa de Instalación y Migración (GUIA_INSTALACION_Y_MIGRACION.md)](GUIA_INSTALACION_Y_MIGRACION.md)** para credenciales de admin/DJ, configuración de túneles y despliegue en VPS.
 
 ---
 
 ## 📌 Changelog
 
-### v3.1
+### v3.2 (Turnkey Edition & Radio Fixes)
+
+- ⚡ **Eliminación de pantalla negra en inicio**: Carga directa e instantánea de `HomePage`, evitando esperas de Suspense o skeletons oscuros.
+- 🎨 **Nuevo PageLoader temático HabboSpeed**: Loader elegante con avatar HabboSpeed, halo giratorio y progreso estilizado para subpáginas.
+- 🎧 **Radio HSpeed Turnkey**: Servidor AzuraCast local desacoplado (`script/azuracast-server.cjs`), resolución dinámica de stream sin bloqueos de CORS y reproducción fluida en escritorio y móvil.
+- 🎛️ **Panel DJ y Admin optimizados**: Persistencia de datos de locutor en tiempo real y modal privado para transmisión Icecast/BUTT/Mixxx visible únicamente para DJs autorizados.
+- 🧪 **Suite de pruebas automatizadas**: Script `npm run verify:ui` basado en Playwright para validar la portada, reproductor y rutas esenciales en cualquier PC.
+- 🚀 **Scripts 1-Clic**: `start-all.bat` y `start-all.sh` para levantar todo el proyecto sin configuraciones complejas.
 
 - ✨ **Nueva sección Feria** (`/feria`): hub de herramientas con Catálogo de Logros, Buscador de Precios de Mercado (batch) y Ranking de Pesca + estado del Derby (Habbo Origins), más accesos directos a Hot Looks y Buscador de Grupos.
 - 🐛 Fix: imágenes de noticias no se mostraban por no pasar por el proxy de imágenes.
